@@ -1,0 +1,13 @@
+name = "CobblemonExtended"
+author = "camcast"
+version = "1.0.0"
+pack-format = "packwiz:1.1.0"
+
+[index]
+file = "index.toml"
+hash-format = "sha256"
+hash = "1b0977afb7e61450c17658c229e231278ca6fc8f752c3c9b9ab9cbf6c087a0df"
+
+[versions]
+fabric = "0.15.11"
+minecraft = "1.20.1"
