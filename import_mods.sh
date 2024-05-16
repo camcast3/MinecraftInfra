@@ -2,9 +2,7 @@
 # 1 = folderpath given doesn't exist
 # 2 = unrecgonized folderpath
 # 3 = filename given doesn't exist
-# 4 = unrecgonized folderpath
-# 5 = packwiz failed
-# 6 = Unable to decide on packwiz command
+# 4 = packwiz failed
 
 filename=$1
 folderpath=$2
@@ -27,33 +25,21 @@ cd $folderpath
 
 if [-f "$filename"]; then
     echo "File '$filename' exists."
-    if [[$filename == *"curseforge"]]; then
-        echo "Creating modpack from curseforge"
-    elif [[$filename == *"modrinth"]]; then
-        echo "Creating modpack from modrinth"
-    else
-        echo "Unable to determine mopdak source. Fix filepath."
-        exit 1
-    fi
 else
     echo "File '$filename' does not exists."
-    exit 1
+    exit 3
 fi
 
 for line in $(cat "$filename"); do
     # Read the split words into an array
     # based on space delimiter
     IFS='/' read -ra newarr <<< $line
-    if ["${newarr[3]}" == "both"] && [[$filename == *"modrinth"]]; then
-        ~/Dev/packwiz modrinth add "${newarr[0]}" --version-filename "${newarr[1]}" || exit 5
-    elif ["${newarr[3]}" == "server"] && [[$filename == *"modrinth"]] &&  [[$folderpath == *"/server"]]; then
-         ~/Dev/packwiz modrinth add "${newarr[0]}" --version-filename "${newarr[1]}" || exit 5
-    elif [[$filename == *"curseforge"]] &&  [[$folderpath == *"/server"]]; then
-        ~/Dev/packwiz curseforge add "${newarr[0]}" || exit 5
-    else
-        echo "Wasnt able to decide on what packwiz command to use"
-        exit 6
-    if
+    ~/Dev/packwiz modrinth add "${newarr[0]}" --version-filename "${newarr[1]}" || exit 4
 done
+
+if [[$folderpath == *"/server"]]
+    ~/Dev/packwiz modrinth add "fabricproxy-lite" --version-filename "v2.6.0" || exit 4
+    ~/Dev/packwiz curseforge add "https://www.curseforge.com/minecraft/mc-mods/worldedit/download/4586218" || exit 4
+fi
 
 exit 0
