@@ -23,11 +23,12 @@ x-common-keys-apps: &common-keys-apps
 services:
 
   ############################# PROXY
+  
 
   ############################# MINECRAFT SERVERS
-  cobblemon-server:
+  cobblemonextended:
     <<: *common-keys-apps
-    container_name: cobblemon-server
+    container_name: cobblemonextended
     image: itzg/minecraft-server:2024.5.0-java17-alpine
     ports:
       - "25565:25565"
@@ -49,7 +50,7 @@ services:
           cpus: '2'
           memory: 10G
     volumes:
-      - $DOCKERDIR/appdata/cobblemon-server:/data
+      - $DOCKERDIR/appdata/cobblemonextended:/data
       - $DOCKERDIR/mods:/data/mods
   
   ############################# MONITORING
