@@ -20,6 +20,7 @@ if [-d "$folderpath"]; then
 else
     echo "Folder Path '$folderpath' does not exists."
     exit 2
+fi
 
 cd $folderpath
 
@@ -37,9 +38,8 @@ for line in $(cat "$filename"); do
     ~/Dev/packwiz modrinth add "${newarr[0]}" --version-filename "${newarr[1]}" || exit 4
 done
 
-if [[$folderpath == *"/server"]]
-    ~/Dev/packwiz modrinth add "fabricproxy-lite" --version-filename "v2.6.0" || exit 4
-    ~/Dev/packwiz curseforge add "https://www.curseforge.com/minecraft/mc-mods/worldedit/download/4586218" || exit 4
-fi
+~/Dev/packwiz modrinth add "fabricproxy-lite" --version-filename "v2.6.0" || exit 4
+~/Dev/packwiz curseforge add "https://www.curseforge.com/minecraft/mc-mods/worldedit/download/4586218" || exit 4
+
 
 exit 0
