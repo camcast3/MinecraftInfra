@@ -22,6 +22,19 @@ x-common-keys-apps: &common-keys-apps
 ########################### SERVICES
 services:
 
+  ############################# MODPACK SERVER
+
+  cameronextending:
+    <<: *common-keys-core
+    container_name: cameronextending
+    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    ports:
+      - "8069:8080"
+    environment:
+      <<: *default-tz-puid-pgid
+    volumes:
+      - $DOCKERDIR/MinecraftInfra/cobblemonextended:/data
+        
   ############################# PROXY
   
 
@@ -44,6 +57,7 @@ services:
       MODE: adventure
       ENABLE_WHITELIST: false
       ENABLE_ROLLING_LOGS: "true"
+      PACKWIZ_URL: http://192.168.86.231:8080/cobblemonextended/pack.toml
     deploy:
       resources:
         limits:
