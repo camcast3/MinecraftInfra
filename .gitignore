@@ -2,7 +2,7 @@ setcommands.sh
 admin_compose.yml
 
 # Exclude exported CurseForge zip files
-#*.zip
+*.zip
 
 # Exclude exported Modrinth modpacks
 *.mrpack
