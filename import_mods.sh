@@ -1,36 +1,33 @@
 # Exit codes 
 # 1 = folderpath given doesn't exist
-# 2 = unrecgonized folderpath
-# 3 = filename given doesn't exist
-# 4 = packwiz failed
+# 2 = filename given doesn't exist
+# 3 = packwiz failed
 
 filename=$1
 folderpath=$2
-packwizpath = $3
+packwizpath=$3
 
-if [-d "$folderpath"]; then
+if [ -d "$folderpath" ]; then
     echo "Folder Path '$folderpath' exists."
-    exit 1
 else
-    echo "Folder Path '$folderpath' does not exists."
-    exit 2
+    echo "Folder Path '$folderpath' does not exist."
+    exit 1
 fi
 
 cd $folderpath
 
-if [-f "$filename"]; then
+if [ -f "$filename" ]; then
     echo "File '$filename' exists."
 else
     echo "File '$filename' does not exists."
-    exit 3
+    exit 2
 fi
 
-if [-d "$packwizpath"]; then
-    echo "Folder Path '$packwizpath' exists."
-    exit 1
+if [ -f "$packwizpath" ]; then
+    echo "Packwiz '$packwizpath' exists."
 else
-    echo "Folder Path '$packwizpath' does not exists."
-    exit 2
+    echo "Packwiz '$packwizpath' does not exist."
+    exit 3
 fi
 
 for line in $(cat "$filename"); do

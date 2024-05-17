@@ -1,0 +1,13 @@
+name = "CreateExploreExtended"
+author = "Camcast"
+version = "1.0.0"
+pack-format = "packwiz:1.1.0"
+
+[index]
+file = "index.toml"
+hash-format = "sha256"
+hash = "5572456d0eec7081c14a48b2ec49835fe9d1bb93432c5e42926cde942b98d3ea"
+
+[versions]
+fabric = "0.15.11"
+minecraft = "1.20.1"
