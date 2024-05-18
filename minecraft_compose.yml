@@ -39,21 +39,21 @@ services:
     volumes:
       - $DOCKERDIR/MinecraftInfra/cobblemonextended:/data
 
-    packwiz-server-createexplorextended:
-      <<: *common-keys-core
-      container_name: packwiz-server-createexplorextended
-      image: ghcr.io/camcast3/packwiz:camcast3-docker
-      ports:
-        - "8079:8080"
-      environment:
-        <<: *default-tz-puid-pgid
-      deploy:
-        resources:
-          limits:
-            cpus: '1'
-            memory: 1G
-      volumes:
-        - $DOCKERDIR/MinecraftInfra/createexplorextended:/data
+  packwiz-server-createexplorextended:
+    <<: *common-keys-core
+    container_name: packwiz-server-createexplorextended
+    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    ports:
+      - "8079:8080"
+    environment:
+      <<: *default-tz-puid-pgid
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    volumes:
+      - $DOCKERDIR/MinecraftInfra/createexplorextended:/data
 
   ############################# PROXY
   velocity:
