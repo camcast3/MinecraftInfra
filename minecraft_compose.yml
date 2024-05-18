@@ -82,6 +82,8 @@ services:
           memory: 10G
     volumes:
       - $DOCKERDIR/appdata/cobblemonextended:/data
+    depends_on:
+     - cameronextending
 
   ############################# MONITORING
 
