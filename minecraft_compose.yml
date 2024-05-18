@@ -39,6 +39,22 @@ services:
     volumes:
       - $DOCKERDIR/MinecraftInfra/cobblemonextended:/data
 
+  packwiz-server-createexplorextended:
+    <<: *common-keys-core
+    container_name: packwiz-server-createexplorextended
+    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    ports:
+      - "8079:8080"
+    environment:
+      <<: *default-tz-puid-pgid
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    volumes:
+      - $DOCKERDIR/MinecraftInfra/createexplorextended:/data
+
   ############################# PROXY
   velocity:
     <<: *common-keys-core
@@ -49,19 +65,24 @@ services:
       DEBUG: "true"
       ENABLE_RCON: "true"
     ports:
-      - "25567:25577"
+      - "25565:25577"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     volumes:
       - $DOCKERDIR/velocity.toml:/config/velocity.toml:ro
-      - ./forwarding.secret:/config/forwarding.secret:ro
+      - $DOCKERDIR/forwarding.secret:/config/forwarding.secret:ro
       - $DOCKERDIR/appdata/velocity:/server
 
   ############################# MINECRAFT SERVERS
   cobblemonextended:
     <<: *common-keys-apps
     container_name: cobblemonextended
-    image: itzg/minecraft-server:2024.5.0-java17-alpine
+    image: camcast3/minecraft-server:java17-alpine
     ports:
-      - "25565:25565"
+      - "25569:25565"
     environment:
       <<: *default-tz-puid-pgid
       MOTD: "Foxon is an asshole"
@@ -73,11 +94,7 @@ services:
       SNOOPER_ENABLED: false
       MAX_PLAYERS: 10
       MODE: survival
-      OP: |
-        $OP1
-        $OP2
       ENABLE_ROLLING_LOGS: "true"
-      ENFORCE_WHITELIST: "true"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
     deploy:
       resources:
@@ -88,6 +105,35 @@ services:
       - $DOCKERDIR/appdata/cobblemonextended:/data
     depends_on:
      - packwiz-server-cobblemonextended
+
+  createexplorextended:
+    <<: *common-keys-apps
+    container_name: createexplorextended
+    image: camcast3/minecraft-server:java17-alpine
+    ports:
+      - "25579:25565"
+    environment:
+      <<: *default-tz-puid-pgid
+      MOTD: "Foxon is a jerk"
+      EULA: "TRUE"
+      TYPE: FABRIC
+      VERSION: 1.20.1
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      SNOOPER_ENABLED: false
+      MAX_PLAYERS: 10
+      MODE: survival
+      ENABLE_ROLLING_LOGS: "true"
+      PACKWIZ_URL: http://192.168.86.231:8079/pack.toml
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 10G
+    volumes:
+      - $DOCKERDIR/appdata/createexplorextended:/data
+    depends_on:
+     - packwiz-server-createexplorextended
 
   ############################# MONITORING
 
