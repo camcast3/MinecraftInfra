@@ -53,7 +53,7 @@ services:
             cpus: '1'
             memory: 1G
       volumes:
-        - $DOCKERDIR/MinecraftInfra/cobblemonextended:/data
+        - $DOCKERDIR/MinecraftInfra/createexplorextended:/data
 
   ############################# PROXY
   velocity:
