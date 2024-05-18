@@ -23,7 +23,6 @@ x-common-keys-apps: &common-keys-apps
 services:
 
   ############################# MODPACK SERVER
-
   cameronextending:
     <<: *common-keys-core
     container_name: cameronextending
@@ -57,7 +56,7 @@ services:
       MODE: adventure
       ENABLE_WHITELIST: false
       ENABLE_ROLLING_LOGS: "true"
-      PACKWIZ_URL: http://192.168.86.231:8080/cobblemonextended/pack.toml
+      PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
     deploy:
       resources:
         limits:
