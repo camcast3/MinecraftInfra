@@ -80,7 +80,7 @@ services:
   cobblemonextended:
     <<: *common-keys-apps
     container_name: cobblemonextended
-    image: camcast3/minecraft-server:2024.5.0-java17-alpine
+    image: camcast3/minecraft-server:java17-alpine
     ports:
       - "25569:25565"
     environment:
