@@ -61,7 +61,7 @@ services:
     container_name: cobblemonextended
     image: itzg/minecraft-server:2024.5.0-java17-alpine
     ports:
-      - "25569:25565"
+      - "25565:25565"
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
