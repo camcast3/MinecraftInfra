@@ -57,6 +57,7 @@ services:
       ENABLE_WHITELIST: false
       ENABLE_ROLLING_LOGS: "true"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
+      ONLINE_MODE: TRUE
     deploy:
       resources:
         limits:
