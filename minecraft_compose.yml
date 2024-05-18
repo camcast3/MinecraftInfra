@@ -49,7 +49,7 @@ services:
       DEBUG: "true"
       ENABLE_RCON: "true"
     ports:
-      - "25565:25577"
+      - "25567:25577"
     volumes:
       - $DOCKERDIR/velocity.toml:/config/velocity.toml:ro
       - ./forwarding.secret:/config/forwarding.secret:ro
