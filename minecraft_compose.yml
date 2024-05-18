@@ -41,10 +41,12 @@ services:
 
   ############################# PROXY
   velocity:
+    <<: *common-keys-core
+    container_name: velocity
     image: itzg/bungeecord
     environment:
       TYPE: VELOCITY
-      DEBUG: "false"
+      DEBUG: "true"
       ENABLE_RCON: "true"
     ports:
       - "25565:25577"
