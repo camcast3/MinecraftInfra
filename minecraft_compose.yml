@@ -95,6 +95,7 @@ services:
       MAX_PLAYERS: 10
       MODE: survival
       ENABLE_ROLLING_LOGS: "true"
+      ONLINE_MODE: "FALSE"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
     deploy:
       resources:
@@ -124,6 +125,7 @@ services:
       MAX_PLAYERS: 10
       MODE: survival
       ENABLE_ROLLING_LOGS: "true"
+      ONLINE_MODE: "FALSE"
       PACKWIZ_URL: http://192.168.86.231:8079/pack.toml
     deploy:
       resources:
