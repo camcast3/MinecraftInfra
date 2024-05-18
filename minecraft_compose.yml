@@ -31,11 +31,27 @@ services:
       - "8069:8080"
     environment:
       <<: *default-tz-puid-pgid
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     volumes:
       - $DOCKERDIR/MinecraftInfra/cobblemonextended:/data
-        
+
   ############################# PROXY
-  
+  velocity:
+    image: itzg/bungeecord
+    environment:
+      TYPE: VELOCITY
+      DEBUG: "false"
+      ENABLE_RCON: "true"
+    ports:
+      - "25565:25577"
+    volumes:
+      - $DOCKERDIR/velocity.toml:/config/velocity.toml:ro
+      - $DOCKERDIR/forwarding.secret:/config/forwarding.secret:ro
+      - $DOCKERDIR/appdata/velocity:/server
 
   ############################# MINECRAFT SERVERS
   cobblemonextended:
@@ -43,7 +59,7 @@ services:
     container_name: cobblemonextended
     image: itzg/minecraft-server:2024.5.0-java17-alpine
     ports:
-      - "25565:25565"
+      - "25569:25565"
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -57,7 +73,6 @@ services:
       ENABLE_WHITELIST: false
       ENABLE_ROLLING_LOGS: "true"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
-      ONLINE_MODE: TRUE
     deploy:
       resources:
         limits:
@@ -65,8 +80,7 @@ services:
           memory: 10G
     volumes:
       - $DOCKERDIR/appdata/cobblemonextended:/data
-      - $DOCKERDIR/mods:/data/mods
-  
+
   ############################# MONITORING
 
   ############################# MAINTANCE
