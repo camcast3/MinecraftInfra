@@ -23,9 +23,9 @@ x-common-keys-apps: &common-keys-apps
 services:
 
   ############################# MODPACK SERVER
-  cameronextending:
+  packwiz-server-cobblemonextended:
     <<: *common-keys-core
-    container_name: cameronextending
+    container_name: packwiz-server-cobblemonextended
     image: ghcr.io/camcast3/packwiz:camcast3-docker
     ports:
       - "8069:8080"
@@ -64,6 +64,7 @@ services:
       - "25565:25565"
     environment:
       <<: *default-tz-puid-pgid
+      MOTD: "Foxon is an asshole"
       EULA: "TRUE"
       TYPE: FABRIC
       VERSION: 1.20.1
@@ -71,9 +72,12 @@ services:
       JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
       SNOOPER_ENABLED: false
       MAX_PLAYERS: 10
-      MODE: adventure
-      ENABLE_WHITELIST: false
+      MODE: survival
+      OP: |
+        $OP1
+        $OP2
       ENABLE_ROLLING_LOGS: "true"
+      ENFORCE_WHITELIST: "true"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
     deploy:
       resources:
@@ -83,7 +87,7 @@ services:
     volumes:
       - $DOCKERDIR/appdata/cobblemonextended:/data
     depends_on:
-     - cameronextending
+     - packwiz-server-cobblemonextended
 
   ############################# MONITORING
 
