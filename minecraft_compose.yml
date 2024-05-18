@@ -50,7 +50,7 @@ services:
       - "25565:25577"
     volumes:
       - $DOCKERDIR/velocity.toml:/config/velocity.toml:ro
-      - $DOCKERDIR/forwarding.secret:/config/forwarding.secret:ro
+      - ./forwarding.secret:/config/forwarding.secret:ro
       - $DOCKERDIR/appdata/velocity:/server
 
   ############################# MINECRAFT SERVERS
