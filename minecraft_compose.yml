@@ -137,6 +137,33 @@ services:
     depends_on:
      - packwiz-server-createexplorextended
 
+  lobby:
+    <<: *common-keys-apps
+    container_name: lobby
+    image: camcast3/minecraft-server:java17-alpine
+    ports:
+      - "25559:25565"
+    environment:
+      <<: *default-tz-puid-pgid
+      MOTD: "Foxon is a poopie head"
+      EULA: "TRUE"
+      TYPE: FABRIC
+      VERSION: 1.20.1
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      SNOOPER_ENABLED: false
+      MAX_PLAYERS: 10
+      MODE: adventure
+      ENABLE_ROLLING_LOGS: "true"
+      ONLINE_MODE: "FALSE"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    volumes:
+      - $DOCKERDIR/appdata/lobby:/data
+
   ############################# MONITORING
 
   ############################# MAINTANCE
