@@ -160,11 +160,6 @@ hash = "72cc5d492b49c72c87da9629cd51e7240abae422784fef925872a0d4187c4932"
 metafile = true
 
 [[files]]
-file = "mods/fastload.pw.toml"
-hash = "0e72ac12907f4fb5a499a459cc2c64f9225a0c77ee59e76c9360ff0d3479aea2"
-metafile = true
-
-[[files]]
 file = "mods/forge-config-api-port.pw.toml"
 hash = "129bb8b135edc60038f021b693f5b88a0067b722f326e0d6067112243774289b"
 metafile = true
