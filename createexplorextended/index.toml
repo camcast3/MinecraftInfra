@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "modrinth_mods.txt"
-hash = "29301f424fdd7381508c392c3c9c767763162b377d237335443b72e092292f0c"
+hash = "70711f17c3d55d403e3ff39dde4248c433b9e601398d0f14d678fcce38149d5f"
 
 [[files]]
 file = "mods/3dskinlayers.pw.toml"
@@ -92,6 +92,11 @@ metafile = true
 [[files]]
 file = "mods/cristel-lib.pw.toml"
 hash = "4548d136288d54fe93c2b688e7d45b108e49767b864d6fca29fafc62bde09078"
+metafile = true
+
+[[files]]
+file = "mods/crossstitch.pw.toml"
+hash = "c54a9b5907d160018a1d61ab9ba4c8867fd19aa4fe89721ca19e5e6ee92dcd83"
 metafile = true
 
 [[files]]

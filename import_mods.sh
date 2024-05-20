@@ -38,6 +38,7 @@ for line in $(cat "$filename"); do
 done
 
 "$packwizpath" modrinth add "fabricproxy-lite" --version-filename "v2.6.0" || exit 4
+"$packwizpath" modrinth add "crossstitch" --version-filename "v0.1.6" || exit 4
 "$packwizpath" curseforge add "https://www.curseforge.com/minecraft/mc-mods/worldedit/download/4586218" || exit 4
 
 

@@ -12,7 +12,7 @@ reeses-sodium-options/mc1.20.1-1.6.2
 yungs-better-dungeons/1.20-Fabric-4.0.3
 yungs-bridges/1.20-Fabric-4.0.3
 globalpacks/1.16.1_fabric
-create-fabric/0.5.1-d-build.1161+mc1.20.1
+create-fabric/0.5.1-f-build.1417+mc1.20.1
 pick-up-notifier/v8.0.0-1.20.1-Fabric
 lithium/mc1.20.1-0.11.2
 yungs-extras/1.20-Fabric-4.0.3
