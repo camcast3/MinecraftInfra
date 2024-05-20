@@ -1,0 +1,13 @@
+name = "Lobby"
+author = "Camcast"
+version = "1.0.0"
+pack-format = "packwiz:1.1.0"
+
+[index]
+file = "index.toml"
+hash-format = "sha256"
+hash = "4983431b54ca8371978afca90b57f1995b4d63c2075587049783587875d6163c"
+
+[versions]
+fabric = "0.15.11"
+minecraft = "1.20.1"

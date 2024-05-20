@@ -55,6 +55,22 @@ services:
     volumes:
       - $DOCKERDIR/MinecraftInfra/createexplorextended:/data
 
+  packwiz-server-lobby:
+    <<: *common-keys-core
+    container_name: packwiz-server-lobby
+    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    ports:
+      - "8059:8080"
+    environment:
+      <<: *default-tz-puid-pgid
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    volumes:
+      - $DOCKERDIR/MinecraftInfra/lobby:/data
+
   ############################# PROXY
   velocity:
     <<: *common-keys-core
@@ -156,6 +172,7 @@ services:
       MODE: adventure
       ENABLE_ROLLING_LOGS: "true"
       ONLINE_MODE: "FALSE"
+      PACKWIZ_URL: http://192.168.86.231:8059/pack.toml
     deploy:
       resources:
         limits:
@@ -163,6 +180,8 @@ services:
           memory: 4G
     volumes:
       - $DOCKERDIR/appdata/lobby:/data
+    depends_on:
+     - packwiz-server-lobby
 
   ############################# MONITORING
 

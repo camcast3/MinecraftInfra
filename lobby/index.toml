@@ -1,0 +1,11 @@
+hash-format = "sha256"
+
+[[files]]
+file = "mods/crossstitch.pw.toml"
+hash = "c54a9b5907d160018a1d61ab9ba4c8867fd19aa4fe89721ca19e5e6ee92dcd83"
+metafile = true
+
+[[files]]
+file = "mods/fabricproxy-lite.pw.toml"
+hash = "2e505480c06836448dfe277bdf93d184ca1aca821291574ddd3fccfe9f0ca387"
+metafile = true
