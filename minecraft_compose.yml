@@ -186,3 +186,15 @@ services:
   ############################# MONITORING
 
   ############################# MAINTANCE
+  cobblemonextendedbackups:
+    image: itzg/mc-backup:latest
+    depends_on:
+      cobblemonextended:
+        condition: service_healthy
+    environment:
+      BACKUP_INTERVAL: "2h"
+      RCON_HOST: cobblemonextended
+      INITIAL_DELAY: 0
+    volumes:
+      - $DOCKERDIR/appdata/cobblemonextended:/data:ro
+      - $DOCKERDIR/appdata/cobblemonextendedbackups:/backups
