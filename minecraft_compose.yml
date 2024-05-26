@@ -187,6 +187,8 @@ services:
 
   ############################# MAINTANCE
   cobblemonextendedbackups:
+    <<: *common-keys-core
+    container_name: cobblemonextendedbackups
     image: itzg/mc-backup:latest
     depends_on:
       cobblemonextended:
@@ -195,6 +197,11 @@ services:
       BACKUP_INTERVAL: "2h"
       RCON_HOST: cobblemonextended
       INITIAL_DELAY: 0
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
     volumes:
       - $DOCKERDIR/appdata/cobblemonextended:/data:ro
       - $DOCKERDIR/appdata/cobblemonextendedbackups:/backups
