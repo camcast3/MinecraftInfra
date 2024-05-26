@@ -1,12 +1,12 @@
 name = "CobblemonExtended"
 author = "Camcast"
-version = "1.1.0"
+version = "1.1.1"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "1d5584e9ca58fae890a9b8a76e234a400b0bd314c153c500e3fc959c16a164b4"
+hash = "9d1355bb6790e1315250dbd6444fecf73d97dc5984a934f2391e05cae27af39f"
 
 [versions]
 fabric = "0.15.11"

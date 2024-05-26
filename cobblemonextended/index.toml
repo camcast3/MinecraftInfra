@@ -22,7 +22,7 @@ metafile = true
 
 [[files]]
 file = "modrinth_mods.txt"
-hash = "b6639b60f556a342b37e06da0932881e1d713a0501b382edfe1f9a962d8fe4f9"
+hash = "4e9f0c39fa755051206baef5778b6fb8fcf25e91111cfb6ca66d18d00a46d75e"
 
 [[files]]
 file = "mods/3dskinlayers.pw.toml"
@@ -225,11 +225,6 @@ hash = "acbde04e67f2f0970a6b81e3c818a5f8ed3eceab4f3a04330d80c70c24d03afe"
 metafile = true
 
 [[files]]
-file = "mods/controlify.pw.toml"
-hash = "da4b8cdf1ca78cbb53d6fc3a5169c46abd3e7f4e6b485e28b4b1f909473f6ba1"
-metafile = true
-
-[[files]]
 file = "mods/crafting-tweaks.pw.toml"
 hash = "cf9852c1ccb3281ea336dfff5cfcce3e3df5b051f6ae0eba975bdd19cf25b667"
 metafile = true
@@ -342,11 +337,6 @@ metafile = true
 [[files]]
 file = "mods/fancymenu.pw.toml"
 hash = "07da47dfb249a468557efd171c659308ada855a343bfb3f531d6e4c05ed8bca0"
-metafile = true
-
-[[files]]
-file = "mods/farmers-delight-refabricated.pw.toml"
-hash = "e64cad200dfc6145b9822c7d7c7a89dd040e28bd8e79d4f827c02c9c348b08df"
 metafile = true
 
 [[files]]
