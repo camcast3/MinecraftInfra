@@ -485,11 +485,6 @@ hash = "ce8ce58c524ac53153ee9780a2701f0d6d72651c110611505d6e1871b2d2865f"
 metafile = true
 
 [[files]]
-file = "mods/luckperms.pw.toml"
-hash = "7826b93c7f36611fbd9190481774daa349fa403875f8522d0ca4302e1345bd40"
-metafile = true
-
-[[files]]
 file = "mods/macos-input-fixes.pw.toml"
 hash = "6f608fc4e861f6156368b2a3b706645755030bf6a04dc1f59166c8b22cba872c"
 metafile = true
