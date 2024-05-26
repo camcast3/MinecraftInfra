@@ -1,0 +1,13 @@
+name = "Cobbledex: Recrafted"
+filename = "Cobbledex-1.0.0.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/ndHMQRdh/versions/KSCbcoi2/Cobbledex-1.0.0.jar"
+hash-format = "sha1"
+hash = "9e69afe4312ad94ec8cdf81b6c304155cb9e1b40"
+
+[update]
+[update.modrinth]
+mod-id = "ndHMQRdh"
+version = "KSCbcoi2"

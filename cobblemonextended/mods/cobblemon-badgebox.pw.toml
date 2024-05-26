@@ -1,0 +1,13 @@
+name = "[Cobblemon] BadgeBox"
+filename = "badgebox-1.1.0.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/8J7TR166/versions/aXV20VhL/badgebox-1.1.0.jar"
+hash-format = "sha1"
+hash = "a657e1213e0e9ce53364c221d6d19944cd7e5df5"
+
+[update]
+[update.modrinth]
+mod-id = "8J7TR166"
+version = "aXV20VhL"

@@ -1,0 +1,13 @@
+name = "Cobblemon Pokenav"
+filename = "Cobblenav-1.2.5.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/bI8Nt3uA/versions/PZOCLmmO/Cobblenav-1.2.5.jar"
+hash-format = "sha1"
+hash = "e14145f393cc8c93758633e9d5219b552c07e97e"
+
+[update]
+[update.modrinth]
+mod-id = "bI8Nt3uA"
+version = "PZOCLmmO"

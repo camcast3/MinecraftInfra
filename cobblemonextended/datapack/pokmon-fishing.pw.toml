@@ -1,0 +1,13 @@
+name = "Pokémon Fishing"
+filename = "Pokémon Fishing v1.1.4 [1.20.1-v1.4+].zip"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/gSo4KNpR/versions/SMOBCv2G/Pok%C3%A9mon%20Fishing%20v1.1.4%20%5B1.20.1-v1.4%2B%5D.zip"
+hash-format = "sha1"
+hash = "ade06ded963f09c24159d5c24732125fdc7892ee"
+
+[update]
+[update.modrinth]
+mod-id = "gSo4KNpR"
+version = "SMOBCv2G"
