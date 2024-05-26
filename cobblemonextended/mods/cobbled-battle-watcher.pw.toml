@@ -1,0 +1,13 @@
+name = "Cobbled Battle Watcher"
+filename = "cobbledbattlehp-fabric-2.0.0-1.20.1.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/TLAQgl7d/versions/2iDiBpxt/cobbledbattlehp-fabric-2.0.0-1.20.1.jar"
+hash-format = "sha1"
+hash = "04bbd17cdc1ae21b3dad725ccf5c0ad07276b6f6"
+
+[update]
+[update.modrinth]
+mod-id = "TLAQgl7d"
+version = "2iDiBpxt"

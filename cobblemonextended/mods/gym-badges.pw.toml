@@ -1,0 +1,13 @@
+name = "Gym Badges"
+filename = "GymBadges-1.0.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/HnePtkev/versions/xyj4AmwN/GymBadges-1.0.jar"
+hash-format = "sha1"
+hash = "e658143f9fa857c12d50e21dbf21336cceb50336"
+
+[update]
+[update.modrinth]
+mod-id = "HnePtkev"
+version = "xyj4AmwN"

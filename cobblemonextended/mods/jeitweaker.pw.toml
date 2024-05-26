@@ -1,0 +1,13 @@
+name = "JEITweaker"
+filename = "JeiTweaker-fabric-1.20.1-8.0.6.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/EiEOyeoL/versions/JWqzxRNG/JeiTweaker-fabric-1.20.1-8.0.6.jar"
+hash-format = "sha1"
+hash = "f0e68b71a94915432c847660ad34d87726586f85"
+
+[update]
+[update.modrinth]
+mod-id = "EiEOyeoL"
+version = "JWqzxRNG"

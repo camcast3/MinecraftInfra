@@ -1,0 +1,13 @@
+name = "Cobblemon - Loot Balls"
+filename = "lootballs-1.1.2.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/kcudYghD/versions/ClSKnJgq/lootballs-1.1.2.jar"
+hash-format = "sha1"
+hash = "a6e39147db5f080992a7f6ae718189be32478e34"
+
+[update]
+[update.modrinth]
+mod-id = "kcudYghD"
+version = "ClSKnJgq"
