@@ -21,10 +21,6 @@ hash = "9475d0eafce0ae95db4a3e8152d160b30f839526bc2d68bb4c14df1378c82397"
 metafile = true
 
 [[files]]
-file = "modrinth_mods.txt"
-hash = "4e9f0c39fa755051206baef5778b6fb8fcf25e91111cfb6ca66d18d00a46d75e"
-
-[[files]]
 file = "mods/3dskinlayers.pw.toml"
 hash = "aa9713b04a9a616f81f739cafd3b665e3fb835cc281c4478e92b0a8ba8e34c20"
 metafile = true
@@ -241,7 +237,7 @@ metafile = true
 
 [[files]]
 file = "mods/create-cobblemon-industrialized.pw.toml"
-hash = "7aada8a95ce40f736be9dc9cee6465f5620b45f18725edbe264de9cd3a2579b5"
+hash = "47bde23a1b04867dcf6fc66721feddea3240d15b91adb7a91d04c979d4dcb747"
 metafile = true
 
 [[files]]
@@ -421,7 +417,7 @@ metafile = true
 
 [[files]]
 file = "mods/jei.pw.toml"
-hash = "b5b076663f62cfb0c3d8ee8e304711d6fbfa043f72a4706dc88edb927da6f046"
+hash = "e9c1efd327adb9305b8ae56daf65cfee0d43b05b933b6c98518c53005b835fbb"
 metafile = true
 
 [[files]]
