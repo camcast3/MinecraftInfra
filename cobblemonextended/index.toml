@@ -21,6 +21,10 @@ hash = "9475d0eafce0ae95db4a3e8152d160b30f839526bc2d68bb4c14df1378c82397"
 metafile = true
 
 [[files]]
+file = "modrinth_mods.txt"
+hash = "09dba23d9b2ec400817710df3132cca7921adf0a0b338cc1319ce297dcd3db15"
+
+[[files]]
 file = "mods/3dskinlayers.pw.toml"
 hash = "aa9713b04a9a616f81f739cafd3b665e3fb835cc281c4478e92b0a8ba8e34c20"
 metafile = true
@@ -131,11 +135,6 @@ hash = "e300202f8f28eca203adf9c60ee68a761c9d4c9224459d48dd08387e80603e92"
 metafile = true
 
 [[files]]
-file = "mods/cobbledex.pw.toml"
-hash = "f2b664ec099193487f63d9626f433d708006f156e0fcfd6a087ed234352692d9"
-metafile = true
-
-[[files]]
 file = "mods/cobblemon-badgebox.pw.toml"
 hash = "3b0034d7e3b820d18fdfd6c4e7bf3d74a3a2d75d33816baa9e6aba8cf872c205"
 metafile = true
@@ -157,7 +156,7 @@ metafile = true
 
 [[files]]
 file = "mods/cobblemon-loot-balls.pw.toml"
-hash = "a1c1ff2955a5050d31fd6a8526b949f3bae0007366d819afda5c8a6c10d183ac"
+hash = "6259bfc92d12c659002134ce96830d9eb662e65bd2474094225a0c453b158871"
 metafile = true
 
 [[files]]
@@ -187,7 +186,7 @@ metafile = true
 
 [[files]]
 file = "mods/cobblemon.pw.toml"
-hash = "36299637ce982a725c707948f980dc15decb7120efc117297a4c8178d49878bd"
+hash = "5a079be17e548092674a470cb41f0302d463784c82229cf73a2cf56f28d0a5a7"
 metafile = true
 
 [[files]]
