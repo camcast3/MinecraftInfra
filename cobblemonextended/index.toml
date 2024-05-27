@@ -21,6 +21,10 @@ hash = "9475d0eafce0ae95db4a3e8152d160b30f839526bc2d68bb4c14df1378c82397"
 metafile = true
 
 [[files]]
+file = "modrinth_mods.txt"
+hash = "09dba23d9b2ec400817710df3132cca7921adf0a0b338cc1319ce297dcd3db15"
+
+[[files]]
 file = "mods/3dskinlayers.pw.toml"
 hash = "aa9713b04a9a616f81f739cafd3b665e3fb835cc281c4478e92b0a8ba8e34c20"
 metafile = true
