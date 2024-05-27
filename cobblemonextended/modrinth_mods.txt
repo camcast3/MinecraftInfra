@@ -114,7 +114,6 @@ simpletms-tms-and-trs-for-cobblemon/1.1.2
 cobbreeding/1.6.2
 cobbled-battle-watcher/2.0.0
 cobblepedia/BNLT7oRV
-cobbledex/KSCbcoi2
 missingmons-cobblemon/2.6.1
 pokmon-fishing/SMOBCv2G
 cobblemonloot/1.1.1
