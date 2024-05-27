@@ -1,4 +1,5 @@
 name = "Cobblemon"
+<<<<<<< Updated upstream
 filename = "Cobblemon-fabric-1.5.0+1.20.1.jar"
 side = "both"
 
@@ -6,8 +7,21 @@ side = "both"
 url = "https://cdn.modrinth.com/data/MdwFAVRL/versions/9oEoR7Si/Cobblemon-fabric-1.5.0%2B1.20.1.jar"
 hash-format = "sha1"
 hash = "6c25f1e39884cc07e777b097c4ff71a150b58082"
+=======
+filename = "Cobblemon-fabric-1.5.2+1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/MdwFAVRL/versions/EVozVxCq/Cobblemon-fabric-1.5.2%2B1.20.1.jar"
+hash-format = "sha1"
+hash = "2465e767f2659240f1c16549e602cb6e8b9145db"
+>>>>>>> Stashed changes
 
 [update]
 [update.modrinth]
 mod-id = "MdwFAVRL"
+<<<<<<< Updated upstream
 version = "9oEoR7Si"
+=======
+version = "EVozVxCq"
+>>>>>>> Stashed changes
