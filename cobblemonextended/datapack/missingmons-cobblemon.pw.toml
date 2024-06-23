@@ -1,13 +1,13 @@
 name = "MissingMons [cobblemon]"
-filename = "MissingMon_v2.6.1 [The Final Mask] [1.5 Update Compatible].zip"
+filename = "MissingMon_v2.8 [Bon Appétit].zip"
 side = "both"
 
 [download]
-url = "https://cdn.modrinth.com/data/jbbBrQVa/versions/H9ZHzteI/MissingMon_v2.6.1%20%5BThe%20Final%20Mask%5D%20%5B1.5%20Update%20Compatible%5D.zip"
+url = "https://cdn.modrinth.com/data/jbbBrQVa/versions/9EHmeH1h/MissingMon_v2.8%20%5BBon%20App%C3%A9tit%5D.zip"
 hash-format = "sha1"
-hash = "e9f9accd042e37ba26fb52651267192a2f7b9108"
+hash = "cfaef5f1c3b4669bf5a7f33642d3bcb50d1ce5e1"
 
 [update]
 [update.modrinth]
 mod-id = "jbbBrQVa"
-version = "H9ZHzteI"
+version = "9EHmeH1h"
