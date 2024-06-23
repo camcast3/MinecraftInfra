@@ -1,13 +1,13 @@
 name = "Cobblemon - Loot Balls"
-filename = "lootballs-1.1.3.jar"
+filename = "lootballs-1.1.4.jar"
 side = "both"
 
 [download]
-url = "https://cdn.modrinth.com/data/kcudYghD/versions/UxgLHdgA/lootballs-1.1.3.jar"
+url = "https://cdn.modrinth.com/data/kcudYghD/versions/LfDlXzX7/lootballs-1.1.4.jar"
 hash-format = "sha1"
-hash = "49ad5d49f04e1300d8dec4173b84f07bfc973e2c"
+hash = "a0130bc4a3952f1a24bdac2117540471aadb9fa7"
 
 [update]
 [update.modrinth]
 mod-id = "kcudYghD"
-version = "UxgLHdgA"
+version = "LfDlXzX7"
