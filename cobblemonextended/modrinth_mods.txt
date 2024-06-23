@@ -110,7 +110,6 @@ cobblemontools/1.0.2
 cobblemontrainers/zZDEsiZ9
 create-cobblemon-industrialized/Fw5dfGdH
 ascension-megamons/1.2.1
-simpletms-tms-and-trs-for-cobblemon/1.1.2
 cobbreeding/1.6.2
 cobbled-battle-watcher/2.0.0
 cobblepedia/BNLT7oRV
@@ -121,3 +120,5 @@ create-fabric/0.5.1-d-build.1161+mc1.20.1
 crafttweaker/8llbwmKv
 taterzens/1.11.7
 dataloader/1.1.2+1.20-pre5
+xaeroscobblemon/2.0.7
+where-are-my-tms/2.1.2-hotfix
