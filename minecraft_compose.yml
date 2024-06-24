@@ -112,6 +112,7 @@ services:
       ENABLE_ROLLING_LOGS: "true"
       ONLINE_MODE: "FALSE"
       PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
+      ENABLE_COMMAND_BLOCK: "true"
     deploy:
       resources:
         limits:
