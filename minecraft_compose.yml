@@ -26,7 +26,7 @@ services:
   packwiz-server-cobblemonextended:
     <<: *common-keys-core
     container_name: packwiz-server-cobblemonextended
-    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
     ports:
       - "8069:8080"
     environment:
@@ -42,7 +42,7 @@ services:
   packwiz-server-createexplorextended:
     <<: *common-keys-core
     container_name: packwiz-server-createexplorextended
-    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
     ports:
       - "8079:8080"
     environment:
@@ -58,7 +58,7 @@ services:
   packwiz-server-lobby:
     <<: *common-keys-core
     container_name: packwiz-server-lobby
-    image: ghcr.io/camcast3/packwiz:camcast3-docker
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
     ports:
       - "8059:8080"
     environment:
@@ -75,7 +75,7 @@ services:
   velocity:
     <<: *common-keys-core
     container_name: velocity
-    image: itzg/bungeecord
+    image: itzg/bungeecord:java17-2024.6.0@sha256:1e7cb06b72533981e985b031540437ef0db00847ace49f10d4f3642cfee3f08a
     environment:
       TYPE: VELOCITY
       DEBUG: "true"
@@ -96,7 +96,7 @@ services:
   cobblemonextended:
     <<: *common-keys-apps
     container_name: cobblemonextended
-    image: camcast3/minecraft-server:java17-alpine
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25569:25565"
     environment:
@@ -126,7 +126,7 @@ services:
   createexplorextended:
     <<: *common-keys-apps
     container_name: createexplorextended
-    image: camcast3/minecraft-server:java17-alpine
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25579:25565"
     environment:
@@ -155,7 +155,7 @@ services:
   lobby:
     <<: *common-keys-apps
     container_name: lobby
-    image: camcast3/minecraft-server:java17-alpine
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25559:25565"
     environment:
@@ -187,7 +187,7 @@ services:
   cobblemonextendedbackups:
     <<: *common-keys-core
     container_name: cobblemonextendedbackups
-    image: itzg/mc-backup:latest
+    image: itzg/mc-backup:latest@sha256:14e0a0da73d9caf8c75ac83bd659f2a3311e2e72c25457d8210672a5dc1c4919
     depends_on:
       cobblemonextended:
         condition: service_healthy
