@@ -75,7 +75,7 @@ services:
   velocity:
     <<: *common-keys-core
     container_name: velocity
-    image: itzg/bungeecord:java17-2024.6.0@sha256:1e7cb06b72533981e985b031540437ef0db00847ace49f10d4f3642cfee3f08a
+    image: itzg/bungeecord:java17@sha256:e1ad5c53559e7ad7e96dede0503daed8a445e47a77aac60a8ccd936eba6c1f90
     environment:
       TYPE: VELOCITY
       DEBUG: "true"
@@ -187,7 +187,7 @@ services:
   cobblemonextendedbackups:
     <<: *common-keys-core
     container_name: cobblemonextendedbackups
-    image: itzg/mc-backup:latest@sha256:14e0a0da73d9caf8c75ac83bd659f2a3311e2e72c25457d8210672a5dc1c4919
+    image: itzg/mc-backup:latest@sha256:16bab99dfc6c6bb1bda51316616ce24dd25a7899d80b004bfbbd0d03f9954db9
     depends_on:
       cobblemonextended:
         condition: service_healthy
