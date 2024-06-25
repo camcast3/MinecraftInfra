@@ -96,7 +96,7 @@ services:
   cobblemonextended:
     <<: *common-keys-apps
     container_name: cobblemonextended
-    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25569:25565"
     environment:
@@ -126,7 +126,7 @@ services:
   createexplorextended:
     <<: *common-keys-apps
     container_name: createexplorextended
-    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25579:25565"
     environment:
@@ -155,7 +155,7 @@ services:
   lobby:
     <<: *common-keys-apps
     container_name: lobby
-    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
+    image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
     ports:
       - "25559:25565"
     environment:
