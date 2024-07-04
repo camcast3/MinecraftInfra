@@ -141,7 +141,7 @@ services:
       MODE: survival
       ENABLE_ROLLING_LOGS: "true"
       ONLINE_MODE: "FALSE"
-      PACKWIZ_URL: http://192.168.86.231:8079/pack.toml
+      PACKWIZ_URL: http://packwiz-server-createexplorextended:8080/pack.toml
     deploy:
       resources:
         limits:
