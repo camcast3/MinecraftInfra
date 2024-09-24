@@ -27,8 +27,6 @@ services:
     <<: *common-keys-core
     container_name: packwiz-server-cobblemonextended
     image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
-    ports:
-      - "8069:8080"
     environment:
       <<: *default-tz-puid-pgid
     deploy:
@@ -43,8 +41,6 @@ services:
     <<: *common-keys-core
     container_name: packwiz-server-createexplorextended
     image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
-    ports:
-      - "8079:8080"
     environment:
       <<: *default-tz-puid-pgid
     deploy:
@@ -59,8 +55,6 @@ services:
     <<: *common-keys-core
     container_name: packwiz-server-lobby
     image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:67700a76deddd48f33fa81389fb1335b4617a60c1f412919bf4aaf1ed5a1657d
-    ports:
-      - "8059:8080"
     environment:
       <<: *default-tz-puid-pgid
     deploy:
@@ -97,8 +91,6 @@ services:
     <<: *common-keys-apps
     container_name: cobblemonextended
     image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
-    ports:
-      - "25569:25565"
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -111,7 +103,7 @@ services:
       MODE: survival
       ENABLE_ROLLING_LOGS: "true"
       ONLINE_MODE: "FALSE"
-      PACKWIZ_URL: http://192.168.86.231:8069/pack.toml
+      PACKWIZ_URL: http://packwiz-server-cobblemonextended:8080/pack.toml
       ENABLE_COMMAND_BLOCK: "true"
     deploy:
       resources:
@@ -127,8 +119,6 @@ services:
     <<: *common-keys-apps
     container_name: createexplorextended
     image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
-    ports:
-      - "25579:25565"
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -156,8 +146,6 @@ services:
     <<: *common-keys-apps
     container_name: lobby
     image: itzg/minecraft-server:2024.6.1-java17-alpine@sha256:3a78ecac66e5c92caa055566073f8a8ce06a92cd7f96cd4270f91a861eed1847
-    ports:
-      - "25559:25565"
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -170,7 +158,7 @@ services:
       MODE: adventure
       ENABLE_ROLLING_LOGS: "true"
       ONLINE_MODE: "FALSE"
-      PACKWIZ_URL: http://192.168.86.231:8059/pack.toml
+      PACKWIZ_URL: http://packwiz-server-lobby:8080/pack.toml
     deploy:
       resources:
         limits:
