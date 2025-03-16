@@ -90,7 +90,7 @@ services:
   cobblemonextended:
     <<: *common-keys-apps
     container_name: cobblemonextended
-    image: itzg/minecraft-server:2024.10.2-java17-alpine@sha256:64a5293d322b4eb9d3a0626a502e7dfd4b1e8a7826bda460c2cbc2b57d723e57
+    image: itzg/minecraft-server:2025.3.0-java17-alpine@sha256:3d51646272c0f7bf9edaf03f2ed6555924c4f6d67c13e15553c2f8f994de64ad
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -118,7 +118,7 @@ services:
   createexplorextended:
     <<: *common-keys-apps
     container_name: createexplorextended
-    image: itzg/minecraft-server:2024.10.2-java17-alpine@sha256:64a5293d322b4eb9d3a0626a502e7dfd4b1e8a7826bda460c2cbc2b57d723e57
+    image: itzg/minecraft-server:2025.3.0-java17-alpine@sha256:3d51646272c0f7bf9edaf03f2ed6555924c4f6d67c13e15553c2f8f994de64ad
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
@@ -145,7 +145,7 @@ services:
   lobby:
     <<: *common-keys-apps
     container_name: lobby
-    image: itzg/minecraft-server:2024.10.2-java17-alpine@sha256:64a5293d322b4eb9d3a0626a502e7dfd4b1e8a7826bda460c2cbc2b57d723e57
+    image: itzg/minecraft-server:2025.3.0-java17-alpine@sha256:3d51646272c0f7bf9edaf03f2ed6555924c4f6d67c13e15553c2f8f994de64ad
     environment:
       <<: *default-tz-puid-pgid
       EULA: "TRUE"
