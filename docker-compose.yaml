@@ -26,7 +26,7 @@ services:
   packwiz-server-cobblemonextended:
     <<: *common-keys-core
     container_name: packwiz-server-cobblemonextended
-    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:15bcb2dfc88dbcd74689ef850444df18309b4bf7bbd0e8b42ee3f709c9466ce6
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:04182c938a7ce46c12e92005d23ce5455d48ee63820c7d692509eaab9ae8d25b
     environment:
       <<: *default-tz-puid-pgid
     deploy:
@@ -40,7 +40,7 @@ services:
   packwiz-server-createexplorextended:
     <<: *common-keys-core
     container_name: packwiz-server-createexplorextended
-    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:15bcb2dfc88dbcd74689ef850444df18309b4bf7bbd0e8b42ee3f709c9466ce6
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:04182c938a7ce46c12e92005d23ce5455d48ee63820c7d692509eaab9ae8d25b
     environment:
       <<: *default-tz-puid-pgid
     deploy:
@@ -54,7 +54,7 @@ services:
   packwiz-server-lobby:
     <<: *common-keys-core
     container_name: packwiz-server-lobby
-    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:15bcb2dfc88dbcd74689ef850444df18309b4bf7bbd0e8b42ee3f709c9466ce6
+    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:04182c938a7ce46c12e92005d23ce5455d48ee63820c7d692509eaab9ae8d25b
     environment:
       <<: *default-tz-puid-pgid
     deploy:
