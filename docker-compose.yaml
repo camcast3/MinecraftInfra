@@ -26,7 +26,7 @@ services:
   packwiz-server-cobblemonextended:
     <<: *common-keys-core
     container_name: packwiz-server-cobblemonextended
-    image: ghcr.io/camcast3/packwiz:camcast3-docker@sha256:04182c938a7ce46c12e92005d23ce5455d48ee63820c7d692509eaab9ae8d25b
+    image: ghcr.io/camcast3/packwiz:camcast3-docker
     environment:
       <<: *default-tz-puid-pgid
     deploy:
