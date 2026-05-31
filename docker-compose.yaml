@@ -69,7 +69,7 @@ services:
   velocity:
     <<: *common-keys-core
     container_name: velocity
-    image: itzg/bungeecord:java17@sha256:ccfe9afab5ffe05c274a61b439814824c239cb9d7dfcb5b2022d4c0de491f1f4
+    image: itzg/bungeecord:java17@sha256:70f09cb44609cd90eb1df6e195af12323ccd142af1b450aecb526c92303e4d66
     environment:
       TYPE: VELOCITY
       DEBUG: "true"
