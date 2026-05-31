@@ -175,7 +175,7 @@ services:
   cobblemonextendedbackups:
     <<: *common-keys-core
     container_name: cobblemonextendedbackups
-    image: itzg/mc-backup:latest@sha256:7ffba80d2c6752df8d1669451de928f9e7b2d94866cd84951af6e7bc5bed1496
+    image: itzg/mc-backup:latest@sha256:537a1ee618a50ff9538fdc186751502098e11118b70ce7cbe9789b623b3e43b7
     depends_on:
       cobblemonextended:
         condition: service_healthy
