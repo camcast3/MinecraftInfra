@@ -1,0 +1,68 @@
+name: Deploy Azure VM & Stack
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/azure/**'
+      - 'docker/azure/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Log in to Azure via OIDC — no stored credentials, token is short-lived
+      # Docs: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Create resource group (idempotent)
+        run: |
+          az group create \
+            --name rg-minecraft-prod \
+            --location westus \
+            --tags environment=prod
+
+      # ARM reads Key Vault secrets directly via getSecret() in prod.bicepparam.
+      # The runner never sees the secret values.
+      - name: Deploy Bicep (infra + VM)
+        run: |
+          az deployment group create \
+            --resource-group rg-minecraft-prod \
+            --template-file infra/azure/main.bicep \
+            --parameters infra/azure/parameters/prod.bicepparam
+
+      # Join the tailnet ephemerally so we can SSH into the VM
+      - name: Connect to TailScale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      # Pull latest images and restart the Azure stack.
+      # refresh-env.sh runs on the VM and uses the system-assigned Managed Identity
+      # to fetch secrets from Key Vault directly — no secrets pass through CI.
+      - name: Deploy Docker stack
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            -i <(echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}") \
+            ${{ secrets.AZURE_VM_TAILSCALE_IP }} \
+            "cd /opt/minecraft && \
+             git pull origin main && \
+             bash docker/azure/refresh-env.sh && \
+             docker compose -f docker/azure/docker-compose.yml pull && \
+             docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans"

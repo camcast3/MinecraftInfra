@@ -1,0 +1,148 @@
+---
+# Proxmox stack: Craft to Exile 2 + TailScale sidecar + backup
+# Managed by Portainer CE with GitOps polling (auto-redeploy on git changes).
+#
+# TailScale runs as a sidecar. Both C2E2 and mc-backup share its network
+# namespace via network_mode: service:tailscale.
+#   - C2E2's port 25565 is reachable only at the TailScale IP (100.x.x.x)
+#   - mc-backup reaches RCON at localhost:25575 (same network namespace)
+#
+# All ${VAR} values must be set in Portainer's stack environment variable UI.
+# Never hardcode secret values here and never use a .env file with Portainer.
+#
+# Variables to configure in Portainer UI:
+#   TS_AUTHKEY                  - TailScale auth key (ephemeral + preauthorized)
+#   TS_HOSTNAME                 - Node name in the tailnet (e.g. mc-proxmox)
+#   CF_API_KEY                  - CurseForge API key (https://console.curseforge.com/)
+#   VELOCITY_FORWARDING_SECRET  - Must match the Azure Velocity proxy config
+#   RCON_PASSWORD               - RCON password for backup container
+#   STORAGE_ACCOUNT             - Azure Storage account name (no suffix)
+#   AZURE_TENANT_ID             - Service principal tenant ID (for rclone backup)
+#   AZURE_CLIENT_ID             - Service principal client ID (for rclone backup)
+#   AZURE_CLIENT_SECRET         - Service principal client secret (for rclone backup)
+#
+# MC 1.20.1 requires Java 17 — all server images MUST use java17 variants.
+#
+# Bind mounts live under /data/minecraft/ — pre-create these on the host:
+#   mkdir -p /data/minecraft/{tailscale,c2e2}
+
+x-common-keys-apps: &common-keys-apps
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+
+services:
+
+  ############################# NETWORK SIDECAR
+  tailscale:
+    <<: *common-keys-apps
+    image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
+    container_name: tailscale-minecraft
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_HOSTNAME: ${TS_HOSTNAME}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+    volumes:
+      - /data/minecraft/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    healthcheck:
+      test: ["CMD", "tailscale", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  ############################# MINECRAFT SERVER
+  craft-to-exile-2:
+    <<: *common-keys-apps
+    # MC 1.20.1 requires Java 17 — NEVER change this to a java21 image variant
+    image: itzg/minecraft-server:2026.5.4-java17@sha256:cee7b7204d8dcb9e6b4090fcbf4cecb2464bb5fff87027efec152909d16ca34a
+    container_name: mc-c2e2
+    # Shares TailScale's network namespace — port 25565 only accessible
+    # via the TailScale IP (100.x.x.x), not on the VM's local interface
+    network_mode: "service:tailscale"
+    tty: true
+    stdin_open: true
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+    volumes:
+      - /data/minecraft/c2e2:/data
+    environment:
+      EULA: "TRUE"
+      TYPE: AUTO_CURSEFORGE
+      VERSION: "1.20.1"
+      CF_SLUG: craft-to-exile-2
+      CF_API_KEY: ${CF_API_KEY}
+      ONLINE_MODE: "FALSE"
+      ENABLE_ROLLING_LOGS: "true"
+      # MEMORY="" disables itzg's built-in -Xms/-Xmx flags.
+      # MaxRAMPercentage=75 derives heap dynamically from the 16G cgroup limit (~12 GB heap).
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      ENABLE_RCON: "true"
+      RCON_PORT: "25575"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+
+  ############################# MAINTENANCE
+  backup:
+    <<: *common-keys-apps
+    image: itzg/mc-backup:2026.5.1@sha256:32644da0332dbccfb47465044e7d34c733749aa2254fc3063d38186838b603b9
+    container_name: mc-c2e2-backup
+    # Shares TailScale's network namespace — RCON reachable at localhost:25575
+    network_mode: "service:tailscale"
+    depends_on:
+      craft-to-exile-2:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    volumes:
+      - /data/minecraft/c2e2:/data:ro
+    environment:
+      RCON_HOST: localhost
+      RCON_PORT: "25575"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+      BACKUP_INTERVAL: "6h"
+      PRUNE_BACKUPS_DAYS: "14"
+
+      # ── rclone remote defined entirely via env vars (no rclone.conf needed) ──────
+      # RCLONE_CONFIG_<REMOTE>_<KEY> creates the remote in memory at rclone startup.
+      # Remote name "AZBLOB" matches the RCLONE_CONFIG_AZBLOB_* prefix below.
+      BACKUP_METHOD: rclone
+      RCLONE_REMOTE: AZBLOB
+      # Path on the remote: <blob-container>/<subdirectory>
+      # "minecraft-backups" is the blob container; "c2e2" is the path within it.
+      RCLONE_DEST_DIR: minecraft-backups/c2e2
+
+      # Remote type
+      RCLONE_CONFIG_AZBLOB_TYPE: azureblob
+      # Storage account name (no .blob.core.windows.net suffix)
+      RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
+      # Service principal credentials — set in Portainer UI, never hardcoded here
+      RCLONE_CONFIG_AZBLOB_TENANT: ${AZURE_TENANT_ID}
+      RCLONE_CONFIG_AZBLOB_CLIENT_ID: ${AZURE_CLIENT_ID}
+      RCLONE_CONFIG_AZBLOB_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
