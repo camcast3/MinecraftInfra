@@ -18,7 +18,7 @@
 # What it does (in order):
 #   1.  Create resource group rg-minecraft-prod (West US)
 #   2.  Create GitHub Actions App Registration + Service Principal (OIDC, no password)
-#   3.  Add federated credential for this repo (main branch + workflow_dispatch)
+#   3.  Add federated credential for this repo (environment: production)
 #   4.  Assign Contributor + User Access Administrator to the OIDC SP at RG scope
 #   5.  Print values → fill prod.bicepparam and GitHub Actions secrets
 #   6.  Bootstrap-deploy Key Vault only (standalone, required before main.bicep)
@@ -89,31 +89,22 @@ echo "  ✓ Service principal object ID: ${OIDC_SP_OBJECT_ID}"
 echo ""
 
 # ── Step 3: Federated Credential (OIDC) ───────────────────────────────────────
-echo "▶ Step 3: Adding federated credentials for GitHub Actions OIDC..."
+echo "▶ Step 3: Adding federated credential for GitHub Actions OIDC..."
 
-# Push to main branch
+# The workflow uses 'environment: production' — GitHub's OIDC subject for environment
+# deployments is 'repo:<org>/<repo>:environment:<name>', regardless of trigger type
+# (push to main or workflow_dispatch). One credential covers both.
 az ad app federated-credential create \
   --id "${OIDC_APP_ID}" \
   --parameters "{
-    \"name\": \"github-actions-main\",
+    \"name\": \"github-actions-prod-env\",
     \"issuer\": \"https://token.actions.githubusercontent.com\",
-    \"subject\": \"repo:${GITHUB_REPO}:ref:refs/heads/main\",
-    \"description\": \"GitHub Actions (main branch)\",
+    \"subject\": \"repo:${GITHUB_REPO}:environment:production\",
+    \"description\": \"GitHub Actions (production environment)\",
     \"audiences\": [\"api://AzureADTokenExchange\"]
-  }" --output none 2>/dev/null || echo "  ℹ federated credential 'main' already exists, skipping."
+  }" --output none 2>/dev/null || echo "  ℹ federated credential 'prod-env' already exists, skipping."
 
-# workflow_dispatch (manual triggers)
-az ad app federated-credential create \
-  --id "${OIDC_APP_ID}" \
-  --parameters "{
-    \"name\": \"github-actions-dispatch\",
-    \"issuer\": \"https://token.actions.githubusercontent.com\",
-    \"subject\": \"repo:${GITHUB_REPO}:workflow_dispatch\",
-    \"description\": \"GitHub Actions (manual dispatch)\",
-    \"audiences\": [\"api://AzureADTokenExchange\"]
-  }" --output none 2>/dev/null || echo "  ℹ federated credential 'dispatch' already exists, skipping."
-
-echo "  ✓ Federated credentials configured."
+echo "  ✓ Federated credential configured."
 echo ""
 
 # ── Step 4: Assign roles to the OIDC SP ───────────────────────────────────────
@@ -226,7 +217,6 @@ echo "▶ Step 8: Creating Proxmox backup Service Principal '${PROXMOX_SP_NAME}'
 
 PROXMOX_SP_OUTPUT=$(az ad sp create-for-rbac \
   --name "${PROXMOX_SP_NAME}" \
-  --skip-assignment \
   --output json)
 
 PROXMOX_APP_ID=$(echo "${PROXMOX_SP_OUTPUT}"     | jq -r '.appId')

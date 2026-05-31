@@ -60,7 +60,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no \
             -i <(echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}") \
-            ${{ secrets.AZURE_VM_TAILSCALE_IP }} \
+            mcsvc@${{ secrets.AZURE_VM_TAILSCALE_IP }} \
             "cd /opt/minecraft && \
              git pull origin main && \
              bash docker/azure/refresh-env.sh && \

@@ -6,3 +6,4 @@ admin_compose.yml
 
 # Exclude exported Modrinth modpacks
 *.mrpack
+infra/azure/main.json
