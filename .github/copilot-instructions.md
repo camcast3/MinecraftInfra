@@ -1,64 +1,43 @@
 # MinecraftInfra Copilot Instructions
 
-## Architecture Overview
+> **`old/` is archived legacy content. Do not reference or modify anything in `old/` or `admin_compose.yml`.**
 
-This repo manages infrastructure and modpack definitions for a self-hosted Minecraft network. The stack has two layers:
+## Architecture
 
-1. **Docker Compose** — defines all services. The live compose file is `admin_compose.yml` (Portainer UI); the older full-stack file is `old/docker-compose.yaml`.
-2. **packwiz modpacks** — each modpack lives in its own subdirectory (`old/cobblemonextended/`, `old/createexplorextended/`, `old/lobby/`) and is served at runtime by a `ghcr.io/camcast3/packwiz` sidecar container.
+Two-node Minecraft network connected by TailScale:
 
-### Service topology (from `old/docker-compose.yaml`)
+- **Azure VM (Debian 13)** — public entry point. Runs Velocity proxy (port 25565) + lobby MC server in Docker. GitHub Actions deploys here via SSH over TailScale.
+- **Home Proxmox VM (Debian 13)** — private. Runs Craft to Exile 2 modded server in Docker, managed by Portainer CE. Updates triggered via Portainer stack webhook from GitHub Actions.
+- **TailScale** — mesh VPN for all inter-node traffic (Velocity → C2E2) and all admin SSH. Public SSH (port 22) is blocked on both VMs.
+
+## Repo Layout
 
 ```
-Velocity proxy (port 25565) → cobblemonextended
-                             → createexplorextended
-                             → lobby
+infra/
+  azure/            # Bicep IaC for Azure VM
+    main.bicep
+    modules/network.bicep
+    modules/vm.bicep
+    parameters/prod.bicepparam
+  proxmox/
+    cloud-init.yaml # Debian 13 cloud-init for Proxmox VM
+docker/
+  azure/            # Velocity + Lobby compose stack
+  proxmox/          # Craft to Exile 2 compose stack (Portainer-managed)
+.github/workflows/
+  deploy-azure.yml  # Bicep deploy + SSH push to Azure VM
+  update-proxmox.yml# POST to Portainer webhook
+old/                # ARCHIVED — ignore
 ```
-
-Each Minecraft server (`itzg/minecraft-server`, Fabric 1.20.1) has a corresponding **packwiz sidecar** that serves `pack.toml` over HTTP. The server pulls mods at startup via `PACKWIZ_URL=http://packwiz-server-<name>:8080/pack.toml`.
-
-Backups run via `itzg/mc-backup` and depend on the server's health check.
-
-### Environment variables
-
-All compose files rely on a `.env` file (not committed) providing:
-- `$TZ`, `$PUID`, `$PGID` — timezone and user/group IDs
-- `$DOCKERDIR` — base path for bind mounts (e.g., `/dockerdir/appdata/<service>`)
-
-## Modpack Management
-
-Modpacks use [packwiz](https://packwiz.infra.link/) format:
-- `pack.toml` — pack metadata (name, version, Fabric/MC versions)
-- `index.toml` — SHA-256 manifest of all included files
-- `mods/*.pw.toml` — one file per mod (Modrinth or CurseForge metadata)
-- `resourcepacks/*.pw.toml` — resource packs
-- `datapack/*.pw.toml` — data packs (CobblemonExtended only)
-- `modrinth_mods.txt` — source list for bulk-importing mods via packwiz CLI
-
-### Adding mods in bulk
-
-**Windows (PowerShell):**
-```powershell
-# Run from repo root; packwiz.exe path is hardcoded — adjust as needed
-.\old\import_mods.ps1
-```
-
-**Linux/macOS:**
-```bash
-# import_mods.sh <modrinth_mods.txt path> <pack folder> <packwiz binary path>
-./old/import_mods.sh modrinth_mods.txt old/cobblemonextended /usr/local/bin/packwiz
-```
-
-`modrinth_mods.txt` format: `<slug>/<version-filename>` — one entry per line. The import script splits on `/` and passes each slug + version to `packwiz modrinth add`.
-
-After importing, always run `packwiz refresh` inside the pack directory to regenerate `index.toml` hashes.
 
 ## Key Conventions
 
-- **Pinned image digests** — Docker images in compose files use `image:tag@sha256:...` to prevent unexpected updates. Renovate bot manages digest bumps (see `renovate.json`).
-- **YAML extension fields** — Compose files use `x-common-keys-core` / `x-common-keys-apps` anchors to avoid repeating `security_opt` and `restart` policy. Core services use `restart: always`; app servers use `restart: unless-stopped`.
-- **`ONLINE_MODE: "FALSE"`** — all game servers run in offline mode; authentication is delegated to the Velocity proxy using a shared `forwarding.secret`.
-- **Memory tuning** — `MEMORY: ""` disables itzg's built-in heap flags; JVM heap is controlled by `JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"` against the container's memory limit.
-- **Renovate rules** — MariaDB/MySQL major+minor bumps are disabled to avoid breaking app stacks. PostgreSQL major bumps are disabled. Standalone DB compose files in `docker-compose/mariadb/` and `docker-compose/postgres/` allow all bump types.
-- **`old/` directory** — contains the previous full compose stack and modpack sources. Active deployment is `admin_compose.yml` (Portainer only).
-- **`.gitignore`** excludes `setcommands.sh`, `admin_compose.yml`, `*.zip`, and `*.mrpack` — secrets/local scripts and exported modpack archives are never committed.
+- **Azure IaC:** Bicep only. OIDC / Workload Identity Federation for `az login` — no stored Azure credentials.
+- **Azure VM:** `Standard_B4s_v2`, Debian 13, Premium SSD, region `westus`, SSH key auth, NSG blocks port 22 from internet.
+- **OS updates:** Both VMs run `unattended-upgrades` (configured in cloud-init) — daily security patches, auto-reboot at off-peak hours.
+- **Docker image updates:** Renovate bumps pinned digests in the repo → Azure VM auto-deploys via `deploy-azure.yml` → Proxmox auto-deploys via Portainer GitOps polling.
+- **Docker images:** Pinned digests (`image:tag@sha256:...`). Renovate manages bumps.
+- **Memory tuning:** `MEMORY: ""` + `JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"` on all MC servers.
+- **Online mode:** `ONLINE_MODE: "FALSE"` on all backend servers; Velocity handles Mojang auth at the proxy.
+- **Proxmox updates:** Portainer GitOps — Portainer CE polls the GitHub repo on a set interval (e.g., 5 min), detects changes to `docker/proxmox/docker-compose.yml`, and redeploys automatically. No inbound ports or webhooks needed. All env vars set via Portainer stack environment UI only.
+- **Secrets:** Never committed. `.env.example` documents all required vars.
