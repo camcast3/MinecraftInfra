@@ -98,8 +98,13 @@ runcmd:
   - mkdir -p /data/minecraft/tailscale
   - mkdir -p /data/minecraft/c2e2
 
-  # Add the admin user to the docker group so they can run docker without sudo
-  - usermod -aG docker mcsvc
+  # mcsvc is NOT in the docker group — docker group = root equivalent.
+  # Grant sudo only for specific docker/systemctl commands needed for MC ops.
+  - |
+    cat > /etc/sudoers.d/mcsvc-docker << 'EOF'
+    mcsvc ALL=(root) NOPASSWD: /usr/bin/docker, /usr/bin/docker compose, /usr/bin/systemctl status docker, /usr/bin/systemctl restart docker
+    EOF
+  - chmod 440 /etc/sudoers.d/mcsvc-docker
 
   # Ensure SSH authorized_keys for mcsvc has correct permissions.
   # Proxmox injects the key via cloud-init metadata; this guarantees correct
@@ -116,11 +121,13 @@ runcmd:
   - grep -q '^Port 7822' /etc/ssh/sshd_config || echo 'Port 7822' >> /etc/ssh/sshd_config
   - systemctl restart ssh
 
-  # UFW: allow SSH on 7822 (LAN only) and block everything else
+  # UFW: restrict inbound strictly; allow all outbound (Docker needs internet).
+  # TailScale runs as a Docker sidecar — no tailscale0 host-level rule needed.
+  # Portainer Edge Agent is outbound-only — no inbound port needed.
+  # Inbound SSH is LAN-subnet-only — not reachable from internet or TailScale network.
   - ufw default deny incoming
   - ufw default allow outgoing
-  - ufw allow 7822/tcp comment 'SSH on non-standard port'
-  - ufw allow in on tailscale0 comment 'TailScale'
+  - ufw allow from 192.168.86.0/24 to any port 7822 proto tcp comment 'SSH from LAN only'
   - ufw --force enable
 
   # Portainer is NOT installed here. The VM is managed by connecting it to a main
