@@ -78,8 +78,15 @@ runcmd:
   # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /opt/minecraft
-  # Fetch secrets from Key Vault and write .env + velocity config
-  - bash /opt/minecraft/docker/azure/refresh-env.sh
+  # Fetch secrets from Key Vault and write .env + velocity config.
+  # Retry loop handles the brief delay before the Managed Identity is available.
+  - |
+    export HOME=/root
+    for i in 1 2 3 4 5; do
+      bash /opt/minecraft/docker/azure/refresh-env.sh && break
+      echo "refresh-env.sh attempt $i failed, retrying in 15s..."
+      sleep 15
+    done
   # Start the Docker stack
   - docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d
 '''

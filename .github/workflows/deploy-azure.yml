@@ -57,8 +57,10 @@ jobs:
             --name vm-minecraft-prod \
             --command-id RunShellScript \
             --scripts "
+              export HOME=/root
               set -euo pipefail
               cd /opt/minecraft
+              git checkout -- .
               git pull origin main
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
