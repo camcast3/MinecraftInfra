@@ -6,6 +6,7 @@ on:
     paths:
       - 'infra/azure/**'
       - 'docker/azure/**'
+      - '.github/workflows/deploy-azure.yml'
   workflow_dispatch:
 
 permissions:
