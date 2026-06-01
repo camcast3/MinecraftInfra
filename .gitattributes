@@ -1,2 +1,5 @@
-# Disable Git line ending conversion, to prevent packwiz index hashes changing when committing from Windows
+# Disable Git line ending conversion for most files (prevents packwiz index hash changes on Windows)
 * -text
+
+# Shell scripts must always have LF line endings or they fail on Linux
+*.sh text eol=lf
