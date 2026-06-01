@@ -79,7 +79,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: 16G
+          memory: 24G
     volumes:
       - /data/minecraft/c2e2:/data
     environment:
