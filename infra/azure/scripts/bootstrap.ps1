@@ -88,7 +88,7 @@ Write-Host ""
 
 # ── Step 2: GitHub Actions App Registration + Service Principal ───────────────
 Write-Host "▶ Step 2: Creating App Registration '$OIDC_APP_NAME' for GitHub Actions OIDC..."
-$OIDC_APP_ID = (& az ad app list --display-name $OIDC_APP_NAME --query '[0].appId' -o tsv 2>$null).Trim()
+$OIDC_APP_ID = (& az ad app list --display-name $OIDC_APP_NAME --query '[0].appId' -o tsv 2>$null) -join '' | ForEach-Object { $_.Trim() }
 
 if ([string]::IsNullOrEmpty($OIDC_APP_ID) -or $OIDC_APP_ID -eq 'None') {
     $OIDC_APP_ID = (Invoke-Az @('ad', 'app', 'create',
@@ -198,6 +198,24 @@ Invoke-Az @('deployment', 'group', 'create',
     '--name',            'bootstrap-keyvault',
     '--output',          'none')
 Write-Host "  ✓ Key Vault deployed."
+Write-Host ""
+
+# ── Step 6b: Grant bootstrap operator write access to Key Vault ──────────────
+Write-Host "▶ Step 6b: Granting Key Vault Secrets Officer to current user..."
+$CURRENT_USER_OID = (& az ad signed-in-user show --query id -o tsv 2>$null) -join '' | ForEach-Object { $_.Trim() }
+$KV_RESOURCE_ID = "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.KeyVault/vaults/$KV_NAME"
+& az role assignment create `
+    --assignee-object-id $CURRENT_USER_OID `
+    --assignee-principal-type User `
+    --role 'Key Vault Secrets Officer' `
+    --scope $KV_RESOURCE_ID `
+    --output none 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) { Write-Host "  ℹ Role already assigned." }
+else { Write-Host "  ✓ Key Vault Secrets Officer granted to current user." }
+
+# RBAC assignments can take up to 60 s to propagate
+Write-Host "  ⏳ Waiting 60 s for RBAC propagation..."
+Start-Sleep -Seconds 60
 Write-Host ""
 
 # ── Step 7: Populate Key Vault secrets ───────────────────────────────────────
