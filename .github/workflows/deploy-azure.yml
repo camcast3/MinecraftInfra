@@ -19,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # needed for git diff HEAD~1
 
       # Log in to Azure via OIDC — no stored credentials, token is short-lived
       # Docs: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect
@@ -36,9 +38,20 @@ jobs:
             --location westus \
             --tags environment=prod
 
-      # ARM reads Key Vault secrets directly via getSecret() in prod.bicepparam.
-      # The runner never sees the secret values.
+      # Only redeploy Bicep when infra files changed or the workflow was triggered manually.
+      # osProfile.customData is immutable on existing VMs — Bicep would fail if we always
+      # redeployed and vm.bicep changed. Docker-only pushes skip this step entirely.
+      - name: Check if infra changed
+        id: infra_check
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^infra/azure/'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy Bicep (infra + VM)
+        if: steps.infra_check.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           az deployment group create \
             --resource-group rg-minecraft-prod \
