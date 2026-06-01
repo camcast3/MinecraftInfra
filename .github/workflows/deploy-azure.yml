@@ -19,14 +19,14 @@ jobs:
     environment: production
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 2   # needed for git diff HEAD~1
 
       # Log in to Azure via OIDC — no stored credentials, token is short-lived
       # Docs: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect
       - name: Azure login (OIDC)
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
