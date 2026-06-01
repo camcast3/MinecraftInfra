@@ -65,21 +65,31 @@ runcmd:
   - ufw allow 25565/udp comment 'Minecraft UDP'
   - ufw allow in on tailscale0 comment 'TailScale'
   - ufw --force enable
-  - useradd -m -s /bin/bash minecraft
-  - usermod -aG docker minecraft
+  # Add the admin user to the docker group so SSH deploy commands work without sudo
+  - usermod -aG docker __ADMIN_USERNAME__
+  # Format and mount the data disk (LUN 0 → stable Azure symlink)
   - mkdir -p /data
-  - mkfs.ext4 /dev/sdc
-  - echo '/dev/sdc /data ext4 defaults,nofail 0 2' >> /etc/fstab
-  - mount -a
-  - chown minecraft:minecraft /data
+  - mkfs.ext4 /dev/disk/azure/scsi1/lun0
+  - DATA_UUID=$(blkid -s UUID -o value /dev/disk/azure/scsi1/lun0)
+  - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
+  - mount /data
+  - mkdir -p /data/minecraft/{velocity,lobby}
+  - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
+  # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft
-  - chown -R minecraft:minecraft /opt/minecraft
-  - cd /opt/minecraft && sudo -u minecraft docker compose -f docker/azure/docker-compose.yml up -d
+  - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /opt/minecraft
+  # Fetch secrets from Key Vault and write .env + velocity config
+  - bash /opt/minecraft/docker/azure/refresh-env.sh
+  # Start the Docker stack
+  - docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d
 '''
 
 var cloudInitRendered = replace(
-  replace(cloudInitScript, '__TAILSCALE_AUTH_KEY__', tailscaleAuthKey),
-  '__REPO_URL__', repoUrl
+  replace(
+    replace(cloudInitScript, '__TAILSCALE_AUTH_KEY__', tailscaleAuthKey),
+    '__REPO_URL__', repoUrl
+  ),
+  '__ADMIN_USERNAME__', adminUsername
 )
 
 resource dataDisk 'Microsoft.Compute/disks@2025-01-02' = {

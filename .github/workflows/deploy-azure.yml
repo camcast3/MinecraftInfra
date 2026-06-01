@@ -45,24 +45,23 @@ jobs:
             --template-file infra/azure/main.bicep \
             --parameters infra/azure/parameters/prod.bicepparam
 
-      # Join the tailnet ephemerally so we can SSH into the VM
-      - name: Connect to TailScale
-        uses: tailscale/github-action@v2
-        with:
-          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
-          tags: tag:ci
-
       # Pull latest images and restart the Azure stack.
-      # refresh-env.sh runs on the VM and uses the system-assigned Managed Identity
-      # to fetch secrets from Key Vault directly — no secrets pass through CI.
+      # Uses az vm run-command so no SSH key or Tailscale tunnel is needed —
+      # the runner's OIDC Azure session (Contributor on the RG) is sufficient.
+      # Commands run as root on the VM; refresh-env.sh re-fetches KV secrets
+      # and rewrites .env + velocity.toml before the compose restart.
       - name: Deploy Docker stack
         run: |
-          ssh -o StrictHostKeyChecking=no \
-            -i <(echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}") \
-            mcsvc@${{ secrets.AZURE_VM_TAILSCALE_IP }} \
-            "cd /opt/minecraft && \
-             git pull origin main && \
-             bash docker/azure/refresh-env.sh && \
-             docker compose -f docker/azure/docker-compose.yml pull && \
-             docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans"
+          az vm run-command invoke \
+            --resource-group rg-minecraft-prod \
+            --name vm-minecraft-prod \
+            --command-id RunShellScript \
+            --scripts "
+              set -euo pipefail
+              cd /opt/minecraft
+              git pull origin main
+              bash docker/azure/refresh-env.sh
+              docker compose -f docker/azure/docker-compose.yml pull
+              docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
+            " \
+            --output json | jq -r '.value[0].message'

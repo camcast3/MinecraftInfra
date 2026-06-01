@@ -49,6 +49,7 @@ packages:
   - gettext-base
   - ca-certificates
   - gnupg
+  - qemu-guest-agent
 
 write_files:
   # Daily security patches, auto-reboot at 03:00 (off-peak)
@@ -70,6 +71,9 @@ write_files:
       tun
 
 runcmd:
+  # QEMU Guest Agent — enables graceful Proxmox shutdown, IP reporting, and consistent snapshots
+  - systemctl enable --now qemu-guest-agent
+
   # Install Docker CE (official repo, not distro package)
   - install -m 0755 -d /etc/apt/keyrings
   - curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
