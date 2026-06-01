@@ -57,9 +57,9 @@ services:
       - /data/minecraft/velocity:/server
     environment:
       TYPE: VELOCITY
-      # Velocity 3.3.0 is the last release that supports Java 17 (3.4+ requires Java 21).
+      # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17 (3.4+ requires Java 21).
       # Pinned here so the itzg image doesn't auto-download a newer incompatible build.
-      VELOCITY_VERSION: "3.3.0"
+      VELOCITY_VERSION: "3.3.0-SNAPSHOT"
       # forwarding.secret is pre-written by refresh-env.sh; this env var is a
       # belt-and-suspenders fallback for the itzg image's own secret generation.
       VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
