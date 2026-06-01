@@ -27,8 +27,7 @@
 # After this script:
 #   - Fill prod.bicepparam TODOs (githubActionsObjectId, proxmoxSpObjectId)
 #   - Add GitHub Actions secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
-#     TAILSCALE_OAUTH_CLIENT_ID, TAILSCALE_OAUTH_CLIENT_SECRET, DEPLOY_SSH_PRIVATE_KEY,
-#     AZURE_VM_TAILSCALE_IP)
+#     TAILSCALE_OAUTH_CLIENT_ID, TAILSCALE_OAUTH_CLIENT_SECRET)
 #   - Add Portainer environment variables (STORAGE_ACCOUNT from deploy output,
 #     AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET from step 8)
 #   - Push to main — GitHub Actions handles all subsequent deploys
@@ -177,8 +176,6 @@ Write-Host "      AZURE_TENANT_ID       = $TENANT_ID"
 Write-Host "      AZURE_SUBSCRIPTION_ID = $SUBSCRIPTION_ID"
 Write-Host ""
 Write-Host "  Also add later (once available):"
-Write-Host "      DEPLOY_SSH_PRIVATE_KEY        — contents of ~\.ssh\id_ed25519"
-Write-Host "      AZURE_VM_TAILSCALE_IP         — TailScale IP of the Azure VM (post-deploy)"
 Write-Host "      TAILSCALE_OAUTH_CLIENT_ID     — from tailscale.com/admin/settings/oauth"
 Write-Host "      TAILSCALE_OAUTH_CLIENT_SECRET — from tailscale.com/admin/settings/oauth"
 Write-Host "════════════════════════════════════════════════════════════════"
