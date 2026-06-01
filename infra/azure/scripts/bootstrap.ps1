@@ -26,8 +26,7 @@
 #
 # After this script:
 #   - Fill prod.bicepparam TODOs (githubActionsObjectId, proxmoxSpObjectId)
-#   - Add GitHub Actions secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
-#     TAILSCALE_OAUTH_CLIENT_ID, TAILSCALE_OAUTH_CLIENT_SECRET)
+#   - Add GitHub Actions secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
 #   - Add Portainer environment variables (STORAGE_ACCOUNT from deploy output,
 #     AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET from step 8)
 #   - Push to main — GitHub Actions handles all subsequent deploys
@@ -175,9 +174,6 @@ Write-Host "      AZURE_CLIENT_ID       = $OIDC_APP_ID"
 Write-Host "      AZURE_TENANT_ID       = $TENANT_ID"
 Write-Host "      AZURE_SUBSCRIPTION_ID = $SUBSCRIPTION_ID"
 Write-Host ""
-Write-Host "  Also add later (once available):"
-Write-Host "      TAILSCALE_OAUTH_CLIENT_ID     — from tailscale.com/admin/settings/oauth"
-Write-Host "      TAILSCALE_OAUTH_CLIENT_SECRET — from tailscale.com/admin/settings/oauth"
 Write-Host "════════════════════════════════════════════════════════════════"
 Write-Host ""
 Read-Host "Press Enter to continue to Key Vault setup"
