@@ -1,0 +1,112 @@
+#cloud-config
+# infra/proxmox/cloud-init.yaml
+#
+# Cloud-init user-data for the Proxmox Debian 13 VM that runs the C2E2 modded server.
+#
+# How to use in Proxmox:
+#   1. Download a Debian 13 cloud image and create a VM template:
+#        wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2
+#        qm create 9000 --name debian13-template --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
+#        qm importdisk 9000 debian-12-genericcloud-amd64.qcow2 local-lvm
+#        qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
+#        qm set 9000 --ide2 local-lvm:cloudinit --boot c --bootdisk scsi0 --serial0 socket --vga serial0
+#        qm template 9000
+#
+#   2. Clone the template for the MC VM:
+#        qm clone 9000 100 --name mc-proxmox --full
+#        qm resize 100 scsi0 +60G           # grow to 64 GB total
+#        qm set 100 --memory 20480 --cores 6
+#
+#   3. Configure cloud-init via Proxmox GUI (VM → Cloud-Init tab):
+#        User:       mcsvc
+#        SSH key:    paste contents of ~/.ssh/id_ed25519.pub
+#        IP config:  DHCP (or static if preferred)
+#
+#   4. In Proxmox GUI, under VM → Cloud-Init → Custom user data, point to this file.
+#      Or use: qm set 100 --cicustom "user=local:snippets/cloud-init.yaml"
+#      (Copy this file to /var/lib/vz/snippets/ on the Proxmox host first.)
+#
+#   5. Start the VM: qm start 100
+#
+# After provisioning:
+#   - SSH in via Proxmox console or LAN: ssh mcsvc@<vm-ip>
+#   - Run: sudo tailscale up --ssh --authkey=<key-from-tailscale-admin>
+#   - Note the Tailscale IP (100.x.x.x) — add it to Key Vault:
+#       az keyvault secret set --vault-name kv-minecraft-prod \
+#         --name c2e2-tailscale-ip --value '100.x.x.x'
+#   - Set up Portainer stack pointing to this repo's docker/proxmox/docker-compose.yml
+#     and configure all required environment variables (see docker/proxmox/docker-compose.yml)
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - curl
+  - git
+  - ufw
+  - unattended-upgrades
+  - apt-listchanges
+  - gettext-base
+  - ca-certificates
+  - gnupg
+
+write_files:
+  # Daily security patches, auto-reboot at 03:00 (off-peak)
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+
+  - path: /etc/apt/apt.conf.d/51unattended-upgrades-minecraft
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+
+  # Load tun kernel module on boot — required by the Tailscale Docker sidecar
+  # (TS_USERSPACE=false mounts /dev/net/tun inside the container)
+  - path: /etc/modules-load.d/tun.conf
+    content: |
+      tun
+
+runcmd:
+  # Install Docker CE (official repo, not distro package)
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo $VERSION_CODENAME) stable" > /etc/apt/sources.list.d/docker.list
+  - apt-get update -qq
+  - apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+
+  # Install Tailscale (for host-level admin SSH — separate from the Docker sidecar)
+  - curl -fsSL https://tailscale.com/install.sh | sh
+  # tailscale up is intentionally NOT run here — run manually after boot:
+  #   sudo tailscale up --ssh --authkey=tskey-auth-...
+
+  # Create bind-mount directories for the Docker stack
+  - mkdir -p /data/minecraft/tailscale
+  - mkdir -p /data/minecraft/c2e2
+
+  # Add the admin user to the docker group so they can run docker without sudo
+  - usermod -aG docker mcsvc
+
+  # UFW: allow SSH (LAN + tailscale) and block everything else
+  # Port 22 is allowed here for initial LAN access;
+  # once Tailscale SSH is working you can run: ufw delete allow ssh
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow ssh comment 'SSH (disable after Tailscale SSH is confirmed)'
+  - ufw allow in on tailscale0 comment 'TailScale'
+  - ufw --force enable
+
+  # Install Portainer CE — manages the C2E2 Docker stack via GitOps polling
+  - docker volume create portainer_data
+  - docker run -d
+    --name portainer
+    --restart=always
+    -p 9443:9443
+    -p 8000:8000
+    -v /var/run/docker.sock:/var/run/docker.sock
+    -v portainer_data:/data
+    portainer/portainer-ce:2.21.5

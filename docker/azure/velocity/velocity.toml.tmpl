@@ -1,0 +1,62 @@
+# docker/azure/velocity/velocity.toml.tmpl
+#
+# Velocity proxy config template. refresh-env.sh runs envsubst on this file
+# and writes the result to /data/minecraft/velocity/velocity.toml on the VM.
+# Variables resolved at deploy time from Azure Key Vault via refresh-env.sh:
+#   ${C2E2_TAILSCALE_IP}          — Tailscale IP of the Proxmox C2E2 server
+#   ${VELOCITY_FORWARDING_SECRET} — Modern forwarding secret (also written to forwarding.secret)
+
+config-version = "2.7"
+
+# Bind on all interfaces; the NSG exposes only port 25565 externally.
+bind = "0.0.0.0:25577"
+
+motd = "&6&lMinecraft&r &7| &bCraft to Exile 2"
+show-max-players = 6
+
+# Velocity handles Mojang auth; backends run with ONLINE_MODE=FALSE.
+online-mode = true
+force-key-authentication = true
+
+# Modern forwarding — backends must have VELOCITY_FORWARDING_SECRET set.
+# forwarding.secret is written alongside this file by refresh-env.sh.
+player-info-forwarding-mode = "modern"
+
+announce-forge = false
+kick-existing-players = false
+ping-passthrough = "DISABLED"
+enable-player-address-logging = true
+
+[servers]
+# Lobby runs on the same Azure VM — reachable by container name over the minecraft bridge network.
+lobby = "lobby:25565"
+# C2E2 runs on the Proxmox VM — reachable only over TailScale.
+c2e2 = "${C2E2_TAILSCALE_IP}:25565"
+
+# Players connect to lobby first; /server c2e2 routes them to the modded server.
+try = ["lobby"]
+
+[forced-hosts]
+# No forced hosts — all players land on the lobby by default.
+
+[advanced]
+compression-threshold = 256
+compression-level = -1
+login-ratelimit = 3000
+connection-timeout = 5000
+read-timeout = 30000
+haproxy-protocol = false
+tcp-fast-open = false
+bungee-plugin-message-channel = true
+show-ping-requests = false
+failover-on-unexpected-server-disconnect = true
+announce-proxy-commands = true
+log-command-executions = false
+log-player-connections = true
+accepts-transfers = false
+
+[query]
+enabled = false
+port = 25577
+map = "Velocity"
+max-players = 6
