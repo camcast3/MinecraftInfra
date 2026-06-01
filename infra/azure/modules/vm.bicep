@@ -40,6 +40,7 @@ packages:
   - ufw
   - unattended-upgrades
   - apt-listchanges
+  - gettext-base
 
 write_files:
   - path: /etc/apt/apt.conf.d/20auto-upgrades

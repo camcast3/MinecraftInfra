@@ -57,6 +57,9 @@ services:
       - /data/minecraft/velocity:/server
     environment:
       TYPE: VELOCITY
+      # forwarding.secret is pre-written by refresh-env.sh; this env var is a
+      # belt-and-suspenders fallback for the itzg image's own secret generation.
+      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
       interval: 30s
