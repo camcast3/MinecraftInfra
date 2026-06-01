@@ -110,12 +110,16 @@ runcmd:
   - chmod 600 /home/mcsvc/.ssh/authorized_keys
   - chown -R mcsvc:mcsvc /home/mcsvc/.ssh
 
-  # UFW: allow SSH (LAN + tailscale) and block everything else
-  # Port 22 is allowed here for initial LAN access;
-  # once Tailscale SSH is working you can run: ufw delete allow ssh
+  # Move SSH to port 7822 — avoids automated port scanners and limits exposure
+  # if the Azure VM (on the same TailScale network) were ever compromised.
+  - sed -i 's/^#\?Port .*/Port 7822/' /etc/ssh/sshd_config
+  - grep -q '^Port 7822' /etc/ssh/sshd_config || echo 'Port 7822' >> /etc/ssh/sshd_config
+  - systemctl restart ssh
+
+  # UFW: allow SSH on 7822 (LAN only) and block everything else
   - ufw default deny incoming
   - ufw default allow outgoing
-  - ufw allow ssh comment 'SSH (disable after Tailscale SSH is confirmed)'
+  - ufw allow 7822/tcp comment 'SSH on non-standard port'
   - ufw allow in on tailscale0 comment 'TailScale'
   - ufw --force enable
 
