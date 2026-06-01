@@ -121,10 +121,27 @@ runcmd:
   - grep -q '^Port 7822' /etc/ssh/sshd_config || echo 'Port 7822' >> /etc/ssh/sshd_config
   - systemctl restart ssh
 
-  # UFW: restrict inbound strictly; allow all outbound (Docker needs internet).
-  # TailScale runs as a Docker sidecar — no tailscale0 host-level rule needed.
-  # Portainer Edge Agent is outbound-only — no inbound port needed.
-  # Inbound SSH is LAN-subnet-only — not reachable from internet or TailScale network.
+  # UFW: deny all inbound, allow all outbound.
+  #
+  # WHY no TailScale or Minecraft port rules are needed:
+  #   TailScale runs as a Docker sidecar container (not on the host). The container
+  #   establishes outbound UDP tunnels to DERP relay servers and peers. Docker's NAT
+  #   (MASQUERADE) tracks these as RELATED/ESTABLISHED so return traffic passes
+  #   UFW's before.rules automatically — no inbound rule required.
+  #
+  #   Velocity (Azure VM) connects to C2E2 via the TailScale tunnel IP (100.x.x.x:25565).
+  #   That traffic travels INSIDE the encrypted TailScale tunnel, decrypted by the
+  #   container, and delivered to C2E2 via the shared network namespace — it never
+  #   arrives as a new raw TCP/UDP connection on the host's interface.
+  #
+  #   DO NOT add 'ufw allow in on tailscale0' — tailscale0 is inside the container,
+  #   not on the host. A blanket tailscale0 host rule would be meaningless here and
+  #   could allow lateral movement if host-level Tailscale were ever enabled.
+  #
+  #   Portainer Edge Agent makes outbound-only connections to the main Portainer
+  #   tunnel port — no inbound port is needed on this host.
+  #
+  # The only inbound traffic needed is SSH from the LAN subnet.
   - ufw default deny incoming
   - ufw default allow outgoing
   - ufw allow from 192.168.86.0/24 to any port 7822 proto tcp comment 'SSH from LAN only'
