@@ -171,12 +171,16 @@ services:
       - |
         rcon() { rcon-cli --host localhost --port 25575 --password "$RCON_PASSWORD" "$1"; }
         while true; do
-          sleep 21600
-          rcon "say §e[Server] Scheduled restart in 5 minutes. Find a safe spot and log off!"
+          sleep 18000
+          rcon "say §e[Server] Scheduled restart in 1 hour. Finish what you're doing!"
+          sleep 1800
+          rcon "say §6[Server] Restart in 30 minutes!"
+          sleep 1500
+          rcon "say §c[Server] Restart in 5 minutes! Find a safe spot and log off!"
           sleep 240
-          rcon "say §6[Server] Restart in 1 minute!"
+          rcon "say §8[Server] Restarting in 1 minute!"
           sleep 50
-          rcon "say §c[Server] Restarting in 10 seconds..."
+          rcon "say §8[Server] Restarting in 10 seconds..."
           sleep 10
           rcon "stop" || rcon "stop" || rcon "stop"
         done
