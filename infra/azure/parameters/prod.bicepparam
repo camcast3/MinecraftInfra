@@ -18,16 +18,16 @@ param storageAccountName = 'stmcminecraftprod'
 // Object ID of the GitHub Actions OIDC service principal.
 // Run bootstrap.sh step 2, then:
 //   az ad sp show --id <appClientId> --query id -o tsv
-param githubActionsObjectId = '' // TODO: fill after running bootstrap.sh
+param githubActionsObjectId = '61e7a20a-84f5-4a4d-b5d8-83d099953e36'
 
 // Object ID of the Proxmox backup service principal (NOT a secret — just an identifier).
 // Run bootstrap.sh step 7, then:
 //   az ad sp show --id <proxmoxAppClientId> --query id -o tsv
-param proxmoxSpObjectId = '' // TODO: fill after running bootstrap.sh
+param proxmoxSpObjectId = 'aadced53-d6f8-4430-bc48-af7a29caa418'
 
 // ── Secrets from Key Vault ────────────────────────────────────────────────────
 // ARM resolves getSecret() directly — the GitHub Actions runner never sees these values.
 // Run bootstrap.sh to populate all secrets before the first deployment.
-param adminUsername    = getSecret('<subscriptionId>', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')
-param adminSshPublicKey = getSecret('<subscriptionId>', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')
-param tailscaleAuthKey  = getSecret('<subscriptionId>', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')
+param adminUsername     = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')
+param adminSshPublicKey = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')
+param tailscaleAuthKey  = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')
