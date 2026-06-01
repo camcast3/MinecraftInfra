@@ -141,13 +141,13 @@ runcmd:
   #   Portainer Edge Agent makes outbound-only connections to the main Portainer
   #   tunnel port — no inbound port is needed on this host.
   #
-  # The only inbound traffic needed is SSH from LAN subnets.
-  # 192.168.86.0/24 = Proxmox/IoT management subnet (Portainer, Proxmox web UI)
-  # 192.168.69.0/24 = Workstation subnet (Windows dev machine)
+  # The only inbound traffic needed is SSH from known admin hosts.
+  # 192.168.86.0/24   = Proxmox/IoT management subnet (Portainer, Proxmox web UI, qm exec)
+  # 192.168.69.159    = Desktop workstation (hardcoded — only this machine should SSH in)
   - ufw default deny incoming
   - ufw default allow outgoing
   - ufw allow from 192.168.86.0/24 to any port 7822 proto tcp comment 'SSH from Proxmox subnet'
-  - ufw allow from 192.168.69.0/24 to any port 7822 proto tcp comment 'SSH from workstation subnet'
+  - ufw allow from 192.168.69.159 to any port 7822 proto tcp comment 'SSH from desktop workstation'
   - ufw --force enable
 
   # Portainer is NOT installed here. The VM is managed by connecting it to a main
