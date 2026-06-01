@@ -37,7 +37,10 @@
 #   - Note the Tailscale IP (100.x.x.x) — add it to Key Vault:
 #       az keyvault secret set --vault-name kv-minecraft-prod \
 #         --name c2e2-tailscale-ip --value '100.x.x.x'
-#   - Set up Portainer stack pointing to this repo's docker/proxmox/docker-compose.yml
+#   - Add the VM as an environment in your main Portainer instance using the Edge Agent:
+#       In main Portainer → Environments → Add → Docker Standalone → Edge Agent Standard
+#       Run the generated docker run command on this VM to register it
+#   - Deploy the C2E2 stack from main Portainer pointing to docker/proxmox/docker-compose.yml
 #     and configure all required environment variables (see docker/proxmox/docker-compose.yml)
 
 package_update: true
@@ -116,16 +119,5 @@ runcmd:
   - ufw allow in on tailscale0 comment 'TailScale'
   - ufw --force enable
 
-  # Install Portainer CE — manages the C2E2 Docker stack via GitOps polling
-  # docker run is skipped if the container already exists (idempotent)
-  - docker volume create portainer_data
-  - >
-    docker ps -a --format '{{.Names}}' | grep -q '^portainer$' ||
-    docker run -d
-    --name portainer
-    --restart=always
-    -p 9443:9443
-    -p 8000:8000
-    -v /var/run/docker.sock:/var/run/docker.sock
-    -v portainer_data:/data
-    portainer/portainer-ce:2.21.5
+  # Portainer is NOT installed here. The VM is managed by connecting it to a main
+  # Portainer instance via the Edge Agent (see post-provisioning steps above).
