@@ -128,6 +128,7 @@ resource vmMiKvSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' 
 resource vmMiStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageAccountName, resourceGroup().id, 'vm-mi-storage-blob-contributor')
   scope: backupsContainerScope
+  dependsOn: [storage]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: vm.outputs.principalId
@@ -141,6 +142,7 @@ resource vmMiStorageBlobContributor 'Microsoft.Authorization/roleAssignments@202
 resource proxmoxSpStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storageAccountName, proxmoxSpObjectId, 'proxmox-sp-storage-blob-contributor')
   scope: backupsContainerScope
+  dependsOn: [storage]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: proxmoxSpObjectId
