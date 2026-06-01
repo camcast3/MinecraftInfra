@@ -146,3 +146,37 @@ services:
       RCLONE_CONFIG_AZBLOB_TENANT: ${AZURE_TENANT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_ID: ${AZURE_CLIENT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+
+  restarter:
+    <<: *common-keys-apps
+    # Reuses the mc-backup image — rcon-cli is already installed in it.
+    # Every 6 hours: warns players at 5 min, 1 min, 10 sec, then sends 'stop'.
+    # Docker's restart: unless-stopped policy brings C2E2 back up automatically.
+    # depends_on service_healthy ensures the 6h timer only starts once C2E2 is ready.
+    image: itzg/mc-backup:2026.5.1@sha256:32644da0332dbccfb47465044e7d34c733749aa2254fc3063d38186838b603b9
+    container_name: mc-restarter
+    network_mode: "service:tailscale"
+    depends_on:
+      craft-to-exile-2:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 64M
+    environment:
+      RCON_PASSWORD: ${RCON_PASSWORD}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        rcon() { rcon-cli --host localhost --port 25575 --password "$RCON_PASSWORD" "$1"; }
+        while true; do
+          sleep 21600
+          rcon "say §e[Server] Scheduled restart in 5 minutes. Find a safe spot and log off!"
+          sleep 240
+          rcon "say §6[Server] Restart in 1 minute!"
+          sleep 50
+          rcon "say §c[Server] Restarting in 10 seconds..."
+          sleep 10
+          rcon "stop" || rcon "stop" || rcon "stop"
+        done
