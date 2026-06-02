@@ -1,11 +1,12 @@
 # Proxy-Compatible-Forge (PCF) config
-# The forwarding secret is injected from the VELOCITY_FORWARDING_SECRET env var
-# at container startup via itzg's REPLACE_ENV_VARIABLES feature.
+# The forwarding secret is injected at container startup via itzg's
+# PATCH_DEFINITIONS feature (see docker/shared/patches/pcf-forwarding.json).
+# REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
 
 [forwarding]
 enabled = true
 mode = "MODERN"
-secret = "${VELOCITY_FORWARDING_SECRET}"
+secret = ""
 approvedProxyHosts = []
 
 [crossStitch]
