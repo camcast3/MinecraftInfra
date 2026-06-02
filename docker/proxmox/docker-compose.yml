@@ -82,6 +82,8 @@ services:
           memory: 24G
     volumes:
       - /data/minecraft/c2e2:/data
+      - ../shared/whitelist.json:/extras/whitelist.json:ro
+      - ../shared/ops.json:/extras/ops.json:ro
     environment:
       EULA: "TRUE"
       TYPE: AUTO_CURSEFORGE
@@ -93,9 +95,16 @@ services:
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       # MEMORY="" disables itzg's built-in -Xms/-Xmx flags.
-      # MaxRAMPercentage=75 derives heap dynamically from the 16G cgroup limit (~12 GB heap).
+      # MaxRAMPercentage=75 derives heap dynamically from the 24G cgroup limit (~18 GB heap).
       MEMORY: ""
       JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      WHITELIST_FILE: /extras/whitelist.json
+      OPS_FILE: /extras/ops.json
+      ENFORCE_WHITELIST: "TRUE"
+      # High-latency player tuning (2 AUS players, ~200ms RTT)
+      NETWORK_COMPRESSION_THRESHOLD: "512"
+      PLAYER_IDLE_TIMEOUT: "0"
+      MAX_TICK_TIME: "90000"
       ENABLE_RCON: "true"
       RCON_PORT: "25575"
       RCON_PASSWORD: ${RCON_PASSWORD}
