@@ -123,7 +123,7 @@ services:
   ############################# MAINTENANCE
   backup:
     <<: *common-keys-apps
-    image: itzg/mc-backup:2026.5.1@sha256:32644da0332dbccfb47465044e7d34c733749aa2254fc3063d38186838b603b9
+    image: itzg/mc-backup:2026.6.0@sha256:e2be1f80347809cd233c8f8909b1e1a6025baa327864f84464f3e5057a0dcb90
     container_name: mc-c2e2-backup
     # Shares TailScale's network namespace — RCON reachable at localhost:25575
     network_mode: "service:tailscale"
