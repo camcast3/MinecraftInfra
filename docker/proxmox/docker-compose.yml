@@ -84,7 +84,8 @@ services:
       - /data/minecraft/c2e2:/data
       - ../shared/whitelist.json:/extras/whitelist.json:ro
       - ../shared/ops.json:/extras/ops.json:ro
-      - ../shared/config/proxy-compatible-forge.toml:/data/config/proxy-compatible-forge.toml
+      - ../shared/config/proxy-compatible-forge.toml:/config/proxy-compatible-forge.toml:ro
+      - ../shared/patches:/patches:ro
     environment:
       EULA: "TRUE"
       TYPE: AUTO_CURSEFORGE
@@ -106,8 +107,10 @@ services:
       # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
       # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
       MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
-      # Injects VELOCITY_FORWARDING_SECRET into PCF's config at startup.
-      REPLACE_ENV_VARIABLES: "TRUE"
+      # PATCH_DEFINITIONS injects the forwarding secret into PCF's TOML config.
+      # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
+      PATCH_DEFINITIONS: /patches
+      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
       # High-latency player tuning (2 AUS players, ~200ms RTT)
       NETWORK_COMPRESSION_THRESHOLD: "512"
       PLAYER_IDLE_TIMEOUT: "0"
@@ -115,7 +118,6 @@ services:
       ENABLE_RCON: "true"
       RCON_PORT: "25575"
       RCON_PASSWORD: ${RCON_PASSWORD}
-      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
     healthcheck:
       test: ["CMD", "mc-health"]
       interval: 30s

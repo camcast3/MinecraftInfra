@@ -1,0 +1,84 @@
+---
+# Local test stack: Velocity proxy + Forge 1.20.1 lobby
+# Mirrors the Azure stack for local validation of modern forwarding.
+#
+# Usage:
+#   cd docker/local
+#   docker compose up
+#
+# Connect with a Minecraft 1.20.1 client to localhost:25565 (offline-mode).
+
+services:
+
+  velocity:
+    container_name: velocity-local
+    image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
+    ports:
+      - "25565:25577"
+    networks:
+      - minecraft
+    restart: unless-stopped
+    volumes:
+      - ./velocity:/server
+    environment:
+      TYPE: VELOCITY
+      VELOCITY_VERSION: "3.3.0-SNAPSHOT"
+      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+    healthcheck:
+      test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  lobby:
+    container_name: lobby-local
+    image: itzg/minecraft-server:2026.5.4-java17@sha256:cee7b7204d8dcb9e6b4090fcbf4cecb2464bb5fff87027efec152909d16ca34a
+    tty: true
+    stdin_open: true
+    networks:
+      - minecraft
+    depends_on:
+      velocity:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - lobby-data:/data
+      - ../shared/whitelist.json:/extras/whitelist.json:ro
+      - ../shared/ops.json:/extras/ops.json:ro
+      - ../shared/config/proxy-compatible-forge.toml:/config/proxy-compatible-forge.toml:ro
+      - ../shared/patches:/patches:ro
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      VERSION: "1.20.1"
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      ONLINE_MODE: "FALSE"
+      ENABLE_ROLLING_LOGS: "true"
+      MODE: adventure
+      MAX_PLAYERS: 6
+      WHITELIST_FILE: /extras/whitelist.json
+      OPS_FILE: /extras/ops.json
+      ENFORCE_WHITELIST: "FALSE"
+      MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
+      # PATCH_DEFINITIONS injects the forwarding secret into the PCF TOML config.
+      # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
+      PATCH_DEFINITIONS: /patches
+      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      ENABLE_RCON: "true"
+      RCON_PORT: "25575"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+
+volumes:
+  lobby-data:
+
+networks:
+  minecraft:
+    driver: bridge
