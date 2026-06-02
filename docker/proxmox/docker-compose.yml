@@ -88,6 +88,8 @@ services:
       VERSION: "1.20.1"
       CF_SLUG: craft-to-exile-2
       CF_API_KEY: ${CF_API_KEY}
+      # Client-only mods that crash the dedicated server — excluded from CurseForge auto-install
+      CF_EXCLUDE_MODS: chat-plus,minemenu
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       # MEMORY="" disables itzg's built-in -Xms/-Xmx flags.
