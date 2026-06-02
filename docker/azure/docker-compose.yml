@@ -108,6 +108,10 @@ services:
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       MODE: adventure
+      DIFFICULTY: peaceful
+      SPAWN_ANIMALS: "FALSE"
+      SPAWN_MONSTERS: "FALSE"
+      SPAWN_NPCS: "FALSE"
       MAX_PLAYERS: 6
       WHITELIST_FILE: /extras/whitelist.json
       OPS_FILE: /extras/ops.json
