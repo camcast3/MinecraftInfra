@@ -6,6 +6,7 @@ on:
     paths:
       - 'infra/azure/**'
       - 'docker/azure/**'
+      - 'docker/shared/**'
       - '.github/workflows/deploy-azure.yml'
   workflow_dispatch:
     inputs:
@@ -86,7 +87,7 @@ jobs:
               cd /opt/minecraft
               git fetch origin
               git checkout ${{ steps.ref.outputs.branch }}
-              git pull origin ${{ steps.ref.outputs.branch }}
+              git reset --hard origin/${{ steps.ref.outputs.branch }}
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
