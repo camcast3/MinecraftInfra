@@ -1,0 +1,21 @@
+# Proxy-Compatible-Forge (PCF) config
+# The forwarding secret is injected from the VELOCITY_FORWARDING_SECRET env var
+# at container startup via itzg's REPLACE_ENV_VARIABLES feature.
+
+[forwarding]
+enabled = true
+mode = "MODERN"
+secret = "${VELOCITY_FORWARDING_SECRET}"
+approvedProxyHosts = []
+
+[crossStitch]
+enabled = true
+forceWrappedArguments = []
+forceWrapVanillaArguments = false
+
+[debug]
+enabled = false
+disabledMixins = []
+
+[advanced]
+modernForwardingVersion = "NO_OVERRIDE"

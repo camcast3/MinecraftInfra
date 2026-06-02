@@ -92,6 +92,7 @@ services:
       - /data/minecraft/lobby:/data
       - ../shared/whitelist.json:/extras/whitelist.json:ro
       - ../shared/ops.json:/extras/ops.json:ro
+      - ../shared/config/proxy-compatible-forge.toml:/data/config/proxy-compatible-forge.toml
     environment:
       EULA: "TRUE"
       TYPE: FORGE
@@ -110,6 +111,8 @@ services:
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
       # Server-side only; clients connect with vanilla MC 1.20.1.
       MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
+      # Injects VELOCITY_FORWARDING_SECRET into PCF's config at startup.
+      REPLACE_ENV_VARIABLES: "TRUE"
       ENABLE_RCON: "true"
       RCON_PORT: "25575"
       RCON_PASSWORD: ${RCON_PASSWORD}

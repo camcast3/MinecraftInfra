@@ -8,6 +8,12 @@ on:
       - 'docker/azure/**'
       - '.github/workflows/deploy-azure.yml'
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch to deploy (default: main)'
+        required: false
+        default: 'main'
+        type: string
 
 permissions:
   id-token: write   # required for OIDC
@@ -52,7 +58,7 @@ jobs:
           fi
 
       - name: Deploy Bicep (infra + VM)
-        if: steps.infra_check.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.infra_check.outputs.changed == 'true' || (github.event_name == 'workflow_dispatch' && (inputs.ref == 'main' || inputs.ref == ''))
         run: |
           az deployment group create \
             --resource-group rg-minecraft-prod \
@@ -64,6 +70,10 @@ jobs:
       # the runner's OIDC Azure session (Contributor on the RG) is sufficient.
       # Commands run as root on the VM; refresh-env.sh re-fetches KV secrets
       # and rewrites .env + velocity.toml before the compose restart.
+      - name: Resolve deploy ref
+        id: ref
+        run: echo "branch=${{ inputs.ref || 'main' }}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy Docker stack
         run: |
           az vm run-command invoke \
@@ -74,8 +84,9 @@ jobs:
               export HOME=/root
               set -euo pipefail
               cd /opt/minecraft
-              git checkout -- .
-              git pull origin main
+              git fetch origin
+              git checkout ${{ steps.ref.outputs.branch }}
+              git pull origin ${{ steps.ref.outputs.branch }}
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans

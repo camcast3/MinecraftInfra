@@ -84,6 +84,7 @@ services:
       - /data/minecraft/c2e2:/data
       - ../shared/whitelist.json:/extras/whitelist.json:ro
       - ../shared/ops.json:/extras/ops.json:ro
+      - ../shared/config/proxy-compatible-forge.toml:/data/config/proxy-compatible-forge.toml
     environment:
       EULA: "TRUE"
       TYPE: AUTO_CURSEFORGE
@@ -105,6 +106,8 @@ services:
       # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
       # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
       MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
+      # Injects VELOCITY_FORWARDING_SECRET into PCF's config at startup.
+      REPLACE_ENV_VARIABLES: "TRUE"
       # High-latency player tuning (2 AUS players, ~200ms RTT)
       NETWORK_COMPRESSION_THRESHOLD: "512"
       PLAYER_IDLE_TIMEOUT: "0"
