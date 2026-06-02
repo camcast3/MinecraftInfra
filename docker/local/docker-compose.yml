@@ -23,6 +23,7 @@ services:
     environment:
       TYPE: VELOCITY
       VELOCITY_VERSION: "3.3.0-SNAPSHOT"
+      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar"
       VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
