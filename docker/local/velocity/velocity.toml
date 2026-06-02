@@ -5,9 +5,9 @@ bind = "0.0.0.0:25577"
 motd = "&6&lLocal Test"
 show-max-players = 6
 
-# Offline mode for local testing (no Mojang auth required).
-online-mode = false
-force-key-authentication = false
+# Velocity handles Mojang auth; backends run with ONLINE_MODE=FALSE.
+online-mode = true
+force-key-authentication = true
 
 player-info-forwarding-mode = "modern"
 

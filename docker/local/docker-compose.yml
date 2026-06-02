@@ -60,7 +60,7 @@ services:
       MAX_PLAYERS: 6
       WHITELIST_FILE: /extras/whitelist.json
       OPS_FILE: /extras/ops.json
-      ENFORCE_WHITELIST: "TRUE"
+      ENFORCE_WHITELIST: "FALSE"
       MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
       # PATCH_DEFINITIONS injects the forwarding secret into the PCF TOML config.
       # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
