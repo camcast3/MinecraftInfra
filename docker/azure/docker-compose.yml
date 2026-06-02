@@ -90,6 +90,8 @@ services:
           memory: 6G
     volumes:
       - /data/minecraft/lobby:/data
+      - ../shared/whitelist.json:/extras/whitelist.json:ro
+      - ../shared/ops.json:/extras/ops.json:ro
     environment:
       EULA: "TRUE"
       TYPE: FORGE
@@ -102,6 +104,9 @@ services:
       ENABLE_ROLLING_LOGS: "true"
       MODE: adventure
       MAX_PLAYERS: 6
+      WHITELIST_FILE: /extras/whitelist.json
+      OPS_FILE: /extras/ops.json
+      ENFORCE_WHITELIST: "TRUE"
       ENABLE_RCON: "true"
       RCON_PORT: "25575"
       RCON_PASSWORD: ${RCON_PASSWORD}
