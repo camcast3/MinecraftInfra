@@ -31,3 +31,4 @@ param proxmoxSpObjectId = 'aadced53-d6f8-4430-bc48-af7a29caa418'
 param adminUsername     = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')
 param adminSshPublicKey = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')
 param tailscaleAuthKey  = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')
+param ntfyWebhookUrl   = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ntfy-webhook-url')
