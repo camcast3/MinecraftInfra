@@ -78,8 +78,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: 24G
+          cpus: '10'
+          memory: 40G
     volumes:
       - /data/minecraft/c2e2:/data
       - ../shared/whitelist.json:/extras/whitelist.json:ro
@@ -96,10 +96,10 @@ services:
       CF_EXCLUDE_MODS: chat-plus,minemenu
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
-      # MEMORY="" disables itzg's built-in -Xms/-Xmx flags.
-      # MaxRAMPercentage=75 derives heap dynamically from the 24G cgroup limit (~18 GB heap).
-      MEMORY: ""
-      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
+      # going larger forces 64-bit object pointers and is a net regression.
+      # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
+      MEMORY: "31G"
       WHITELIST_FILE: /extras/whitelist.json
       OPS_FILE: /extras/ops.json
       ENFORCE_WHITELIST: "TRUE"
@@ -115,6 +115,10 @@ services:
       NETWORK_COMPRESSION_THRESHOLD: "512"
       PLAYER_IDLE_TIMEOUT: "0"
       MAX_TICK_TIME: "90000"
+      # Biggest TPS lever at ~20 concurrent players on a modded pack.
+      # view=7 chunks rendered, simulation=5 chunks ticked (mobs, redstone, crops).
+      VIEW_DISTANCE: "7"
+      SIMULATION_DISTANCE: "5"
       ENABLE_RCON: "true"
       RCON_PORT: "25575"
       RCON_PASSWORD: ${RCON_PASSWORD}
