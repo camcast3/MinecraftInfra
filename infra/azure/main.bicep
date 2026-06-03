@@ -24,6 +24,10 @@ param adminSshPublicKey string
 @secure()
 param tailscaleAuthKey string
 
+@description('Email address for budget alerts — pulled from Key Vault by ARM, never seen by the runner')
+@secure()
+param alertEmail string
+
 @description('VM size')
 param vmSize string = 'Standard_B4s_v2'
 
@@ -80,6 +84,15 @@ module storage 'modules/storage.bicep' = {
     location: location
     environment: environment
     storageAccountName: storageAccountName
+  }
+}
+
+// ── Budget + Alerts ───────────────────────────────────────────────────────────
+module budget 'modules/budget.bicep' = {
+  name: 'deploy-budget'
+  params: {
+    alertEmail: alertEmail
+    environment: environment
   }
 }
 

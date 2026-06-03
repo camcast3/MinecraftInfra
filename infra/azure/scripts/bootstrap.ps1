@@ -167,6 +167,7 @@ Write-Host "      githubActionsObjectId = '$OIDC_SP_OBJECT_ID'"
 Write-Host "      param adminUsername     = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')"
 Write-Host "      param adminSshPublicKey = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')"
 Write-Host "      param tailscaleAuthKey  = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')"
+Write-Host "      param alertEmail        = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'budget-alert-email')"
 Write-Host ""
 Write-Host "  ② Add these GitHub Actions secrets"
 Write-Host "     (Settings → Secrets → Actions → New repository secret):"
@@ -246,6 +247,10 @@ $RCON_PASSWORD = Read-Host "  RCON password [press Enter to use: $rconSuggestion
 if ([string]::IsNullOrWhiteSpace($RCON_PASSWORD)) { $RCON_PASSWORD = $rconSuggestion }
 Invoke-Az @('keyvault', 'secret', 'set',
     '--vault-name', $KV_NAME, '--name', 'rcon-password', '--value', $RCON_PASSWORD, '--output', 'none')
+
+$BUDGET_ALERT_EMAIL = Read-Host "  Email address for Azure budget alerts (75%, 87.5% thresholds)"
+Invoke-Az @('keyvault', 'secret', 'set',
+    '--vault-name', $KV_NAME, '--name', 'budget-alert-email', '--value', $BUDGET_ALERT_EMAIL, '--output', 'none')
 
 Write-Host ""
 Write-Host "  ℹ Skipping c2e2-tailscale-ip — set this after the Proxmox VM is provisioned:"
