@@ -37,7 +37,7 @@ old/                # ARCHIVED — ignore
 - **OS updates:** Both VMs run `unattended-upgrades` (configured in cloud-init) — daily security patches, auto-reboot at off-peak hours.
 - **Docker image updates:** Renovate bumps pinned digests in the repo → Azure VM auto-deploys via `deploy-azure.yml` → Proxmox auto-deploys via Portainer GitOps polling.
 - **Docker images:** Pinned digests (`image:tag@sha256:...`). Renovate manages bumps.
-- **Memory tuning:** `MEMORY: ""` + `JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"` on all MC servers.
+- **Memory tuning:** Per [itzg's docs](https://docker-minecraft-server.readthedocs.io/), both fixed `MEMORY` and `MEMORY: ""` + `MaxRAMPercentage` are first-class. We pick per server: small servers with a known footprint (lobby) use `MEMORY: ""` + `JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"` so heap tracks the cgroup; C2E2 uses a fixed `MEMORY: "31G"` to stay just under the ~32 GB compressed-oops cliff regardless of the container ceiling.
 - **Online mode:** `ONLINE_MODE: "FALSE"` on all backend servers; Velocity handles Mojang auth at the proxy.
 - **Proxmox updates:** Portainer GitOps — Portainer CE polls the GitHub repo on a set interval (e.g., 5 min), detects changes to `docker/proxmox/docker-compose.yml`, and redeploys automatically. No inbound ports or webhooks needed. All env vars set via Portainer stack environment UI only.
 - **Secrets:** Never committed. `.env.example` documents all required vars.
