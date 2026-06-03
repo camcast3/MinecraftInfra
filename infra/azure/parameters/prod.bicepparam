@@ -5,6 +5,17 @@ param location = 'westus'
 param environment = 'prod'
 param vmSize = 'Standard_B4s_v2'
 
+// ── VM customData gate ───────────────────────────────────────────────────────
+// Azure rejects ANY change to osProfile.customData on an existing VM with
+// PropertyChangeNotAllowed, even if the decoded cloud-init is identical.
+// Any drift in inputs (e.g. tailscaleAuthKey rotation) would re-render the
+// base64 string and break every subsequent deploy.
+//
+// Leave this `false` for normal deploys. Flip to `true` ONLY for an initial
+// provision against an empty resource group (no VM yet), then set it back
+// to `false` and commit before the next CI run.
+param setCustomData = false
+
 // ── Key Vault ─────────────────────────────────────────────────────────────────
 // Name must be globally unique (3-24 chars, alphanumeric + hyphens)
 param keyVaultName = 'kv-minecraft-prod'

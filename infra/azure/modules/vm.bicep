@@ -25,6 +25,9 @@ param vmSize string = 'Standard_B4s_v2'
 @description('Environment tag')
 param environment string = 'prod'
 
+@description('Whether to send osProfile.customData. Only true on initial VM creation — Azure rejects changes to this property on an existing VM (PropertyChangeNotAllowed). Subsequent runs must leave this false so the key is omitted entirely from the request payload.')
+param setCustomData bool = false
+
 var vmName = 'vm-minecraft-${environment}'
 var osDiskName = 'osdisk-minecraft-${environment}'
 var dataDiskName = 'datadisk-minecraft-${environment}'
@@ -146,11 +149,15 @@ resource vm 'Microsoft.Compute/virtualMachines@2025-11-01' = {
         }
       ]
     }
-    osProfile: {
+    // customData is only emitted on initial provisioning (setCustomData=true).
+    // Azure rejects ANY change to osProfile.customData on an existing VM with
+    // PropertyChangeNotAllowed — even if the decoded payload is identical, any
+    // drift in inputs (e.g. tailscaleAuthKey rotation) re-renders the base64
+    // string and trips the check. union() keeps the key entirely absent from
+    // the request on subsequent runs (not null, not empty).
+    osProfile: union({
       computerName: vmName
       adminUsername: adminUsername
-      // base64-encoded cloud-init script — Azure passes this to cloud-init on first boot
-      customData: base64(cloudInitRendered)
       linuxConfiguration: {
         disablePasswordAuthentication: true
         ssh: {
@@ -163,7 +170,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2025-11-01' = {
           ]
         }
       }
-    }
+    }, setCustomData ? { customData: base64(cloudInitRendered) } : {})
     networkProfile: {
       networkInterfaces: [
         { id: nicId }
