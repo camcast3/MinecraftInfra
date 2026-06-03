@@ -34,6 +34,9 @@ param vmSize string = 'Standard_B4s_v2'
 @description('Environment tag')
 param environment string = 'prod'
 
+@description('Whether to send osProfile.customData on the VM. Only set true for an initial provision against an empty resource group — Azure rejects changes to this property on an existing VM.')
+param setCustomData bool = false
+
 @description('Storage account name — must be globally unique, 3-24 lowercase alphanumeric. Set explicitly so it never changes across deploys or RG recreations.')
 param storageAccountName string = 'stmcminecraftprod'
 
@@ -74,6 +77,7 @@ module vm 'modules/vm.bicep' = {
     tailscaleAuthKey: tailscaleAuthKey
     vmSize: vmSize
     environment: environment
+    setCustomData: setCustomData
   }
 }
 
