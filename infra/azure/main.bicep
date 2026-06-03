@@ -24,9 +24,9 @@ param adminSshPublicKey string
 @secure()
 param tailscaleAuthKey string
 
-@description('ntfy webhook URL for budget alerts — pulled from Key Vault by ARM, never seen by the runner')
+@description('Email address for budget alerts — pulled from Key Vault by ARM, never seen by the runner')
 @secure()
-param ntfyWebhookUrl string
+param alertEmail string
 
 @description('VM size')
 param vmSize string = 'Standard_B4s_v2'
@@ -91,7 +91,7 @@ module storage 'modules/storage.bicep' = {
 module budget 'modules/budget.bicep' = {
   name: 'deploy-budget'
   params: {
-    ntfyWebhookUrl: ntfyWebhookUrl
+    alertEmail: alertEmail
     environment: environment
   }
 }

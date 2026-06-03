@@ -1,6 +1,6 @@
-@description('ntfy webhook URL for budget alerts (stored in Key Vault)')
+@description('Email address to send budget alerts to (stored in Key Vault — PII)')
 @secure()
-param ntfyWebhookUrl string
+param alertEmail string
 
 @description('Monthly budget amount in USD')
 param budgetAmount int = 80
@@ -10,23 +10,18 @@ param environment string = 'prod'
 
 // ── Action Group ─────────────────────────────────────────────────────────────
 resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: 'ag-budget-ntfy-${environment}'
+  name: 'ag-budget-email-${environment}'
   location: 'global'
   tags: {
     environment: environment
   }
   properties: {
-    groupShortName: 'ntfy-budget'
+    groupShortName: 'budget-mail'
     enabled: true
-    webhookReceivers: [
+    emailReceivers: [
       {
-        name: 'ntfy-mc-ops'
-        serviceUri: '${ntfyWebhookUrl}/mc-ops'
-        useCommonAlertSchema: false
-      }
-      {
-        name: 'ntfy-mc-alerts'
-        serviceUri: '${ntfyWebhookUrl}/mc-alerts'
+        name: 'budget-alerts'
+        emailAddress: alertEmail
         useCommonAlertSchema: false
       }
     ]
@@ -49,6 +44,9 @@ resource budget 'Microsoft.Consumption/budgets@2024-08-01' = {
         operator: 'GreaterThanOrEqualTo'
         threshold: 75
         thresholdType: 'Actual'
+        contactEmails: [
+          alertEmail
+        ]
         contactGroups: [
           actionGroup.id
         ]
@@ -57,8 +55,11 @@ resource budget 'Microsoft.Consumption/budgets@2024-08-01' = {
       eightySevenPointFivePercent: {
         enabled: true
         operator: 'GreaterThanOrEqualTo'
-        threshold: 87.5
+        threshold: json('87.5')
         thresholdType: 'Actual'
+        contactEmails: [
+          alertEmail
+        ]
         contactGroups: [
           actionGroup.id
         ]
