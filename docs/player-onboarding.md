@@ -75,9 +75,9 @@ The modpack runs on Minecraft 1.20.1, which requires **Java 17**.
 
 ### Check if you already have it
 
-1. Press the **Windows key**, type `cmd`, and press **Enter**
-2. In the black window that appears, type:
-   ```
+1. Press the **Windows key**, type `powershell`, and press **Enter**
+2. In the blue window that appears, type:
+   ```powershell
    java -version
    ```
    and press **Enter**
@@ -89,23 +89,27 @@ need to install Java 17.
 
 ### Install Java 17
 
-1. Go to
-   **[adoptium.net/temurin/releases/?version=17](https://adoptium.net/temurin/releases/?version=17&os=windows&arch=x64&package=jdk)**
-2. Confirm the page shows: **Operating System: Windows**, **Architecture: x64**, **Package Type: JDK**, **Version: 17 - LTS**
-3. Click the big **`.msi`** download button (it'll be named something like `OpenJDK17U-jdk_x64_windows_hotspot_17.x.x.msi`)
-4. Open the downloaded file and click **Next** through the installer
+We'll use **winget** — Windows' built-in package manager. It comes pre-installed
+on Windows 10 (recent updates) and Windows 11, so you don't need to download it.
 
-   > **Important:** On the "Custom Setup" screen, click the dropdown next to
-   > **"Set JAVA_HOME variable"** and choose **"Will be installed on local hard drive"**.
-   > By default it's disabled. This makes Prism Launcher detect Java automatically.
+1. Press the **Windows key**, type `powershell`, and press **Enter**
+2. In the blue window, copy-paste this command and press **Enter**:
+   ```powershell
+   winget install --id EclipseAdoptium.Temurin.17.JDK -e --source winget
+   ```
+3. If Windows asks for permission ("Do you agree to the source agreements?"), type **Y** and press **Enter**
+4. Wait for the install to finish — you'll see a progress bar, then "Successfully installed"
 
-5. Click **Install** → **Finish**
+That's it. winget installs Temurin 17, sets `JAVA_HOME` automatically, and adds Java to your PATH.
 
-![Adoptium Java 17 download page](assets/images/adoptium-download.png)
+> **`winget` not found?** You're on an older Windows build. Either update Windows
+> via Settings → Windows Update, or install the
+> [App Installer from the Microsoft Store](https://apps.microsoft.com/detail/9NBLGGH4NNS1)
+> which includes winget.
 
 ### Verify
 
-Close any open Command Prompt windows, open a new one, and run `java -version` again.
+Close any open PowerShell windows, open a new one, and run `java -version` again.
 You should now see Java 17. If you still don't, restart your PC and try once more.
 
 ---

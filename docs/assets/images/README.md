@@ -8,7 +8,6 @@ Once added, they'll render in the wiki automatically.
 | Filename | What to capture |
 |----------|-----------------|
 | `namemc-lookup.png` | NameMC page showing a username search result with the UUID visible |
-| `adoptium-download.png` | The adoptium.net download page with the Windows x64 MSI button highlighted |
 | `prism-microsoft-login.png` | Prism Launcher account setup dialog (Microsoft login) |
 | `prism-java-settings.png` | Prism Settings → Java tab with auto-detected Java 17 selected |
 | `prism-memory-settings.png` | Prism Settings → Java tab showing Maximum memory at 8192 MiB |
