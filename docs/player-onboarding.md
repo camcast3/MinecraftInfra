@@ -31,8 +31,8 @@ NegativeZone-specific bits are **Step 1 (whitelist)** and **Step 4 (server addre
 - ~10 GB of free disk space
 
 > **Don't have Minecraft Java yet?** Buy it from
-> [minecraft.net/store/minecraft-deluxe-collection](https://www.minecraft.net/en-us/store/minecraft-deluxe-collection)
-> — make sure the listing says **"Java & Bedrock Edition for PC"**.
+> [minecraft.net/store/minecraft-java-edition](https://www.minecraft.net/en-us/store/minecraft-java-edition)
+> — make sure the listing says **"Minecraft: Java Edition"**.
 
 ---
 
