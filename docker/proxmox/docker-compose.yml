@@ -2,6 +2,15 @@
 # Proxmox stack: Craft to Exile 2 + TailScale sidecar + backup
 # Managed by Portainer CE with GitOps polling (auto-redeploy on git changes).
 #
+# Portainer CE GitOps note: relative bind mounts (e.g. ../shared/...) DO NOT work
+# in CE — that's a Portainer Business feature ("Enable relative path volumes").
+# Shared files (whitelist, ops, PCF config) are pulled into this stack via:
+#   - WHITELIST_FILE / OPS_FILE: raw GitHub URLs (itzg native HTTP fetch)
+#   - APPLY_EXTRA_FILES: raw GitHub URL for the PCF TOML template (first run only)
+#   - top-level `configs:` with inline content for the PCF patch JSON
+# Canonical source for all of these still lives in docker/shared/ in this repo.
+# The Azure stack continues to bind-mount docker/shared/ directly (no Portainer there).
+#
 # TailScale runs as a sidecar. Both C2E2 and mc-backup share its network
 # namespace via network_mode: service:tailscale.
 #   - C2E2's port 25565 is reachable only at the TailScale IP (100.x.x.x)
@@ -82,10 +91,10 @@ services:
           memory: 40G
     volumes:
       - /data/minecraft/c2e2:/data
-      - ../shared/whitelist.json:/extras/whitelist.json:ro
-      - ../shared/ops.json:/extras/ops.json:ro
-      - ../shared/config/proxy-compatible-forge.toml:/config/proxy-compatible-forge.toml:ro
-      - ../shared/patches:/patches:ro
+    configs:
+      - source: pcf_patch_def
+        target: /patches/pcf-forwarding.json
+        mode: 0444
     environment:
       EULA: "TRUE"
       TYPE: AUTO_CURSEFORGE
@@ -100,15 +109,27 @@ services:
       # going larger forces 64-bit object pointers and is a net regression.
       # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
       MEMORY: "31G"
-      WHITELIST_FILE: /extras/whitelist.json
-      OPS_FILE: /extras/ops.json
+      # Whitelist/ops fetched from the public GitHub repo on every container start.
+      # Portainer CE GitOps can't bind-mount files from the repo into the container
+      # (relative-path volumes is a BE-only feature), so we use itzg's native URL support.
+      # EXISTING_*=SKIP preserves in-game `/whitelist add` and `/op` changes between restarts —
+      # the URL files are only the source-of-truth seed, not an authoritative overwrite.
+      WHITELIST_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/whitelist.json
+      OPS_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/ops.json
+      EXISTING_WHITELIST_FILE: SKIP
+      EXISTING_OPS_FILE: SKIP
       ENFORCE_WHITELIST: "TRUE"
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
       # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
       # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
       MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
-      # PATCH_DEFINITIONS injects the forwarding secret into PCF's TOML config.
-      # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
+      # PCF TOML template fetched from the repo on first run only (--skip-existing semantics).
+      # Format: <dest-DIRECTORY><<source-url>; the filename comes from the URL's basename.
+      # Runs BEFORE PATCH_DEFINITIONS. If the template structure ever changes, delete
+      # /data/minecraft/c2e2/config/proxy-compatible-forge.toml on the host and redeploy.
+      APPLY_EXTRA_FILES: config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
+      # PATCH_DEFINITIONS re-injects the forwarding secret on every start. The patch JSON
+      # is provided via the top-level configs: block below (inline, no host bind mount).
       PATCH_DEFINITIONS: /patches
       CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
       # High-latency player tuning (2 AUS players, ~200ms RTT)
@@ -208,3 +229,27 @@ services:
           sleep 10
           rcon "stop" || rcon "stop" || rcon "stop"
         done
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Inline PCF patch JSON. Materializes as /patches/pcf-forwarding.json inside
+# the C2E2 container with no host bind mount (which CE GitOps can't do).
+#
+# Escaping: Compose interpolates ${VAR} and $VAR from its env at deploy time.
+# We want literal ${CFG_VELOCITY_FORWARDING_SECRET} preserved in the file so
+# mc-image-helper substitutes it at container startup from the container env.
+# Compose's escape for a literal "$" is "$$" — hence $$set, $$., $${...}.
+# ─────────────────────────────────────────────────────────────────────────────
+configs:
+  pcf_patch_def:
+    content: |
+      {
+        "file": "/data/config/proxy-compatible-forge.toml",
+        "ops": [
+          {
+            "$$set": {
+              "path": "$$.forwarding.secret",
+              "value": "$${CFG_VELOCITY_FORWARDING_SECRET}"
+            }
+          }
+        ]
+      }
