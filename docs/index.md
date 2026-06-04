@@ -30,16 +30,16 @@ New here? Follow the [Player Onboarding Guide]({% link player-onboarding.md %}) 
 
 ---
 
-## Server Architecture
+## How it works
 
-Players connect to `mc.negativezone.cc` → hit the **Velocity proxy** → land in the **lobby** → get forwarded to the **Craft to Exile 2** modded server.
+When you join `mc.negativezone.cc`, you're automatically connected straight
+into the **Craft to Exile 2** world. No commands needed.
 
 ```mermaid
 graph LR
-    A[Player] -->|mc.negativezone.cc| B[Velocity Proxy]
-    B --> C[Lobby]
-    B --> D[Craft to Exile 2]
+    A[You] -->|mc.negativezone.cc| B[Craft to Exile 2]
+    B -.fallback if down.-> C[Lobby]
 ```
 
-The lobby is a lightweight Forge 1.20.1 server in adventure/peaceful mode.
-C2E2 is the main gameplay server running the full Craft to Exile 2 modpack.
+If C2E2 is down for maintenance, you'll land in a small lobby instead — wait
+a minute and try `/server c2e2` to retry.

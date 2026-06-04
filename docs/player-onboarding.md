@@ -5,144 +5,249 @@ nav_order: 2
 ---
 
 # Player Onboarding Guide
+{: .no_toc }
 
-Welcome to the NegativeZone Minecraft server! This guide walks you through
-everything you need to get connected and playing on Craft to Exile 2.
+Never modded Minecraft before? **You're in the right place.** This guide walks
+you through every click, from buying Minecraft to joining the server. No prior
+modding experience needed.
 
----
+If you already play Minecraft Java Edition with mods, you can skim — the only
+NegativeZone-specific bits are **Step 1 (whitelist)** and **Step 4 (server address)**.
 
-## 1. Get Your Mojang/Microsoft Account Name and UUID
+<details markdown="1">
+<summary>Table of contents</summary>
 
-The server is whitelist-only. Before you can join, an admin needs your
-**Minecraft Java Edition username** and **UUID**.
-
-### Find your username
-
-Your username is the one shown in the Minecraft launcher (Java Edition).
-If you haven't purchased Minecraft Java Edition yet, you'll need to buy it
-from [minecraft.net](https://www.minecraft.net/).
-
-### Find your UUID
-
-1. Go to [mcuuid.net](https://mcuuid.net/)
-2. Enter your Minecraft username and click **Submit**
-3. Copy the **Full UUID** (the one with dashes, e.g. `a30918db-b4fe-4659-9575-ebc8c19640b8`)
-
-Send both your **username** and **UUID** to the server admin so they can add
-you to the whitelist.
+1. TOC
+{:toc}
+</details>
 
 ---
 
-## 2. Install Java 17 (Windows)
+## What you'll need
 
-Craft to Exile 2 runs on Minecraft 1.20.1 which requires **Java 17**.
+- A Windows PC (this guide is Windows-specific; macOS/Linux steps differ slightly)
+- A **paid Minecraft Java Edition** account (the **Bedrock** version sold on Xbox / Microsoft Store / mobile **does not work** — it must be Java Edition)
+- About **30–45 minutes** for the full setup
+- ~10 GB of free disk space
 
-### Check if Java 17 is already installed
+> **Don't have Minecraft Java yet?** Buy it from
+> [minecraft.net/store/minecraft-deluxe-collection](https://www.minecraft.net/en-us/store/minecraft-deluxe-collection)
+> — make sure the listing says **"Java & Bedrock Edition for PC"**.
 
-Open PowerShell or Command Prompt and run:
+---
 
-```powershell
-java -version
+## Step 1 — Get your username and UUID for the whitelist
+
+Our server is **whitelist-only** to keep griefers out. Before you can join,
+an admin (Cam) needs to add you. To do that, they need two things:
+
+1. Your **Minecraft Java username** (the name shown above your character in-game)
+2. Your **UUID** — a unique ID Minecraft uses internally
+
+### How to find them
+
+1. Go to **[namemc.com](https://namemc.com/)** in your web browser
+2. Type your Minecraft Java username in the search bar at the top and press **Enter**
+3. On the result page, look for the line that says **"UUID"** — it'll look something like:
+   `a30918db-b4fe-4659-9575-ebc8c19640b8`
+4. Copy your **username** and the **UUID** (the one **with dashes**)
+
+![NameMC username and UUID lookup](assets/images/namemc-lookup.png)
+
+### Send them to the admin
+
+Message Cam on Discord (or wherever you usually chat) with:
+
+```
+Username: <your-username>
+UUID: <your-uuid>
 ```
 
-If you see output like `openjdk version "17.x.x"` or higher, you're good —
-skip to step 3.
+You'll get a confirmation when you've been added. Until then, the server will
+reject your connection with "You are not white-listed on this server".
+
+---
+
+## Step 2 — Install Java 17
+
+The modpack runs on Minecraft 1.20.1, which requires **Java 17**.
+**Other Java versions will not work** — not Java 8, not Java 21. Specifically 17.
+
+### Check if you already have it
+
+1. Press the **Windows key**, type `cmd`, and press **Enter**
+2. In the black window that appears, type:
+   ```
+   java -version
+   ```
+   and press **Enter**
+3. If the first line says something like `openjdk version "17.x.x"` **or**
+   `java version "17.x.x"`, you're done — skip to Step 3.
+
+Anything else (no Java found, or a different version like 8 or 21) means you
+need to install Java 17.
 
 ### Install Java 17
 
-1. Download **Eclipse Temurin 17 (LTS)** from
-   [adoptium.net](https://adoptium.net/temurin/releases/?version=17&os=windows&arch=x64&package=jdk)
-2. Choose the **Windows x64 `.msi` installer**
-3. Run the installer — accept defaults, but make sure **"Set JAVA_HOME variable"**
-   is checked
-4. Restart your terminal, then verify with `java -version`
+1. Go to
+   **[adoptium.net/temurin/releases/?version=17](https://adoptium.net/temurin/releases/?version=17&os=windows&arch=x64&package=jdk)**
+2. Confirm the page shows: **Operating System: Windows**, **Architecture: x64**, **Package Type: JDK**, **Version: 17 - LTS**
+3. Click the big **`.msi`** download button (it'll be named something like `OpenJDK17U-jdk_x64_windows_hotspot_17.x.x.msi`)
+4. Open the downloaded file and click **Next** through the installer
 
-> **Tip:** Prism Launcher can auto-detect Java installations. If you install
-> Temurin to the default path, Prism will find it automatically.
+   > **Important:** On the "Custom Setup" screen, click the dropdown next to
+   > **"Set JAVA_HOME variable"** and choose **"Will be installed on local hard drive"**.
+   > By default it's disabled. This makes Prism Launcher detect Java automatically.
+
+5. Click **Install** → **Finish**
+
+![Adoptium Java 17 download page](assets/images/adoptium-download.png)
+
+### Verify
+
+Close any open Command Prompt windows, open a new one, and run `java -version` again.
+You should now see Java 17. If you still don't, restart your PC and try once more.
 
 ---
 
-## 3. Set Up Prism Launcher with Craft to Exile 2
+## Step 3 — Install Prism Launcher and the Craft to Exile 2 modpack
 
-[Prism Launcher](https://prismlauncher.org/) is a free, open-source Minecraft
-launcher that makes managing modpacks easy.
+Prism Launcher is a free, open-source Minecraft launcher that handles modpacks
+for you. We use it instead of the official Minecraft Launcher because it
+downloads modpacks from CurseForge in one click.
 
 ### Install Prism Launcher
 
-1. Download from [prismlauncher.org/download](https://prismlauncher.org/download/)
-2. Run the installer (Windows x64)
-3. On first launch, Prism will ask you to sign in with your **Microsoft account**
-   (the one linked to your Minecraft Java Edition license)
+1. Go to **[prismlauncher.org/download/windows](https://prismlauncher.org/download/windows/)**
+2. Download the **Windows Installer (MSVC) — x86_64** `.exe`
+3. Run the installer and click through with the defaults
+4. Launch **Prism Launcher** from your Start menu
 
-### Configure Java in Prism
+### Add your Microsoft account
 
-1. Go to **Settings → Java**
-2. Click **Auto-detect** — select the Java 17 installation
-3. Set **Maximum memory allocation** to at least **6144 MiB** (6 GB)
-   — C2E2 is a heavy modpack; 8192 MiB (8 GB) is recommended if you have 16+ GB RAM
+The first time you open Prism it'll walk you through adding an account.
 
-### Install the Craft to Exile 2 modpack
+1. When prompted, click **Microsoft** as the account type
+2. Click **Open the page and copy the code** — your browser will open
+3. Paste the code, sign in with the same Microsoft account that owns Minecraft Java
+4. Once it says "You have signed in", switch back to Prism
 
-1. Click **Add Instance** (top-left)
-2. Select **CurseForge** in the left sidebar
-3. Search for **"Craft to Exile 2"**
-4. Select the pack and choose the **latest version for Minecraft 1.20.1**
-5. Click **OK** — Prism will download Forge + all mods automatically
+![Prism Launcher Microsoft account setup](assets/images/prism-microsoft-login.png)
 
-> **Important:** Do NOT install extra client mods unless you know they're
-> compatible. The server will reject connections from clients with mismatched mods.
+### Tell Prism about Java 17
+
+1. In the top-right corner of Prism, click **Settings**
+2. Click the **Java** tab on the left
+3. Click **Auto-detect...** under "Java Installation"
+4. Select the **Java 17** entry from the list (it'll say something like
+   `JavaSE 17.x.x` with a path containing `Eclipse Adoptium`) → **OK**
+5. Under **Memory**, set **Maximum memory allocation** to **`8192`** (= 8 GB)
+   - If your PC has only 8 GB of RAM total, use **`6144`** instead
+   - If you have 32 GB+, you can go up to **`12288`**
+
+![Prism Java settings with Java 17 detected](assets/images/prism-java-settings.png)
+![Prism memory allocation set to 8192 MiB](assets/images/prism-memory-settings.png)
+
+Click **OK** to save.
+
+### Add the Craft to Exile 2 modpack
+
+1. Back at Prism's main window, click **Add Instance** in the top-left
+2. In the dialog, click **CurseForge** in the left sidebar
+3. In the search bar, type **`Craft to Exile 2`** and press **Enter**
+4. Click the result titled **"Craft to Exile 2"** (the icon is a brown leather book)
+5. In the **Version** dropdown on the right, leave it at the **latest version**
+   (it auto-selects the newest release)
+6. Click **OK** at the bottom
+
+![Prism Add Instance button](assets/images/prism-add-instance.png)
+![Prism CurseForge tab searching for Craft to Exile 2](assets/images/prism-curseforge-search.png)
+
+Prism will download Forge + all the mods + configs. **This takes 5–15 minutes**
+depending on your internet — there are hundreds of mods. Let it run.
+
+When the download finishes, you'll see a **Craft to Exile 2** entry in your
+instance list.
+
+> **⚠️ Do NOT install extra mods.** The server checks that your mod list
+> matches the modpack exactly. Adding random mods will get you kicked.
 
 ---
 
-## 4. Connect to the Server
+## Step 4 — Connect to the server
 
-### Add the server
+1. In Prism's main window, click your **Craft to Exile 2** instance
+2. Click **Launch** in the right panel
 
-1. Launch the **Craft to Exile 2** instance in Prism Launcher
-2. Once Minecraft loads, go to **Multiplayer → Add Server**
-3. Enter:
-   - **Server Name:** NegativeZone (or whatever you like)
+   ![Prism launch button](assets/images/prism-launch.png)
+
+3. The Minecraft launcher window will show download progress; once Minecraft
+   opens, click **Multiplayer** from the title screen
+4. Click **Add Server**
+5. Fill in:
+   - **Server Name:** `NegativeZone` (or anything you like)
    - **Server Address:** `mc.negativezone.cc`
-4. Click **Done**
+6. Click **Done**
 
-### Join and play
+   ![Add server dialog](assets/images/mc-multiplayer-add.png)
 
-1. Select the server and click **Join Server**
-2. You'll land in the **lobby** first — this is a lightweight waiting area
-3. You'll be automatically forwarded to the **Craft to Exile 2** server
+7. You'll see the NegativeZone server in the list with a **green ping bar**
+   if it's online. Double-click it to join.
 
-### Troubleshooting
+   ![Server list showing NegativeZone](assets/images/mc-join.png)
 
-| Problem | Solution |
-|---------|----------|
-| "You are not white-listed on this server" | Ask the admin to add your UUID to the whitelist |
-| "This server has mods that require Forge to be installed on the client" | You connected with vanilla Minecraft. Launch the **Craft to Exile 2** instance from Prism Launcher instead |
-| Connection timed out | Check that you're using `mc.negativezone.cc` with no port number |
-| "Incompatible Forge version" | Make sure your C2E2 modpack is the latest 1.20.1 version — update in Prism if needed |
-| Extreme lag / low FPS | Allocate more RAM (8 GB+), lower render distance in video settings, ensure you're using Java 17 (not 8 or 21) |
+**That's it!** You'll be automatically connected straight into Craft to Exile 2.
+
+> **What happens behind the scenes:** when you join `mc.negativezone.cc`,
+> the server automatically forwards you into the Craft to Exile 2 world.
+> No commands needed. If C2E2 is restarting or down for maintenance, you'll
+> land in a small "lobby" world instead — wait a minute and try `/server c2e2`
+> to retry.
 
 ---
 
-## System Requirements
+## Troubleshooting
+
+| Problem | What to do |
+|---------|------------|
+| `You are not white-listed on this server` | Your UUID isn't on the whitelist yet. DM Cam with your username + UUID. |
+| `This server has mods that require Forge to be installed on the client` | You connected with the vanilla Minecraft launcher instead of the Prism C2E2 instance. Launch the **Craft to Exile 2** instance from Prism (Step 4). |
+| `Connection timed out` / `Failed to connect` | Server may be down or restarting. Wait 2 minutes and retry. If it persists, ping Cam. |
+| `Outdated client` / `Outdated server` | Your modpack version doesn't match the server. In Prism, right-click your C2E2 instance → **Edit** → **Version** → update to the latest. |
+| Game crashes on launch | Probably out of memory. Go to Prism Settings → Java → bump Maximum memory up (try 8192 or 10240). |
+| Super low FPS in-game | In Minecraft: **Options → Video Settings → Render Distance: 8**, **Graphics: Fast**. C2E2 is heavy — these help a lot. |
+| `Failed to verify username` / `Bad login` | Your Microsoft session in Prism expired. Prism → top-right account dropdown → **Manage Accounts** → click your account → **Refresh**. |
+| Java still says version 8 after installing 17 | Restart your PC. Windows sometimes doesn't pick up the new PATH until reboot. |
+
+Still stuck? Ping Cam on Discord with:
+- The exact error message (screenshot is best)
+- Your Minecraft username
+- What step you got stuck on
+
+---
+
+## System requirements
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| RAM | 12 GB total (6 GB to MC) | 16+ GB total (8 GB to MC) |
-| CPU | 4 cores | 6+ cores |
-| Storage | 10 GB free | SSD with 20+ GB free |
-| Java | 17 (required) | 17 (Temurin LTS) |
-| Internet | Broadband | Low-latency connection |
+| OS | Windows 10 64-bit | Windows 11 |
+| RAM | 12 GB total | 16+ GB |
+| RAM allocated to Minecraft | 6 GB | 8 GB |
+| CPU | 4 cores, 3 GHz+ | 6+ cores |
+| Storage | 10 GB free | 20+ GB on SSD |
+| Java | 17 (Temurin) | 17 (Temurin) |
+| Internet | 5 Mbps down | 25+ Mbps down |
 
 ---
 
-## Quick Reference
+## Quick reference
 
-| Item | Value |
-|------|-------|
-| Server address | `mc.negativezone.cc` |
-| Minecraft version | 1.20.1 |
-| Modpack | Craft to Exile 2 (CurseForge) |
-| Mod loader | Forge |
-| Java version | 17 |
-| Launcher | Prism Launcher (recommended) |
-| Whitelist UUID lookup | [mcuuid.net](https://mcuuid.net/) |
+| | |
+|---|---|
+| **Server address** | `mc.negativezone.cc` |
+| **Minecraft version** | 1.20.1 |
+| **Modpack** | [Craft to Exile 2](https://www.curseforge.com/minecraft/modpacks/craft-to-exile-2) |
+| **Mod loader** | Forge |
+| **Java version** | 17 (Eclipse Temurin) |
+| **Launcher** | [Prism Launcher](https://prismlauncher.org/) |
+| **UUID lookup** | [namemc.com](https://namemc.com/) |
