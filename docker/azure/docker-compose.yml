@@ -118,7 +118,14 @@ services:
       ENFORCE_WHITELIST: "TRUE"
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
       # Server-side only; clients connect with vanilla MC 1.20.1.
-      MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
+      # spark — JVM profiler/perf-diagnostics mod (https://spark.lucko.me/). Complements
+      # the Prometheus monitoring sidecars: mc-monitor + cAdvisor surface "what's wrong"
+      # (TPS dips, CPU spikes); /spark profiler, /spark health, /spark heapdump answer
+      # "why" by sampling the JVM and uploading shareable reports to spark.lucko.me.
+      # Server-side mod; ops use it via the in-game /spark command (ops.json grants access).
+      MODS: |-
+        https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
+        https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
       # PATCH_DEFINITIONS injects the forwarding secret into PCF's TOML config.
       # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
       PATCH_DEFINITIONS: /patches
