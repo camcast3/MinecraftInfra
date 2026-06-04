@@ -1,3 +1,9 @@
+---
+layout: default
+title: Player Onboarding
+nav_order: 2
+---
+
 # Player Onboarding Guide
 
 Welcome to the NegativeZone Minecraft server! This guide walks you through
