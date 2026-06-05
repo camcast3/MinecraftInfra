@@ -34,22 +34,8 @@ enable-player-address-logging = true
 # Only backend: Craft to Exile 2 on the Proxmox VM, reachable over TailScale.
 c2e2 = "${C2E2_TAILSCALE_IP}:25565"
 
-<<<<<<< HEAD
-# Auto-forward all joining players to C2E2. If C2E2 is offline, players land
-# in the lobby as a fallback (e.g. during a restart window). Players can still
-# manually switch with `/server lobby` or `/server c2e2` at any time.
-try = ["c2e2", "lobby"]
-=======
-<<<<<<< HEAD
-# Auto-forward all joining players to C2E2. If C2E2 is offline, players land
-# in the lobby as a fallback (e.g. during a restart window). Players can still
-# manually switch with `/server lobby` or `/server c2e2` at any time.
-try = ["c2e2", "lobby"]
-=======
 # Single backend — every login goes straight to C2E2.
 try = ["c2e2"]
->>>>>>> origin/main
->>>>>>> origin/main
 
 [forced-hosts]
 # No forced hosts — all players land on c2e2.
