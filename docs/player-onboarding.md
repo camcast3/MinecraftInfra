@@ -32,8 +32,10 @@ Two paths to get connected: a **one-line automated setup** (recommended) or
 
 ## Path A — Automated setup (recommended)
 
-A single PowerShell command installs **Java 17** and **Prism Launcher**, looks
-up your **UUID**, and copies the allowlist info to your clipboard. ~3 minutes.
+A single PowerShell command installs **Java 17**, **Prism Launcher**, the
+**Craft to Exile 2 modpack** (pulled directly from our Azure storage — much
+faster than CurseForge), looks up your **UUID**, and copies the allowlist
+info to your clipboard. ~3 minutes.
 
 ### Run it
 
@@ -48,20 +50,23 @@ up your **UUID**, and copies the allowlist info to your clipboard. ~3 minutes.
 4. When prompted, type your **Minecraft Java username** and press **Enter**
 5. The script copies `Username: ... / UUID: ...` to your clipboard
 
-> **Cautious? Verify before running.** The script is published as a signed
-> GitHub Release asset with a SHA-256 hash you can check. See
+> **Cautious? Verify before running.** The script is published as a GitHub
+> Release asset with a SHA-256 hash you can check. See
 > [Releases](https://github.com/camcast3/MinecraftInfra/releases?q=setup-v) —
 > each release shows the install command and a copy-paste verification
 > one-liner that refuses to run if the file has been tampered with.
+
+> **What about the modpack zip?** The script also verifies the SHA-256 of
+> the modpack zip pulled from our storage before installing it. If anything
+> tampers with it, the install aborts.
 
 ### After the script finishes
 
 1. **DM the admin (Cam)** on Discord — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're allowlisted.
 2. Open **Prism Launcher** from the Start menu
 3. **Sign in with your Microsoft account** (the one that owns Minecraft Java)
-4. Click **Add Instance** → **CurseForge** → search **`Craft to Exile 2`** → **OK**.
-   Let it download (5–15 min).
-5. Launch the C2E2 instance, **Multiplayer → Add Server**, server address: `mc.negativezone.cc`
+4. Launch the **Craft to Exile 2** instance (already installed by the script)
+5. **Multiplayer → Add Server**, server address: `mc.negativezone.cc`
 6. Join — you'll be auto-connected straight into Craft to Exile 2.
 
 That's it. The remaining sections below are only needed if the automated
