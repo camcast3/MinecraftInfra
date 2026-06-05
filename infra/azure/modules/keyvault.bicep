@@ -63,7 +63,7 @@ output keyVaultUri string = keyVault.properties.vaultUri
 //   vm-admin-username        — Linux user for SSH (e.g. "mcsvc")
 //   ssh-public-key           — SSH public key (cat ~/.ssh/id_ed25519.pub)
 //   tailscale-auth-key       — Ephemeral TailScale auth key (from tailscale.com/admin/settings/keys)
-//   velocity-forwarding-secret — Random string shared between Velocity and all backends
-//   rcon-password            — RCON password for the lobby server
+//   velocity-forwarding-secret — Random string shared between Velocity and the C2E2 backend
+//   rcon-password            — RCON password for the C2E2 backend (consumed by the Proxmox stack)
 //   c2e2-tailscale-ip        — TailScale IP of the Proxmox VM (100.x.x.x)
 // ---------------------------------------------------------------------------
