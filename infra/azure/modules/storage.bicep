@@ -19,7 +19,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-08-01' = {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
+    // Anonymous blob reads are allowed at the account level so the
+    // `minecraft-modpack` container below can serve the exported Prism
+    // instance zip to player setup.ps1 without credentials. The
+    // `minecraft-backups` container keeps publicAccess: 'None' and stays
+    // RBAC-only — public access is opt-in per container.
+    allowBlobPublicAccess: true
     // Disable shared key access — all auth must go through Azure RBAC.
     // rclone with Managed Identity (Azure VM) and Service Principal (Proxmox)
     // both use Azure AD tokens and work correctly without shared key access.
@@ -43,6 +48,22 @@ resource backupsContainer 'Microsoft.Storage/storageAccounts/blobServices/contai
   }
 }
 
+// Public-read container for the exported Prism Launcher instance zip.
+// Player setup.ps1 pulls `latest.json` + the versioned zip from here anonymously,
+// skipping the slow CurseForge download path. Re-uploaded by
+// scripts/publish-prism-pack.ps1 whenever the modpack is updated.
+//
+// publicAccess: 'Blob' = anonymous read on individual blobs (NOT directory listing).
+// Containers are not enumerable; users must know the exact blob name.
+resource modpackContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-08-01' = {
+  parent: blobService
+  name: 'minecraft-modpack'
+  properties: {
+    publicAccess: 'Blob'
+  }
+}
+
 output storageAccountName string = storageAccount.name
 output storageAccountId string = storageAccount.id
 output backupsContainerId string = backupsContainer.id
+output modpackContainerId string = modpackContainer.id

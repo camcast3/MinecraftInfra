@@ -1,0 +1,2 @@
+source: "bundler/inline"
+require "jekyll-remote-theme"
