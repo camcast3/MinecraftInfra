@@ -1,7 +1,11 @@
 # NegativeZone Minecraft setup script
 #
 # Run from PowerShell (no admin needed):
-#   irm https://wiki.negativezone.cc/assets/setup.ps1 | iex
+#   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
+#
+# Verify before running: see the GitHub Release notes for SHA-256 + a
+# verification one-liner that refuses to run if the file was tampered with.
+#   https://github.com/camcast3/MinecraftInfra/releases?q=setup-v
 #
 # This script:
 #   1. Installs Eclipse Temurin 17 JDK via winget (if missing)

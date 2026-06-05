@@ -41,12 +41,18 @@ up your **UUID**, and copies the whitelist info to your clipboard. ~3 minutes.
 2. Copy-paste this command and press **Enter**:
 
    ```powershell
-   irm https://wiki.negativezone.cc/assets/setup.ps1 | iex
+   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
    ```
 
 3. Approve any winget prompts (press **Y** + Enter if asked)
 4. When prompted, type your **Minecraft Java username** and press **Enter**
 5. The script copies `Username: ... / UUID: ...` to your clipboard
+
+> **Cautious? Verify before running.** The script is published as a signed
+> GitHub Release asset with a SHA-256 hash you can check. See
+> [Releases](https://github.com/camcast3/MinecraftInfra/releases?q=setup-v) —
+> each release shows the install command and a copy-paste verification
+> one-liner that refuses to run if the file has been tampered with.
 
 ### After the script finishes
 
@@ -214,7 +220,7 @@ username, and what step you got stuck on.
 | | |
 |---|---|
 | **Server address** | `mc.negativezone.cc` |
-| **Setup script** | `irm https://wiki.negativezone.cc/assets/setup.ps1 \| iex` |
+| **Setup script** | `irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 \| iex` |
 | **Minecraft version** | 1.20.1 |
 | **Modpack** | [Craft to Exile 2](https://www.curseforge.com/minecraft/modpacks/craft-to-exile-2) |
 | **Mod loader** | Forge |
