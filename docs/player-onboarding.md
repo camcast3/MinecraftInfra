@@ -62,7 +62,7 @@ info to your clipboard. ~3 minutes.
 
 ### After the script finishes
 
-1. **DM the admin (Cam)** on Discord — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're allowlisted.
+1. **DM the admin** — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're allowlisted.
 2. Open **Prism Launcher** from the Start menu
 3. **Sign in with your Microsoft account** (the one that owns Minecraft Java)
 4. Launch the **Craft to Exile 2** instance (already installed by the script)
@@ -91,7 +91,7 @@ Use [**minecraftuuid.com**](https://minecraftuuid.com/):
 
 ![minecraftuuid.com username lookup](assets/images/minecraftuuid-lookup.png)
 
-DM Cam on Discord:
+DM the admin:
 
 ```
 Username: <your-username>
@@ -191,7 +191,7 @@ try again.
 
 | Problem | Fix |
 |---------|-----|
-| `You are not white-listed on this server` | Your UUID isn't on the allowlist yet. DM Cam with username + UUID. |
+| `You are not white-listed on this server` | Your UUID isn't on the allowlist yet. DM the admin with username + UUID. |
 | `This server has mods that require Forge to be installed on the client` | You launched the vanilla Minecraft launcher instead of the Prism C2E2 instance. Launch from Prism. |
 | `Connection timed out` | Server may be down or restarting. Wait 2 min and retry. |
 | `Outdated client` / `Outdated server` | Right-click your Prism instance → **Edit** → **Version** → update to the latest C2E2 release. |
@@ -201,7 +201,7 @@ try again.
 | `winget` errors during setup script | Update Windows (Settings → Windows Update), or install [App Installer](https://apps.microsoft.com/detail/9NBLGGH4NNS1) from the Store. |
 | Java still says version 8 after install | Restart your PC — Windows sometimes doesn't pick up the new PATH until reboot. |
 
-Still stuck? DM Cam with the exact error (screenshot is best), your Minecraft
+Still stuck? DM the admin with the exact error (screenshot is best), your Minecraft
 username, and what step you got stuck on.
 
 ---

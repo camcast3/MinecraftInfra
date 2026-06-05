@@ -160,14 +160,14 @@ UUID: $uuid
 "@
 
 Write-Host ""
-Write-Host "==> Send this to the admin (Cam) to get allowlisted:" -ForegroundColor Cyan
+Write-Host "==> Send this to the admin to get allowlisted:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host $payload -ForegroundColor White
 Write-Host ""
 
 try {
     Set-Clipboard -Value $payload
-    Write-Ok "Copied to your clipboard — paste it in Discord with Ctrl+V"
+    Write-Ok "Copied to your clipboard — paste it to the admin with Ctrl+V"
 } catch {
     Write-Warn "Couldn't copy to clipboard automatically — copy the text above manually"
 }
