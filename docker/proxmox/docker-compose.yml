@@ -33,7 +33,7 @@
 # MC 1.20.1 requires Java 17 — all server images MUST use java17 variants.
 #
 # Bind mounts live under /data/minecraft/ — pre-create these on the host:
-#   mkdir -p /data/minecraft/{tailscale,c2e2}
+#   mkdir -p /data/minecraft/{tailscale,c2e2,promtail}
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -122,7 +122,16 @@ services:
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
       # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
       # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
-      MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
+      #
+      # spark — JVM profiler/perf-diagnostics mod (https://spark.lucko.me/). Complements
+      # the Prometheus monitoring sidecars below: mc-monitor + cAdvisor surface "what's
+      # wrong" (TPS dips, CPU spikes); /spark profiler, /spark health, /spark heapdump
+      # answer "why" by sampling the JVM and uploading shareable reports to spark.lucko.me.
+      # Server-side only; ops use it via the in-game /spark command (ops.json grants access).
+      # No metrics endpoint — no Prometheus scrape, no port, completely independent of the sidecars.
+      MODS: |-
+        https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
+        https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
       # PCF TOML template fetched from the repo on first run only (--skip-existing semantics).
       # Format: <dest-DIRECTORY><<source-url>; the filename comes from the URL's basename.
       # Runs BEFORE PATCH_DEFINITIONS. If the template structure ever changes, delete
@@ -230,16 +239,114 @@ services:
           rcon "stop" || rcon "stop" || rcon "stop"
         done
 
+  ############################# MONITORING SIDECARS
+  # All 4 share the tailscale network namespace so their metrics endpoints
+  # are reachable only at the Proxmox tailscale IP (100.x.x.x). No ports:
+  # directive is allowed when network_mode: service:tailscale is set —
+  # the ports listed in comments below are accessed via that tailnet IP.
+  #
+  # Known limitation: node-exporter and cadvisor run inside the tailscale
+  # network namespace, so they miss some host network interface metrics
+  # (CPU, memory, disk, container metrics still work). Documented trade-off.
+  mc-monitor-exporter:
+    <<: *common-keys-apps
+    image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
+    container_name: mc-monitor-exporter
+    # Shares tailscale netns — c2e2 is reachable at localhost:25565 here.
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+      craft-to-exile-2:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    command: ["export-for-prometheus"]
+    environment:
+      EXPORT_SERVERS: "localhost:25565"
+      EXPORT_PORT: "8081"
+
+  node-exporter:
+    <<: *common-keys-apps
+    image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
+    container_name: node-exporter
+    network_mode: "service:tailscale"
+    pid: host
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    volumes:
+      - "/:/host:ro,rslave"
+    command:
+      - "--path.rootfs=/host"
+      - "--web.listen-address=:9100"
+
+  cadvisor:
+    <<: *common-keys-apps
+    image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
+    container_name: cadvisor
+    network_mode: "service:tailscale"
+    privileged: true
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  promtail:
+    <<: *common-keys-apps
+    image: grafana/promtail:3.6.11@sha256:a761cb834cfaeee29745440d4884d6748f0a08d8f68928db1d707018c1dcfbe9
+    container_name: promtail
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # Persist read-positions across redeploys so promtail doesn't re-ship
+      # historical logs every time Portainer GitOps recreates the container.
+      - /data/minecraft/promtail:/var/lib/promtail
+    configs:
+      - source: promtail_config
+        target: /etc/promtail/config.yaml
+        mode: 0444
+    command: ["-config.file=/etc/promtail/config.yaml"]
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Inline PCF patch JSON. Materializes as /patches/pcf-forwarding.json inside
-# the C2E2 container with no host bind mount (which CE GitOps can't do).
+# Top-level configs: block. All inline because Portainer CE GitOps does NOT
+# support relative-path volumes (BE-only feature). Each entry materializes as
+# a file inside the target container at deploy time, no host bind mount needed.
 #
-# Escaping: Compose interpolates ${VAR} and $VAR from its env at deploy time.
-# We want literal ${CFG_VELOCITY_FORWARDING_SECRET} preserved in the file so
-# mc-image-helper substitutes it at container startup from the container env.
-# Compose's escape for a literal "$" is "$$" — hence $$set, $$., $${...}.
+# Escaping (PCF patch only): Compose interpolates ${VAR} and $VAR from its env
+# at deploy time. We want literal ${CFG_VELOCITY_FORWARDING_SECRET} preserved
+# in the patch JSON so mc-image-helper substitutes it at container startup from
+# the container env. Compose's escape for a literal "$" is "$$" — hence $$set,
+# $$., $${...}.
 # ─────────────────────────────────────────────────────────────────────────────
 configs:
+  # PCF patch JSON → /patches/pcf-forwarding.json inside the c2e2 container.
   pcf_patch_def:
     content: |
       {
@@ -253,3 +360,33 @@ configs:
           }
         ]
       }
+
+  # Promtail config → /etc/promtail/config.yaml inside the promtail container.
+  # Positions persist via the /data/minecraft/promtail bind mount on the
+  # promtail service so log read-offsets survive container recreation.
+  # grpc_listen_port: 0 disables promtail's gRPC listener (we only push to Loki;
+  # no need to expose another port in the tailscale netns).
+  promtail_config:
+    content: |
+      server:
+        http_listen_port: 9080
+        grpc_listen_port: 0
+      positions:
+        filename: /var/lib/promtail/positions.yaml
+      clients:
+        - url: http://mon-loki:3100/loki/api/v1/push
+      scrape_configs:
+        - job_name: docker
+          static_configs:
+            - targets: [localhost]
+              labels:
+                instance: proxmox-c2e2
+                __path__: /var/lib/docker/containers/*/*.log
+          pipeline_stages:
+            - docker: {}
+        - job_name: syslog
+          static_configs:
+            - targets: [localhost]
+              labels:
+                instance: proxmox-c2e2
+                __path__: /var/log/syslog

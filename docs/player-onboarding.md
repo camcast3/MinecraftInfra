@@ -182,8 +182,8 @@ Prism downloads Forge + all the mods (5–15 min depending on your internet).
    ![Minecraft add server](assets/images/mc-multiplayer-add.png)
 
 You'll be **automatically forwarded straight into Craft to Exile 2**. If C2E2
-is restarting, you'll land in a lightweight lobby instead — wait a minute and
-type `/server c2e2` to retry.
+is restarting, you'll get a "Server unavailable" message — wait a minute and
+try again.
 
 ---
 

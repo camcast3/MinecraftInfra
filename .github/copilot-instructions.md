@@ -6,9 +6,9 @@
 
 Two-node Minecraft network connected by TailScale:
 
-- **Azure VM (Debian 13)** — public entry point. Runs Velocity proxy (port 25565) + lobby MC server in Docker. GitHub Actions deploys here via `az vm run-command invoke` (Azure control plane, no SSH needed).
+- **Azure VM (Debian 13)** — public entry point. Runs **Velocity proxy only** (port 25565) in Docker. No backend MC server lives here — Velocity forwards every player straight to C2E2 over Tailscale. GitHub Actions deploys here via `az vm run-command invoke` (Azure control plane, no SSH needed).
 - **Home Proxmox VM (Debian 13)** — private. Runs Craft to Exile 2 modded server in Docker, managed by Portainer CE. Updates via Portainer CE GitOps polling (auto-redeploy on git changes to `docker/proxmox/`).
-- **TailScale** — mesh VPN for all inter-node traffic (Velocity → C2E2) and all admin SSH. Public SSH (port 22) is blocked on both VMs.
+- **TailScale** — mesh VPN for all inter-node traffic (Velocity → C2E2 player traffic + admin SSH). Public SSH (port 22) is blocked on both VMs.
 
 ## Repo Layout
 
@@ -23,7 +23,7 @@ infra/
     cloud-init.yaml # Debian 13 cloud-init for Proxmox VM
 docker/
   shared/           # Whitelist & ops shared by all MC servers
-  azure/            # Velocity + Lobby compose stack
+  azure/            # Velocity proxy compose stack (proxy only — no MC backend)
   proxmox/          # Craft to Exile 2 compose stack (Portainer-managed)
 .github/workflows/
   deploy-azure.yml  # Bicep deploy + az vm run-command push to Azure VM
@@ -37,7 +37,7 @@ old/                # ARCHIVED — ignore
 - **OS updates:** Both VMs run `unattended-upgrades` (configured in cloud-init) — daily security patches, auto-reboot at off-peak hours.
 - **Docker image updates:** Renovate bumps pinned digests in the repo → Azure VM auto-deploys via `deploy-azure.yml` → Proxmox auto-deploys via Portainer GitOps polling.
 - **Docker images:** Pinned digests (`image:tag@sha256:...`). Renovate manages bumps.
-- **Memory tuning:** Per [itzg's docs](https://docker-minecraft-server.readthedocs.io/), both fixed `MEMORY` and `MEMORY: ""` + `MaxRAMPercentage` are first-class. We pick per server: small servers with a known footprint (lobby) use `MEMORY: ""` + `JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"` so heap tracks the cgroup; C2E2 uses a fixed `MEMORY: "31G"` to stay just under the ~32 GB compressed-oops cliff regardless of the container ceiling.
+- **Memory tuning:** Per [itzg's docs](https://docker-minecraft-server.readthedocs.io/), both fixed `MEMORY` and `MEMORY: ""` + `MaxRAMPercentage` are first-class. C2E2 uses a fixed `MEMORY: "31G"` to stay just under the ~32 GB compressed-oops cliff regardless of the container ceiling.
 - **Online mode:** `ONLINE_MODE: "FALSE"` on all backend servers; Velocity handles Mojang auth at the proxy.
 - **Proxmox updates:** Portainer GitOps — Portainer CE polls the GitHub repo on a set interval (e.g., 5 min), detects changes to `docker/proxmox/docker-compose.yml`, and redeploys automatically. No inbound ports or webhooks needed. All env vars set via Portainer stack environment UI only.
 - **Secrets:** Never committed. `.env.example` documents all required vars.

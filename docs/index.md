@@ -38,8 +38,7 @@ into the **Craft to Exile 2** world. No commands needed.
 ```mermaid
 graph LR
     A[You] -->|mc.negativezone.cc| B[Craft to Exile 2]
-    B -.fallback if down.-> C[Lobby]
 ```
 
-If C2E2 is down for maintenance, you'll land in a small lobby instead — wait
-a minute and try `/server c2e2` to retry.
+If C2E2 is down for maintenance, you'll get a "Server unavailable" message —
+wait a minute and try again.

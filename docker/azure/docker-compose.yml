@@ -1,6 +1,10 @@
 ---
-# Azure stack: Velocity proxy + Forge 1.20.1 lobby + Azure Blob backup
+# Azure stack: Velocity proxy only
 # Managed by GitHub Actions (deploy-azure.yml).
+#
+# The Azure VM is purely the public entry point and Mojang-auth gateway.
+# Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
+# on the Proxmox VM over Tailscale. No backend MC server runs here.
 #
 # Environment variables come from /opt/minecraft/docker/azure/.env
 # written by the deploy workflow from Azure Key Vault secrets.
@@ -9,26 +13,12 @@
 # Config files (velocity.toml, forwarding.secret) are written by the deploy workflow
 # to /data/minecraft/velocity/ before docker compose up runs.
 #
-# MC 1.20.1 requires Java 17 — all server images MUST use java17 variants.
-#
-# Backup uses rclone configured entirely via env vars (no rclone.conf needed).
-# RCLONE_CONFIG_<REMOTE>_<KEY> creates an in-memory remote at rclone startup.
-# The VM's system-assigned Managed Identity is used via env_auth — rclone falls
-# through to MSI automatically when no AZURE_* credential env vars are present.
-#
-# Required Azure resources (one-time setup):
-#   az storage account create --name <account> --resource-group rg-minecraft-prod \
-#     --sku Standard_LRS --kind StorageV2
-#   az storage container create --name minecraft-backups --account-name <account>
-#   az role assignment create --assignee <vm-principal-id> \
-#     --role "Storage Blob Data Contributor" \
-#     --scope "/subscriptions/.../storageAccounts/<account>/blobServices/default/containers/minecraft-backups"
+# MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
+# because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
 #
 # Key Vault secrets written to .env by deploy-azure.yml:
-#   VELOCITY_FORWARDING_SECRET  — shared secret between Velocity and backend servers
-#   RCON_PASSWORD               — RCON password for the lobby server
+#   VELOCITY_FORWARDING_SECRET  — shared secret between Velocity and the C2E2 backend
 #   C2E2_TAILSCALE_IP           — TailScale IP of the Proxmox VM (used in velocity.toml)
-#   STORAGE_ACCOUNT             — Azure Storage account name (no .blob.core.windows.net)
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -45,8 +35,6 @@ services:
     image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
     ports:
       - "25565:25577"
-    networks:
-      - minecraft
     deploy:
       resources:
         limits:
@@ -60,9 +48,14 @@ services:
       # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17 (3.4+ requires Java 21).
       # Pinned here so the itzg image doesn't auto-download a newer incompatible build.
       VELOCITY_VERSION: "3.3.0-SNAPSHOT"
-      # Ambassador — required for Forge 1.13-1.20.1 behind Velocity.
-      # Handles Forge channel negotiation that vanilla Velocity can't.
-      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar"
+      # Plugins (comma-separated list of jar URLs downloaded by itzg/mc-proxy at startup):
+      #   Ambassador — required for Forge 1.13-1.20.1 behind Velocity. Handles Forge
+      #     channel negotiation that vanilla Velocity can't.
+      #   spark — JVM profiler / perf diagnostics (https://spark.lucko.me/). Lets ops
+      #     run /spark profiler, /spark health, /spark tps inside Velocity to debug
+      #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
+      #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
+      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar"
       # forwarding.secret is pre-written by refresh-env.sh; this env var is a
       # belt-and-suspenders fallback for the itzg image's own secret generation.
       VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
@@ -72,108 +65,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  ############################# MINECRAFT SERVERS
-  lobby:
-    <<: *common-keys-apps
-    container_name: lobby
-    # MC 1.20.1 requires Java 17 — NEVER change this to a java21 image variant
-    image: itzg/minecraft-server:2026.5.4-java17@sha256:cee7b7204d8dcb9e6b4090fcbf4cecb2464bb5fff87027efec152909d16ca34a
-    tty: true
-    stdin_open: true
-    networks:
-      - minecraft
-    depends_on:
-      velocity:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 6G
-    volumes:
-      - /data/minecraft/lobby:/data
-      - ../shared/whitelist.json:/extras/whitelist.json:ro
-      - ../shared/ops.json:/extras/ops.json:ro
-      - ../shared/config/proxy-compatible-forge.toml:/config/proxy-compatible-forge.toml:ro
-      - ../shared/patches:/patches:ro
-    environment:
-      EULA: "TRUE"
-      TYPE: FORGE
-      VERSION: "1.20.1"
-      # MEMORY="" disables itzg's built-in -Xms/-Xmx flags.
-      # MaxRAMPercentage=75 derives heap dynamically from the 6G cgroup limit (~4.5 GB heap).
-      MEMORY: ""
-      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
-      ONLINE_MODE: "FALSE"
-      ENABLE_ROLLING_LOGS: "true"
-      MODE: adventure
-      DIFFICULTY: peaceful
-      SPAWN_ANIMALS: "FALSE"
-      SPAWN_MONSTERS: "FALSE"
-      SPAWN_NPCS: "FALSE"
-      MAX_PLAYERS: 6
-      WHITELIST_FILE: /extras/whitelist.json
-      OPS_FILE: /extras/ops.json
-      ENFORCE_WHITELIST: "TRUE"
-      # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
-      # Server-side only; clients connect with vanilla MC 1.20.1.
-      MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
-      # PATCH_DEFINITIONS injects the forwarding secret into PCF's TOML config.
-      # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
-      PATCH_DEFINITIONS: /patches
-      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
-      ENABLE_RCON: "true"
-      RCON_PORT: "25575"
-      RCON_PASSWORD: ${RCON_PASSWORD}
-    healthcheck:
-      test: ["CMD", "mc-health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 300s
-
-  ############################# MAINTENANCE
-  backup:
-    <<: *common-keys-apps
-    container_name: mc-lobby-backup
-    image: itzg/mc-backup:2026.6.0@sha256:e2be1f80347809cd233c8f8909b1e1a6025baa327864f84464f3e5057a0dcb90
-    networks:
-      - minecraft
-    depends_on:
-      lobby:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-    volumes:
-      - /data/minecraft/lobby:/data:ro
-    environment:
-      RCON_HOST: lobby
-      RCON_PORT: "25575"
-      RCON_PASSWORD: ${RCON_PASSWORD}
-      BACKUP_INTERVAL: "12h"
-      PRUNE_BACKUPS_DAYS: "14"
-
-      # ── rclone remote defined entirely via env vars (no rclone.conf needed) ──────
-      # RCLONE_CONFIG_<REMOTE>_<KEY> creates the remote in memory at rclone startup.
-      # Remote name "AZBLOB" matches the RCLONE_CONFIG_AZBLOB_* prefix below.
-      BACKUP_METHOD: rclone
-      RCLONE_REMOTE: AZBLOB
-      # Path on the remote: <blob-container>/<subdirectory>
-      # "minecraft-backups" is the blob container; "lobby" is the path within it.
-      RCLONE_DEST_DIR: minecraft-backups/lobby
-
-      # Remote type
-      RCLONE_CONFIG_AZBLOB_TYPE: azureblob
-      # Storage account name (no .blob.core.windows.net suffix)
-      RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
-      # env_auth=true: rclone checks env vars → MSI → Azure CLI in order.
-      # On this VM the system-assigned Managed Identity is picked up automatically.
-      RCLONE_CONFIG_AZBLOB_ENV_AUTH: "true"
-
-networks:
-  minecraft:
-    driver: bridge

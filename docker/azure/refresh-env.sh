@@ -17,7 +17,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 KV_NAME="kv-minecraft-prod"
-STORAGE_ACCOUNT="stmcminecraftprod"
 ENV_FILE="${SCRIPT_DIR}/.env"
 VELOCITY_DIR="/data/minecraft/velocity"
 
@@ -28,15 +27,12 @@ kv_secret() {
 }
 
 VELOCITY_FORWARDING_SECRET=$(kv_secret "velocity-forwarding-secret")
-RCON_PASSWORD=$(kv_secret "rcon-password")
 C2E2_TAILSCALE_IP=$(kv_secret "c2e2-tailscale-ip")
 
 # ── .env for docker compose ───────────────────────────────────────────────────
 cat > "$ENV_FILE" <<EOF
 VELOCITY_FORWARDING_SECRET=${VELOCITY_FORWARDING_SECRET}
-RCON_PASSWORD=${RCON_PASSWORD}
 C2E2_TAILSCALE_IP=${C2E2_TAILSCALE_IP}
-STORAGE_ACCOUNT=${STORAGE_ACCOUNT}
 EOF
 chmod 600 "$ENV_FILE"
 echo "✓ .env written to ${ENV_FILE}"
