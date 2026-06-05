@@ -210,7 +210,6 @@ username, and what step you got stuck on.
 
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
-| OS | Windows 10 64-bit | Windows 11 |
 | RAM | 12 GB total | 16+ GB |
 | RAM allocated to Minecraft | 6 GB | 8 GB |
 | CPU | 4 cores, 3 GHz+ | 6+ cores |
