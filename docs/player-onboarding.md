@@ -89,8 +89,6 @@ Use [**minecraftuuid.com**](https://minecraftuuid.com/):
 2. Type your Minecraft Java username in the search box, press **Enter**
 3. Copy your **username** and the **Full UUID** (the one with dashes, e.g. `a30918db-b4fe-4659-9575-ebc8c19640b8`)
 
-![minecraftuuid.com username lookup](assets/images/minecraftuuid-lookup.png)
-
 DM the admin:
 
 ```
@@ -144,15 +142,11 @@ Or download the installer from [prismlauncher.org/download/windows](https://pris
    page and copy the code**, paste it in your browser, and sign in with the same
    Microsoft account that owns Minecraft Java
 
-   ![Prism Microsoft login](assets/images/prism-microsoft-login.png)
-
 3. Click **Settings** (top-right) → **Java** tab:
    - Click **Auto-detect...** → select the **Java 17** entry → **OK**
    - Under **Memory**, set **Maximum memory allocation** to **`8192`** (= 8 GB)
      - If your PC has only 8 GB RAM total, use `6144` instead
      - If you have 32+ GB RAM, you can go up to `12288`
-
-   ![Prism Java settings](assets/images/prism-java-settings.png)
 
    Click **OK** to save.
 
@@ -162,8 +156,6 @@ Or download the installer from [prismlauncher.org/download/windows](https://pris
 2. Click **CurseForge** in the left sidebar
 3. Search **`Craft to Exile 2`** and press Enter
 4. Click the result (icon is a brown leather book) → leave **Version** at latest → **OK**
-
-   ![Prism CurseForge search](assets/images/prism-curseforge-search.png)
 
 Prism downloads Forge + all the mods (5–15 min depending on your internet).
 
@@ -178,8 +170,6 @@ Prism downloads Forge + all the mods (5–15 min depending on your internet).
    - **Server Name:** `NegativeZone`
    - **Server Address:** `mc.negativezone.cc`
 4. Click **Done**, then double-click the server to join
-
-   ![Minecraft add server](assets/images/mc-multiplayer-add.png)
 
 You'll be **automatically forwarded straight into Craft to Exile 2**. If C2E2
 is restarting, you'll get a "Server unavailable" message — wait a minute and
