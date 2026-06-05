@@ -11,8 +11,8 @@ config-version = "2.7"
 # Bind on all interfaces; the NSG exposes only port 25565 externally.
 bind = "0.0.0.0:25577"
 
-motd = "&6&lMinecraft&r &7| &bCraft to Exile 2"
-show-max-players = 6
+motd = "&6&lCraft to Exile 2&r &7| &bNegative Zone"
+show-max-players = 20
 
 # Velocity handles Mojang auth; backends run with ONLINE_MODE=FALSE.
 online-mode = true
@@ -24,20 +24,21 @@ player-info-forwarding-mode = "modern"
 
 announce-forge = false
 kick-existing-players = false
-ping-passthrough = "DISABLED"
+# ALL: Velocity proxies status pings to the C2E2 backend so the client server-list
+# reflects real C2E2 health (player count, MOTD, online/offline). With only one
+# backend and no lobby, DISABLED would show "online" even when C2E2 is unreachable.
+ping-passthrough = "ALL"
 enable-player-address-logging = true
 
 [servers]
-# Lobby runs on the same Azure VM — reachable by container name over the minecraft bridge network.
-lobby = "lobby:25565"
-# C2E2 runs on the Proxmox VM — reachable only over TailScale.
+# Only backend: Craft to Exile 2 on the Proxmox VM, reachable over TailScale.
 c2e2 = "${C2E2_TAILSCALE_IP}:25565"
 
-# Players connect to lobby first; /server c2e2 routes them to the modded server.
-try = ["lobby"]
+# Single backend — every login goes straight to C2E2.
+try = ["c2e2"]
 
 [forced-hosts]
-# No forced hosts — all players land on the lobby by default.
+# No forced hosts — all players land on c2e2.
 
 [advanced]
 compression-threshold = 256
@@ -59,4 +60,4 @@ accepts-transfers = false
 enabled = false
 port = 25577
 map = "Velocity"
-max-players = 6
+max-players = 20
