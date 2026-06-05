@@ -99,7 +99,7 @@ UUID: $uuid
 
 # ─── Output and clipboard ───────────────────────────────────────────────────
 Write-Host ""
-Write-Host "==> Send this to the admin (Cam) to get whitelisted:" -ForegroundColor Cyan
+Write-Host "==> Send this to the admin (Cam) to get allowlisted:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host $payload -ForegroundColor White
 Write-Host ""
@@ -117,7 +117,7 @@ Write-Host "==> Next steps" -ForegroundColor Cyan
 Write-Host "    1. Open Prism Launcher from the Start menu"
 Write-Host "    2. Sign in with your Microsoft account"
 Write-Host "    3. Add Instance -> CurseForge -> search 'Craft to Exile 2'"
-Write-Host "    4. Wait to be whitelisted, then connect to: mc.negativezone.cc"
+Write-Host "    4. Wait to be allowlisted, then connect to: mc.negativezone.cc"
 Write-Host ""
 Write-Host "Full guide: https://wiki.negativezone.cc/player-onboarding" -ForegroundColor Cyan
 Write-Host ""

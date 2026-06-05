@@ -33,7 +33,7 @@ Two paths to get connected: a **one-line automated setup** (recommended) or
 ## Path A — Automated setup (recommended)
 
 A single PowerShell command installs **Java 17** and **Prism Launcher**, looks
-up your **UUID**, and copies the whitelist info to your clipboard. ~3 minutes.
+up your **UUID**, and copies the allowlist info to your clipboard. ~3 minutes.
 
 ### Run it
 
@@ -56,7 +56,7 @@ up your **UUID**, and copies the whitelist info to your clipboard. ~3 minutes.
 
 ### After the script finishes
 
-1. **DM the admin (Cam)** on Discord — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're whitelisted.
+1. **DM the admin (Cam)** on Discord — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're allowlisted.
 2. Open **Prism Launcher** from the Start menu
 3. **Sign in with your Microsoft account** (the one that owns Minecraft Java)
 4. Click **Add Instance** → **CurseForge** → search **`Craft to Exile 2`** → **OK**.
@@ -75,7 +75,7 @@ Follow these if Path A errored out, or if you'd rather do every step yourself.
 
 ### Step 1 — Get your username and UUID
 
-The server is **whitelist-only**. The admin needs your Minecraft Java
+The server is **allowlist-only**. The admin needs your Minecraft Java
 **username** and **UUID** before you can join.
 
 Use [**minecraftuuid.com**](https://minecraftuuid.com/):
@@ -186,7 +186,7 @@ type `/server c2e2` to retry.
 
 | Problem | Fix |
 |---------|-----|
-| `You are not white-listed on this server` | Your UUID isn't on the whitelist yet. DM Cam with username + UUID. |
+| `You are not white-listed on this server` | Your UUID isn't on the allowlist yet. DM Cam with username + UUID. |
 | `This server has mods that require Forge to be installed on the client` | You launched the vanilla Minecraft launcher instead of the Prism C2E2 instance. Launch from Prism. |
 | `Connection timed out` | Server may be down or restarting. Wait 2 min and retry. |
 | `Outdated client` / `Outdated server` | Right-click your Prism instance → **Edit** → **Version** → update to the latest C2E2 release. |
