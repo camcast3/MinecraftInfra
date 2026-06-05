@@ -1,59 +1,85 @@
 ---
 name: Release setup script
 
-# Triggers when you push a tag like `setup-v0.1.0`.
-# Bundles docs/assets/setup.ps1 as a GitHub Release asset and publishes the
-# SHA-256 in the release notes so players can verify before running.
-#
-# To cut a release:
-#   git tag setup-v0.1.0
-#   git push origin setup-v0.1.0
+# Fires automatically when docs/assets/setup.ps1 changes on main.
+# Cuts a new GitHub Release tagged `setup-v<date>-<short-sha>` so the
+# `releases/latest/download/setup.ps1` install URL always serves the
+# current script. Also supports manual dispatch.
 
 on:
   push:
-    tags:
-      - "setup-v*"
+    branches: [main]
+    paths:
+      - "docs/assets/setup.ps1"
+      - ".github/workflows/release-setup-script.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-setup-script
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Compute SHA-256
-        id: hash
+      - name: Compute version + SHA-256
+        id: meta
         run: |
-          sha=$(sha256sum docs/assets/setup.ps1 | awk '{print $1}')
-          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          sha256=$(sha256sum docs/assets/setup.ps1 | awk '{print $1}')
+          short_sha=$(git rev-parse --short HEAD)
+          date=$(date -u +%Y.%m.%d)
+          tag="setup-v${date}-${short_sha}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if a release already exists for this commit
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.meta.outputs.tag }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.meta.outputs.tag }} already exists, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create release
+        if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          name: "Setup script ${{ github.ref_name }}"
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "Setup script ${{ steps.meta.outputs.tag }}"
           files: docs/assets/setup.ps1
           body: |
             Player onboarding script for the NegativeZone Minecraft server.
 
+            Auto-published when `docs/assets/setup.ps1` changed on `main`.
+
             ## Install command
 
             ```powershell
-            irm https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/setup.ps1 | iex
+            irm https://github.com/${{ github.repository }}/releases/latest/download/setup.ps1 | iex
             ```
 
             ## SHA-256
 
             ```
-            ${{ steps.hash.outputs.sha256 }}
+            ${{ steps.meta.outputs.sha256 }}
             ```
 
             ## Verify before running (optional, recommended)
 
             ```powershell
-            $url  = 'https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/setup.ps1'
-            $want = '${{ steps.hash.outputs.sha256 }}'
+            $url  = 'https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/setup.ps1'
+            $want = '${{ steps.meta.outputs.sha256 }}'
             $body = irm $url
             $got  = (Get-FileHash -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($body))) -Algorithm SHA256).Hash.ToLower()
             if ($got -eq $want) { iex $body } else { throw "SHA-256 mismatch: $got vs $want" }
