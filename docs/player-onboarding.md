@@ -10,10 +10,10 @@ nav_order: 2
 Two paths to get connected: a **one-line automated setup** (recommended) or
 **manual step-by-step** if you'd rather see what's happening.
 
-<details markdown="1">
+<details markdown="1" open>
 <summary>Table of contents</summary>
 
-1. TOC
+* TOC
 {:toc}
 </details>
 
