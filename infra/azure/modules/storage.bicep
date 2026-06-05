@@ -33,7 +33,8 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2025-08-01'
 }
 
 // Single container for all Minecraft backups.
-// Subdirectories (lobby/, c2e2/) are managed by rclone via RCLONE_DEST_DIR in each compose stack.
+// Subdirectories (e.g. c2e2/) are managed by rclone via RCLONE_DEST_DIR in each compose stack.
+// Currently only the Proxmox C2E2 stack writes here; the Azure VM runs Velocity only.
 resource backupsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-08-01' = {
   parent: blobService
   name: 'minecraft-backups'
