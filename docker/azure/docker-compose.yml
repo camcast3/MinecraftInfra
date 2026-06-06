@@ -112,6 +112,11 @@ services:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
 
+  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080.
+  # Tuned for a CPU-limited container: at the default --housekeeping_interval=1s
+  # plus 0.25 CPU the stats loop runs continuously and Prometheus scrapes time
+  # out ("context deadline exceeded"). See google/cadvisor#2622 — CPU limits
+  # measurably slow /metrics collection. Bumped CPU + relaxed housekeeping fix that.
   cadvisor:
     <<: *common-keys-apps
     image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
@@ -121,13 +126,30 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          # 0.25 CPU + default 1s housekeeping → /metrics scrapes time out.
+          # 0.5 CPU leaves enough headroom for both the stats loop and the scrape.
+          cpus: '0.5'
           memory: 256M
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      # /dev/disk + /dev/kmsg are in the upstream google/cadvisor README's
+      # canonical `docker run` example. Without them cadvisor can hang reading
+      # kernel OOM messages and miss disk device detection on cgroup v2 hosts.
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    command:
+      # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
+      # user sessions). We only care about Docker container metrics — node-exporter
+      # already covers host-level numbers.
+      - --docker_only=true
+      # 1s default is too aggressive for a CPU-limited container; 10s is plenty
+      # for a 5-container compose stack and matches Prometheus's typical scrape
+      # interval.
+      - --housekeeping_interval=10s
 
   promtail:
     <<: *common-keys-apps
