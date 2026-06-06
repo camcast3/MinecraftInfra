@@ -12,3 +12,7 @@ checklist.md
 # Runtime secrets — never commit
 .env
 !.env.example
+
+# Local admin runbook, not for repo
+checkList_onboarding.md
+checklist_onboarding.md
