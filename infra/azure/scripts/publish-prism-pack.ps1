@@ -189,20 +189,22 @@ publishedAt: "$publishedAt"
 "@
 Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
 
-$branchName = "modpack/v$Version"
 Push-Location $repoRoot
 try {
-    git checkout -b $branchName
+    $currentBranch = git branch --show-current
+    if ($currentBranch -eq 'main') {
+        $branchName = "modpack/v$Version"
+        git checkout -b $branchName
+    }
     git add modpack.yml
     git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
-    git push -u origin $branchName
+    git push -u origin HEAD
     gh pr create `
         --title "chore(modpack): publish v$Version" `
         --body "Automated modpack publish.`n`n- **Version:** $Version`n- **SHA-256:** ``$sha```n- **Size:** ${sizeMb} MB`n- **Published:** $publishedAt" `
         --base main
     Write-Ok "PR created for modpack v$Version"
 } finally {
-    git checkout - 2>$null
     Pop-Location
 }
 
