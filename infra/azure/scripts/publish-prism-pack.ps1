@@ -172,6 +172,24 @@ az storage blob upload `
     --content-cache-control "no-cache" `
     --output none
 
+# ─── Update modpack.yml ────────────────────────────────────────────────────
+Write-Step "Updating modpack.yml in repo"
+$repoRoot = git rev-parse --show-toplevel
+$modpackYml = Join-Path $repoRoot 'modpack.yml'
+$publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+$yamlContent = @"
+# Central modpack version record — updated by publish-prism-pack.ps1
+# This provides a committed, auditable record of the currently published pack.
+version: "$Version"
+blob: $blobName
+sha256: $sha
+url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
+instance: $InstanceName
+publishedAt: "$publishedAt"
+"@
+Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
+Write-Ok "modpack.yml updated (remember to commit + push)"
+
 # ─── Cleanup ───────────────────────────────────────────────────────────────
 Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
 Remove-Item $manifestPath -Force -ErrorAction SilentlyContinue
