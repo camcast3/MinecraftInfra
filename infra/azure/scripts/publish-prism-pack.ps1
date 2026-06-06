@@ -172,8 +172,8 @@ az storage blob upload `
     --content-cache-control "no-cache" `
     --output none
 
-# ─── Update modpack.yml ────────────────────────────────────────────────────
-Write-Step "Updating modpack.yml in repo"
+# ─── Update modpack.yml + open PR ──────────────────────────────────────────
+Write-Step "Updating modpack.yml and opening PR"
 $repoRoot = git rev-parse --show-toplevel
 $modpackYml = Join-Path $repoRoot 'modpack.yml'
 $publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
@@ -188,7 +188,23 @@ instance: $InstanceName
 publishedAt: "$publishedAt"
 "@
 Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
-Write-Ok "modpack.yml updated (remember to commit + push)"
+
+$branchName = "modpack/v$Version"
+Push-Location $repoRoot
+try {
+    git checkout -b $branchName
+    git add modpack.yml
+    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
+    git push -u origin $branchName
+    gh pr create `
+        --title "chore(modpack): publish v$Version" `
+        --body "Automated modpack publish.`n`n- **Version:** $Version`n- **SHA-256:** ``$sha```n- **Size:** ${sizeMb} MB`n- **Published:** $publishedAt" `
+        --base main
+    Write-Ok "PR created for modpack v$Version"
+} finally {
+    git checkout - 2>$null
+    Pop-Location
+}
 
 # ─── Cleanup ───────────────────────────────────────────────────────────────
 Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
