@@ -1,5 +1,5 @@
 ---
-# Azure stack: Velocity proxy only
+# Azure stack: Velocity proxy + monitoring sidecars
 # Managed by GitHub Actions (deploy-azure.yml).
 #
 # The Azure VM is purely the public entry point and Mojang-auth gateway.
@@ -12,6 +12,8 @@
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
 # Config files (velocity.toml, forwarding.secret) are written by the deploy workflow
 # to /data/minecraft/velocity/ before docker compose up runs.
+# Pre-create on the host:
+#   mkdir -p /data/minecraft/{velocity,promtail}
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
@@ -35,6 +37,9 @@ services:
     image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
     ports:
       - "25565:25577"
+      - "9985:9985"
+    networks:
+      - minecraft
     deploy:
       resources:
         limits:
@@ -55,7 +60,9 @@ services:
       #     run /spark profiler, /spark health, /spark tps inside Velocity to debug
       #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
       #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
-      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar"
+      #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
+      #     latency histograms, JVM stats) on :9985 for Prometheus scraping.
+      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
       # forwarding.secret is pre-written by refresh-env.sh; this env var is a
       # belt-and-suspenders fallback for the itzg image's own secret generation.
       VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
@@ -65,3 +72,123 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  ############################# MONITORING SIDECARS
+  mc-monitor-exporter:
+    <<: *common-keys-apps
+    image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
+    container_name: mc-monitor-exporter
+    networks:
+      - minecraft
+    depends_on:
+      velocity:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    ports:
+      - "8081:8081"
+    command: ["export-for-prometheus"]
+    environment:
+      EXPORT_SERVERS: "velocity:25577"
+      EXPORT_PORT: "8081"
+
+  node-exporter:
+    <<: *common-keys-apps
+    image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
+    container_name: node-exporter
+    network_mode: host
+    pid: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    volumes:
+      - "/:/host:ro,rslave"
+    command:
+      - "--path.rootfs=/host"
+      - "--web.listen-address=:9100"
+
+  cadvisor:
+    <<: *common-keys-apps
+    image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
+    container_name: cadvisor
+    network_mode: host
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  promtail:
+    <<: *common-keys-apps
+    image: grafana/promtail:3.6.11@sha256:a761cb834cfaeee29745440d4884d6748f0a08d8f68928db1d707018c1dcfbe9
+    container_name: promtail
+    network_mode: host
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # Persist read-positions across redeploys so promtail doesn't re-ship
+      # historical logs every time the deploy workflow recreates the container.
+      - /data/minecraft/promtail:/var/lib/promtail
+    configs:
+      - source: promtail_config
+        target: /etc/promtail/config.yaml
+        mode: 0444
+    command: ["-config.file=/etc/promtail/config.yaml"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  minecraft:
+    driver: bridge
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Top-level configs: block. Inline config avoids relative bind mounts and keeps
+# all configuration version-controlled in this compose file.
+# ─────────────────────────────────────────────────────────────────────────────
+configs:
+  # Promtail config → /etc/promtail/config.yaml inside the promtail container.
+  # Positions persist via the /data/minecraft/promtail bind mount so log
+  # read-offsets survive container recreation.
+  # grpc_listen_port: 0 disables promtail's gRPC listener (we only push to Loki;
+  # no need to expose another port on the host).
+  promtail_config:
+    content: |
+      server:
+        http_listen_port: 9080
+        grpc_listen_port: 0
+      positions:
+        filename: /var/lib/promtail/positions.yaml
+      clients:
+        - url: http://mon-loki:3100/loki/api/v1/push
+      scrape_configs:
+        - job_name: docker
+          static_configs:
+            - targets: [localhost]
+              labels:
+                instance: azure-lobby
+                __path__: /var/lib/docker/containers/*/*.log
+          pipeline_stages:
+            - docker: {}
+        - job_name: syslog
+          static_configs:
+            - targets: [localhost]
+              labels:
+                instance: azure-lobby
+                __path__: /var/log/syslog
