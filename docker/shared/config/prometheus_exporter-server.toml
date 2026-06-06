@@ -1,0 +1,33 @@
+# minecraft-prometheus-exporter (cpburnz) configuration
+# Fetched into /data/world/serverconfig/prometheus_exporter-server.toml on
+# first container start via itzg's APPLY_EXTRA_FILES (--skip-existing).
+# This mirrors the mod's upstream defaults so we have an explicit, versioned
+# baseline. To push a config change after the file already exists on the host:
+# delete /data/minecraft/c2e2/world/serverconfig/prometheus_exporter-server.toml
+# on the Proxmox VM and let Portainer GitOps redeploy.
+#
+# Metrics endpoint: <proxmox-tailnet-ip>:19565 (Prometheus scrape target).
+# Metric reference: https://github.com/cpburnz/minecraft-prometheus-exporter/blob/master/metrics.md
+
+[collector]
+# Enable collecting metrics about the JVM process (heap, GC, threads, classes).
+jvm = true
+# Enable collecting metrics about the Minecraft server (TPS, dimension ticks).
+mc = true
+# How to handle dimension tick errors:
+#   IGNORE - silent (risks log spam from misbehaving mods - up to 20/sec/dim).
+#   LOG    - log the error (mod's default; safe on heavy modded packs).
+#   STRICT - crash the server on tick error (debug only - DO NOT use in prod).
+mc_dimension_tick_errors = "LOG"
+# Enable per-dimension entity counts (mc_entities_total{dim,dim_id,type}).
+# WARNING: high cardinality on heavy modded packs - one Prometheus series per
+# dim * entity_type. Flip to false here and redeploy if ingestion bloats.
+mc_entities = true
+
+[web]
+# 0.0.0.0 binds to all interfaces in the c2e2 container. Since c2e2 shares the
+# tailscale netns, the exporter is only reachable at the Proxmox tailnet IP.
+listen_address = "0.0.0.0"
+# Default cpburnz exporter port. Matches the MONITORING SIDECARS comment block
+# in docker/proxmox/docker-compose.yml.
+listen_port = 19565

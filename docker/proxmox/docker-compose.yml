@@ -127,19 +127,39 @@ services:
       # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
       #
       # spark — JVM profiler/perf-diagnostics mod (https://spark.lucko.me/). Complements
-      # the Prometheus monitoring sidecars below: mc-monitor + cAdvisor surface "what's
-      # wrong" (TPS dips, CPU spikes); /spark profiler, /spark health, /spark heapdump
-      # answer "why" by sampling the JVM and uploading shareable reports to spark.lucko.me.
+      # the Prometheus monitoring below: mc-monitor (SLP) + cpburnz exporter (in-JVM) +
+      # cAdvisor surface "what's wrong" (TPS dips, CPU spikes); /spark profiler,
+      # /spark health, /spark heapdump answer "why" by sampling the JVM and uploading
+      # shareable reports to spark.lucko.me.
       # Server-side only; ops use it via the in-game /spark command (ops.json grants access).
       # No metrics endpoint — no Prometheus scrape, no port, completely independent of the sidecars.
+      #
+      # minecraft-prometheus-exporter (cpburnz) — white-box server metrics from inside
+      # the C2E2 JVM: TPS (mc_server_tick_seconds), per-dimension tick histograms,
+      # chunks loaded, entity counts by dim/type, plus JVM heap/GC/threads. This is the
+      # Forge equivalent of Velocity's bungeecord-prometheus-exporter on the Azure side
+      # — server-side only, no client install required (same model as spark). The mod
+      # listens on :19565; because c2e2 shares the tailscale netns, Prometheus scrapes
+      # it at <proxmox-tailnet-ip>:19565. Baseline config is shipped from this repo via
+      # APPLY_EXTRA_FILES below — see docker/shared/config/prometheus_exporter-server.toml
+      # for the values and how to change them.
       MODS: |-
         https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
         https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
-      # PCF TOML template fetched from the repo on first run only (--skip-existing semantics).
-      # Format: <dest-DIRECTORY><<source-url>; the filename comes from the URL's basename.
-      # Runs BEFORE PATCH_DEFINITIONS. If the template structure ever changes, delete
-      # /data/minecraft/c2e2/config/proxy-compatible-forge.toml on the host and redeploy.
-      APPLY_EXTRA_FILES: config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
+        https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar
+      # Extra config files fetched from the repo on first run only (--skip-existing
+      # semantics — mc-image-helper mcopy parses this as newline-delimited entries,
+      # each entry "<dest-relative-to-/data><<source-url>"; filename = URL basename).
+      # Both files persist on the host volume after first run; to push a change in
+      # either TOML, delete the file from /data/minecraft/c2e2/ on the Proxmox VM
+      # and let Portainer GitOps redeploy.
+      #   1) PCF TOML template — runs BEFORE PATCH_DEFINITIONS, which then re-injects
+      #      the forwarding secret on every start (see configs: block below).
+      #   2) cpburnz prometheus-exporter TOML — versioned baseline so the config is
+      #      explicit in git instead of auto-generated on first start.
+      APPLY_EXTRA_FILES: |-
+        config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
+        world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
       # PATCH_DEFINITIONS re-injects the forwarding secret on every start. The patch JSON
       # is provided via the top-level configs: block below (inline, no host bind mount).
       PATCH_DEFINITIONS: /patches
@@ -247,10 +267,18 @@ services:
   # are reachable only at the Proxmox tailscale IP (100.x.x.x). No ports:
   # directive is allowed when network_mode: service:tailscale is set —
   # the ports listed in comments below are accessed via that tailnet IP.
+  # The c2e2 container itself also lives in this netns, so the cpburnz
+  # Prometheus exporter mod (loaded in MODS above) is reachable on the
+  # same tailnet IP at :19565 alongside these sidecars.
   #
   # Known limitation: node-exporter and cadvisor run inside the tailscale
   # network namespace, so they miss some host network interface metrics
   # (CPU, memory, disk, container metrics still work). Documented trade-off.
+
+  # Black-box liveness/availability prober — opens a TCP socket to c2e2's game port
+  # and uses Server List Ping to export player count, version, latency, MOTD on :8081.
+  # Complements the cpburnz mod's in-JVM white-box metrics (TPS, heap, entities) on
+  # :19565 — together they answer "is the front door open?" + "is the JVM healthy?".
   mc-monitor-exporter:
     <<: *common-keys-apps
     image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
