@@ -12,10 +12,17 @@
          (saves, logs, screenshots, options.txt, etc.) while keeping mods,
          configs, resourcepacks, shaderpacks, servers.dat, and instance.cfg
          (Java args + memory settings)
-      3. Computes SHA-256 of the zip
-      4. Uploads the versioned zip + an updated `latest.json` manifest to the
+      3. Sanitizes instance.cfg so it imports cleanly on any player's machine:
+         strips your local JavaPath/JavaSignature/etc., sets AutomaticJava=true
+         so Prism picks the right Java itself, pins memory to a C2E2-friendly
+         default, and drops user-state fields (play time, window layout)
+      4. Bundles the instance icon from %APPDATA%\PrismLauncher\icons\ into the
+         zip at top-level `icons/<iconKey>.<ext>` so players see the same icon
+         (Prism stores icons globally, not inside the instance folder)
+      5. Computes SHA-256 of the zip
+      6. Uploads the versioned zip + an updated `latest.json` manifest to the
          `minecraft-modpack` public-read blob container
-      5. Sets cache headers so updates propagate quickly
+      7. Sets cache headers so updates propagate quickly
 
     Authenticates via your existing Azure CLI session (`az login`). You need
     Storage Blob Data Contributor on the container — your user account already
@@ -83,7 +90,8 @@ if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
 
 # Zip the instance folder but exclude user-specific files that shouldn't
 # ship to other players. We keep mods/, config/, resourcepacks/, shaderpacks/,
-# instance.cfg (Java args + memory), mmc-pack.json, and servers.dat (pre-configured).
+# instance.cfg (sanitized — see Sanitize-InstanceCfg below), mmc-pack.json,
+# and servers.dat (pre-configured).
 $excludePatterns = @(
     '*/saves/*'
     '*/logs/*'
@@ -110,17 +118,131 @@ function ShouldExclude([string]$relativePath) {
     return $false
 }
 
+# Removes machine-specific Java fields, user play-time, the [UI] section, and
+# pins memory to a C2E2-friendly default so players don't have to touch
+# Prism's Java/memory settings after import. Returns the cleaned content + the
+# parsed iconKey so we know which icon to bundle.
+function Get-SanitizedInstanceCfg([string]$path) {
+    $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    # Normalize line endings to CRLF (Prism writes CRLF on Windows).
+    $lines = $raw -split "\r?\n"
+
+    # Fields whose values are tied to the admin's local JDK install.
+    $stripExact = @(
+        'JavaPath', 'JavaSignature', 'JavaArchitecture', 'JavaRealArchitecture',
+        'JavaVendor', 'JavaVersion',
+        'lastLaunchTime', 'lastTimePlayed', 'totalTimePlayed',
+        'LastLaunchTime', 'LastTimePlayed', 'TotalTimePlayed',
+        'ExportAuthor', 'ExportName', 'ExportSummary', 'ExportVersion',
+        'ExportOptionalFiles'
+    )
+
+    # Fields whose values we override to a known-good default. Order: existing
+    # lines get rewritten in place; missing fields get appended to [General].
+    $overrides = [ordered]@{
+        'AutomaticJava'         = 'true'
+        'OverrideJavaLocation'  = 'false'
+        'OverrideMemory'        = 'true'
+        'MinMemAlloc'           = '512'
+        'MaxMemAlloc'           = '6144'
+    }
+
+    $iconKey = $null
+    $out = New-Object System.Collections.Generic.List[string]
+    $inUiSection = $false
+    $seenKeys = @{}
+
+    foreach ($line in $lines) {
+        $trimmed = $line.TrimEnd()
+
+        # Drop the entire [UI] section — window state, column widths, etc. are
+        # user-specific and would otherwise clobber the player's layout on
+        # every modpack update.
+        if ($trimmed -match '^\[UI\]\s*$') { $inUiSection = $true; continue }
+        if ($inUiSection -and $trimmed -match '^\[.+\]\s*$') { $inUiSection = $false }
+        if ($inUiSection) { continue }
+
+        if ($trimmed -match '^([A-Za-z0-9_]+)=(.*)$') {
+            $key = $matches[1]
+            $value = $matches[2]
+
+            if ($key -eq 'iconKey') { $iconKey = $value }
+
+            if ($stripExact -contains $key) { continue }
+
+            if ($overrides.Contains($key)) {
+                $out.Add("$key=$($overrides[$key])")
+                $seenKeys[$key] = $true
+                continue
+            }
+        }
+
+        $out.Add($trimmed)
+    }
+
+    # Append any override keys that weren't already present (they'll land in
+    # whatever section is current, but [General] is always first in Prism's
+    # cfg so any missing key sits in [General], which is what we want).
+    foreach ($key in $overrides.Keys) {
+        if (-not $seenKeys.ContainsKey($key)) {
+            $out.Insert(1, "$key=$($overrides[$key])")
+        }
+    }
+
+    return [pscustomobject]@{
+        Content = ($out -join "`r`n")
+        IconKey = $iconKey
+    }
+}
+
+# Resolves the on-disk icon file for a Prism iconKey. Prism stores icons at
+# %APPDATA%\PrismLauncher\icons\<iconKey>.<ext>; the extension varies.
+function Find-IconFile([string]$prismRoot, [string]$iconKey) {
+    if (-not $iconKey -or $iconKey -eq 'default') { return $null }
+    $iconsDir = Join-Path $prismRoot 'icons'
+    if (-not (Test-Path $iconsDir)) { return $null }
+    foreach ($ext in @('png', 'jpg', 'jpeg', 'gif', 'ico', 'svg')) {
+        $candidate = Join-Path $iconsDir "$iconKey.$ext"
+        if (Test-Path -LiteralPath $candidate) { return Get-Item -LiteralPath $candidate }
+    }
+    return $null
+}
+
+$instanceCfgPath = Join-Path $instancePath 'instance.cfg'
+$sanitized = Get-SanitizedInstanceCfg $instanceCfgPath
+$prismRoot = Split-Path $PrismInstancesDir -Parent
+$iconFile = Find-IconFile $prismRoot $sanitized.IconKey
+
 $zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
     $basePath = Split-Path $instancePath -Parent
     $files = Get-ChildItem -Path $instancePath -Recurse -File
     foreach ($file in $files) {
         $relativePath = $file.FullName.Substring($basePath.Length + 1)
-        if (-not (ShouldExclude $relativePath)) {
-            $entryName = $relativePath -replace '\\', '/'
+        if (ShouldExclude $relativePath) { continue }
+        $entryName = $relativePath -replace '\\', '/'
+
+        if ($file.FullName -eq $instanceCfgPath) {
+            # Write the sanitized instance.cfg in place of the on-disk one so
+            # we don't mutate the admin's local Prism state.
+            $entry = $zip.CreateEntry($entryName, 'Optimal')
+            $writer = New-Object System.IO.StreamWriter($entry.Open(), [System.Text.UTF8Encoding]::new($false))
+            try { $writer.Write($sanitized.Content) } finally { $writer.Dispose() }
+        } else {
             [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
                 $zip, $file.FullName, $entryName, 'Optimal') | Out-Null
         }
+    }
+
+    # Bundle the icon at top-level icons/<iconKey>.<ext>. setup.ps1 copies this
+    # to %APPDATA%\PrismLauncher\icons\ on the player's machine.
+    if ($iconFile) {
+        $iconEntry = "icons/$($iconFile.Name)"
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+            $zip, $iconFile.FullName, $iconEntry, 'Optimal') | Out-Null
+        Write-Ok "Bundled icon: $($iconFile.Name)"
+    } elseif ($sanitized.IconKey -and $sanitized.IconKey -ne 'default') {
+        Write-Host "    [warn] iconKey '$($sanitized.IconKey)' set in instance.cfg but no icon file found in $prismRoot\icons" -ForegroundColor Yellow
     }
 } finally {
     $zip.Dispose()
