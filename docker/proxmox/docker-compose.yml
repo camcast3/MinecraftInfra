@@ -103,6 +103,9 @@ services:
       CF_API_KEY: ${CF_API_KEY}
       # Client-only mods that crash the dedicated server — excluded from CurseForge auto-install
       CF_EXCLUDE_MODS: chat-plus,minemenu
+      # Mods the AUTO_CURSEFORGE installer skips as client-only, but Forge's
+      # handshake still requires them to be present on the server for players to connect.
+      CF_FORCE_INCLUDE_MODS: recreation-of-exile-sfx,ftb-placeholders
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
