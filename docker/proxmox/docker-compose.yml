@@ -143,6 +143,15 @@ services:
       # it at <proxmox-tailnet-ip>:19565. Baseline config is shipped from this repo via
       # APPLY_EXTRA_FILES below — see docker/shared/config/prometheus_exporter-server.toml
       # for the values and how to change them.
+      #
+      # Important: the mod binds :19565 inside `onServerStarted` (see PrometheusExporterMod.java
+      # in cpburnz/minecraft-prometheus-exporter), not at JVM/mod-load time. So the
+      # port returns "connection refused" during the entire `start_period` (300s) plus
+      # modpack/world load — typically 3-8 minutes on C2E2 — and again during every
+      # planned restart triggered by the `restarter` service every 6 hours. To avoid
+      # flapping Prometheus alerts during normal restarts, pair the `up{job=...19565}`
+      # alert with the mc-monitor SLP probe on :8081 (e.g. fire only when the SLP
+      # exporter also reports c2e2 down for N consecutive minutes).
       MODS: |-
         https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
         https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
@@ -320,6 +329,10 @@ services:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
 
+  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080 (reachable via
+  # the Proxmox tailscale IP). Same tuning as the Azure stack: bumped CPU and
+  # relaxed --housekeeping_interval to keep /metrics scrapes from timing out
+  # under the container CPU limit (google/cadvisor#2622).
   cadvisor:
     <<: *common-keys-apps
     image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
@@ -332,13 +345,29 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          # 0.25 CPU + default 1s housekeeping → /metrics scrapes time out.
+          # 0.5 CPU leaves enough headroom for both the stats loop and the scrape.
+          cpus: '0.5'
           memory: 256M
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      # /dev/disk + /dev/kmsg are in the upstream google/cadvisor README's
+      # canonical `docker run` example. Without them cadvisor can hang reading
+      # kernel OOM messages and miss disk device detection on cgroup v2 hosts.
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    command:
+      # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
+      # user sessions). We only care about Docker container metrics — node-exporter
+      # already covers host-level numbers.
+      - --docker_only=true
+      # 1s default is too aggressive for a CPU-limited container; 10s is plenty
+      # for this stack and matches Prometheus's typical scrape interval.
+      - --housekeeping_interval=10s
 
   promtail:
     <<: *common-keys-apps
