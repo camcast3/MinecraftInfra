@@ -76,7 +76,7 @@ runcmd:
   - DATA_UUID=$(blkid -s UUID -o value /dev/disk/azure/scsi1/lun0)
   - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
   - mount /data
-  - mkdir -p /data/minecraft/velocity
+  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
   # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft

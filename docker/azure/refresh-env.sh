@@ -39,6 +39,7 @@ echo "✓ .env written to ${ENV_FILE}"
 
 # ── Velocity config ───────────────────────────────────────────────────────────
 mkdir -p "$VELOCITY_DIR"
+mkdir -p /data/minecraft/promtail
 
 # Expand template variables into velocity.toml
 export C2E2_TAILSCALE_IP VELOCITY_FORWARDING_SECRET
