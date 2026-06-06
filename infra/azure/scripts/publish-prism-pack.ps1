@@ -8,7 +8,10 @@
 .DESCRIPTION
     Steps:
       1. Reads the Prism instance directory directly from your local Prism install
-      2. Zips it into a Prism-compatible instance export
+      2. Zips it into a distributable pack, excluding user-specific files
+         (saves, logs, screenshots, options.txt, etc.) while keeping mods,
+         configs, resourcepacks, shaderpacks, servers.dat, and instance.cfg
+         (Java args + memory settings)
       3. Computes SHA-256 of the zip
       4. Uploads the versioned zip + an updated `latest.json` manifest to the
          `minecraft-modpack` public-read blob container
@@ -77,14 +80,49 @@ $tempZip  = Join-Path $env:TEMP $blobName
 Write-Step "Exporting Prism instance '$InstanceName' -> $tempZip"
 if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
 
-# Prism's own export format is just the instance folder zipped with the
-# instance folder name as the root entry. Recreate that here.
-$parentDir = Split-Path $instancePath -Parent
-Push-Location $parentDir
+# Zip the instance folder but exclude user-specific files that shouldn't
+# ship to other players. We keep mods/, config/, resourcepacks/, shaderpacks/,
+# instance.cfg (Java args + memory), mmc-pack.json, and servers.dat (pre-configured).
+$excludePatterns = @(
+    '*/saves/*'
+    '*/logs/*'
+    '*/crash-reports/*'
+    '*/screenshots/*'
+    '*/backups/*'
+    '*/options.txt'
+    '*/optionsof.txt'
+    '*/optionsshaders.txt'
+    '*/realms_persistence.json'
+    '*/usercache.json'
+    '*/usernamecache.json'
+    '*/.lck'
+)
+
+# Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+function ShouldExclude([string]$relativePath) {
+    $normalized = $relativePath -replace '\\', '/'
+    foreach ($pattern in $excludePatterns) {
+        if ($normalized -like $pattern) { return $true }
+    }
+    return $false
+}
+
+$zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
-    Compress-Archive -Path $InstanceName -DestinationPath $tempZip -CompressionLevel Optimal
+    $basePath = Split-Path $instancePath -Parent
+    $files = Get-ChildItem -Path $instancePath -Recurse -File
+    foreach ($file in $files) {
+        $relativePath = $file.FullName.Substring($basePath.Length + 1)
+        if (-not (ShouldExclude $relativePath)) {
+            $entryName = $relativePath -replace '\\', '/'
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $zip, $file.FullName, $entryName, 'Optimal') | Out-Null
+        }
+    }
 } finally {
-    Pop-Location
+    $zip.Dispose()
 }
 
 $sizeMb = [math]::Round((Get-Item $tempZip).Length / 1MB, 1)
