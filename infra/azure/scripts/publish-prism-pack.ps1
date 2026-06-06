@@ -8,7 +8,10 @@
 .DESCRIPTION
     Steps:
       1. Reads the Prism instance directory directly from your local Prism install
-      2. Zips it into a Prism-compatible instance export
+      2. Zips it into a distributable pack, excluding user-specific files
+         (saves, logs, screenshots, options.txt, etc.) while keeping mods,
+         configs, resourcepacks, shaderpacks, servers.dat, and instance.cfg
+         (Java args + memory settings)
       3. Computes SHA-256 of the zip
       4. Uploads the versioned zip + an updated `latest.json` manifest to the
          `minecraft-modpack` public-read blob container
@@ -52,6 +55,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
 
 function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
@@ -77,14 +81,49 @@ $tempZip  = Join-Path $env:TEMP $blobName
 Write-Step "Exporting Prism instance '$InstanceName' -> $tempZip"
 if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
 
-# Prism's own export format is just the instance folder zipped with the
-# instance folder name as the root entry. Recreate that here.
-$parentDir = Split-Path $instancePath -Parent
-Push-Location $parentDir
+# Zip the instance folder but exclude user-specific files that shouldn't
+# ship to other players. We keep mods/, config/, resourcepacks/, shaderpacks/,
+# instance.cfg (Java args + memory), mmc-pack.json, and servers.dat (pre-configured).
+$excludePatterns = @(
+    '*/saves/*'
+    '*/logs/*'
+    '*/crash-reports/*'
+    '*/screenshots/*'
+    '*/backups/*'
+    '*/options.txt'
+    '*/optionsof.txt'
+    '*/optionsshaders.txt'
+    '*/realms_persistence.json'
+    '*/usercache.json'
+    '*/usernamecache.json'
+    '*/.lck'
+)
+
+# Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+function ShouldExclude([string]$relativePath) {
+    $normalized = $relativePath -replace '\\', '/'
+    foreach ($pattern in $excludePatterns) {
+        if ($normalized -like $pattern) { return $true }
+    }
+    return $false
+}
+
+$zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
-    Compress-Archive -Path $InstanceName -DestinationPath $tempZip -CompressionLevel Optimal
+    $basePath = Split-Path $instancePath -Parent
+    $files = Get-ChildItem -Path $instancePath -Recurse -File
+    foreach ($file in $files) {
+        $relativePath = $file.FullName.Substring($basePath.Length + 1)
+        if (-not (ShouldExclude $relativePath)) {
+            $entryName = $relativePath -replace '\\', '/'
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $zip, $file.FullName, $entryName, 'Optimal') | Out-Null
+        }
+    }
 } finally {
-    Pop-Location
+    $zip.Dispose()
 }
 
 $sizeMb = [math]::Round((Get-Item $tempZip).Length / 1MB, 1)
@@ -132,6 +171,42 @@ az storage blob upload `
     --content-type "application/json" `
     --content-cache-control "no-cache" `
     --output none
+
+# ─── Update modpack.yml + open PR ──────────────────────────────────────────
+Write-Step "Updating modpack.yml and opening PR"
+$repoRoot = git rev-parse --show-toplevel
+$modpackYml = Join-Path $repoRoot 'modpack.yml'
+$publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+$yamlContent = @"
+# Central modpack version record — updated by publish-prism-pack.ps1
+# This provides a committed, auditable record of the currently published pack.
+version: "$Version"
+blob: $blobName
+sha256: $sha
+url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
+instance: $InstanceName
+publishedAt: "$publishedAt"
+"@
+Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
+
+Push-Location $repoRoot
+try {
+    $currentBranch = git branch --show-current
+    if ($currentBranch -eq 'main') {
+        $branchName = "modpack/v$Version"
+        git checkout -b $branchName
+    }
+    git add modpack.yml
+    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
+    git push -u origin HEAD
+    gh pr create `
+        --title "chore(modpack): publish v$Version" `
+        --body "Automated modpack publish.`n`n- **Version:** $Version`n- **SHA-256:** ``$sha```n- **Size:** ${sizeMb} MB`n- **Published:** $publishedAt" `
+        --base main
+    Write-Ok "PR created for modpack v$Version"
+} finally {
+    Pop-Location
+}
 
 # ─── Cleanup ───────────────────────────────────────────────────────────────
 Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
