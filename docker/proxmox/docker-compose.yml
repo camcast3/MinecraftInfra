@@ -405,7 +405,7 @@ configs:
       positions:
         filename: /var/lib/promtail/positions.yaml
       clients:
-        - url: http://mon-loki:3100/loki/api/v1/push
+        - url: http://loki-k8s.tail042ec7.ts.net/loki/api/v1/push
       scrape_configs:
         - job_name: docker
           static_configs:
