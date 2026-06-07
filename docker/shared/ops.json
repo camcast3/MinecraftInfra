@@ -4,5 +4,11 @@
     "name": "camcast",
     "level": 4,
     "bypassesPlayerLimit": true
+  },
+  {
+    "uuid": "6934d3da-e9ef-434a-9ff3-1c799803bd9a",
+    "name": "Anti_Good",
+    "level": 3,
+    "bypassesPlayerLimit": true
   }
 ]
