@@ -58,11 +58,22 @@
     Prism iconKey written into the sanitized instance.cfg. Must match the
     bundled icon's basename (without extension). Defaults to "cte2".
 
+.PARAMETER Force
+    Allow re-publishing over an existing `modpack/v<Version>` branch on origin.
+    Without this, the script refuses if `origin/modpack/v<Version>` already
+    exists, to prevent silently stacking a new publish on top of a stale one
+    (which is how PR #121 ended up merge-conflicted). With `-Force`, the local
+    branch is reset to `origin/main` and pushed with `--force-with-lease`.
+
 .EXAMPLE
     ./publish-prism-pack.ps1 -Version 1.0.0
 
 .EXAMPLE
     ./publish-prism-pack.ps1 -InstanceName "C2E2" -Version 2026.06.04
+
+.EXAMPLE
+    # Re-publish v1.0.0 after a botched first attempt
+    ./publish-prism-pack.ps1 -Version 1.0.0 -Force
 #>
 
 [CmdletBinding()]
@@ -73,7 +84,8 @@ param(
     [string]$Container = "minecraft-modpack",
     [string]$PrismInstancesDir = "$env:APPDATA\PrismLauncher\instances",
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
-    [string]$IconKey = 'cte2'
+    [string]$IconKey = 'cte2',
+    [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,6 +106,10 @@ if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
     throw "Azure CLI ('az') is required. Install from https://aka.ms/installazurecli"
 }
 
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    throw "GitHub CLI ('gh') is required. Install from https://cli.github.com/"
+}
+
 if (-not (Test-Path -LiteralPath $IconPath)) {
     throw "Icon file not found at: $IconPath`nPass -IconPath to override."
 }
@@ -106,6 +122,75 @@ if (-not (Test-Path $instancePath)) {
 
 if (-not (Test-Path (Join-Path $instancePath 'instance.cfg'))) {
     throw "Path '$instancePath' doesn't look like a Prism instance (no instance.cfg)."
+}
+
+# ─── Git preflight ─────────────────────────────────────────────────────────
+# Catch the two failure modes that produced PR #121's merge conflict:
+#   1. Working tree dirty (would mix unrelated edits into the auto-PR).
+#   2. `origin/modpack/v<Version>` already exists (we'd silently stack a new
+#      commit on a stale publish branch, or two parallel publishes would
+#      clobber each other).
+# Both fail fast, BEFORE the expensive zip + blob upload, so a bad git state
+# doesn't waste a multi-minute publish.
+$repoRoot = git rev-parse --show-toplevel
+$publishBranch = "modpack/v$Version"
+
+Push-Location $repoRoot
+try {
+    $dirty = (git status --porcelain) -join "`n"
+    if ($dirty) {
+        throw "Working tree at '$repoRoot' is not clean. Commit or stash these changes before publishing:`n$dirty"
+    }
+
+    Write-Step "Fetching origin (refs + prune)"
+    git fetch origin --prune
+
+    $remoteRef = (git for-each-ref --format='%(refname)' "refs/remotes/origin/$publishBranch" | Out-String).Trim()
+    $expectedRemoteSha = ''
+    if ($remoteRef) {
+        # Capture the exact SHA we observed at preflight time so we can pass an
+        # explicit lease to `git push --force-with-lease=<ref>:<sha>` later. The
+        # default lease form (no `:<sha>`) trusts the local remote-tracking ref,
+        # which is unsafe here because there's a multi-minute window (zip + blob
+        # upload + git/PR) during which a background tool (VS Code, GCM) could
+        # auto-fetch and silently advance the tracking ref.
+        $expectedRemoteSha = (git rev-parse $remoteRef | Out-String).Trim()
+        if (-not $Force) {
+            $existingPrUrl = ''
+            try {
+                $existingPrUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
+            } catch {
+                # gh may fail (auth, rate limit) — don't block the user from seeing the real error.
+            }
+            $hint = if ($existingPrUrl) { "Existing open PR: $existingPrUrl" } else { "(No open PR found for this branch.)" }
+            throw @"
+Remote branch 'origin/$publishBranch' already exists.
+$hint
+Pick a different -Version, or re-run with -Force to overwrite it (force-push + reuse the PR).
+"@
+        }
+        Write-Host "    [warn] origin/$publishBranch already exists at $expectedRemoteSha; -Force will overwrite it" -ForegroundColor Yellow
+    }
+} finally {
+    Pop-Location
+}
+
+# Blob preflight: the versioned zip lives at an immutable URL (Cache-Control
+# headers tell CDNs it never changes), so overwriting one with different bytes
+# is a player-visible correctness hazard. Refuse without -Force.
+Write-Step "Checking for existing blob 'c2e2-v$Version.zip'"
+$blobExistsJson = (az storage blob exists `
+    --account-name $StorageAccount `
+    --container-name $Container `
+    --name "c2e2-v$Version.zip" `
+    --auth-mode login `
+    --output json | Out-String).Trim()
+$blobAlreadyExists = ($blobExistsJson | ConvertFrom-Json).exists
+if ($blobAlreadyExists) {
+    if (-not $Force) {
+        throw "Blob 'c2e2-v$Version.zip' already exists in '$StorageAccount/$Container'. Pick a new -Version or re-run with -Force to overwrite."
+    }
+    Write-Host "    [warn] Blob 'c2e2-v$Version.zip' already exists; -Force will overwrite it" -ForegroundColor Yellow
 }
 
 # ─── Export ────────────────────────────────────────────────────────────────
@@ -263,19 +348,29 @@ $sha = (Get-FileHash $tempZip -Algorithm SHA256).Hash.ToLower()
 Write-Ok "sha256 = $sha"
 
 # ─── Upload ────────────────────────────────────────────────────────────────
-Write-Step "Uploading to $StorageAccount/$Container/$blobName"
+# --overwrite is gated by -Force: the blob preflight already refused if the
+# blob exists without -Force, so this is defense-in-depth against a concurrent
+# publisher creating the blob between preflight and upload.
+$overwriteFlag = if ($Force) { 'true' } else { 'false' }
+Write-Step "Uploading to $StorageAccount/$Container/$blobName (overwrite=$overwriteFlag)"
 az storage blob upload `
     --account-name $StorageAccount `
     --container-name $Container `
     --name $blobName `
     --file $tempZip `
     --auth-mode login `
-    --overwrite true `
+    --overwrite $overwriteFlag `
     --content-cache-control "public, max-age=2592000, immutable" `
     --output none
 
-# ─── Manifest ──────────────────────────────────────────────────────────────
-Write-Step "Updating latest.json manifest"
+# ─── Build latest.json manifest (upload happens AFTER git/PR succeeds) ─────
+# Why upload last: latest.json is what setup.ps1 reads to fetch the modpack.
+# If we updated it before the git push succeeded and the push then failed,
+# players would download a version with no corresponding committed modpack.yml
+# (no audit trail). Building it here keeps $manifest in scope for the upload
+# step below, but the actual `az storage blob upload` is deferred until after
+# the PR is opened.
+Write-Step "Building latest.json manifest"
 $manifest = [ordered]@{
     version    = $Version
     blob       = $blobName
@@ -289,6 +384,93 @@ $manifest = [ordered]@{
 $manifestPath = Join-Path $env:TEMP 'latest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
+# ─── Update modpack.yml + open PR ──────────────────────────────────────────
+Write-Step "Creating branch '$publishBranch' from origin/main"
+Push-Location $repoRoot
+try {
+    # ALWAYS branch from fresh origin/main — never from local HEAD. The old
+    # `if (currentBranch -eq 'main') { git checkout -b ... }` was the root
+    # cause of PR #121's conflict: re-running the script from a leftover
+    # publish branch silently stacked the new commit on stale history.
+    git checkout -B $publishBranch "origin/main"
+
+    # Write modpack.yml AFTER the branch reset so the new content survives.
+    $modpackYml = Join-Path $repoRoot 'modpack.yml'
+    $publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $yamlContent = @"
+# Central modpack version record — updated by publish-prism-pack.ps1
+# This provides a committed, auditable record of the currently published pack.
+version: "$Version"
+blob: $blobName
+sha256: $sha
+url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
+instance: $InstanceName
+publishedAt: "$publishedAt"
+"@
+    Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
+
+    git add modpack.yml
+    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
+
+    Write-Step "Pushing $publishBranch to origin"
+    if ($Force -and $expectedRemoteSha) {
+        # Explicit lease tied to the SHA we observed at preflight time. Refuses
+        # if anything (concurrent publisher OR background auto-fetch) moved the
+        # branch since then. Safer than the default lease form, which only
+        # checks the local remote-tracking ref.
+        git push "--force-with-lease=refs/heads/${publishBranch}:${expectedRemoteSha}" -u origin HEAD
+    } else {
+        # Branch didn't exist at preflight time. A plain push will fail loudly
+        # if a concurrent publisher created the branch in the meantime — git
+        # refuses to create a branch that already exists on the remote.
+        git push -u origin HEAD
+    }
+
+    Write-Step "Opening pull request"
+    $prBody = @"
+Automated modpack publish.
+
+- **Version:** $Version
+- **SHA-256:** ``$sha``
+- **Size:** ${sizeMb} MB
+- **Published:** $publishedAt
+"@
+    $prUrl = $null
+    try {
+        $prUrl = (gh pr create `
+            --title "chore(modpack): publish v$Version" `
+            --body $prBody `
+            --base main `
+            --head $publishBranch | Out-String).Trim()
+    } catch {
+        # Most likely cause: PR already exists for this head (re-publish via -Force).
+        # Reuse the existing PR's URL instead of failing.
+        $prUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
+        if (-not $prUrl) { throw }
+        Write-Host "    [info] PR already exists for $publishBranch, reusing it" -ForegroundColor Yellow
+    }
+    Write-Ok "PR: $prUrl"
+
+    # Enable auto-merge so the PR squash-merges as soon as required checks pass.
+    # Shrinks the window where a second publish could race and collide.
+    # Non-fatal: if the repo doesn't have auto-merge enabled, just warn and move on.
+    try {
+        gh pr merge $prUrl --auto --squash --delete-branch | Out-Null
+        Write-Ok "Auto-merge enabled (squash + delete branch)"
+    } catch {
+        Write-Host "    [warn] Could not enable auto-merge (is it enabled on the repo?). Merge the PR manually." -ForegroundColor Yellow
+    }
+} finally {
+    Pop-Location
+}
+
+# ─── Publish latest.json (LAST — only after the audit-trail PR exists) ─────
+# Up until this point, no player-visible state has been updated: the versioned
+# zip is uploaded but unreferenced (latest.json still points at the previous
+# version). Only after the git push + PR succeed do we flip latest.json to
+# advertise the new version. This guarantees that players never see a version
+# without a corresponding committed modpack.yml.
+Write-Step "Uploading latest.json"
 az storage blob upload `
     --account-name $StorageAccount `
     --container-name $Container `
@@ -299,42 +481,6 @@ az storage blob upload `
     --content-type "application/json" `
     --content-cache-control "no-cache" `
     --output none
-
-# ─── Update modpack.yml + open PR ──────────────────────────────────────────
-Write-Step "Updating modpack.yml and opening PR"
-$repoRoot = git rev-parse --show-toplevel
-$modpackYml = Join-Path $repoRoot 'modpack.yml'
-$publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-$yamlContent = @"
-# Central modpack version record — updated by publish-prism-pack.ps1
-# This provides a committed, auditable record of the currently published pack.
-version: "$Version"
-blob: $blobName
-sha256: $sha
-url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
-instance: $InstanceName
-publishedAt: "$publishedAt"
-"@
-Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
-
-Push-Location $repoRoot
-try {
-    $currentBranch = git branch --show-current
-    if ($currentBranch -eq 'main') {
-        $branchName = "modpack/v$Version"
-        git checkout -b $branchName
-    }
-    git add modpack.yml
-    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
-    git push -u origin HEAD
-    gh pr create `
-        --title "chore(modpack): publish v$Version" `
-        --body "Automated modpack publish.`n`n- **Version:** $Version`n- **SHA-256:** ``$sha```n- **Size:** ${sizeMb} MB`n- **Published:** $publishedAt" `
-        --base main
-    Write-Ok "PR created for modpack v$Version"
-} finally {
-    Pop-Location
-}
 
 # ─── Cleanup ───────────────────────────────────────────────────────────────
 Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
