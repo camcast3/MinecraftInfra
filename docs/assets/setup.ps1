@@ -43,6 +43,22 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Detect installed system RAM. Used here as a hard gate (C2E2 needs 8 GB+
+# total to leave room for Windows alongside Minecraft) and later to size
+# Prism's max heap. Round to nearest GB so a 7.8 GB-reporting "8 GB" stick
+# still passes.
+$totalGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+if ($totalGB -lt 8) {
+    Write-Host ""
+    Write-Host "Your PC has ${totalGB} GB of RAM. Craft to Exile 2 needs at least 8 GB total" -ForegroundColor Red
+    Write-Host "system RAM (4 GB allocated to Minecraft + 4 GB for Windows). The modpack" -ForegroundColor Red
+    Write-Host "will not run reliably on this machine, so setup will not continue." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "C2E2's official requirements: https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation" -ForegroundColor Red
+    exit 1
+}
+Write-Ok "${totalGB} GB system RAM detected"
+
 # ─── Install Java 17 ────────────────────────────────────────────────────────
 Write-Step "Installing Eclipse Temurin 17 (Java)"
 $javaInstalled = winget list --id EclipseAdoptium.Temurin.17.JDK -e --accept-source-agreements 2>$null | Select-String 'EclipseAdoptium.Temurin.17.JDK'
@@ -164,6 +180,26 @@ if ($manifest) {
                 }
                 Write-Ok "Instance icon installed"
             }
+
+            # Tune Java max-heap to half of the player's installed RAM, capped
+            # at 12 GB. C2E2's wiki recommends 4-8 GB and warns that over-
+            # allocating causes GC stalls — 12 GB is a generous ceiling for
+            # 24+ GB systems. Preflight guaranteed totalGB >= 8 so allocGB >= 4.
+            $allocGB = [math]::Min(12, [math]::Floor($totalGB / 2))
+            $allocMB = $allocGB * 1024
+            $cfgPath = Join-Path $instanceTarget 'instance.cfg'
+            $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
+            $updated = New-Object System.Collections.Generic.List[string]
+            $sawMax = $false; $sawOverride = $false
+            foreach ($cfgLine in $cfgLines) {
+                if ($cfgLine -match '^MaxMemAlloc=')      { $updated.Add("MaxMemAlloc=$allocMB"); $sawMax = $true }
+                elseif ($cfgLine -match '^OverrideMemory=') { $updated.Add('OverrideMemory=true'); $sawOverride = $true }
+                else                                        { $updated.Add($cfgLine) }
+            }
+            if (-not $sawMax)      { $updated.Add("MaxMemAlloc=$allocMB") }
+            if (-not $sawOverride) { $updated.Add('OverrideMemory=true') }
+            Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
+            Write-Ok "Allocated ${allocGB} GB to Minecraft (half of ${totalGB} GB system RAM, capped at 12 GB)"
 
             Set-Content -Path (Join-Path $instanceTarget '.negativezone-version') -Value $manifest.version -Encoding UTF8
             Write-Ok "Instance '$($manifest.instance)' ready in Prism"

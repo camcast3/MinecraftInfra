@@ -42,10 +42,11 @@ only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
 | Java | 17 (Temurin) | 17 (Temurin) |
 | Internet | 5 Mbps down | 10+ Mbps down |
 
-> The automated setup (Path A) pins memory to **8 GB** and applies C2E2's
-> recommended JVM args automatically — you don't need to touch Prism's Java
-> or memory settings. If your PC has only 8 GB total RAM, lower it to 4 GB
-> in Prism Settings → Java after the setup finishes.
+> The automated setup (Path A) **detects your installed RAM and allocates
+> half to Minecraft, capped at 12 GB** (per C2E2's "don't over-allocate"
+> warning) — you don't need to touch Prism's Java or memory settings.
+> Setup refuses to install if you have less than 8 GB total system RAM,
+> because the modpack won't run reliably below that.
 
 ---
 
@@ -53,8 +54,9 @@ only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
 
 A single PowerShell command installs **Java 17**, **Prism Launcher**, the
 **Craft to Exile 2 modpack** (pulled directly from our Azure storage — much
-faster than CurseForge), looks up your **UUID**, and copies the allowlist
-info to your clipboard. ~3 minutes.
+faster than CurseForge), **auto-tunes the memory allocation** to fit your
+PC, looks up your **UUID**, and copies the allowlist info to your clipboard.
+~3 minutes.
 
 ### Run it
 
@@ -206,6 +208,7 @@ try again.
 | `This server has mods that require Forge to be installed on the client` | You launched the vanilla Minecraft launcher instead of the Prism C2E2 instance. Launch from Prism. |
 | `Connection timed out` | Server may be down or restarting. Wait 2 min and retry. |
 | `Outdated client` / `Outdated server` | Right-click your Prism instance → **Edit** → **Version** → update to the latest C2E2 release. |
+| Setup says "Your PC has X GB of RAM... will not run reliably" | C2E2 needs 8 GB total system RAM minimum. There's no workaround at this size — either upgrade your RAM or play a lighter modpack. |
 | Game crashes on launch | Most common cause is **too much** memory allocated, not too little. Prism Settings → Java → Maximum memory: try **4096** first (especially on 8 GB systems). If that fails, confirm Java 17 is selected and send the crash log to the admin. |
 | Super low FPS | In-game: **Options → Video Settings → Render Distance: 8**, **Graphics: Fast**. |
 | `Failed to verify username` / `Bad login` | Prism → top-right account dropdown → **Manage Accounts** → click your account → **Refresh**. |
