@@ -85,6 +85,7 @@ $prismInstancesDir = Join-Path $env:APPDATA 'PrismLauncher\instances'
 Write-Step "Fetching modpack manifest"
 try {
     $manifest = Invoke-RestMethod -Uri $ModpackManifestUrl -ErrorAction Stop
+    Write-Ok "Latest version: v$($manifest.version) ($($manifest.instance))"
 } catch {
     Write-Warn "Could not fetch manifest from $ModpackManifestUrl"
     Write-Warn "Skipping modpack install — you'll need to add it manually via Prism -> Add Instance -> CurseForge."
