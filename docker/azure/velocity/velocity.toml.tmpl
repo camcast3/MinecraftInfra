@@ -11,7 +11,12 @@ config-version = "2.7"
 # Bind on all interfaces; the NSG exposes only port 25565 externally.
 bind = "0.0.0.0:25577"
 
-motd = "&6&lCraft to Exile 2&r &7| &bNegative Zone"
+# Velocity 3.3.0+ parses motd as MiniMessage — any `&` or `§` codes here would
+# render as literal text. Plain text only. With ping-passthrough = "ALL" below
+# the client normally sees the C2E2 backend's MOTD; this is the fallback shown
+# when C2E2 is unreachable (keep in sync with the backend MOTD in
+# docker/proxmox/docker-compose.yml).
+motd = "Craft to Exile 2"
 show-max-players = 20
 
 # Velocity handles Mojang auth; backends run with ONLINE_MODE=FALSE.

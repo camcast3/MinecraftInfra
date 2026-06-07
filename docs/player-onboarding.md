@@ -23,10 +23,28 @@ Two paths to get connected: a **one-line automated setup** (recommended) or
 
 - A Windows 10/11 PC
 - A **paid Minecraft Java Edition** account (Bedrock from Xbox / Microsoft Store / mobile **does not work**)
-- ~10 GB free disk space
 
 > **Don't have Minecraft Java yet?** Get it from
 > [minecraft.net/store/minecraft-java-edition](https://www.minecraft.net/en-us/store/minecraft-java-edition).
+
+### System requirements
+
+[C2E2's official recommendation](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation)
+is **4–8 GB allocated** to Minecraft. Don't over-allocate — on systems with
+only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| RAM (total system) | 8 GB | 16+ GB |
+| RAM allocated to Minecraft | 4 GB | 8 GB |
+| CPU | 4 cores | 4+ cores, 3 GHz+ |
+| Storage | 10 GB free | 20+ GB on SSD |
+
+> The automated setup (Path A) **detects your installed RAM and allocates
+> half to Minecraft, capped at 12 GB** (per C2E2's "don't over-allocate"
+> warning) — you don't need to touch Prism's Java or memory settings.
+> Setup refuses to install if you have less than 8 GB total system RAM,
+> because the modpack won't run reliably below that.
 
 ---
 
@@ -34,8 +52,9 @@ Two paths to get connected: a **one-line automated setup** (recommended) or
 
 A single PowerShell command installs **Java 17**, **Prism Launcher**, the
 **Craft to Exile 2 modpack** (pulled directly from our Azure storage — much
-faster than CurseForge), looks up your **UUID**, and copies the allowlist
-info to your clipboard. ~3 minutes.
+faster than CurseForge), **auto-tunes the memory allocation** to fit your
+PC, looks up your **UUID**, and copies the allowlist info to your clipboard.
+~3 minutes.
 
 ### Run it
 
@@ -145,8 +164,10 @@ Or download the installer from [prismlauncher.org/download/windows](https://pris
 3. Click **Settings** (top-right) → **Java** tab:
    - Click **Auto-detect...** → select the **Java 17** entry → **OK**
    - Under **Memory**, set **Maximum memory allocation** to **`8192`** (= 8 GB)
-     - If your PC has only 8 GB RAM total, use `6144` instead
-     - If you have 32+ GB RAM, you can go up to `12288`
+     - If your PC has only 8 GB RAM total, use `4096` instead
+     - Per [C2E2's docs](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation),
+       **don't go above 8 GB** — allocating 12+ GB causes garbage-collection
+       stalls and crashes.
 
    Click **OK** to save.
 
@@ -185,7 +206,8 @@ try again.
 | `This server has mods that require Forge to be installed on the client` | You launched the vanilla Minecraft launcher instead of the Prism C2E2 instance. Launch from Prism. |
 | `Connection timed out` | Server may be down or restarting. Wait 2 min and retry. |
 | `Outdated client` / `Outdated server` | Right-click your Prism instance → **Edit** → **Version** → update to the latest C2E2 release. |
-| Game crashes on launch | Out of memory. Prism Settings → Java → bump Maximum memory (8192 or 10240). |
+| Setup says "Your PC has X GB of RAM... will not run reliably" | C2E2 needs 8 GB total system RAM minimum. There's no workaround at this size — either upgrade your RAM or play a lighter modpack. |
+| Game crashes on launch | Most common cause is **too much** memory allocated, not too little. Prism Settings → Java → Maximum memory: try **4096** first (especially on 8 GB systems). If that fails, confirm Java 17 is selected and send the crash log to the admin. |
 | Super low FPS | In-game: **Options → Video Settings → Render Distance: 8**, **Graphics: Fast**. |
 | `Failed to verify username` / `Bad login` | Prism → top-right account dropdown → **Manage Accounts** → click your account → **Refresh**. |
 | `winget` errors during setup script | Update Windows (Settings → Windows Update), or install [App Installer](https://apps.microsoft.com/detail/9NBLGGH4NNS1) from the Store. |
@@ -193,19 +215,6 @@ try again.
 
 Still stuck? DM the admin with the exact error (screenshot is best), your Minecraft
 username, and what step you got stuck on.
-
----
-
-## System requirements
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| RAM | 12 GB total | 16+ GB |
-| RAM allocated to Minecraft | 6 GB | 8 GB |
-| CPU | 4 cores, 3 GHz+ | 6+ cores |
-| Storage | 10 GB free | 20+ GB on SSD |
-| Java | 17 (Temurin) | 17 (Temurin) |
-| Internet | 5 Mbps down | 25+ Mbps down |
 
 ---
 

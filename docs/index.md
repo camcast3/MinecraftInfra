@@ -7,38 +7,27 @@ nav_order: 1
 # NegativeZone Minecraft Network
 {: .fs-9 }
 
-Welcome to the NegativeZone wiki — your hub for server guides, setup instructions, and info.
+A small private Minecraft server running the [Craft to Exile 2](https://www.curseforge.com/minecraft/modpacks/craft-to-exile-2) modpack.
 {: .fs-6 .fw-300 }
 
----
-
-## Quick Info
-
-| | |
-|---|---|
-| **Server Address** | `mc.negativezone.cc` |
-| **Minecraft Version** | 1.20.1 |
-| **Modpack** | Craft to Exile 2 (CurseForge) |
-| **Mod Loader** | Forge |
-| **Java Version** | 17 |
+[Get connected →]({% link player-onboarding.md %}){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 
 ---
 
-## Getting Started
+**Server address:** `mc.negativezone.cc`
 
-New here? Follow the [Player Onboarding Guide]({% link player-onboarding.md %}) to get set up and connected.
+## Can my PC run it?
 
----
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| RAM (total system) | 8 GB | 16+ GB |
+| RAM allocated to Minecraft | 4 GB | 8 GB |
+| CPU | 4 cores | 4+ cores, 3 GHz+ |
+| Storage | 10 GB free | 20+ GB on SSD |
 
-## How it works
+The automated setup detects your installed RAM and allocates half to
+Minecraft (capped at 12 GB), and **refuses to install on PCs with less
+than 8 GB total system RAM** — the modpack won't run reliably below that.
 
-When you join `mc.negativezone.cc`, you're automatically connected straight
-into the **Craft to Exile 2** world. No commands needed.
-
-```mermaid
-graph LR
-    A[You] -->|mc.negativezone.cc| B[Craft to Exile 2]
-```
-
-If C2E2 is down for maintenance, you'll get a "Server unavailable" message —
-wait a minute and try again.
+The [Player Onboarding Guide]({% link player-onboarding.md %}) has install
+instructions and troubleshooting.

@@ -16,7 +16,12 @@
 #   2. Clone the template for the MC VM:
 #        qm clone 9000 100 --name mc-proxmox --full
 #        qm resize 100 scsi0 500G
-#        qm set 100 --memory 32768 --cores 8 --cpu host
+#        qm set 100 --memory 49152 --cores 12 --cpu host
+#      (48 GiB / 12 cores fits the 31G C2E2 heap + 40G container ceiling +
+#       monitoring/backup/restarter sidecars + Debian + Docker engine with
+#       headroom for the page cache. Going lower risks kernel OOM kills when
+#       the JVM's off-heap (Netty, direct buffers, metaspace, code cache)
+#       expands during heavy gameplay.)
 #
 #   3. Configure cloud-init via Proxmox GUI (VM → Cloud-Init tab):
 #        User:       mcsvc

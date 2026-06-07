@@ -108,6 +108,10 @@ services:
       CF_FORCE_INCLUDE_MODS: recreation-of-exile-sfx,ftb-placeholders
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
+      # Server-list MOTD shown to clients via Velocity's ping-passthrough = "ALL".
+      # Plain text — itzg writes this verbatim into server.properties on every start.
+      # Keep in sync with the Velocity fallback motd in docker/azure/velocity/velocity.toml.tmpl.
+      MOTD: "Craft to Exile 2"
       # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
       # going larger forces 64-bit object pointers and is a net regression.
       # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
@@ -115,12 +119,16 @@ services:
       # Whitelist/ops fetched from the public GitHub repo on every container start.
       # Portainer CE GitOps can't bind-mount files from the repo into the container
       # (relative-path volumes is a BE-only feature), so we use itzg's native URL support.
-      # EXISTING_*=SKIP preserves in-game `/whitelist add` and `/op` changes between restarts —
-      # the URL files are only the source-of-truth seed, not an authoritative overwrite.
+      # EXISTING_*=SYNCHRONIZE makes git the authoritative source: on every container
+      # start mc-image-helper syncs the on-disk whitelist.json / ops.json with the URL
+      # (entries added AND removed to match). Workflow is: edit docker/shared/*.json →
+      # PR → merge to main → Portainer GitOps redeploys → live on next container start.
+      # Trade-off: in-game `/whitelist add` and `/op` are reverted on the next restart
+      # (restarter cycles every 6h), so always commit the change to docker/shared/ too.
       WHITELIST_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/whitelist.json
       OPS_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/ops.json
-      EXISTING_WHITELIST_FILE: SKIP
-      EXISTING_OPS_FILE: SKIP
+      EXISTING_WHITELIST_FILE: SYNCHRONIZE
+      EXISTING_OPS_FILE: SYNCHRONIZE
       ENFORCE_WHITELIST: "TRUE"
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
       # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
