@@ -15,10 +15,13 @@
       3. Sanitizes instance.cfg so it imports cleanly on any player's machine:
          strips your local JavaPath/JavaSignature/etc., sets AutomaticJava=true
          so Prism picks the right Java itself, pins memory to a C2E2-friendly
-         default, and drops user-state fields (play time, window layout)
-      4. Bundles the instance icon from %APPDATA%\PrismLauncher\icons\ into the
-         zip at top-level `icons/<iconKey>.<ext>` so players see the same icon
-         (Prism stores icons globally, not inside the instance folder)
+         default, forces iconKey=<IconKey> so players see the branded icon, and
+         drops user-state fields (play time, window layout)
+      4. Bundles the repo-tracked instance icon (default: cte2-icon.png next to
+         this script) into the zip at top-level `icons/<IconKey>.<ext>` so the
+         icon is reproducible regardless of what the admin's local Prism has
+         set (Prism stores icons globally at %APPDATA%\PrismLauncher\icons\,
+         not inside the instance folder)
       5. Computes SHA-256 of the zip
       6. Uploads the versioned zip + an updated `latest.json` manifest to the
          `minecraft-modpack` public-read blob container
@@ -45,6 +48,16 @@
 .PARAMETER PrismInstancesDir
     Path to Prism's instances directory. Defaults to %APPDATA%\PrismLauncher\instances.
 
+.PARAMETER IconPath
+    Path to the PNG (or other Prism-supported image format) used as the instance
+    icon in the published pack. Defaults to cte2-icon.png next to this script.
+    Bundled into the zip at icons/<IconKey>.<ext> and copied to every player's
+    %APPDATA%\PrismLauncher\icons\ by setup.ps1.
+
+.PARAMETER IconKey
+    Prism iconKey written into the sanitized instance.cfg. Must match the
+    bundled icon's basename (without extension). Defaults to "cte2".
+
 .EXAMPLE
     ./publish-prism-pack.ps1 -Version 1.0.0
 
@@ -58,7 +71,9 @@ param(
     [Parameter(Mandatory = $true)][string]$Version,
     [string]$StorageAccount = "stmcminecraftprod",
     [string]$Container = "minecraft-modpack",
-    [string]$PrismInstancesDir = "$env:APPDATA\PrismLauncher\instances"
+    [string]$PrismInstancesDir = "$env:APPDATA\PrismLauncher\instances",
+    [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
+    [string]$IconKey = 'cte2'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -67,10 +82,22 @@ $PSNativeCommandUseErrorActionPreference = $true
 function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
 
+# IconKey becomes a filename on disk (Prism icons dir) and a path inside the
+# zip — restrict to safe characters so neither path can be traversed or break
+# Prism's lookup.
+if ($IconKey -notmatch '^[A-Za-z0-9._-]+$') {
+    throw "IconKey must match ^[A-Za-z0-9._-]+$ (got: '$IconKey')."
+}
+
 # ─── Preflight ──────────────────────────────────────────────────────────────
 if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
     throw "Azure CLI ('az') is required. Install from https://aka.ms/installazurecli"
 }
+
+if (-not (Test-Path -LiteralPath $IconPath)) {
+    throw "Icon file not found at: $IconPath`nPass -IconPath to override."
+}
+$iconFile = Get-Item -LiteralPath $IconPath
 
 $instancePath = Join-Path $PrismInstancesDir $InstanceName
 if (-not (Test-Path $instancePath)) {
@@ -119,10 +146,11 @@ function ShouldExclude([string]$relativePath) {
 }
 
 # Removes machine-specific Java fields, user play-time, the [UI] section, and
-# pins memory to a C2E2-friendly default so players don't have to touch
-# Prism's Java/memory settings after import. Returns the cleaned content + the
-# parsed iconKey so we know which icon to bundle.
-function Get-SanitizedInstanceCfg([string]$path) {
+# pins memory + iconKey to known-good defaults so players don't have to touch
+# Prism's Java/memory settings or set the icon after import. iconKey is forced
+# to the bundled icon so the published pack is reproducible regardless of what
+# the admin's local Prism instance happens to have set.
+function Get-SanitizedInstanceCfg([string]$path, [string]$iconKey) {
     $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
     # Normalize line endings to CRLF (Prism writes CRLF on Windows).
     $lines = $raw -split "\r?\n"
@@ -147,9 +175,9 @@ function Get-SanitizedInstanceCfg([string]$path) {
         'OverrideMemory'        = 'true'
         'MinMemAlloc'           = '512'
         'MaxMemAlloc'           = '8192'
+        'iconKey'               = $iconKey
     }
 
-    $iconKey = $null
     $out = New-Object System.Collections.Generic.List[string]
     $inUiSection = $false
     $seenKeys = @{}
@@ -166,9 +194,6 @@ function Get-SanitizedInstanceCfg([string]$path) {
 
         if ($trimmed -match '^([A-Za-z0-9_]+)=(.*)$') {
             $key = $matches[1]
-            $value = $matches[2]
-
-            if ($key -eq 'iconKey') { $iconKey = $value }
 
             if ($stripExact -contains $key) { continue }
 
@@ -191,29 +216,11 @@ function Get-SanitizedInstanceCfg([string]$path) {
         }
     }
 
-    return [pscustomobject]@{
-        Content = ($out -join "`r`n")
-        IconKey = $iconKey
-    }
-}
-
-# Resolves the on-disk icon file for a Prism iconKey. Prism stores icons at
-# %APPDATA%\PrismLauncher\icons\<iconKey>.<ext>; the extension varies.
-function Find-IconFile([string]$prismRoot, [string]$iconKey) {
-    if (-not $iconKey -or $iconKey -eq 'default') { return $null }
-    $iconsDir = Join-Path $prismRoot 'icons'
-    if (-not (Test-Path $iconsDir)) { return $null }
-    foreach ($ext in @('png', 'jpg', 'jpeg', 'gif', 'ico', 'svg')) {
-        $candidate = Join-Path $iconsDir "$iconKey.$ext"
-        if (Test-Path -LiteralPath $candidate) { return Get-Item -LiteralPath $candidate }
-    }
-    return $null
+    return ($out -join "`r`n")
 }
 
 $instanceCfgPath = Join-Path $instancePath 'instance.cfg'
-$sanitized = Get-SanitizedInstanceCfg $instanceCfgPath
-$prismRoot = Split-Path $PrismInstancesDir -Parent
-$iconFile = Find-IconFile $prismRoot $sanitized.IconKey
+$sanitizedCfg = Get-SanitizedInstanceCfg $instanceCfgPath $IconKey
 
 $zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
@@ -229,23 +236,20 @@ try {
             # we don't mutate the admin's local Prism state.
             $entry = $zip.CreateEntry($entryName, 'Optimal')
             $writer = New-Object System.IO.StreamWriter($entry.Open(), [System.Text.UTF8Encoding]::new($false))
-            try { $writer.Write($sanitized.Content) } finally { $writer.Dispose() }
+            try { $writer.Write($sanitizedCfg) } finally { $writer.Dispose() }
         } else {
             [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
                 $zip, $file.FullName, $entryName, 'Optimal') | Out-Null
         }
     }
 
-    # Bundle the icon at top-level icons/<iconKey>.<ext>. setup.ps1 copies this
-    # to %APPDATA%\PrismLauncher\icons\ on the player's machine.
-    if ($iconFile) {
-        $iconEntry = "icons/$($iconFile.Name)"
-        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-            $zip, $iconFile.FullName, $iconEntry, 'Optimal') | Out-Null
-        Write-Ok "Bundled icon: $($iconFile.Name)"
-    } elseif ($sanitized.IconKey -and $sanitized.IconKey -ne 'default') {
-        Write-Host "    [warn] iconKey '$($sanitized.IconKey)' set in instance.cfg but no icon file found in $prismRoot\icons" -ForegroundColor Yellow
-    }
+    # Bundle the icon at icons/<IconKey>.<ext> — basename MUST equal the
+    # iconKey we wrote into instance.cfg above, or Prism won't find it after
+    # setup.ps1 copies icons/* to %APPDATA%\PrismLauncher\icons\.
+    $iconEntry = "icons/$IconKey$($iconFile.Extension.ToLower())"
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+        $zip, $iconFile.FullName, $iconEntry, 'Optimal') | Out-Null
+    Write-Ok "Bundled icon: $($iconFile.Name) -> $iconEntry"
 } finally {
     $zip.Dispose()
 }
