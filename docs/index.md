@@ -24,8 +24,6 @@ A small private Minecraft server running the [Craft to Exile 2](https://www.curs
 | RAM allocated to Minecraft | 4 GB | 8 GB |
 | CPU | 4 cores | 4+ cores, 3 GHz+ |
 | Storage | 10 GB free | 20+ GB on SSD |
-| Java | 17 (Temurin) | 17 (Temurin) |
-| Internet | 5 Mbps down | 10+ Mbps down |
 
 The automated setup detects your installed RAM and allocates half to
 Minecraft (capped at 12 GB), and **refuses to install on PCs with less
