@@ -108,6 +108,10 @@ services:
       CF_FORCE_INCLUDE_MODS: recreation-of-exile-sfx,ftb-placeholders
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
+      # Server-list MOTD shown to clients via Velocity's ping-passthrough = "ALL".
+      # Plain text — itzg writes this verbatim into server.properties on every start.
+      # Keep in sync with the Velocity fallback motd in docker/azure/velocity/velocity.toml.tmpl.
+      MOTD: "Craft to Exile 2"
       # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
       # going larger forces 64-bit object pointers and is a net regression.
       # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
