@@ -43,6 +43,22 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
+# Detect installed system RAM. Used here as a hard gate (C2E2 needs 8 GB+
+# total to leave room for Windows alongside Minecraft) and later to size
+# Prism's max heap. Round to nearest GB so a 7.8 GB-reporting "8 GB" stick
+# still passes.
+$totalGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+if ($totalGB -lt 8) {
+    Write-Host ""
+    Write-Host "Your PC has ${totalGB} GB of RAM. Craft to Exile 2 needs at least 8 GB total" -ForegroundColor Red
+    Write-Host "system RAM (4 GB allocated to Minecraft + 4 GB for Windows). The modpack" -ForegroundColor Red
+    Write-Host "will not run reliably on this machine, so setup will not continue." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "C2E2's official requirements: https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation" -ForegroundColor Red
+    exit 1
+}
+Write-Ok "${totalGB} GB system RAM detected"
+
 # ─── Install Java 17 ────────────────────────────────────────────────────────
 Write-Step "Installing Eclipse Temurin 17 (Java)"
 $javaInstalled = winget list --id EclipseAdoptium.Temurin.17.JDK -e --accept-source-agreements 2>$null | Select-String 'EclipseAdoptium.Temurin.17.JDK'
@@ -91,6 +107,16 @@ if ($manifest) {
     }
 
     if ($needsInstall) {
+        # Bail early if Prism is currently running — overwriting an instance
+        # while Prism has it open leaves stale cached state and lock files.
+        $prismRunning = Get-Process -Name 'prismlauncher' -ErrorAction SilentlyContinue
+        if ($prismRunning) {
+            Write-Host ""
+            Write-Host "    Prism Launcher is currently running. Close it before installing." -ForegroundColor Red
+            Write-Host "    (Right-click the Prism icon in the system tray / taskbar -> Quit)" -ForegroundColor Red
+            Read-Host "    Press Enter once Prism is closed to continue"
+        }
+
         $tempZip = Join-Path $env:TEMP $manifest.blob
         Write-Step "Downloading modpack v$($manifest.version) (~$([math]::Round($manifest.sizeBytes / 1MB)) MB)"
         # BITS gives us a progress bar; fall back to Invoke-WebRequest if it fails
@@ -110,18 +136,85 @@ if ($manifest) {
         Write-Ok "sha256 verified"
 
         Write-Step "Installing into Prism"
-        if (Test-Path $instanceTarget) {
-            Write-Host "    Backing up existing instance to $instanceTarget.bak" -ForegroundColor Yellow
-            if (Test-Path "$instanceTarget.bak") { Remove-Item "$instanceTarget.bak" -Recurse -Force }
-            Move-Item $instanceTarget "$instanceTarget.bak"
+        # Extract to a temp dir first so we can validate the zip layout before
+        # touching the player's existing instance. Older zips ship only the
+        # <InstanceName>/ folder; newer ones also include a top-level icons/.
+        $extractDir = Join-Path $env:TEMP ("negativezone-extract-" + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
+        $backupPath = "$instanceTarget.bak"
+        $backedUp = $false
+
+        try {
+            Expand-Archive -Path $tempZip -DestinationPath $extractDir -Force
+
+            $srcInstance = Join-Path $extractDir $manifest.instance
+            $srcInstanceCfg = Join-Path $srcInstance 'instance.cfg'
+            if (-not (Test-Path -LiteralPath $srcInstanceCfg)) {
+                throw "Modpack zip is missing '$($manifest.instance)/instance.cfg' — refusing to install."
+            }
+
+            if (-not (Test-Path $prismInstancesDir)) {
+                New-Item -ItemType Directory -Path $prismInstancesDir -Force | Out-Null
+            }
+
+            if (Test-Path $instanceTarget) {
+                Write-Host "    Backing up existing instance to $backupPath" -ForegroundColor Yellow
+                if (Test-Path $backupPath) { Remove-Item $backupPath -Recurse -Force }
+                Move-Item $instanceTarget $backupPath
+                $backedUp = $true
+            }
+
+            Move-Item $srcInstance $instanceTarget
+
+            # Copy any bundled icons to Prism's global icons/ directory. Prism
+            # stores instance icons here (not inside the instance folder), so
+            # without this step the imported instance shows the default icon.
+            $srcIcons = Join-Path $extractDir 'icons'
+            if (Test-Path $srcIcons) {
+                $prismIconsDir = Join-Path $env:APPDATA 'PrismLauncher\icons'
+                if (-not (Test-Path $prismIconsDir)) {
+                    New-Item -ItemType Directory -Path $prismIconsDir -Force | Out-Null
+                }
+                Get-ChildItem -Path $srcIcons -File | ForEach-Object {
+                    Copy-Item -LiteralPath $_.FullName -Destination $prismIconsDir -Force
+                }
+                Write-Ok "Instance icon installed"
+            }
+
+            # Tune Java max-heap to half of the player's installed RAM, capped
+            # at 12 GB. C2E2's wiki recommends 4-8 GB and warns that over-
+            # allocating causes GC stalls — 12 GB is a generous ceiling for
+            # 24+ GB systems. Preflight guaranteed totalGB >= 8 so allocGB >= 4.
+            $allocGB = [math]::Min(12, [math]::Floor($totalGB / 2))
+            $allocMB = $allocGB * 1024
+            $cfgPath = Join-Path $instanceTarget 'instance.cfg'
+            $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
+            $updated = New-Object System.Collections.Generic.List[string]
+            $sawMax = $false; $sawOverride = $false
+            foreach ($cfgLine in $cfgLines) {
+                if ($cfgLine -match '^MaxMemAlloc=')      { $updated.Add("MaxMemAlloc=$allocMB"); $sawMax = $true }
+                elseif ($cfgLine -match '^OverrideMemory=') { $updated.Add('OverrideMemory=true'); $sawOverride = $true }
+                else                                        { $updated.Add($cfgLine) }
+            }
+            if (-not $sawMax)      { $updated.Add("MaxMemAlloc=$allocMB") }
+            if (-not $sawOverride) { $updated.Add('OverrideMemory=true') }
+            Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
+            Write-Ok "Allocated ${allocGB} GB to Minecraft (half of ${totalGB} GB system RAM, capped at 12 GB)"
+
+            Set-Content -Path (Join-Path $instanceTarget '.negativezone-version') -Value $manifest.version -Encoding UTF8
+            Write-Ok "Instance '$($manifest.instance)' ready in Prism"
+        } catch {
+            # Roll back to the prior instance if we replaced it before the
+            # failure, so a partial install doesn't leave the player stranded.
+            if ($backedUp -and (Test-Path $backupPath) -and -not (Test-Path $instanceTarget)) {
+                Write-Host "    Install failed — restoring previous instance from backup" -ForegroundColor Yellow
+                Move-Item $backupPath $instanceTarget
+            }
+            throw
+        } finally {
+            Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
         }
-        if (-not (Test-Path $prismInstancesDir)) {
-            New-Item -ItemType Directory -Path $prismInstancesDir -Force | Out-Null
-        }
-        Expand-Archive -Path $tempZip -DestinationPath $prismInstancesDir -Force
-        Set-Content -Path (Join-Path $instanceTarget '.negativezone-version') -Value $manifest.version -Encoding UTF8
-        Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
-        Write-Ok "Instance '$($manifest.instance)' ready in Prism"
     }
 }
 
