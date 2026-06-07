@@ -23,10 +23,29 @@ Two paths to get connected: a **one-line automated setup** (recommended) or
 
 - A Windows 10/11 PC
 - A **paid Minecraft Java Edition** account (Bedrock from Xbox / Microsoft Store / mobile **does not work**)
-- ~10 GB free disk space
 
 > **Don't have Minecraft Java yet?** Get it from
 > [minecraft.net/store/minecraft-java-edition](https://www.minecraft.net/en-us/store/minecraft-java-edition).
+
+### System requirements
+
+[C2E2's official recommendation](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation)
+is **4–8 GB allocated** to Minecraft. Don't over-allocate — on systems with
+only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| RAM (total system) | 8 GB | 16+ GB |
+| RAM allocated to Minecraft | 4 GB | 8 GB |
+| CPU | 4 cores | 4+ cores, 3 GHz+ |
+| Storage | 10 GB free | 20+ GB on SSD |
+| Java | 17 (Temurin) | 17 (Temurin) |
+| Internet | 5 Mbps down | 10+ Mbps down |
+
+> The automated setup (Path A) pins memory to **8 GB** and applies C2E2's
+> recommended JVM args automatically — you don't need to touch Prism's Java
+> or memory settings. If your PC has only 8 GB total RAM, lower it to 4 GB
+> in Prism Settings → Java after the setup finishes.
 
 ---
 
@@ -144,11 +163,10 @@ Or download the installer from [prismlauncher.org/download/windows](https://pris
 
 3. Click **Settings** (top-right) → **Java** tab:
    - Click **Auto-detect...** → select the **Java 17** entry → **OK**
-   - Under **Memory**, set **Maximum memory allocation** to **`6144`** (= 6 GB)
+   - Under **Memory**, set **Maximum memory allocation** to **`8192`** (= 8 GB)
      - If your PC has only 8 GB RAM total, use `4096` instead
-     - If you have 16+ GB RAM, you can go up to `8192` — but per
-       [C2E2's docs](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation),
-       *more is not better*. Allocating 12+ GB causes garbage-collection
+     - Per [C2E2's docs](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation),
+       **don't go above 8 GB** — allocating 12+ GB causes garbage-collection
        stalls and crashes.
 
    Click **OK** to save.
@@ -196,27 +214,6 @@ try again.
 
 Still stuck? DM the admin with the exact error (screenshot is best), your Minecraft
 username, and what step you got stuck on.
-
----
-
-## System requirements
-
-[C2E2's official recommendation](https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation)
-is **4–8 GB allocated** to Minecraft. Don't over-allocate — on systems with
-only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
-
-| Component | Minimum | Recommended |
-|-----------|---------|-------------|
-| RAM (total system) | 8 GB | 12+ GB |
-| RAM allocated to Minecraft | 4 GB | 6 GB |
-| CPU | 4 cores | 4+ cores, 3 GHz+ |
-| Storage | 10 GB free | 20+ GB on SSD |
-| Java | 17 (Temurin) | 17 (Temurin) |
-| Internet | 5 Mbps down | 10+ Mbps down |
-
-> The automated setup (Path A) pins memory to **6 GB** and applies C2E2's
-> recommended JVM args automatically — you don't need to touch Prism's Java
-> or memory settings.
 
 ---
 

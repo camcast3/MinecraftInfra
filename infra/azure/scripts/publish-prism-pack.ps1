@@ -139,12 +139,14 @@ function Get-SanitizedInstanceCfg([string]$path) {
 
     # Fields whose values we override to a known-good default. Order: existing
     # lines get rewritten in place; missing fields get appended to [General].
+    # 8192 MB matches C2E2's recommended ceiling — players on 8 GB-total
+    # systems should lower it to 4096 in Prism after install.
     $overrides = [ordered]@{
         'AutomaticJava'         = 'true'
         'OverrideJavaLocation'  = 'false'
         'OverrideMemory'        = 'true'
         'MinMemAlloc'           = '512'
-        'MaxMemAlloc'           = '6144'
+        'MaxMemAlloc'           = '8192'
     }
 
     $iconKey = $null
