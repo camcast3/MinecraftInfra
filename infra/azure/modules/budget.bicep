@@ -68,3 +68,7 @@ resource budget 'Microsoft.Consumption/budgets@2024-08-01' = {
     }
   }
 }
+
+// Exposed so sibling alert modules (e.g. metric-alerts.bicep) can reuse the
+// same email action group — no second contact, no extra action-group cost.
+output actionGroupId string = actionGroup.id

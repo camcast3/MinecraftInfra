@@ -14,7 +14,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-08-01' = {
   location: location
   tags: { environment: environment }
   kind: 'StorageV2'
-  sku: { name: 'Standard_LRS' }
+  sku: { name: 'Standard_GRS' }
   properties: {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
