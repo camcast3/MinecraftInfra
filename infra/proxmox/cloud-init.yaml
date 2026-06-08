@@ -102,6 +102,9 @@ runcmd:
   # Create bind-mount directories for the Docker stack
   - mkdir -p /data/minecraft/tailscale
   - mkdir -p /data/minecraft/c2e2
+  # Local-disk leg of the 3-2-1 backup chain (the NAS + Azure legs rclone-stream
+  # straight from inside the backup container — no host directory needed for them).
+  - mkdir -p /data/minecraft/local-backups
 
   # mcsvc is NOT in the docker group — docker group = root equivalent.
   # Grant sudo only for specific docker/systemctl commands needed for MC ops.

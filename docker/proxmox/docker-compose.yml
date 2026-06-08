@@ -1,5 +1,5 @@
 ---
-# Proxmox stack: Craft to Exile 2 + TailScale sidecar + backup
+# Proxmox stack: Craft to Exile 2 + TailScale sidecar + tiered 3-2-1 backups
 # Managed by Portainer CE with GitOps polling (auto-redeploy on git changes).
 #
 # Portainer CE GitOps note: relative bind mounts (e.g. ../shared/...) DO NOT work
@@ -11,10 +11,19 @@
 # Canonical source for all of these still lives in docker/shared/ in this repo.
 # The Azure stack continues to bind-mount docker/shared/ directly (no Portainer there).
 #
-# TailScale runs as a sidecar. Both C2E2 and mc-backup share its network
-# namespace via network_mode: service:tailscale.
+# TailScale runs as a sidecar. C2E2, the three mc-backup containers, the restarter,
+# and every monitoring sidecar share its network namespace via
+# network_mode: service:tailscale.
 #   - C2E2's port 25565 is reachable only at the TailScale IP (100.x.x.x)
-#   - mc-backup reaches RCON at localhost:25575 (same network namespace)
+#   - Each mc-backup reaches RCON at localhost:25575 (same network namespace)
+#
+# Backup architecture (classic 3-2-1, per-destination retention):
+#   backup-local  → /data/minecraft/local-backups/ (tar)            14d @ 2h
+#   backup-nas    → NAS:${NAS_BACKUP_PATH}/        (rclone, SMB)    60d @ 6h
+#   backup-azure  → AZBLOB:minecraft-backups/c2e2/ (rclone, GRS,    365d @ 24h
+#                                                   Cold tier)
+# Schedules use CRON_SCHEDULE on absolute Pacific-Time wall clock (TZ env var
+# below) so save-off windows never collide and never drift.
 #
 # All ${VAR} values must be set in Portainer's stack environment variable UI.
 # Never hardcode secret values here and never use a .env file with Portainer.
@@ -24,21 +33,61 @@
 #   TS_HOSTNAME                 - Node name in the tailnet (e.g. mc-proxmox)
 #   CF_API_KEY                  - CurseForge API key (https://console.curseforge.com/)
 #   VELOCITY_FORWARDING_SECRET  - Must match the Azure Velocity proxy config
-#   RCON_PASSWORD               - RCON password for backup container
+#   RCON_PASSWORD               - RCON password (shared by C2E2, restarter, all 3 backups)
 #   STORAGE_ACCOUNT             - Azure Storage account name (no suffix)
-#   AZURE_TENANT_ID             - Service principal tenant ID (for rclone backup)
-#   AZURE_CLIENT_ID             - Service principal client ID (for rclone backup)
-#   AZURE_CLIENT_SECRET         - Service principal client secret (for rclone backup)
+#   AZURE_TENANT_ID             - Service principal tenant ID (for backup-azure)
+#   AZURE_CLIENT_ID             - Service principal client ID (for backup-azure)
+#   AZURE_CLIENT_SECRET         - Service principal client secret (for backup-azure)
+#   NAS_HOST                    - IP or DNS name of the on-prem NAS (SMB share host)
+#   NAS_USER                    - NAS account scoped to the backup share only
+#   NAS_PASS_OBSCURED           - Output of `rclone obscure '<plaintext-password>'`
+#                                 (rclone's SMB backend rejects unobscured passwords)
+#   NAS_BACKUP_PATH             - <share-name>/<subdir>, must be writable by NAS_USER
+#   NAS_DOMAIN (optional)       - Set only if the NAS uses a non-default workgroup
 #
 # MC 1.20.1 requires Java 17 — all server images MUST use java17 variants.
 #
+# All services set TZ: America/Los_Angeles so cron, log timestamps, and the
+# restarter announce times all use Pacific Time. The image's tzdata package
+# does the conversion; no /etc/timezone bind mount needed.
+#
 # Bind mounts live under /data/minecraft/ — pre-create these on the host:
-#   mkdir -p /data/minecraft/{tailscale,c2e2,promtail}
+#   mkdir -p /data/minecraft/{tailscale,c2e2,promtail,local-backups}
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
     - no-new-privileges:true
   restart: unless-stopped
+
+# Shared spec for the three mc-backup services. Per-service blocks below only
+# override container_name, environment (merged via x-backup-env-common), and —
+# for backup-local only — volumes (to add the /backups bind mount).
+x-backup-common: &backup-common
+  <<: *common-keys-apps
+  image: itzg/mc-backup:2026.6.0@sha256:e2be1f80347809cd233c8f8909b1e1a6025baa327864f84464f3e5057a0dcb90
+  # Shares TailScale's network namespace — RCON reachable at localhost:25575.
+  network_mode: "service:tailscale"
+  depends_on:
+    craft-to-exile-2:
+      condition: service_healthy
+  deploy:
+    resources:
+      limits:
+        cpus: '0.5'
+        memory: 512M
+  volumes:
+    - /data/minecraft/c2e2:/data:ro
+
+# Env merged into each backup service's environment: block via `<<: *backup-env-common`.
+# Per-service env adds BACKUP_METHOD + destination + CRON_SCHEDULE + PRUNE_BACKUPS_DAYS.
+# BACKUP_INTERVAL / INITIAL_DELAY / BACKUP_ON_STARTUP intentionally omitted —
+# overridden by CRON_SCHEDULE on each leg.
+x-backup-env-common: &backup-env-common
+  RCON_HOST: localhost
+  RCON_PORT: "25575"
+  RCON_PASSWORD: ${RCON_PASSWORD}
+  BACKUP_NAME: c2e2
+  TZ: America/Los_Angeles
 
 services:
 
@@ -57,6 +106,7 @@ services:
       TS_HOSTNAME: ${TS_HOSTNAME}
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
+      TZ: America/Los_Angeles
     volumes:
       - /data/minecraft/tailscale:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
@@ -97,6 +147,7 @@ services:
         mode: 0444
     environment:
       EULA: "TRUE"
+      TZ: America/Los_Angeles
       TYPE: AUTO_CURSEFORGE
       VERSION: "1.20.1"
       CF_SLUG: craft-to-exile-2
@@ -200,46 +251,77 @@ services:
       start_period: 300s
 
   ############################# MAINTENANCE
-  backup:
-    <<: *common-keys-apps
-    image: itzg/mc-backup:2026.6.0@sha256:e2be1f80347809cd233c8f8909b1e1a6025baa327864f84464f3e5057a0dcb90
-    container_name: mc-c2e2-backup
-    # Shares TailScale's network namespace — RCON reachable at localhost:25575
-    network_mode: "service:tailscale"
-    depends_on:
-      craft-to-exile-2:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+  # Three independent mc-backup services — one per 3-2-1 destination, each with
+  # its own retention via native PRUNE_BACKUPS_DAYS. CRON_SCHEDULE is on
+  # absolute Pacific-Time wall clock (15+ min between any two fires) so the
+  # rcon save-off / save-all / save-on windows never collide and never drift.
+  # See header comment for the destination/retention/schedule summary table.
+
+  backup-local:
+    <<: *backup-common
+    container_name: mc-c2e2-backup-local
+    # Volumes must be redeclared in full — YAML merge replaces sequences rather
+    # than concatenating, so x-backup-common's c2e2 mount is re-listed here.
     volumes:
       - /data/minecraft/c2e2:/data:ro
+      - /data/minecraft/local-backups:/backups
     environment:
-      RCON_HOST: localhost
-      RCON_PORT: "25575"
-      RCON_PASSWORD: ${RCON_PASSWORD}
-      BACKUP_INTERVAL: "6h"
+      <<: *backup-env-common
+      BACKUP_METHOD: tar
+      DEST_DIR: /backups
       PRUNE_BACKUPS_DAYS: "14"
+      # Every 2 h on the hour (PT). 12/day × 14d × ~349 MB ≈ ~57 GB on the VM.
+      CRON_SCHEDULE: "0 */2 * * *"
 
-      # ── rclone remote defined entirely via env vars (no rclone.conf needed) ──────
-      # RCLONE_CONFIG_<REMOTE>_<KEY> creates the remote in memory at rclone startup.
-      # Remote name "AZBLOB" matches the RCLONE_CONFIG_AZBLOB_* prefix below.
+  backup-nas:
+    <<: *backup-common
+    container_name: mc-c2e2-backup-nas
+    environment:
+      <<: *backup-env-common
+      BACKUP_METHOD: rclone
+      RCLONE_REMOTE: NAS
+      RCLONE_DEST_DIR: ${NAS_BACKUP_PATH}
+      PRUNE_BACKUPS_DAYS: "60"
+      # Every 6 h at :15 (PT) — offset 15 min from the local leg's hourly fires.
+      # 4/day × 60d × ~349 MB ≈ ~82 GB on the NAS.
+      CRON_SCHEDULE: "15 */6 * * *"
+      # NAS rclone remote (SMB backend, speaks SMB natively from userspace —
+      # no cifs-utils or kernel mount needed on the host).
+      RCLONE_CONFIG_NAS_TYPE: smb
+      RCLONE_CONFIG_NAS_HOST: ${NAS_HOST}
+      RCLONE_CONFIG_NAS_USER: ${NAS_USER}
+      # rclone's SMB backend rejects unobscured passwords — value must be the
+      # output of `rclone obscure '<plaintext>'`.
+      RCLONE_CONFIG_NAS_PASS: ${NAS_PASS_OBSCURED}
+      # Optional: only set if the NAS uses a non-default Windows workgroup/domain.
+      # RCLONE_CONFIG_NAS_DOMAIN: ${NAS_DOMAIN}
+
+  backup-azure:
+    <<: *backup-common
+    container_name: mc-c2e2-backup-azure
+    environment:
+      <<: *backup-env-common
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
-      # Path on the remote: <blob-container>/<subdirectory>
-      # "minecraft-backups" is the blob container; "c2e2" is the path within it.
+      # Path on the remote: <blob-container>/<subdirectory>.
       RCLONE_DEST_DIR: minecraft-backups/c2e2
-
-      # Remote type
+      PRUNE_BACKUPS_DAYS: "365"
+      # Daily at 04:30 PT — low player traffic. 1/day × 365d × ~349 MB ≈ ~125 GB
+      # at Cold GRS ≈ ~$2.50/mo.
+      CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
-      # Storage account name (no .blob.core.windows.net suffix)
       RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
-      # Service principal credentials — set in Portainer UI, never hardcoded here
       RCLONE_CONFIG_AZBLOB_TENANT: ${AZURE_TENANT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_ID: ${AZURE_CLIENT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+      # Upload blobs at Cold tier (cheaper $/GB, 90-day minimum retention which
+      # is well under our 365-day prune). Per-blob — does not change the account
+      # default tier (which stays Hot for the public modpack container).
+      RCLONE_CONFIG_AZBLOB_ACCESS_TIER: Cold
+      # The Proxmox SP has Blob Data Contributor only on the minecraft-backups
+      # container, not at account scope — skip rclone's container-existence
+      # preflight HEAD which would otherwise 403.
+      RCLONE_CONFIG_AZBLOB_NO_CHECK_CONTAINER: "true"
 
   restarter:
     <<: *common-keys-apps
@@ -260,6 +342,7 @@ services:
           memory: 64M
     environment:
       RCON_PASSWORD: ${RCON_PASSWORD}
+      TZ: America/Los_Angeles
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -316,6 +399,7 @@ services:
     environment:
       EXPORT_SERVERS: "localhost:25565"
       EXPORT_PORT: "8081"
+      TZ: America/Los_Angeles
 
   node-exporter:
     <<: *common-keys-apps
@@ -333,6 +417,8 @@ services:
           memory: 128M
     volumes:
       - "/:/host:ro,rslave"
+    environment:
+      TZ: America/Los_Angeles
     command:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
@@ -368,6 +454,8 @@ services:
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg
+    environment:
+      TZ: America/Los_Angeles
     command:
       # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
       # user sessions). We only care about Docker container metrics — node-exporter
@@ -400,6 +488,8 @@ services:
       - source: promtail_config
         target: /etc/promtail/config.yaml
         mode: 0444
+    environment:
+      TZ: America/Los_Angeles
     command: ["-config.file=/etc/promtail/config.yaml"]
 
 # ─────────────────────────────────────────────────────────────────────────────

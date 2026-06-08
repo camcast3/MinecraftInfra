@@ -100,6 +100,20 @@ module budget 'modules/budget.bicep' = {
   }
 }
 
+// ── Storage Ingress Anomaly Alert ─────────────────────────────────────────────
+// Static-threshold metric alert on the storage account's Ingress metric.
+// Catches anomalous write volume (runaway backups, world dir accidentally
+// included in a modpack publish, etc.) hours-to-days before the monthly budget
+// alert would notice. Reuses the budget email action group.
+module metricAlerts 'modules/metric-alerts.bicep' = {
+  name: 'deploy-metric-alerts'
+  params: {
+    storageAccountName: storageAccountName
+    actionGroupId: budget.outputs.actionGroupId
+    environment: environment
+  }
+}
+
 // ── Cross-Resource Role Assignments ───────────────────────────────────────────
 // Kept here (not inside individual modules) so each module can deploy in parallel
 // without ordering constraints on each other.
