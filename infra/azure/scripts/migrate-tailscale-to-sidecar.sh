@@ -32,7 +32,9 @@ ADMIN_USER="$(stat -c '%U' "${REPO_DIR}")"
 log() { echo "[migrate-tailscale] $*"; }
 
 # ── Step 0: Mark the worktree safe for git operations as root ────────────────
-git config --global --add safe.directory "${REPO_DIR}"
+# --system writes to /etc/gitconfig and doesn't need $HOME (which isn't always
+# set under `az vm run-command invoke`).
+git config --system --add safe.directory "${REPO_DIR}"
 
 # ── Step 1: Make /dev/net/tun present + persistent across reboots ────────────
 if ! lsmod | grep -q '^tun'; then

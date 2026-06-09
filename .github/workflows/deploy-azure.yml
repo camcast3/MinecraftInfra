@@ -84,10 +84,10 @@ jobs:
             --scripts "
               export HOME=/root
               set -euo pipefail
-              # The /opt/minecraft worktree is owned by the admin user, but this
-              # script runs as root via Azure run-command. Without safe.directory
-              # git refuses with 'dubious ownership in repository'.
-              git config --global --add safe.directory /opt/minecraft
+              # /opt/minecraft is owned by the admin user; this script runs as
+              # root via Azure run-command. --system writes /etc/gitconfig and
+              # doesn't depend on \$HOME.
+              git config --system --add safe.directory /opt/minecraft
               cd /opt/minecraft
               git fetch origin
               git checkout ${{ steps.ref.outputs.branch }}
