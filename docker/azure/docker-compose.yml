@@ -27,9 +27,17 @@
 # See the top-level `secrets:` block at the bottom of this file.
 #
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
-# Pre-create on the host:
-#   mkdir -p /data/minecraft/{tailscale,velocity,promtail}
+# Pre-create on the host (cloud-init does this for fresh provisioning):
+#   mkdir -p /data/minecraft/{velocity,promtail}
+#   install -d -m 0700 -o 10001 -g 10001 /data/minecraft/tailscale
 #   install -d -m 0700 -o root -g root /opt/minecraft/secrets
+#
+# Also required on the host (cloud-init handles both):
+#   - getent group tailscale-svc || groupadd -g 10001 tailscale-svc
+#     getent passwd tailscale-svc || useradd -u 10001 -g 10001 -M -r -s /usr/sbin/nologin tailscale-svc
+#   - udev rule at /etc/udev/rules.d/99-tun.rules:
+#       KERNEL=="tun", GROUP="tailscale-svc", MODE="0660"
+#     (so the non-root tailscale container can open /dev/net/tun)
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
@@ -37,7 +45,11 @@
 # Secrets are stored on the host at /opt/minecraft/secrets/ (0700, root-owned),
 # written by refresh-env.sh from Azure Key Vault. They reach containers via:
 #   - tailscale: docker compose `secrets:` (mounted at /run/secrets/ts_authkey,
-#     containerboot reads via TS_AUTHKEY=file:/run/secrets/ts_authkey)
+#     containerboot reads via TS_AUTHKEY=file:/run/secrets/ts_authkey). The
+#     value on disk is the LIVE auth key only at first registration; after
+#     the sidecar registers, refresh-env.sh detects tailscaled.state and
+#     overwrites the file with a dead placeholder. A compromised container
+#     therefore cannot exfiltrate a usable auth key.
 #   - velocity:  single-file bind mount /opt/minecraft/secrets/velocity_forwarding_secret
 #     → /server/forwarding.secret (Velocity reads it from disk; itzg startup
 #     leaves an existing file alone). File is owned UID 1000:1000 so itzg's
@@ -55,10 +67,41 @@ services:
   # Owns the network namespace shared by velocity + monitoring containers.
   # Publishes only the Minecraft player port on the host — everything else
   # (metrics endpoints) is reachable solely via the tailnet.
+  #
+  # Hardening (vs running as root with the full Docker default cap set):
+  #   - user: 10001:10001 — non-root, dedicated UID/GID (NOT overlapping with
+  #     bungeecord/UID 1000 or the admin user). State dir + auth-key file are
+  #     pre-chowned to this UID by cloud-init / refresh-env.sh.
+  #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit allowlist. SYS_MODULE
+  #     is unnecessary because the tun kernel module is preloaded on the host
+  #     (see /etc/modules-load.d/tun.conf in vm.bicep).
+  #   - /dev/net/tun via `devices:` (not `volumes:`) so Docker's device cgroup
+  #     is configured correctly. Host udev rule (vm.bicep) sets the device's
+  #     group to tailscale-svc with mode 0660 so the non-root container can
+  #     open it; the actual privilege gate for network manipulation is still
+  #     CAP_NET_ADMIN (which only this container has).
+  #   - read_only: true root filesystem. tailscaled writes its socket to /tmp
+  #     (tmpfs) and persistent state to /var/lib/tailscale (bind mount).
+  #     Nothing else needs to be writable.
+  #   - TS_AUTH_ONCE=true so containerboot only consumes the auth key on first
+  #     registration; subsequent restarts use cached state and never read the
+  #     mounted secret value.
   tailscale:
     <<: *common-keys-apps
     image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
     container_name: tailscale-lobby
+    user: "10001:10001"
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_ADMIN
+    read_only: true
+    tmpfs:
+      # tailscaled writes its LocalAPI socket here (TS_SOCKET below).
+      - /tmp:size=64m,mode=1777
+      # Some tailscaled paths default to /var/run; keep a small writable scratch
+      # so we don't hit silent failures on edge-case writes.
+      - /run:size=8m,mode=1777
     # Host-published ports for the entire shared netns must be declared here
     # (services using network_mode: service:tailscale cannot declare their own).
     # TCP only — Java Edition is TCP, Velocity query is disabled in velocity.toml.
@@ -73,22 +116,39 @@ services:
       # containerboot reads the auth key from this file (file: prefix on
       # TS_AUTHKEY has been supported since the early v1.x of containerboot).
       # The file is mounted by the `secrets:` block below and originates at
-      # /opt/minecraft/secrets/ts_authkey on the host.
+      # /opt/minecraft/secrets/ts_authkey on the host — which holds either
+      # the live single-use key (during first registration) or a dead
+      # placeholder (after tailscaled.state exists). See refresh-env.sh.
       TS_AUTHKEY: file:/run/secrets/ts_authkey
       TS_HOSTNAME: lobby-azure
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
+      # Only attempt `tailscale up --authkey=...` if not already logged in.
+      # Combined with persistent state on /var/lib/tailscale, this means the
+      # mounted secret is consulted exactly once (first boot) and then ignored.
+      TS_AUTH_ONCE: "true"
+      # Don't let tailscaled rewrite /etc/resolv.conf — we have a read-only root
+      # filesystem and the lobby doesn't need to resolve tailnet hostnames.
+      TS_ACCEPT_DNS: "false"
+      # Default socket path is /var/run/tailscale/tailscaled.sock which would
+      # require /var/run/tailscale to exist and be writable. Pin to /tmp (tmpfs)
+      # to avoid that dance.
+      TS_SOCKET: /tmp/tailscaled.sock
       TZ: America/Los_Angeles
     secrets:
       - ts_authkey
     volumes:
       - /data/minecraft/tailscale:/var/lib/tailscale
+    devices:
       - /dev/net/tun:/dev/net/tun
-    cap_add:
-      - NET_ADMIN
-      - SYS_MODULE
     healthcheck:
-      test: ["CMD", "tailscale", "status"]
+      # `tailscale status` returns exit 0 even when the node is logged-out /
+      # unauthenticated (it just describes the local-only state of the daemon).
+      # `tailscale ip -4` only returns 0 once the node has been issued a tailnet
+      # IPv4 by control plane — i.e. genuinely registered + online. That's the
+      # precondition Velocity needs before it starts trying to dial C2E2 over
+      # the tailnet, so we gate dependents off this.
+      test: ["CMD", "tailscale", "--socket=/tmp/tailscaled.sock", "ip", "-4"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -312,9 +372,13 @@ configs:
 # `mode:`/`uid:`/`gid:` keys on the service-side `secrets:` entry are Swarm-only
 # and ignored here — refresh-env.sh sets the on-host file mode/owner explicitly.
 #
-# Only ts_authkey is declared here because tailscale runs as root in its
-# container and consumes the key via `TS_AUTHKEY=file:/run/secrets/ts_authkey`
-# (containerboot supports the file: prefix).
+# Only ts_authkey is declared here. The on-host file is owned 10001:10001 0400
+# so it's readable inside the container by the tailscale-svc user (matching
+# `user: "10001:10001"` on the service). Its value is either the live auth key
+# (only during first registration — refresh-env.sh swaps it out for a dead
+# placeholder as soon as tailscaled.state exists) or a placeholder string that
+# the tailnet control plane will reject. Either way, the secret value visible
+# to a compromised container has bounded utility.
 #
 # velocity's forwarding.secret is NOT a Docker secret because itzg/mc-proxy's
 # startup does `chown -R bungeecord:bungeecord /server` under `set -eo pipefail`,

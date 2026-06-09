@@ -41,6 +41,21 @@ packages:
   - apt-listchanges
   - gettext-base
 
+# Service account for the Tailscale sidecar. Dedicated UID/GID 10001 (not the
+# admin UID 1000) so /data/minecraft/tailscale state ownership doesn't overlap
+# with the human-admin or the Velocity container (bungeecord, UID 1000).
+groups:
+  - name: tailscale-svc
+    gid: 10001
+users:
+  - name: tailscale-svc
+    uid: 10001
+    gid: 10001
+    no_create_home: true
+    shell: /usr/sbin/nologin
+    lock_passwd: true
+    system: true
+
 write_files:
   - path: /etc/apt/apt.conf.d/20auto-upgrades
     content: |
@@ -56,6 +71,14 @@ write_files:
   - path: /etc/modules-load.d/tun.conf
     content: |
       tun
+  # /dev/net/tun must be openable by the non-root Tailscale container (UID/GID
+  # 10001). The actual privilege gate for network manipulation is CAP_NET_ADMIN
+  # (which only the tailscale container has), but the device-file open() call
+  # still goes through DAC — without this rule the default 0600 root:root would
+  # block UID 10001. Group-scoped, NOT world-writable.
+  - path: /etc/udev/rules.d/99-tun.rules
+    content: |
+      KERNEL=="tun", GROUP="tailscale-svc", MODE="0660"
 
 runcmd:
   - curl -fsSL https://aka.ms/InstallAzureCLIDeb | bash
@@ -64,11 +87,23 @@ runcmd:
   # Tailscale runs as a Docker sidecar (docker/azure/docker-compose.yml), NOT on
   # the host. Admin access to this VM goes through `az vm run-command invoke`
   # (Azure control plane) — no host SSH over Tailscale needed.
+  #
+  # Break-glass path if `az vm run-command` itself is broken (rare — separate
+  # Azure data-plane vs control-plane): Azure Serial Console via
+  # `az serial-console connect -g rg-minecraft-prod -n vm-minecraft-prod`
+  # (or the portal). Falls through to the admin user via the SSH key in KV.
+  # NSG still blocks port 22 from the internet so this is the only inbound
+  # path that doesn't require the control plane.
   - modprobe tun
+  # Apply the udev rule immediately (udev settle on first boot may not retrigger
+  # tun before the docker compose up below).
+  - chgrp tailscale-svc /dev/net/tun
+  - chmod 0660 /dev/net/tun
   - ufw default deny incoming
   - ufw default allow outgoing
+  # Java Edition Minecraft is TCP-only. Velocity query (UDP) is disabled in
+  # velocity.toml, and we don't run Bedrock, so no UDP rule needed.
   - ufw allow 25565/tcp comment 'Minecraft TCP'
-  - ufw allow 25565/udp comment 'Minecraft UDP'
   - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__
@@ -80,6 +115,14 @@ runcmd:
   - mount /data
   - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
+  # Tailscale state dir MUST be owned by the tailscale-svc UID 10001 because the
+  # sidecar runs as that non-root user and writes its tailscaled.state /
+  # machinekey here. Order matters: this chown MUST come AFTER the recursive
+  # `chown -R __ADMIN_USERNAME__ /data` above, otherwise the recursive chown
+  # would clobber it. 0700 keeps the on-host state readable only by tailscale-svc
+  # (and root) — the state IS the tailnet node identity, treat as secret.
+  - chown 10001:10001 /data/minecraft/tailscale
+  - chmod 0700 /data/minecraft/tailscale
   # Secrets dir for the docker stack — root-only on the host. refresh-env.sh
   # writes ts_authkey + velocity_forwarding_secret here; docker compose mounts
   # those into the tailscale and velocity containers. Create it explicitly so
@@ -115,6 +158,28 @@ runcmd:
     fi
   # Start the Docker stack
   - docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d
+  # After the tailscale sidecar has registered, re-run refresh-env.sh. With
+  # tailscaled.state now present, refresh-env.sh writes a DEAD PLACEHOLDER to
+  # /opt/minecraft/secrets/ts_authkey instead of the live key — shrinking the
+  # live-key-on-disk window from "until next deploy" to "until tailscale boots".
+  # If the sidecar never becomes healthy we leave the live key in place
+  # (better than failing cloud-init outright) — operator can recover.
+  #
+  # Wait on the STATE FILE directly, not on `tailscale status`. `tailscale
+  # status` returns 0 even when the daemon is up-but-logged-out, which would
+  # race the placeholder swap against the actual registration. The state file
+  # is only written by tailscaled after a successful auth handshake, so its
+  # presence is the exact precondition refresh-env.sh checks on its next call.
+  # Budget: 15 × 6s = 90s.
+  - |
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+      if [ -s /data/minecraft/tailscale/tailscaled.state ]; then
+        echo "tailscaled.state present — overwriting on-disk auth key with dead placeholder"
+        bash /opt/minecraft/docker/azure/refresh-env.sh || true
+        break
+      fi
+      sleep 6
+    done
 '''
 
 var cloudInitRendered = replace(
