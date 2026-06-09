@@ -166,8 +166,11 @@ Write-Host "  ① Fill prod.bicepparam (copy-paste exactly):"
 Write-Host "      githubActionsObjectId = '$OIDC_SP_OBJECT_ID'"
 Write-Host "      param adminUsername     = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')"
 Write-Host "      param adminSshPublicKey = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')"
-Write-Host "      param tailscaleAuthKey  = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')"
 Write-Host "      param alertEmail        = getSecret('$SUBSCRIPTION_ID', 'rg-minecraft-prod', 'kv-minecraft-prod', 'budget-alert-email')"
+Write-Host ""
+Write-Host "      ℹ tailscale-auth-key is still required as a KV secret (the Tailscale"
+Write-Host "        Docker sidecar fetches it via refresh-env.sh at deploy time) but is"
+Write-Host "        NOT passed through Bicep — keeps key rotation independent of VM redeploys."
 Write-Host ""
 Write-Host "  ② Add these GitHub Actions secrets"
 Write-Host "     (Settings → Secrets → Actions → New repository secret):"
@@ -232,7 +235,7 @@ Write-Host ""
 Write-Host "  The following secrets require manual values — you will be prompted."
 Write-Host ""
 
-$TS_AUTH_KEY = Read-Host "  TailScale ephemeral auth key (from tailscale.com/admin/settings/keys)"
+$TS_AUTH_KEY = Read-Host "  TailScale auth key (REUSABLE + preauthorized, from tailscale.com/admin/settings/keys — used by the Docker sidecar so reusable means future redeploys don't need a new key)"
 Invoke-Az @('keyvault', 'secret', 'set',
     '--vault-name', $KV_NAME, '--name', 'tailscale-auth-key', '--value', $TS_AUTH_KEY, '--output', 'none')
 

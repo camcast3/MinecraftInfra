@@ -1,26 +1,44 @@
 ---
-# Azure stack: Velocity proxy + monitoring sidecars
+# Azure stack: Tailscale sidecar + Velocity proxy + monitoring sidecars
 # Managed by GitHub Actions (deploy-azure.yml).
 #
 # The Azure VM is purely the public entry point and Mojang-auth gateway.
 # Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
 # on the Proxmox VM over Tailscale. No backend MC server runs here.
 #
+# Tailscale runs as a Docker sidecar (NOT on the host). The tailscale container
+# owns the network namespace; Velocity, mc-monitor-exporter, and every monitoring
+# sidecar share it via `network_mode: service:tailscale`. This mirrors the Proxmox
+# stack pattern and keeps tailnet identity portable across host rebuilds.
+#
+# Why the tailscale service publishes `25565:25577` on the host:
+#   The Azure VM IS the public ingress. Player traffic arrives at the host's
+#   public IP on 25565 and must reach Velocity inside the sidecar's netns.
+#   Publishing 25565 on the tailscale container DNATs host:25565 → netns:25577
+#   where Velocity listens. Velocity's outbound to the C2E2 backend uses the
+#   tailnet interface in the same netns. Single hop, no userland proxy.
+#
+# Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
+# They're reachable only at the lobby VM's tailnet IP (100.x.x.x), which is
+# the same trade-off the Proxmox stack accepts (cleaner exposure surface).
+#
 # Environment variables come from /opt/minecraft/docker/azure/.env
 # written by the deploy workflow from Azure Key Vault secrets.
 #
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
-# Config files (velocity.toml, forwarding.secret) are written by the deploy workflow
-# to /data/minecraft/velocity/ before docker compose up runs.
 # Pre-create on the host:
-#   mkdir -p /data/minecraft/{velocity,promtail}
+#   mkdir -p /data/minecraft/{tailscale,velocity,promtail}
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
 #
-# Key Vault secrets written to .env by deploy-azure.yml:
+# Key Vault secrets written to .env by refresh-env.sh:
+#   TS_AUTHKEY                  — Tailscale auth key (ephemeral + preauthorized)
 #   VELOCITY_FORWARDING_SECRET  — shared secret between Velocity and the C2E2 backend
 #   C2E2_TAILSCALE_IP           — TailScale IP of the Proxmox VM (used in velocity.toml)
+#
+# Static env vars set in this file (no secrets):
+#   TS_HOSTNAME=lobby-azure     — node name in the tailnet
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -29,24 +47,62 @@ x-common-keys-apps: &common-keys-apps
 
 services:
 
+  ############################# NETWORK SIDECAR
+  # Owns the network namespace shared by velocity + monitoring containers.
+  # Publishes only the Minecraft player port on the host — everything else
+  # (metrics endpoints) is reachable solely via the tailnet.
+  tailscale:
+    <<: *common-keys-apps
+    image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
+    container_name: tailscale-lobby
+    # Host-published ports for the entire shared netns must be declared here
+    # (services using network_mode: service:tailscale cannot declare their own).
+    # TCP only — Java Edition is TCP, Velocity query is disabled in velocity.toml.
+    ports:
+      - "25565:25577/tcp"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_HOSTNAME: ${TS_HOSTNAME:-lobby-azure}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TZ: America/Los_Angeles
+    volumes:
+      - /data/minecraft/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    healthcheck:
+      test: ["CMD", "tailscale", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   ############################# PROXY
   velocity:
     <<: *common-keys-apps
     container_name: velocity
     # mc-proxy java17 — stays on Java 17 to be compatible with 1.20.1 backends
     image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
-    ports:
-      - "25565:25577"
-      - "9985:9985"
-    networks:
-      - minecraft
+    # Shares tailscale's netns: inbound 25565 arrives via host port published
+    # on the tailscale service; outbound to C2E2 uses the tailnet interface.
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: '1'
           memory: 1G
     volumes:
-      # velocity.toml and forwarding.secret written here by deploy-azure.yml before compose up
+      # velocity.toml and forwarding.secret written here by refresh-env.sh before compose up
       - /data/minecraft/velocity:/server
     environment:
       TYPE: VELOCITY
@@ -61,11 +117,12 @@ services:
       #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
       #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
-      #     latency histograms, JVM stats) on :9985 for Prometheus scraping.
+      #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
       # forwarding.secret is pre-written by refresh-env.sh; this env var is a
       # belt-and-suspenders fallback for the itzg image's own secret generation.
       VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      TZ: America/Los_Angeles
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
       interval: 30s
@@ -74,13 +131,20 @@ services:
       start_period: 30s
 
   ############################# MONITORING SIDECARS
+  # All share the tailscale netns. Metrics ports (8081/9080/9100/9985) are
+  # reachable ONLY at the lobby tailnet IP — never published on the host.
+  # Trade-off (same as Proxmox stack): node-exporter and cadvisor see the
+  # tailscale netns's network interfaces, not the host's. CPU/mem/disk and
+  # container metrics still work; host network interface stats do not.
   mc-monitor-exporter:
     <<: *common-keys-apps
     image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
     container_name: mc-monitor-exporter
-    networks:
-      - minecraft
+    # Shares tailscale netns — Velocity is reachable at localhost:25577 here.
+    network_mode: "service:tailscale"
     depends_on:
+      tailscale:
+        condition: service_healthy
       velocity:
         condition: service_healthy
     deploy:
@@ -88,19 +152,23 @@ services:
         limits:
           cpus: '0.25'
           memory: 128M
-    ports:
-      - "8081:8081"
     command: ["export-for-prometheus"]
     environment:
-      EXPORT_SERVERS: "velocity:25577"
+      EXPORT_SERVERS: "localhost:25577"
       EXPORT_PORT: "8081"
+      TZ: America/Los_Angeles
 
   node-exporter:
     <<: *common-keys-apps
     image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
     container_name: node-exporter
-    network_mode: host
+    network_mode: "service:tailscale"
+    # pid: host lets node-exporter see host processes even though it shares
+    # tailscale's netns instead of the host's.
     pid: host
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -108,11 +176,13 @@ services:
           memory: 128M
     volumes:
       - "/:/host:ro,rslave"
+    environment:
+      TZ: America/Los_Angeles
     command:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
 
-  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080.
+  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080 (tailnet only).
   # Tuned for a CPU-limited container: at the default --housekeeping_interval=1s
   # plus 0.25 CPU the stats loop runs continuously and Prometheus scrapes time
   # out ("context deadline exceeded"). See google/cadvisor#2622 — CPU limits
@@ -121,8 +191,11 @@ services:
     <<: *common-keys-apps
     image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
     container_name: cadvisor
-    network_mode: host
+    network_mode: "service:tailscale"
     privileged: true
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -141,6 +214,8 @@ services:
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg
+    environment:
+      TZ: America/Los_Angeles
     command:
       # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
       # user sessions). We only care about Docker container metrics — node-exporter
@@ -155,7 +230,10 @@ services:
     <<: *common-keys-apps
     image: grafana/promtail:3.6.11@sha256:a761cb834cfaeee29745440d4884d6748f0a08d8f68928db1d707018c1dcfbe9
     container_name: promtail
-    network_mode: host
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -171,14 +249,9 @@ services:
       - source: promtail_config
         target: /etc/promtail/config.yaml
         mode: 0444
+    environment:
+      TZ: America/Los_Angeles
     command: ["-config.file=/etc/promtail/config.yaml"]
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Networks
-# ─────────────────────────────────────────────────────────────────────────────
-networks:
-  minecraft:
-    driver: bridge
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Top-level configs: block. Inline config avoids relative bind mounts and keeps
@@ -204,7 +277,7 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: azure-lobby
+                instance: lobby-azure
                 __path__: /var/lib/docker/containers/*/*.log
           pipeline_stages:
             - docker: {}
@@ -212,5 +285,5 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: azure-lobby
+                instance: lobby-azure
                 __path__: /var/log/syslog

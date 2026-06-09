@@ -12,10 +12,6 @@ param adminUsername string
 @secure()
 param adminSshPublicKey string
 
-@description('TailScale auth key — resolved from Key Vault by ARM at deploy time')
-@secure()
-param tailscaleAuthKey string
-
 @description('GitHub repo URL to clone on first boot')
 param repoUrl string = 'https://github.com/camcast3/MinecraftInfra'
 
@@ -55,18 +51,24 @@ write_files:
     content: |
       Unattended-Upgrade::Automatic-Reboot "true";
       Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+  # Load tun kernel module on boot — required by the Tailscale Docker sidecar
+  # (TS_USERSPACE=false mounts /dev/net/tun inside the container).
+  - path: /etc/modules-load.d/tun.conf
+    content: |
+      tun
 
 runcmd:
   - curl -fsSL https://aka.ms/InstallAzureCLIDeb | bash
   - curl -fsSL https://get.docker.com | sh
   - systemctl enable --now docker
-  - curl -fsSL https://tailscale.com/install.sh | sh
-  - tailscale up --authkey=__TAILSCALE_AUTH_KEY__ --ssh
+  # Tailscale runs as a Docker sidecar (docker/azure/docker-compose.yml), NOT on
+  # the host. Admin access to this VM goes through `az vm run-command invoke`
+  # (Azure control plane) — no host SSH over Tailscale needed.
+  - modprobe tun
   - ufw default deny incoming
   - ufw default allow outgoing
   - ufw allow 25565/tcp comment 'Minecraft TCP'
   - ufw allow 25565/udp comment 'Minecraft UDP'
-  - ufw allow in on tailscale0 comment 'TailScale'
   - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__
@@ -76,29 +78,41 @@ runcmd:
   - DATA_UUID=$(blkid -s UUID -o value /dev/disk/azure/scsi1/lun0)
   - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
   - mount /data
-  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail
+  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
   # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /opt/minecraft
+  # Mark the repo safe for git operations as root (deploy workflow runs as root
+  # via `az vm run-command invoke` but the working tree is owned by the admin
+  # user — without this, git refuses with "dubious ownership in repository").
+  - git config --system --add safe.directory /opt/minecraft
   # Fetch secrets from Key Vault and write .env + velocity config.
   # Retry loop handles the brief delay before the Managed Identity is available.
+  # Track success explicitly — without this, an all-attempts-fail path returns 0
+  # because the last command in the loop body (sleep) succeeds, and cloud-init
+  # would happily continue to `docker compose up` against an empty .env.
   - |
     export HOME=/root
+    REFRESH_OK=0
     for i in 1 2 3 4 5; do
-      bash /opt/minecraft/docker/azure/refresh-env.sh && break
+      if bash /opt/minecraft/docker/azure/refresh-env.sh; then
+        REFRESH_OK=1
+        break
+      fi
       echo "refresh-env.sh attempt $i failed, retrying in 15s..."
       sleep 15
     done
+    if [ "$REFRESH_OK" != "1" ]; then
+      echo "refresh-env.sh failed after 5 attempts — aborting cloud-init" >&2
+      exit 1
+    fi
   # Start the Docker stack
   - docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d
 '''
 
 var cloudInitRendered = replace(
-  replace(
-    replace(cloudInitScript, '__TAILSCALE_AUTH_KEY__', tailscaleAuthKey),
-    '__REPO_URL__', repoUrl
-  ),
+  replace(cloudInitScript, '__REPO_URL__', repoUrl),
   '__ADMIN_USERNAME__', adminUsername
 )
 
