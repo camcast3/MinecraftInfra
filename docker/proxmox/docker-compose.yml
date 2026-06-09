@@ -29,10 +29,26 @@
 # Never hardcode secret values here and never use a .env file with Portainer.
 #
 # Variables to configure in Portainer UI:
-#   TS_AUTHKEY                  - TailScale auth key (ephemeral + preauthorized)
+#   TS_AUTHKEY                  - TailScale auth key (REUSABLE + preauthorized,
+#                                 non-ephemeral). Reusable because Portainer
+#                                 keeps this env var set across every stack
+#                                 redeploy; containerboot only consumes the key
+#                                 when /var/lib/tailscale state is empty (so it
+#                                 normally isn't touched after first registration),
+#                                 but if the state dir is ever wiped or the
+#                                 container recreated without state, the value
+#                                 must still be valid for the node to come back.
+#                                 NOT ephemeral — this is a long-running backend
+#                                 server; the tailnet entry should persist when
+#                                 the container is restarted/offline. The Azure
+#                                 lobby uses a SINGLE-USE key on a different
+#                                 injection path; see docker/azure/refresh-env.sh.
 #   TS_HOSTNAME                 - Node name in the tailnet (e.g. mc-proxmox)
 #   CF_API_KEY                  - CurseForge API key (https://console.curseforge.com/)
-#   VELOCITY_FORWARDING_SECRET  - Must match the Azure Velocity proxy config
+#   VELOCITY_FORWARDING_SECRET  - Must match the Azure Velocity proxy config.
+#                                 Rotation is COORDINATED with the Azure KV
+#                                 secret of the same name; see the runbook in
+#                                 docker/azure/refresh-env.sh's header.
 #   RCON_PASSWORD               - RCON password (shared by C2E2, restarter, all 3 backups)
 #   STORAGE_ACCOUNT             - Azure Storage account name (no suffix)
 #   AZURE_TENANT_ID             - Service principal tenant ID (for backup-azure)

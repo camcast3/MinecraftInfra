@@ -36,10 +36,28 @@
 #   5) docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d --force-recreate tailscale
 #   6) bash /opt/minecraft/docker/azure/refresh-env.sh   # state now present → overwrites with placeholder
 #
-# To rotate the Velocity forwarding secret (no re-registration needed):
-#   1) az keyvault secret set --vault-name kv-minecraft-prod --name velocity-forwarding-secret --value '...'
-#   2) bash /opt/minecraft/docker/azure/refresh-env.sh
-#   3) docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d --force-recreate velocity
+# To rotate the Velocity forwarding secret. CRITICAL — coordinated across BOTH
+# hosts. The secret is a shared HMAC key between Velocity (Azure) and the
+# Craft-to-Exile-2 backend (Proxmox); if they disagree, the backend rejects
+# the proxy's modern-forwarding handshake and players see "Unable to connect"
+# until both sides agree again. Order:
+#   1) Generate one new value (used by both hosts):
+#        NEW=$(openssl rand -hex 32)
+#   2) On the operator workstation (Azure):
+#        az keyvault secret set --vault-name kv-minecraft-prod \
+#          --name velocity-forwarding-secret --value "$NEW"
+#   3) In Portainer UI (Proxmox stack):
+#        Set VELOCITY_FORWARDING_SECRET = $NEW on the C2E2 stack.
+#        Click "Update the stack" — Portainer recreates c2e2 with the new value
+#        injected at startup via PATCH_DEFINITIONS.
+#   4) On the Azure VM (via `az vm run-command invoke`):
+#        bash /opt/minecraft/docker/azure/refresh-env.sh
+#        docker compose -f /opt/minecraft/docker/azure/docker-compose.yml \
+#          up -d --force-recreate velocity
+# Steps 3 and 4 should happen within the same ~minute window to minimise the
+# player-visible outage. If you can only do one at a time, do Proxmox first —
+# Velocity will fail-closed (reject backend connections) and players see a
+# clean disconnect rather than a half-broken session.
 #
 # Called by the deploy workflow after `git pull`, before `docker compose up`.
 # No credentials needed — the VM's MI has Key Vault Secrets User role.
