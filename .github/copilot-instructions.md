@@ -40,6 +40,6 @@ old/                # ARCHIVED — ignore
 - **Memory tuning:** Per [itzg's docs](https://docker-minecraft-server.readthedocs.io/), both fixed `MEMORY` and `MEMORY: ""` + `MaxRAMPercentage` are first-class. C2E2 uses a fixed `MEMORY: "31G"` to stay just under the ~32 GB compressed-oops cliff regardless of the container ceiling.
 - **Online mode:** `ONLINE_MODE: "FALSE"` on all backend servers; Velocity handles Mojang auth at the proxy.
 - **Proxmox updates:** Portainer GitOps — Portainer CE polls the GitHub repo on a set interval (e.g., 5 min), detects changes to `docker/proxmox/docker-compose.yml`, and redeploys automatically. No inbound ports or webhooks needed. All env vars set via Portainer stack environment UI only.
-- **Secrets:** Never committed. `.env.example` documents all required vars.
+- **Secrets:** Never committed. Azure stack fetches secrets from Key Vault via the VM's Managed Identity and stores them under `/opt/minecraft/secrets/` (0700 root) on the host; Proxmox stack injects via Portainer's environment UI. No `.env` files in either production stack.
 - **Player DNS:** `mc.negativezone.cc` — Cloudflare A record (DNS-only, no proxy) pointing to the Azure Public IP. Players connect with this hostname.
 - **Access control:** Whitelist-only (no NSG IP filtering). Velocity handles Mojang auth at the proxy; backend servers enforce `whitelist.json` + `ops.json` from `docker/shared/`. Port 25565 is open but only authenticated + whitelisted players can join.

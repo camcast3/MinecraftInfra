@@ -22,23 +22,27 @@
 # They're reachable only at the lobby VM's tailnet IP (100.x.x.x), which is
 # the same trade-off the Proxmox stack accepts (cleaner exposure surface).
 #
-# Environment variables come from /opt/minecraft/docker/azure/.env
-# written by the deploy workflow from Azure Key Vault secrets.
+# Secrets are fetched from Azure Key Vault and written to /opt/minecraft/secrets/
+# on the host by the deploy workflow's refresh-env.sh — never to a .env file.
+# See the top-level `secrets:` block at the bottom of this file.
 #
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
 # Pre-create on the host:
 #   mkdir -p /data/minecraft/{tailscale,velocity,promtail}
+#   install -d -m 0700 -o root -g root /opt/minecraft/secrets
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
 #
-# Key Vault secrets written to .env by refresh-env.sh:
-#   TS_AUTHKEY                  — Tailscale auth key (ephemeral + preauthorized)
-#   VELOCITY_FORWARDING_SECRET  — shared secret between Velocity and the C2E2 backend
-#   C2E2_TAILSCALE_IP           — TailScale IP of the Proxmox VM (used in velocity.toml)
-#
-# Static env vars set in this file (no secrets):
-#   TS_HOSTNAME=lobby-azure     — node name in the tailnet
+# Secrets are stored on the host at /opt/minecraft/secrets/ (0700, root-owned),
+# written by refresh-env.sh from Azure Key Vault. They reach containers via:
+#   - tailscale: docker compose `secrets:` (mounted at /run/secrets/ts_authkey,
+#     containerboot reads via TS_AUTHKEY=file:/run/secrets/ts_authkey)
+#   - velocity:  single-file bind mount /opt/minecraft/secrets/velocity_forwarding_secret
+#     → /server/forwarding.secret (Velocity reads it from disk; itzg startup
+#     leaves an existing file alone). File is owned UID 1000:1000 so itzg's
+#     in-container chown -R is a same-owner no-op.
+# No secret value is ever written to .env, a Compose env var, or an image layer.
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -66,11 +70,17 @@ services:
           cpus: '0.5'
           memory: 256M
     environment:
-      TS_AUTHKEY: ${TS_AUTHKEY}
-      TS_HOSTNAME: ${TS_HOSTNAME:-lobby-azure}
+      # containerboot reads the auth key from this file (file: prefix on
+      # TS_AUTHKEY has been supported since the early v1.x of containerboot).
+      # The file is mounted by the `secrets:` block below and originates at
+      # /opt/minecraft/secrets/ts_authkey on the host.
+      TS_AUTHKEY: file:/run/secrets/ts_authkey
+      TS_HOSTNAME: lobby-azure
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
       TZ: America/Los_Angeles
+    secrets:
+      - ts_authkey
     volumes:
       - /data/minecraft/tailscale:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
@@ -102,8 +112,14 @@ services:
           cpus: '1'
           memory: 1G
     volumes:
-      # velocity.toml and forwarding.secret written here by refresh-env.sh before compose up
+      # velocity.toml is written here by refresh-env.sh before compose up.
       - /data/minecraft/velocity:/server
+      # Single-file bind mount overlays the broader /server mount above. itzg's
+      # startup runs `chown -R bungeecord:bungeecord /server` (the script has
+      # `set -eo pipefail`), so the source file MUST already be owned UID 1000
+      # to avoid an EROFS-style failure on this single-file bind mount —
+      # refresh-env.sh handles that.
+      - /opt/minecraft/secrets/velocity_forwarding_secret:/server/forwarding.secret
     environment:
       TYPE: VELOCITY
       # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17 (3.4+ requires Java 21).
@@ -119,9 +135,10 @@ services:
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
       #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
-      # forwarding.secret is pre-written by refresh-env.sh; this env var is a
-      # belt-and-suspenders fallback for the itzg image's own secret generation.
-      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      # forwarding.secret is bind-mounted at /server/forwarding.secret from
+      # /opt/minecraft/secrets/velocity_forwarding_secret. itzg's startup
+      # detects the existing file and leaves it alone (no env-based fallback
+      # needed, no plaintext env var with the secret).
       TZ: America/Los_Angeles
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
@@ -287,3 +304,25 @@ configs:
               labels:
                 instance: lobby-azure
                 __path__: /var/log/syslog
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Top-level secrets: block. File-backed Compose secrets (this is plain Compose,
+# not Swarm) are read-only bind mounts of the source file to /run/secrets/<name>
+# inside the consuming container. Source perms (mode/uid/gid) flow through; the
+# `mode:`/`uid:`/`gid:` keys on the service-side `secrets:` entry are Swarm-only
+# and ignored here — refresh-env.sh sets the on-host file mode/owner explicitly.
+#
+# Only ts_authkey is declared here because tailscale runs as root in its
+# container and consumes the key via `TS_AUTHKEY=file:/run/secrets/ts_authkey`
+# (containerboot supports the file: prefix).
+#
+# velocity's forwarding.secret is NOT a Docker secret because itzg/mc-proxy's
+# startup does `chown -R bungeecord:bungeecord /server` under `set -eo pipefail`,
+# which would fail with EROFS on a read-only Compose-secret mount inside /server
+# and kill the container. Instead it's bind-mounted directly into /server via
+# the velocity service's volumes (with UID 1000 ownership so the chown is a
+# same-owner no-op).
+# ─────────────────────────────────────────────────────────────────────────────
+secrets:
+  ts_authkey:
+    file: /opt/minecraft/secrets/ts_authkey

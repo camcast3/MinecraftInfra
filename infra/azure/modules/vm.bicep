@@ -80,6 +80,11 @@ runcmd:
   - mount /data
   - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
+  # Secrets dir for the docker stack — root-only on the host. refresh-env.sh
+  # writes ts_authkey + velocity_forwarding_secret here; docker compose mounts
+  # those into the tailscale and velocity containers. Create it explicitly so
+  # we don't rely on refresh-env.sh side effects for the install permissions.
+  - install -d -m 0700 -o root -g root /opt/minecraft/secrets
   # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /opt/minecraft
@@ -87,11 +92,12 @@ runcmd:
   # via `az vm run-command invoke` but the working tree is owned by the admin
   # user — without this, git refuses with "dubious ownership in repository").
   - git config --system --add safe.directory /opt/minecraft
-  # Fetch secrets from Key Vault and write .env + velocity config.
-  # Retry loop handles the brief delay before the Managed Identity is available.
-  # Track success explicitly — without this, an all-attempts-fail path returns 0
-  # because the last command in the loop body (sleep) succeeds, and cloud-init
-  # would happily continue to `docker compose up` against an empty .env.
+  # Fetch secrets from Key Vault and write /opt/minecraft/secrets/* +
+  # velocity.toml. Retry loop handles the brief delay before the Managed
+  # Identity is available. Track success explicitly — without this, an
+  # all-attempts-fail path returns 0 because the last command in the loop body
+  # (sleep) succeeds, and cloud-init would happily continue to `docker compose
+  # up` against missing secret files.
   - |
     export HOME=/root
     REFRESH_OK=0

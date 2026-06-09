@@ -46,17 +46,20 @@ if [ ! -f /etc/modules-load.d/tun.conf ]; then
   echo tun > /etc/modules-load.d/tun.conf
 fi
 
-# ── Step 2: Pre-create tailscale state directory ─────────────────────────────
+# ── Step 2: Pre-create state + secrets directories ───────────────────────────
 mkdir -p "${TS_STATE_DIR}"
 chown "${ADMIN_USER}:${ADMIN_USER}" "${TS_STATE_DIR}"
+# Secrets dir (root-only). refresh-env.sh would also create it, but having it
+# in place first lets us reason about ownership without relying on side effects.
+install -d -m 0700 -o root -g root /opt/minecraft/secrets
 
-# ── Step 3: Pull latest repo + refresh .env (writes TS_AUTHKEY etc.) ─────────
+# ── Step 3: Pull latest repo + refresh secret files (writes ts_authkey etc.) ─
 cd "${REPO_DIR}"
 git fetch origin
 # Stay on whatever branch is currently checked out; the deploy workflow handles
 # branch switching. This script just makes sure local files are current.
 git reset --hard "@{u}"
-log "Refreshing .env from Key Vault"
+log "Refreshing secret files from Key Vault"
 bash docker/azure/refresh-env.sh
 
 # ── Step 3b: Pre-flight — verify TS_AUTHKEY actually works ───────────────────
@@ -64,13 +67,12 @@ bash docker/azure/refresh-env.sh
 # would let the migration tear down velocity and then fail at sidecar registration,
 # leaving the site offline. Spin up a throwaway sidecar in userspace mode FIRST
 # to test the key. If it can't register, abort BEFORE touching anything live.
-set -a
-. docker/azure/.env
-set +a
-if [ -z "${TS_AUTHKEY:-}" ]; then
-  log "ERROR: TS_AUTHKEY missing from .env after refresh-env.sh — check Key Vault." >&2
+TS_AUTHKEY_FILE="/opt/minecraft/secrets/ts_authkey"
+if [ ! -s "$TS_AUTHKEY_FILE" ]; then
+  log "ERROR: ${TS_AUTHKEY_FILE} missing/empty after refresh-env.sh — check Key Vault." >&2
   exit 1
 fi
+TS_AUTHKEY="$(cat "$TS_AUTHKEY_FILE")"
 
 log "Pre-flight: spinning up throwaway sidecar (userspace mode, ephemeral) to verify TS_AUTHKEY"
 PREFLIGHT_DIR=$(mktemp -d)
@@ -156,16 +158,17 @@ fi
 # Verify the sidecar can reach the C2E2 backend over the tailnet. Without this,
 # we'd happily rip out host tailscaled while Velocity has no working route to
 # the backend (e.g. if tailnet ACLs don't permit the new lobby-azure node).
-if [ -f docker/azure/.env ]; then
-  C2E2_IP=$(grep '^C2E2_TAILSCALE_IP=' docker/azure/.env | cut -d= -f2-)
-  if [ -n "${C2E2_IP}" ]; then
-    log "Pinging C2E2 backend at ${C2E2_IP} from the sidecar netns"
-    # tailscale flags use Go's flag package; use --flag=value form to avoid
-    # any ambiguity with positional args (the IP).
-    if ! docker exec tailscale-lobby tailscale ping --c=3 --timeout=5s "${C2E2_IP}" 2>&1 | tail -5; then
-      log "WARNING: tailscale ping to ${C2E2_IP} failed. Check tailnet ACLs/auth-key tags." >&2
-      log "         Proceeding anyway — Velocity may still work if ACLs allow TCP but not ICMP." >&2
-    fi
+# Fetch C2E2 IP straight from Key Vault — refresh-env.sh no longer writes it
+# to .env (which no longer exists).
+C2E2_IP="$(az keyvault secret show --vault-name kv-minecraft-prod \
+  --name c2e2-tailscale-ip --query value -o tsv 2>/dev/null || true)"
+if [ -n "${C2E2_IP}" ]; then
+  log "Pinging C2E2 backend at ${C2E2_IP} from the sidecar netns"
+  # tailscale flags use Go's flag package; use --flag=value form to avoid
+  # any ambiguity with positional args (the IP).
+  if ! docker exec tailscale-lobby tailscale ping --c=3 --timeout=5s "${C2E2_IP}" 2>&1 | tail -5; then
+    log "WARNING: tailscale ping to ${C2E2_IP} failed. Check tailnet ACLs/auth-key tags." >&2
+    log "         Proceeding anyway — Velocity may still work if ACLs allow TCP but not ICMP." >&2
   fi
 fi
 

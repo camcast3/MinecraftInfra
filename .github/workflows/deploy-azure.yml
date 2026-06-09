@@ -70,7 +70,8 @@ jobs:
       # Uses az vm run-command so no SSH key or Tailscale tunnel is needed —
       # the runner's OIDC Azure session (Contributor on the RG) is sufficient.
       # Commands run as root on the VM; refresh-env.sh re-fetches KV secrets
-      # and rewrites .env + velocity.toml before the compose restart.
+      # and rewrites /opt/minecraft/secrets/* + velocity.toml before the
+      # compose restart.
       - name: Resolve deploy ref
         id: ref
         run: echo "branch=${{ inputs.ref || 'main' }}" >> "$GITHUB_OUTPUT"
