@@ -12,10 +12,6 @@ param adminUsername string
 @secure()
 param adminSshPublicKey string
 
-@description('TailScale auth key — resolved from Key Vault by ARM at deploy time')
-@secure()
-param tailscaleAuthKey string
-
 @description('GitHub repo URL to clone on first boot')
 param repoUrl string = 'https://github.com/camcast3/MinecraftInfra'
 
@@ -55,18 +51,35 @@ write_files:
     content: |
       Unattended-Upgrade::Automatic-Reboot "true";
       Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+  # Load tun kernel module on boot — required by the Tailscale Docker sidecar
+  # (TS_USERSPACE=false mounts /dev/net/tun inside the container).
+  - path: /etc/modules-load.d/tun.conf
+    content: |
+      tun
 
 runcmd:
   - curl -fsSL https://aka.ms/InstallAzureCLIDeb | bash
   - curl -fsSL https://get.docker.com | sh
   - systemctl enable --now docker
-  - curl -fsSL https://tailscale.com/install.sh | sh
-  - tailscale up --authkey=__TAILSCALE_AUTH_KEY__ --ssh
+  # Tailscale runs as a Docker sidecar (docker/azure/docker-compose.yml), NOT on
+  # the host. Admin access to this VM goes through `az vm run-command invoke`
+  # (Azure control plane) — no host SSH over Tailscale needed.
+  #
+  # Break-glass path if `az vm run-command` itself is broken (rare — separate
+  # Azure data-plane vs control-plane): Azure Serial Console via
+  # `az serial-console connect -g rg-minecraft-prod -n vm-minecraft-prod`
+  # (or the portal). Falls through to the admin user via the SSH key in KV.
+  # NSG still blocks port 22 from the internet so this is the only inbound
+  # path that doesn't require the control plane.
+  - modprobe tun
+  # /dev/net/tun: default perms (0600 root:root) are fine — the tailscale
+  # sidecar runs as root in its userns (see docker/azure/docker-compose.yml
+  # for the capability-set rationale).
   - ufw default deny incoming
   - ufw default allow outgoing
+  # Java Edition Minecraft is TCP-only. Velocity query (UDP) is disabled in
+  # velocity.toml, and we don't run Bedrock, so no UDP rule needed.
   - ufw allow 25565/tcp comment 'Minecraft TCP'
-  - ufw allow 25565/udp comment 'Minecraft UDP'
-  - ufw allow in on tailscale0 comment 'TailScale'
   - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__
@@ -76,29 +89,76 @@ runcmd:
   - DATA_UUID=$(blkid -s UUID -o value /dev/disk/azure/scsi1/lun0)
   - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
   - mount /data
-  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail
+  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
+  # Tailscale state dir: chown explicitly to root:root 0700. Order matters —
+  # this MUST come AFTER the `chown -R __ADMIN_USERNAME__ /data` above, which
+  # would otherwise clobber it. The state file IS the tailnet node identity
+  # (private node key + machine cert) — treat as secret, host-readable only
+  # by root.
+  - chown root:root /data/minecraft/tailscale
+  - chmod 0700 /data/minecraft/tailscale
+  # Secrets dir for the docker stack — root-only on the host. refresh-env.sh
+  # writes ts_authkey + velocity_forwarding_secret here; docker compose mounts
+  # those into the tailscale and velocity containers. Create it explicitly so
+  # we don't rely on refresh-env.sh side effects for the install permissions.
+  - install -d -m 0700 -o root -g root /opt/minecraft/secrets
   # Clone the repo
   - git clone __REPO_URL__ /opt/minecraft
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /opt/minecraft
-  # Fetch secrets from Key Vault and write .env + velocity config.
-  # Retry loop handles the brief delay before the Managed Identity is available.
+  # Mark the repo safe for git operations as root (deploy workflow runs as root
+  # via `az vm run-command invoke` but the working tree is owned by the admin
+  # user — without this, git refuses with "dubious ownership in repository").
+  - git config --system --add safe.directory /opt/minecraft
+  # Fetch secrets from Key Vault and write /opt/minecraft/secrets/* +
+  # velocity.toml. Retry loop handles the brief delay before the Managed
+  # Identity is available. Track success explicitly — without this, an
+  # all-attempts-fail path returns 0 because the last command in the loop body
+  # (sleep) succeeds, and cloud-init would happily continue to `docker compose
+  # up` against missing secret files.
   - |
     export HOME=/root
+    REFRESH_OK=0
     for i in 1 2 3 4 5; do
-      bash /opt/minecraft/docker/azure/refresh-env.sh && break
+      if bash /opt/minecraft/docker/azure/refresh-env.sh; then
+        REFRESH_OK=1
+        break
+      fi
       echo "refresh-env.sh attempt $i failed, retrying in 15s..."
       sleep 15
     done
+    if [ "$REFRESH_OK" != "1" ]; then
+      echo "refresh-env.sh failed after 5 attempts — aborting cloud-init" >&2
+      exit 1
+    fi
   # Start the Docker stack
   - docker compose -f /opt/minecraft/docker/azure/docker-compose.yml up -d
+  # After the tailscale sidecar has registered, re-run refresh-env.sh. With
+  # tailscaled.state now present, refresh-env.sh writes a DEAD PLACEHOLDER to
+  # /opt/minecraft/secrets/ts_authkey instead of the live key — shrinking the
+  # live-key-on-disk window from "until next deploy" to "until tailscale boots".
+  # If the sidecar never becomes healthy we leave the live key in place
+  # (better than failing cloud-init outright) — operator can recover.
+  #
+  # Wait on the STATE FILE directly, not on `tailscale status`. `tailscale
+  # status` returns 0 even when the daemon is up-but-logged-out, which would
+  # race the placeholder swap against the actual registration. The state file
+  # is only written by tailscaled after a successful auth handshake, so its
+  # presence is the exact precondition refresh-env.sh checks on its next call.
+  # Budget: 15 × 6s = 90s.
+  - |
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+      if [ -s /data/minecraft/tailscale/tailscaled.state ]; then
+        echo "tailscaled.state present — overwriting on-disk auth key with dead placeholder"
+        bash /opt/minecraft/docker/azure/refresh-env.sh || true
+        break
+      fi
+      sleep 6
+    done
 '''
 
 var cloudInitRendered = replace(
-  replace(
-    replace(cloudInitScript, '__TAILSCALE_AUTH_KEY__', tailscaleAuthKey),
-    '__REPO_URL__', repoUrl
-  ),
+  replace(cloudInitScript, '__REPO_URL__', repoUrl),
   '__ADMIN_USERNAME__', adminUsername
 )
 

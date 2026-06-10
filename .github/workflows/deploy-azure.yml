@@ -70,26 +70,57 @@ jobs:
       # Uses az vm run-command so no SSH key or Tailscale tunnel is needed —
       # the runner's OIDC Azure session (Contributor on the RG) is sufficient.
       # Commands run as root on the VM; refresh-env.sh re-fetches KV secrets
-      # and rewrites .env + velocity.toml before the compose restart.
-      - name: Resolve deploy ref
-        id: ref
-        run: echo "branch=${{ inputs.ref || 'main' }}" >> "$GITHUB_OUTPUT"
-
+      # and rewrites /opt/minecraft/secrets/* + velocity.toml before the
+      # compose restart.
+      #
+      # Security: the deploy ref MUST NOT be interpolated into the inline
+      # script via `${{ ... }}`. workflow_dispatch.inputs.ref is attacker-
+      # controlled by anyone with write access (and that's a defense-in-depth
+      # boundary worth holding). Strategy:
+      #   1) Pull inputs.ref into an env var so it's a shell string, not a
+      #      template substitution.
+      #   2) Validate it against a strict allowlist on the runner BEFORE
+      #      sending it to the VM. Reject anything outside [a-zA-Z0-9._/-].
+      #   3) Pass it via `--parameters` (Azure surfaces this as a positional
+      #      arg `$1` to the script). Inside the script body, single-quote
+      #      the heredoc so the runner shell can't expand anything, and
+      #      reference `$1` with proper double-quoting.
       - name: Deploy Docker stack
+        env:
+          DEPLOY_REF: ${{ inputs.ref || 'main' }}
         run: |
+          case "$DEPLOY_REF" in
+            "" | *[!a-zA-Z0-9._/-]*)
+              echo "Refusing to deploy ref with unsafe characters or empty value: '$DEPLOY_REF'" >&2
+              exit 1
+              ;;
+          esac
           az vm run-command invoke \
             --resource-group rg-minecraft-prod \
             --name vm-minecraft-prod \
             --command-id RunShellScript \
-            --scripts "
+            --parameters "deployRef=$DEPLOY_REF" \
+            --scripts '
               export HOME=/root
               set -euo pipefail
+              # az vm run-command passes --parameters as positional args to
+              # the script ($1, $2, ...). Strip the "deployRef=" prefix with
+              # bash parameter expansion (no eval, no command substitution).
+              REF="${1#deployRef=}"
+              if [ -z "$REF" ]; then
+                echo "Empty deploy ref received on VM — aborting" >&2
+                exit 1
+              fi
+              # /opt/minecraft is owned by the admin user; this script runs
+              # as root via Azure run-command. --system writes /etc/gitconfig
+              # and doesnt depend on $HOME.
+              git config --system --add safe.directory /opt/minecraft
               cd /opt/minecraft
-              git fetch origin
-              git checkout ${{ steps.ref.outputs.branch }}
-              git reset --hard origin/${{ steps.ref.outputs.branch }}
+              git fetch origin "$REF"
+              git checkout "$REF"
+              git reset --hard "origin/$REF"
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
-            " \
+            ' \
             --output json | jq -r '.value[0].message'

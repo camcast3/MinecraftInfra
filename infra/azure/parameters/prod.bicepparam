@@ -39,7 +39,11 @@ param proxmoxSpObjectId = 'aadced53-d6f8-4430-bc48-af7a29caa418'
 // ── Secrets from Key Vault ────────────────────────────────────────────────────
 // ARM resolves getSecret() directly — the GitHub Actions runner never sees these values.
 // Run bootstrap.sh to populate all secrets before the first deployment.
+//
+// Note: `tailscale-auth-key` is also stored in Key Vault but NOT passed through
+// Bicep — the Tailscale sidecar fetches it directly via refresh-env.sh at
+// deploy time. Keeping it out of Bicep means rotating the key doesn't require
+// a VM redeploy.
 param adminUsername     = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'vm-admin-username')
 param adminSshPublicKey = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'ssh-public-key')
-param tailscaleAuthKey  = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'tailscale-auth-key')
 param alertEmail        = getSecret('0647ab84-e864-4016-8ea8-59dc13b347d4', 'rg-minecraft-prod', 'kv-minecraft-prod', 'budget-alert-email')

@@ -4,7 +4,9 @@
 # and writes the result to /data/minecraft/velocity/velocity.toml on the VM.
 # Variables resolved at deploy time from Azure Key Vault via refresh-env.sh:
 #   ${C2E2_TAILSCALE_IP}          — Tailscale IP of the Proxmox C2E2 server
-#   ${VELOCITY_FORWARDING_SECRET} — Modern forwarding secret (also written to forwarding.secret)
+# The Velocity modern-forwarding secret is NOT substituted into this template —
+# Velocity reads it from /server/forwarding.secret, which is a single-file
+# bind mount of /opt/minecraft/secrets/velocity_forwarding_secret.
 
 config-version = "2.7"
 
@@ -23,8 +25,10 @@ show-max-players = 20
 online-mode = true
 force-key-authentication = true
 
-# Modern forwarding — backends must have VELOCITY_FORWARDING_SECRET set.
-# forwarding.secret is written alongside this file by refresh-env.sh.
+# Modern forwarding — backends share the secret in forwarding.secret.
+# Velocity reads it from /server/forwarding.secret, which on the Azure host is
+# a single-file bind mount of /opt/minecraft/secrets/velocity_forwarding_secret
+# written by refresh-env.sh from Key Vault.
 player-info-forwarding-mode = "modern"
 
 announce-forge = false

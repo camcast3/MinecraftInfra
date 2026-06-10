@@ -1,26 +1,57 @@
 ---
-# Azure stack: Velocity proxy + monitoring sidecars
+# Azure stack: Tailscale sidecar + Velocity proxy + monitoring sidecars
 # Managed by GitHub Actions (deploy-azure.yml).
 #
 # The Azure VM is purely the public entry point and Mojang-auth gateway.
 # Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
 # on the Proxmox VM over Tailscale. No backend MC server runs here.
 #
-# Environment variables come from /opt/minecraft/docker/azure/.env
-# written by the deploy workflow from Azure Key Vault secrets.
+# Tailscale runs as a Docker sidecar (NOT on the host). The tailscale container
+# owns the network namespace; Velocity, mc-monitor-exporter, and every monitoring
+# sidecar share it via `network_mode: service:tailscale`. This mirrors the Proxmox
+# stack pattern and keeps tailnet identity portable across host rebuilds.
+#
+# Why the tailscale service publishes `25565:25577` on the host:
+#   The Azure VM IS the public ingress. Player traffic arrives at the host's
+#   public IP on 25565 and must reach Velocity inside the sidecar's netns.
+#   Publishing 25565 on the tailscale container DNATs host:25565 → netns:25577
+#   where Velocity listens. Velocity's outbound to the C2E2 backend uses the
+#   tailnet interface in the same netns. Single hop, no userland proxy.
+#
+# Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
+# They're reachable only at the proxy VM's tailnet IP (100.x.x.x), which is
+# the same trade-off the Proxmox stack accepts (cleaner exposure surface).
+#
+# Secrets are fetched from Azure Key Vault and written to /opt/minecraft/secrets/
+# on the host by the deploy workflow's refresh-env.sh — never to a .env file.
+# See the top-level `secrets:` block at the bottom of this file.
 #
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
-# Config files (velocity.toml, forwarding.secret) are written by the deploy workflow
-# to /data/minecraft/velocity/ before docker compose up runs.
-# Pre-create on the host:
+# Pre-create on the host (cloud-init does this for fresh provisioning):
 #   mkdir -p /data/minecraft/{velocity,promtail}
+#   install -d -m 0700 -o root -g root /data/minecraft/tailscale
+#   install -d -m 0700 -o root -g root /opt/minecraft/secrets
+#
+# Tailscale's tun device is preloaded by /etc/modules-load.d/tun.conf and used
+# with default 0600 root:root perms — the sidecar runs as root in its userns
+# (see the service block below for the capability-set rationale).
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
 #
-# Key Vault secrets written to .env by deploy-azure.yml:
-#   VELOCITY_FORWARDING_SECRET  — shared secret between Velocity and the C2E2 backend
-#   C2E2_TAILSCALE_IP           — TailScale IP of the Proxmox VM (used in velocity.toml)
+# Secrets are stored on the host at /opt/minecraft/secrets/ (0700, root-owned),
+# written by refresh-env.sh from Azure Key Vault. They reach containers via:
+#   - tailscale: docker compose `secrets:` (mounted at /run/secrets/ts_authkey,
+#     containerboot reads via TS_AUTHKEY=file:/run/secrets/ts_authkey). The
+#     value on disk is the LIVE auth key only at first registration; after
+#     the sidecar registers, refresh-env.sh detects tailscaled.state and
+#     overwrites the file with a dead placeholder. A compromised container
+#     therefore cannot exfiltrate a usable auth key.
+#   - velocity:  single-file bind mount /opt/minecraft/secrets/velocity_forwarding_secret
+#     → /server/forwarding.secret (Velocity reads it from disk; itzg startup
+#     leaves an existing file alone). File is owned UID 1000:1000 so itzg's
+#     in-container chown -R is a same-owner no-op.
+# No secret value is ever written to .env, a Compose env var, or an image layer.
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -29,25 +60,128 @@ x-common-keys-apps: &common-keys-apps
 
 services:
 
+  ############################# NETWORK SIDECAR
+  # Owns the network namespace shared by velocity + monitoring containers.
+  # Publishes only the Minecraft player port on the host — everything else
+  # (metrics endpoints) is reachable solely via the tailnet.
+  #
+  # Hardening (vs the Docker default of root + ~14 caps):
+  #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit one-cap allowlist; the
+  #     only capability tailscaled actually needs. SYS_MODULE is unnecessary
+  #     because the tun module is preloaded on the host (vm.bicep).
+  #
+  #     The container runs as root in its user namespace (no `user:` override)
+  #     because Docker Compose has no way to set ambient capabilities and the
+  #     stock tailscale/tailscale image has no file capabilities on
+  #     /usr/local/bin/tailscaled. A non-root UID with `cap_add: NET_ADMIN`
+  #     therefore exec()s with an empty effective set — TUNSETIFF and iptables
+  #     calls fail with EPERM and tailscaled crash-loops. cap_drop ALL +
+  #     cap_add NET_ADMIN + read_only + no-new-privileges yields a similarly
+  #     bounded blast radius without that failure mode. True non-root would
+  #     require a custom image (`setcap cap_net_admin+eip /usr/local/bin/tailscaled`)
+  #     — deferred follow-up.
+  #   - /dev/net/tun via `devices:` (not `volumes:`) so Docker's device cgroup
+  #     is configured correctly. Default 0600 root:root perms are fine.
+  #   - read_only: true root filesystem. tailscaled writes its socket to /tmp
+  #     (tmpfs) and persistent state to /var/lib/tailscale (bind mount).
+  #     Nothing else needs to be writable.
+  #   - no-new-privileges (via x-common-keys-apps anchor) blocks setuid escalation.
+  #   - TS_AUTH_ONCE=true so containerboot only consumes the auth key on first
+  #     registration; subsequent restarts use cached state and never read the
+  #     mounted secret value.
+  tailscale:
+    <<: *common-keys-apps
+    image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
+    container_name: tailscale-proxy
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_ADMIN
+    read_only: true
+    tmpfs:
+      # tailscaled writes its LocalAPI socket here (TS_SOCKET below).
+      - /tmp:size=64m,mode=1777
+      # Some tailscaled paths default to /var/run; keep a small writable scratch
+      # so we don't hit silent failures on edge-case writes.
+      - /run:size=8m,mode=1777
+    # Host-published ports for the entire shared netns must be declared here
+    # (services using network_mode: service:tailscale cannot declare their own).
+    # TCP only — Java Edition is TCP, Velocity query is disabled in velocity.toml.
+    ports:
+      - "25565:25577/tcp"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    environment:
+      # containerboot reads the auth key from this file (file: prefix on
+      # TS_AUTHKEY has been supported since the early v1.x of containerboot).
+      # The file is mounted by the `secrets:` block below and originates at
+      # /opt/minecraft/secrets/ts_authkey on the host — which holds either
+      # the live single-use key (during first registration) or a dead
+      # placeholder (after tailscaled.state exists). See refresh-env.sh.
+      TS_AUTHKEY: file:/run/secrets/ts_authkey
+      TS_HOSTNAME: proxy-azure
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      # Only attempt `tailscale up --authkey=...` if not already logged in.
+      # Combined with persistent state on /var/lib/tailscale, this means the
+      # mounted secret is consulted exactly once (first boot) and then ignored.
+      TS_AUTH_ONCE: "true"
+      # Don't let tailscaled rewrite /etc/resolv.conf — we have a read-only root
+      # filesystem and the lobby doesn't need to resolve tailnet hostnames.
+      TS_ACCEPT_DNS: "false"
+      # Default socket path is /var/run/tailscale/tailscaled.sock which would
+      # require /var/run/tailscale to exist and be writable. Pin to /tmp (tmpfs)
+      # to avoid that dance.
+      TS_SOCKET: /tmp/tailscaled.sock
+      TZ: America/Los_Angeles
+    secrets:
+      - ts_authkey
+    volumes:
+      - /data/minecraft/tailscale:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    healthcheck:
+      # `tailscale status` returns exit 0 even when the node is logged-out /
+      # unauthenticated (it just describes the local-only state of the daemon).
+      # `tailscale ip -4` only returns 0 once the node has been issued a tailnet
+      # IPv4 by control plane — i.e. genuinely registered + online. That's the
+      # precondition Velocity needs before it starts trying to dial C2E2 over
+      # the tailnet, so we gate dependents off this.
+      test: ["CMD", "tailscale", "--socket=/tmp/tailscaled.sock", "ip", "-4"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
   ############################# PROXY
   velocity:
     <<: *common-keys-apps
     container_name: velocity
     # mc-proxy java17 — stays on Java 17 to be compatible with 1.20.1 backends
     image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
-    ports:
-      - "25565:25577"
-      - "9985:9985"
-    networks:
-      - minecraft
+    # Shares tailscale's netns: inbound 25565 arrives via host port published
+    # on the tailscale service; outbound to C2E2 uses the tailnet interface.
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           cpus: '1'
           memory: 1G
     volumes:
-      # velocity.toml and forwarding.secret written here by deploy-azure.yml before compose up
+      # velocity.toml is written here by refresh-env.sh before compose up.
       - /data/minecraft/velocity:/server
+      # Single-file bind mount overlays the broader /server mount above. itzg's
+      # startup runs `chown -R bungeecord:bungeecord /server` (the script has
+      # `set -eo pipefail`), so the source file MUST already be owned UID 1000
+      # to avoid an EROFS-style failure on this single-file bind mount —
+      # refresh-env.sh handles that.
+      - /opt/minecraft/secrets/velocity_forwarding_secret:/server/forwarding.secret
     environment:
       TYPE: VELOCITY
       # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17 (3.4+ requires Java 21).
@@ -61,11 +195,13 @@ services:
       #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
       #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
-      #     latency histograms, JVM stats) on :9985 for Prometheus scraping.
+      #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
-      # forwarding.secret is pre-written by refresh-env.sh; this env var is a
-      # belt-and-suspenders fallback for the itzg image's own secret generation.
-      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      # forwarding.secret is bind-mounted at /server/forwarding.secret from
+      # /opt/minecraft/secrets/velocity_forwarding_secret. itzg's startup
+      # detects the existing file and leaves it alone (no env-based fallback
+      # needed, no plaintext env var with the secret).
+      TZ: America/Los_Angeles
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
       interval: 30s
@@ -74,13 +210,20 @@ services:
       start_period: 30s
 
   ############################# MONITORING SIDECARS
+  # All share the tailscale netns. Metrics ports (8081/9080/9100/9985) are
+  # reachable ONLY at the lobby tailnet IP — never published on the host.
+  # Trade-off (same as Proxmox stack): node-exporter and cadvisor see the
+  # tailscale netns's network interfaces, not the host's. CPU/mem/disk and
+  # container metrics still work; host network interface stats do not.
   mc-monitor-exporter:
     <<: *common-keys-apps
     image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
     container_name: mc-monitor-exporter
-    networks:
-      - minecraft
+    # Shares tailscale netns — Velocity is reachable at localhost:25577 here.
+    network_mode: "service:tailscale"
     depends_on:
+      tailscale:
+        condition: service_healthy
       velocity:
         condition: service_healthy
     deploy:
@@ -88,19 +231,23 @@ services:
         limits:
           cpus: '0.25'
           memory: 128M
-    ports:
-      - "8081:8081"
     command: ["export-for-prometheus"]
     environment:
-      EXPORT_SERVERS: "velocity:25577"
+      EXPORT_SERVERS: "localhost:25577"
       EXPORT_PORT: "8081"
+      TZ: America/Los_Angeles
 
   node-exporter:
     <<: *common-keys-apps
     image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
     container_name: node-exporter
-    network_mode: host
+    network_mode: "service:tailscale"
+    # pid: host lets node-exporter see host processes even though it shares
+    # tailscale's netns instead of the host's.
     pid: host
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -108,11 +255,13 @@ services:
           memory: 128M
     volumes:
       - "/:/host:ro,rslave"
+    environment:
+      TZ: America/Los_Angeles
     command:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
 
-  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080.
+  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080 (tailnet only).
   # Tuned for a CPU-limited container: at the default --housekeeping_interval=1s
   # plus 0.25 CPU the stats loop runs continuously and Prometheus scrapes time
   # out ("context deadline exceeded"). See google/cadvisor#2622 — CPU limits
@@ -121,8 +270,11 @@ services:
     <<: *common-keys-apps
     image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
     container_name: cadvisor
-    network_mode: host
+    network_mode: "service:tailscale"
     privileged: true
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -141,6 +293,8 @@ services:
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg
+    environment:
+      TZ: America/Los_Angeles
     command:
       # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
       # user sessions). We only care about Docker container metrics — node-exporter
@@ -155,7 +309,10 @@ services:
     <<: *common-keys-apps
     image: grafana/promtail:3.6.11@sha256:a761cb834cfaeee29745440d4884d6748f0a08d8f68928db1d707018c1dcfbe9
     container_name: promtail
-    network_mode: host
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -171,14 +328,9 @@ services:
       - source: promtail_config
         target: /etc/promtail/config.yaml
         mode: 0444
+    environment:
+      TZ: America/Los_Angeles
     command: ["-config.file=/etc/promtail/config.yaml"]
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Networks
-# ─────────────────────────────────────────────────────────────────────────────
-networks:
-  minecraft:
-    driver: bridge
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Top-level configs: block. Inline config avoids relative bind mounts and keeps
@@ -204,7 +356,7 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: azure-lobby
+                instance: proxy-azure
                 __path__: /var/lib/docker/containers/*/*.log
           pipeline_stages:
             - docker: {}
@@ -212,5 +364,31 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: azure-lobby
+                instance: proxy-azure
                 __path__: /var/log/syslog
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Top-level secrets: block. File-backed Compose secrets (this is plain Compose,
+# not Swarm) are read-only bind mounts of the source file to /run/secrets/<name>
+# inside the consuming container. Source perms (mode/uid/gid) flow through; the
+# `mode:`/`uid:`/`gid:` keys on the service-side `secrets:` entry are Swarm-only
+# and ignored here — refresh-env.sh sets the on-host file mode/owner explicitly.
+#
+# Only ts_authkey is declared here. The on-host file is owned 0:0 0400 (root)
+# because the tailscale container runs as root in its userns (see the service
+# hardening block for why). Its value is either the live auth key
+# (only during first registration — refresh-env.sh swaps it out for a dead
+# placeholder as soon as tailscaled.state exists) or a placeholder string that
+# the tailnet control plane will reject. Either way, the secret value visible
+# to a compromised container has bounded utility.
+#
+# velocity's forwarding.secret is NOT a Docker secret because itzg/mc-proxy's
+# startup does `chown -R bungeecord:bungeecord /server` under `set -eo pipefail`,
+# which would fail with EROFS on a read-only Compose-secret mount inside /server
+# and kill the container. Instead it's bind-mounted directly into /server via
+# the velocity service's volumes (with UID 1000 ownership so the chown is a
+# same-owner no-op).
+# ─────────────────────────────────────────────────────────────────────────────
+secrets:
+  ts_authkey:
+    file: /opt/minecraft/secrets/ts_authkey

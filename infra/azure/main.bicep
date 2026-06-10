@@ -20,10 +20,6 @@ param adminUsername string
 @secure()
 param adminSshPublicKey string
 
-@description('TailScale auth key — pulled from Key Vault by ARM, never seen by the runner')
-@secure()
-param tailscaleAuthKey string
-
 @description('Email address for budget alerts — pulled from Key Vault by ARM, never seen by the runner')
 @secure()
 param alertEmail string
@@ -67,6 +63,9 @@ module network 'modules/network.bicep' = {
 }
 
 // ── VM + System-Assigned Managed Identity ─────────────────────────────────────
+// Tailscale runs as a Docker sidecar (docker/azure/docker-compose.yml), not on
+// the host. The auth key is fetched at deploy time by refresh-env.sh from
+// Key Vault — no need to inject it into cloud-init or pass it through Bicep.
 module vm 'modules/vm.bicep' = {
   name: 'deploy-vm'
   params: {
@@ -74,7 +73,6 @@ module vm 'modules/vm.bicep' = {
     nicId: network.outputs.nicId
     adminUsername: adminUsername
     adminSshPublicKey: adminSshPublicKey
-    tailscaleAuthKey: tailscaleAuthKey
     vmSize: vmSize
     environment: environment
     setCustomData: setCustomData
