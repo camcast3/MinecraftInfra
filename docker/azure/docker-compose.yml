@@ -19,7 +19,7 @@
 #   tailnet interface in the same netns. Single hop, no userland proxy.
 #
 # Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
-# They're reachable only at the lobby VM's tailnet IP (100.x.x.x), which is
+# They're reachable only at the proxy VM's tailnet IP (100.x.x.x), which is
 # the same trade-off the Proxmox stack accepts (cleaner exposure surface).
 #
 # Secrets are fetched from Azure Key Vault and written to /opt/minecraft/secrets/
@@ -120,7 +120,7 @@ services:
       # the live single-use key (during first registration) or a dead
       # placeholder (after tailscaled.state exists). See refresh-env.sh.
       TS_AUTHKEY: file:/run/secrets/ts_authkey
-      TS_HOSTNAME: lobby-azure
+      TS_HOSTNAME: proxy-azure
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "false"
       # Only attempt `tailscale up --authkey=...` if not already logged in.
@@ -354,7 +354,7 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: lobby-azure
+                instance: proxy-azure
                 __path__: /var/lib/docker/containers/*/*.log
           pipeline_stages:
             - docker: {}
@@ -362,7 +362,7 @@ configs:
           static_configs:
             - targets: [localhost]
               labels:
-                instance: lobby-azure
+                instance: proxy-azure
                 __path__: /var/log/syslog
 
 # ─────────────────────────────────────────────────────────────────────────────

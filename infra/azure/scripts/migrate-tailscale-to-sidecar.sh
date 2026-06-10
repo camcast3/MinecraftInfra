@@ -167,7 +167,7 @@ if [ "${ALREADY_REGISTERED}" = "0" ]; then
     --rm \
     --user "${TAILSCALE_UID}:${TAILSCALE_GID}" \
     -e TS_AUTHKEY="file:/run/secrets/ts_authkey" \
-    -e TS_HOSTNAME="lobby-azure" \
+    -e TS_HOSTNAME="proxy-azure" \
     -e TS_STATE_DIR=/var/lib/tailscale \
     -e TS_USERSPACE=true \
     -e TS_AUTH_ONCE=true \
@@ -273,7 +273,7 @@ fi
 
 # Verify the sidecar can reach the C2E2 backend over the tailnet. Without this,
 # we'd happily rip out host tailscaled while Velocity has no working route to
-# the backend (e.g. if tailnet ACLs don't permit the new lobby-azure node).
+# the backend (e.g. if tailnet ACLs don't permit the new proxy-azure node).
 # Fetch C2E2 IP straight from Key Vault — refresh-env.sh no longer writes it
 # to .env (which no longer exists).
 C2E2_IP="$(az keyvault secret show --vault-name kv-minecraft-prod \
