@@ -41,21 +41,6 @@ packages:
   - apt-listchanges
   - gettext-base
 
-# Service account for the Tailscale sidecar. Dedicated UID/GID 10001 (not the
-# admin UID 1000) so /data/minecraft/tailscale state ownership doesn't overlap
-# with the human-admin or the Velocity container (bungeecord, UID 1000).
-groups:
-  - name: tailscale-svc
-    gid: 10001
-users:
-  - name: tailscale-svc
-    uid: 10001
-    gid: 10001
-    no_create_home: true
-    shell: /usr/sbin/nologin
-    lock_passwd: true
-    system: true
-
 write_files:
   - path: /etc/apt/apt.conf.d/20auto-upgrades
     content: |
@@ -71,14 +56,6 @@ write_files:
   - path: /etc/modules-load.d/tun.conf
     content: |
       tun
-  # /dev/net/tun must be openable by the non-root Tailscale container (UID/GID
-  # 10001). The actual privilege gate for network manipulation is CAP_NET_ADMIN
-  # (which only the tailscale container has), but the device-file open() call
-  # still goes through DAC — without this rule the default 0600 root:root would
-  # block UID 10001. Group-scoped, NOT world-writable.
-  - path: /etc/udev/rules.d/99-tun.rules
-    content: |
-      KERNEL=="tun", GROUP="tailscale-svc", MODE="0660"
 
 runcmd:
   - curl -fsSL https://aka.ms/InstallAzureCLIDeb | bash
@@ -95,10 +72,9 @@ runcmd:
   # NSG still blocks port 22 from the internet so this is the only inbound
   # path that doesn't require the control plane.
   - modprobe tun
-  # Apply the udev rule immediately (udev settle on first boot may not retrigger
-  # tun before the docker compose up below).
-  - chgrp tailscale-svc /dev/net/tun
-  - chmod 0660 /dev/net/tun
+  # /dev/net/tun: default perms (0600 root:root) are fine — the tailscale
+  # sidecar runs as root in its userns (see docker/azure/docker-compose.yml
+  # for the capability-set rationale).
   - ufw default deny incoming
   - ufw default allow outgoing
   # Java Edition Minecraft is TCP-only. Velocity query (UDP) is disabled in
@@ -115,13 +91,12 @@ runcmd:
   - mount /data
   - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
-  # Tailscale state dir MUST be owned by the tailscale-svc UID 10001 because the
-  # sidecar runs as that non-root user and writes its tailscaled.state /
-  # machinekey here. Order matters: this chown MUST come AFTER the recursive
-  # `chown -R __ADMIN_USERNAME__ /data` above, otherwise the recursive chown
-  # would clobber it. 0700 keeps the on-host state readable only by tailscale-svc
-  # (and root) — the state IS the tailnet node identity, treat as secret.
-  - chown 10001:10001 /data/minecraft/tailscale
+  # Tailscale state dir: chown explicitly to root:root 0700. Order matters —
+  # this MUST come AFTER the `chown -R __ADMIN_USERNAME__ /data` above, which
+  # would otherwise clobber it. The state file IS the tailnet node identity
+  # (private node key + machine cert) — treat as secret, host-readable only
+  # by root.
+  - chown root:root /data/minecraft/tailscale
   - chmod 0700 /data/minecraft/tailscale
   # Secrets dir for the docker stack — root-only on the host. refresh-env.sh
   # writes ts_authkey + velocity_forwarding_secret here; docker compose mounts

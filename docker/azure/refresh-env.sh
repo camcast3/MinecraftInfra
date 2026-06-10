@@ -73,12 +73,11 @@ SECRETS_DIR="/opt/minecraft/secrets"
 VELOCITY_DIR="/data/minecraft/velocity"
 TAILSCALE_DIR="/data/minecraft/tailscale"
 
-# Dedicated service UID/GID for the Tailscale sidecar (set up in vm.bicep
-# cloud-init). NOT shared with the admin user (whatever UID that is) or with
-# the Velocity container's bungeecord UID 1000. Owning the auth-key file as
-# this UID lets the non-root sidecar read it via the Compose `secrets:` mount.
-TAILSCALE_UID=10001
-TAILSCALE_GID=10001
+# The Tailscale sidecar runs as root in its user namespace (see compose file
+# for the capability-set rationale — stock image, no file caps; Compose can't
+# set ambient caps). Auth-key file is therefore owned 0:0 0400 (root).
+TAILSCALE_UID=0
+TAILSCALE_GID=0
 
 # itzg/mc-proxy runs Velocity as UID 1000 (bungeecord) after a startup chown.
 # Owning the forwarding-secret file as UID 1000 up front means itzg's
@@ -108,8 +107,8 @@ C2E2_TAILSCALE_IP=$(kv_secret "c2e2-tailscale-ip")
 mkdir -p "$VELOCITY_DIR"
 mkdir -p /data/minecraft/promtail
 # Tailscale state dir is created + chowned by cloud-init (vm.bicep) to
-# tailscale-svc UID 10001, mode 0700. Don't recreate it here — that would
-# clobber the perms on subsequent runs. We DO want to fail loud if it's gone.
+# root:root, mode 0700. Don't recreate it here — that would clobber the perms
+# on subsequent runs. We DO want to fail loud if it's gone.
 if [ ! -d "$TAILSCALE_DIR" ]; then
   echo "ERROR: ${TAILSCALE_DIR} missing — cloud-init should have created it." >&2
   exit 1

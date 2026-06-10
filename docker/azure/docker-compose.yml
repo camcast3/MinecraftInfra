@@ -29,15 +29,12 @@
 # Bind mounts live under /data/minecraft/ (64 GB Premium SSD mounted by cloud-init).
 # Pre-create on the host (cloud-init does this for fresh provisioning):
 #   mkdir -p /data/minecraft/{velocity,promtail}
-#   install -d -m 0700 -o 10001 -g 10001 /data/minecraft/tailscale
+#   install -d -m 0700 -o root -g root /data/minecraft/tailscale
 #   install -d -m 0700 -o root -g root /opt/minecraft/secrets
 #
-# Also required on the host (cloud-init handles both):
-#   - getent group tailscale-svc || groupadd -g 10001 tailscale-svc
-#     getent passwd tailscale-svc || useradd -u 10001 -g 10001 -M -r -s /usr/sbin/nologin tailscale-svc
-#   - udev rule at /etc/udev/rules.d/99-tun.rules:
-#       KERNEL=="tun", GROUP="tailscale-svc", MODE="0660"
-#     (so the non-root tailscale container can open /dev/net/tun)
+# Tailscale's tun device is preloaded by /etc/modules-load.d/tun.conf and used
+# with default 0600 root:root perms — the sidecar runs as root in its userns
+# (see the service block below for the capability-set rationale).
 #
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
@@ -68,29 +65,34 @@ services:
   # Publishes only the Minecraft player port on the host — everything else
   # (metrics endpoints) is reachable solely via the tailnet.
   #
-  # Hardening (vs running as root with the full Docker default cap set):
-  #   - user: 10001:10001 — non-root, dedicated UID/GID (NOT overlapping with
-  #     bungeecord/UID 1000 or the admin user). State dir + auth-key file are
-  #     pre-chowned to this UID by cloud-init / refresh-env.sh.
-  #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit allowlist. SYS_MODULE
-  #     is unnecessary because the tun kernel module is preloaded on the host
-  #     (see /etc/modules-load.d/tun.conf in vm.bicep).
+  # Hardening (vs the Docker default of root + ~14 caps):
+  #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit one-cap allowlist; the
+  #     only capability tailscaled actually needs. SYS_MODULE is unnecessary
+  #     because the tun module is preloaded on the host (vm.bicep).
+  #
+  #     The container runs as root in its user namespace (no `user:` override)
+  #     because Docker Compose has no way to set ambient capabilities and the
+  #     stock tailscale/tailscale image has no file capabilities on
+  #     /usr/local/bin/tailscaled. A non-root UID with `cap_add: NET_ADMIN`
+  #     therefore exec()s with an empty effective set — TUNSETIFF and iptables
+  #     calls fail with EPERM and tailscaled crash-loops. cap_drop ALL +
+  #     cap_add NET_ADMIN + read_only + no-new-privileges yields a similarly
+  #     bounded blast radius without that failure mode. True non-root would
+  #     require a custom image (`setcap cap_net_admin+eip /usr/local/bin/tailscaled`)
+  #     — deferred follow-up.
   #   - /dev/net/tun via `devices:` (not `volumes:`) so Docker's device cgroup
-  #     is configured correctly. Host udev rule (vm.bicep) sets the device's
-  #     group to tailscale-svc with mode 0660 so the non-root container can
-  #     open it; the actual privilege gate for network manipulation is still
-  #     CAP_NET_ADMIN (which only this container has).
+  #     is configured correctly. Default 0600 root:root perms are fine.
   #   - read_only: true root filesystem. tailscaled writes its socket to /tmp
   #     (tmpfs) and persistent state to /var/lib/tailscale (bind mount).
   #     Nothing else needs to be writable.
+  #   - no-new-privileges (via x-common-keys-apps anchor) blocks setuid escalation.
   #   - TS_AUTH_ONCE=true so containerboot only consumes the auth key on first
   #     registration; subsequent restarts use cached state and never read the
   #     mounted secret value.
   tailscale:
     <<: *common-keys-apps
     image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
-    container_name: tailscale-lobby
-    user: "10001:10001"
+    container_name: tailscale-proxy
     cap_drop:
       - ALL
     cap_add:
@@ -372,9 +374,9 @@ configs:
 # `mode:`/`uid:`/`gid:` keys on the service-side `secrets:` entry are Swarm-only
 # and ignored here — refresh-env.sh sets the on-host file mode/owner explicitly.
 #
-# Only ts_authkey is declared here. The on-host file is owned 10001:10001 0400
-# so it's readable inside the container by the tailscale-svc user (matching
-# `user: "10001:10001"` on the service). Its value is either the live auth key
+# Only ts_authkey is declared here. The on-host file is owned 0:0 0400 (root)
+# because the tailscale container runs as root in its userns (see the service
+# hardening block for why). Its value is either the live auth key
 # (only during first registration — refresh-env.sh swaps it out for a dead
 # placeholder as soon as tailscaled.state exists) or a placeholder string that
 # the tailnet control plane will reject. Either way, the secret value visible
