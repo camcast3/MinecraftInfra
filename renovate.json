@@ -108,5 +108,8 @@
         }
     ],
     "separateMinorPatch": true,
-    "stopUpdatingLabel": "renovate/stop_updating"
+    "stopUpdatingLabel": "renovate/stop_updating",
+    "ignorePaths": [
+        "old/**"
+    ]
 }
