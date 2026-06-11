@@ -345,6 +345,9 @@ services:
     # Every 6 hours: warns players at 1 hr, 30 min, 5 min, 1 min, 10 sec, then sends 'stop'.
     # Docker's restart: unless-stopped policy brings C2E2 back up automatically.
     # depends_on service_healthy ensures the 6h timer only starts once C2E2 is ready.
+    # Cycle timing is 6h from container start, NOT wall-clock-aligned — a redeploy
+    # resets the clock. Use `docker logs mc-restarter` to see the timestamped
+    # cycle progression (T-60min/T-30min/.../sending stop) emitted by the script.
     image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
     container_name: mc-restarter
     network_mode: "service:tailscale"
@@ -357,25 +360,61 @@ services:
           cpus: '0.1'
           memory: 64M
     environment:
-      RCON_PASSWORD: ${RCON_PASSWORD}
+      # `:?` makes Compose fail fast at stack deploy time if RCON_PASSWORD isn't
+      # set in the Portainer stack env, instead of silently rendering an empty
+      # password into the container env (which would make every rcon call fail
+      # auth and the server would never actually restart on schedule).
+      RCON_PASSWORD: ${RCON_PASSWORD:?RCON_PASSWORD must be set in the Portainer stack env}
       TZ: America/Los_Angeles
+    # The base image ships an `mc-health` HEALTHCHECK that pings :25565. This
+    # sidecar isn't a Minecraft server, so that probe would flap permanently
+    # against c2e2's port during c2e2 restarts and clutter Portainer's status.
+    # Disable it — the script's own log lines are the source of truth here.
+    healthcheck:
+      disable: true
     entrypoint: ["/bin/sh", "-c"]
+    # `$$` escapes vs `$` matter inside this script: Compose interpolates `$VAR`
+    # and `${VAR}` from its own env at deploy time, so writing `$RCON_PASSWORD`
+    # un-escaped would bake the secret into the rendered command (leaks to
+    # `docker inspect`) and silently render empty if the stack env is missing.
+    # And `$1` un-escaped relies on the compose-spec rule that bare `$<digit>`
+    # is left alone — true for compliant impls, but `$$1` makes it explicit.
+    # `$$` → literal `$` for the shell to expand at container runtime. Same
+    # convention used in the configs: block at the bottom of this file.
     command:
       - |
-        rcon() { rcon-cli --host localhost --port 25575 --password "$RCON_PASSWORD" "$1"; }
+        set -u
+        : "$${RCON_PASSWORD:?RCON_PASSWORD must be set}"
+        log() { echo "[$$(date -Is)] restarter: $$*"; }
+        rcon() { rcon-cli --host localhost --port 25575 --password "$$RCON_PASSWORD" "$$1"; }
+        log "started; cycles every 6h from now (NOT wall-clock-aligned)"
         while true; do
           sleep 18000
+          log "T-60min: announcing"
           rcon "say §e[Server] Scheduled restart in 1 hour. Finish what you're doing!"
           sleep 1800
+          log "T-30min: announcing"
           rcon "say §6[Server] Restart in 30 minutes!"
           sleep 1500
+          log "T-5min: announcing"
           rcon "say §c[Server] Restart in 5 minutes! Find a safe spot and log off!"
           sleep 240
+          log "T-1min: announcing"
           rcon "say §8[Server] Restarting in 1 minute!"
           sleep 50
+          log "T-10s: announcing"
           rcon "say §8[Server] Restarting in 10 seconds..."
           sleep 10
-          rcon "stop" || rcon "stop" || rcon "stop"
+          log "sending stop"
+          for attempt in 1 2 3; do
+            if rcon "stop"; then
+              log "stop attempt $$attempt: dispatched"
+              break
+            fi
+            log "stop attempt $$attempt: rcon exited non-zero"
+            [ "$$attempt" -lt 3 ] && sleep 5
+          done
+          log "stop sequence done; next cycle in 6h (c2e2 should be back up in 3-8 min)"
         done
 
   ############################# MONITORING SIDECARS
