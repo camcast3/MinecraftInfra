@@ -12,3 +12,8 @@ checklist.md
 # Runtime secrets — never commit
 .env
 !.env.example
+# docker/proxmox/.env is the documented exception: it holds non-secret
+# build metadata (PACK_VERSION, PACKWIZ_COMMIT_SHA) that travels with
+# the git commit so Portainer GitOps + PR 2's publish flow can keep the
+# server's mod manifest and the published client zip in lockstep.
+!docker/proxmox/.env

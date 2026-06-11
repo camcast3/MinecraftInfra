@@ -1,12 +1,19 @@
 ---
-# Local test stack: Velocity proxy + Forge 1.20.1 lobby
-# Mirrors the Azure stack for local validation of modern forwarding.
+# Local test stack: Velocity proxy + Forge 1.20.1 lobby + (opt-in) C2E2 server
+# Mirrors the Azure + Proxmox stacks for local validation:
+#   - velocity + lobby: modern-forwarding handshake
+#   - packwiz-server + c2e2-local: PR 1's packwiz-driven server install
 #
 # Usage:
 #   cd docker/local
+#   # Velocity + lobby only (cheap):
 #   docker compose up
+#   # Add the C2E2 server (heavy — full packwiz install, ~5GB+ disk):
+#   docker compose --profile c2e2 up
 #
-# Connect with a Minecraft 1.20.1 client to localhost:25565 (offline-mode).
+# Connect with a Minecraft 1.20.1 client:
+#   - velocity-routed (vanilla):  localhost:25565
+#   - direct to C2E2 (modded):    localhost:25566
 
 services:
 
@@ -77,8 +84,108 @@ services:
       retries: 5
       start_period: 300s
 
+  ############################# PR 1 — C2E2 packwiz E2E (opt-in)
+  # `docker compose --profile c2e2 up` brings up both services below.
+  # `docker compose up` (no flag) leaves them off so the default local-dev
+  # spin-up stays cheap (vanilla Forge lobby behind Velocity, ~1 GB RAM).
+  #
+  # Architecture:
+  #   1. packwiz-server statically serves the in-repo `packwiz/` directory
+  #      over HTTP on port 80 (cluster-internal). The c2e2-local container
+  #      reads PACKWIZ_URL=http://packwiz-server-local/pack.toml, so
+  #      uncommitted edits to packwiz/ are live-testable without a push.
+  #   2. c2e2-local mirrors the Proxmox stack's packwiz wiring (TYPE=FORGE +
+  #      PACKWIZ_URL) but skips production-only concerns: no TailScale, no
+  #      backup/monitoring sidecars, no fixed-31G memory cliff, direct port
+  #      mapping (25566:25565) for a vanilla Forge client.
+
+  packwiz-server:
+    container_name: packwiz-server-local
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+    networks:
+      - minecraft
+    restart: unless-stopped
+    profiles:
+      - c2e2
+    volumes:
+      - ../../packwiz:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/pack.toml"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  c2e2-local:
+    container_name: mc-c2e2-local
+    image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
+    tty: true
+    stdin_open: true
+    ports:
+      # Direct connection — bypasses Velocity. Use a Forge 1.20.1 client
+      # configured to skip Mojang auth (since ONLINE_MODE=FALSE below) and
+      # loaded with the same mod set the published client zip will ship.
+      - "25566:25565"
+      - "25575:25575"     # RCON
+      - "19565:19565"     # cpburnz Prometheus exporter
+    networks:
+      - minecraft
+    depends_on:
+      packwiz-server:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - c2e2
+    volumes:
+      - c2e2-local-data:/data
+      - ../shared/whitelist.json:/extras/whitelist.json:ro
+      - ../shared/ops.json:/extras/ops.json:ro
+      - ../shared/patches:/patches:ro
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      VERSION: "1.20.1"
+      # Keep in sync with the `forge` value in packwiz/pack.toml's [versions]
+      # block (and with docker/proxmox/docker-compose.yml's FORGE_VERSION).
+      FORGE_VERSION: "47.4.20"
+      # Local dev variant of the Proxmox stack's SHA-pinned PACKWIZ_URL:
+      # the nginx sidecar serves the LIVE packwiz/ directory from this
+      # checkout, so uncommitted .pw.toml edits + `packwiz refresh` runs are
+      # picked up on the next `docker compose restart c2e2-local`.
+      PACKWIZ_URL: "http://packwiz-server-local/pack.toml"
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      ONLINE_MODE: "FALSE"
+      ENABLE_ROLLING_LOGS: "true"
+      MOTD: "Craft to Exile 2 (local)"
+      WHITELIST_FILE: /extras/whitelist.json
+      OPS_FILE: /extras/ops.json
+      ENFORCE_WHITELIST: "FALSE"
+      # Mirrors the Proxmox stack: fetch baseline PCF + prometheus-exporter
+      # config TOMLs from the repo's main HEAD on first run (--skip-existing).
+      # To iterate on those files locally, edit docker/shared/config/*.toml,
+      # delete them from the c2e2-local-data volume (or `docker compose down -v`),
+      # then `docker compose --profile c2e2 up`.
+      APPLY_EXTRA_FILES: |-
+        config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
+        world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
+      PATCH_DEFINITIONS: /patches
+      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      ENABLE_RCON: "true"
+      RCON_PORT: "25575"
+      RCON_PASSWORD: ${RCON_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # Generous: first start downloads ~250 mods via packwiz then boots
+      # Forge with C2E2's full content set. 10 min covers a cold disk.
+      start_period: 600s
+
 volumes:
   lobby-data:
+  c2e2-local-data:
 
 networks:
   minecraft:

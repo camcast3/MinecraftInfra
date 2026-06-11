@@ -1,0 +1,20 @@
+hash-format = "sha256"
+
+[[files]]
+file = "README.md"
+hash = "407d49ab69101acc597f1f093beb63e7774850d091fb602692eaae8504a9496b"
+
+[[files]]
+file = "mods/minecraft-prometheus-exporter.pw.toml"
+hash = "bc62363c03b6a2edb06c9c4b7cb749c261c2810b9fb4fc6d9db552c234ad5dbc"
+metafile = true
+
+[[files]]
+file = "mods/proxy-compatible-forge.pw.toml"
+hash = "cdba4ecc1f29b80d9c1c22df29049d62b24c6ff85e6ebc143ed0925ca695a845"
+metafile = true
+
+[[files]]
+file = "mods/spark.pw.toml"
+hash = "0ef2a47f506c83478052262348c105c307d970fbff3f6b0917e46d67f61d8953"
+metafile = true
