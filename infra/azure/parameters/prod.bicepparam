@@ -3,7 +3,7 @@ using '../main.bicep'
 // ── Region ───────────────────────────────────────────────────────────────────
 param location = 'westus'
 param environment = 'prod'
-param vmSize = 'Standard_B4s_v2'
+param vmSize = 'Standard_B2ls_v2'
 
 // ── VM customData gate ───────────────────────────────────────────────────────
 // Azure rejects ANY change to osProfile.customData on an existing VM with
