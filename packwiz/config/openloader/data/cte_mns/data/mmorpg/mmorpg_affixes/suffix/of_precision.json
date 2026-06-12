@@ -1,0 +1,30 @@
+{
+  "type": "suffix",
+  "eye_aura_req": "",
+  "guid": "of_precision",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "jewelry_family",
+          "offhand_family",
+          "weapon_family"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 2.5,
+      "min": 0.5,
+      "stat": "accuracy"
+    }
+  ],
+  "weight": 1000
+}

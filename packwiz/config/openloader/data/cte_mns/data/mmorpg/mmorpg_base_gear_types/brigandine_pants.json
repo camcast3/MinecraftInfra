@@ -1,0 +1,80 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 4.5,
+      "stat": "armor"
+    },
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 4.5,
+      "stat": "dodge"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.2,
+      "min": 1.6,
+      "stat": "health"
+    }
+  ],
+  "gear_slot": "pants",
+  "guid": "brigandine_pants",
+  "possible_items": [
+    {
+      "item_id": "cte_essentials:leather_0_leggings",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "cte_essentials:leather_1_leggings",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "cte_essentials:leather_2_leggings",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "cte_essentials:leather_3_leggings",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "cte_essentials:leather_4_leggings",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "cte_essentials:leather_5_leggings",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "strength": 0.25,
+      "dexterity": 0.25
+    }
+  },
+  "style": "DEX",
+  "tags": {
+    "tags": [
+      "dexterity",
+      "dodge_stat",
+      "armor_stat",
+      "armor_family",
+      "pants",
+      "strength",
+	  "plate_pants",
+	  "leather_pants",
+	  "dual_stat",
+	  "brigandine"
+    ]
+  },
+  "weapon_type": "none",
+  "weight": 1000
+}

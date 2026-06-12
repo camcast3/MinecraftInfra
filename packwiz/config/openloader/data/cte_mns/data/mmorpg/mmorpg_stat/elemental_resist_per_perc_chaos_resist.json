@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "elemental_resist",
+    "adder_stat": "chaos_resist",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 50,
+    "id": "elemental_resist_per_perc_chaos_resist",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

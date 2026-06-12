@@ -1,0 +1,33 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/talent_icons/asc/trickster/3.png",
+  "id": "trickster_class_3",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "magic_shield_per_perc_of_dodge",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "dodge_per_perc_of_magic_shield",
+      "v1": 5.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "magic_shield",
+      "v1": 12.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "dodge",
+      "v1": 12.0
+    }
+  ]
+}

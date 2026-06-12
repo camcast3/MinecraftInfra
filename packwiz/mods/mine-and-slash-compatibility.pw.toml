@@ -1,0 +1,13 @@
+name = "Mine and Slash Compatibility"
+filename = "Mine_and_lash-Compatibility-1.20.1-1.0.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "1a2823ddf4ebd687d9ff5395609a9b8f921f3dc3"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6045369
+project-id = 1169343

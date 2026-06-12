@@ -1,0 +1,36 @@
+{
+  "type": "prefix",
+  "eye_aura_req": "",
+  "guid": "basic",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "sword",
+		  "axe",
+		  "spear",
+		  "gauntlet",
+		  "scythe",
+		  "hammer",
+		  "dagger",
+		  "bow",
+		  "crossbow"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 5.0,
+      "stat": "basic_attack_dmg"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,10 @@
+[{
+  "entityId": "twilightforest:lich",
+  "itemId": "mmorpg:runes/sid",
+  "dropChance": 15.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"Sid Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": true
+}]

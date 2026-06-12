@@ -1,0 +1,22 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/siphoner.png",
+  "id": "siphoner",
+  "is_entry": false,
+  "max_lvls": 1,
+  "one_kind": "blood_mage",
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "siphoner_to_source_on_kill",
+      "v1": 100.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "health",
+      "v1": 10.0
+    }
+  ]
+}

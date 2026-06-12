@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "blue_skies:scalefruit",
+      "required": false
+    },
+    {
+      "id": "corn_delight:popcorn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:caramel_popcorn",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:fried_maggot",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:crispy_fried_perch",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fried_perch_roll",
+      "required": false
+    }
+  ]
+}

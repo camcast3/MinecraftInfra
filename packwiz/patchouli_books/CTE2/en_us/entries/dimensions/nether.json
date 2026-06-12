@@ -1,0 +1,46 @@
+{
+    "name": "Nether",
+    "icon": "minecraft:magma_block",
+    "category": "patchouli:dimensions",
+	"sortnum":1,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lNether&r
+&n&6&lArea Level:&r&r    &n10 - 30 &r&r
+&n&6&lEnraged Area Level:&r &n55 - 75&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nAct II;&r
+&n&6&lDimension gateways:&r  &nAct II Gateway;
+&n&6&lDimension Bosses:&r &nWarped Mosco, Wildfire, Mother Lava Squid, Wither, Awful Ghast, Nether Keeper&r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": "Dimension that is usually described as 'Hell'. Would make quite a hot vacation place, literally. Dimension is full of lava and hard to navigate so its highly recommended to acquire some form of fire resistance. A Paraglider would be of great use here, as well. Dimension has some weird magnetic interference making some of the structures like Keeping Castle or Awful dungeon impossible to find with a structure compass. But some adventurers speculate that they can help one to ascend."
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting into the Nether",
+  "item": "minecraft:obsidian,minecraft:flint_and_steel,minecraft:fire_charge",
+  "text": "If you are looking to get to this dimension you need to lay your hands on&n&l at least 10 Obsidian Blocks and fire source like Flint and Steel or Fire charge to light the center of the frame&r.
+  &oCorner blocks are completely optional but they would grant &2+5 to Aestetics&r stat if it exsisted" 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"Nether Portal",
+			"text": "Click on eye icon to visualize portal in game",
+            "multiblock": {
+    "pattern": [
+        [ "SOOS"],
+        [ "O  O"],
+        [ "O  O"],
+        [ "O 0O"],
+        [ "SOOS"]
+    ],
+    "mapping": {
+        "O": "minecraft:obsidian",
+		"S": "#minecraft:mineable/pickaxe"
+    }
+}
+		}
+    ]
+}

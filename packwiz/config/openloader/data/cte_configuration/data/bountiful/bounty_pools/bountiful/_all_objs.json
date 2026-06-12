@@ -1,0 +1,414 @@
+{
+	"content": {
+
+		"all_obj_zombie": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:zombie",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 500,
+			"weightMult": 2.0
+		},
+
+		"all_obj_skeleton": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:skeleton",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 600,
+			"weightMult": 2.0
+		},
+
+		"all_obj_spider": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:spider",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 550,
+			"weightMult": 2.0
+		},
+
+		"all_obj_creeper": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "minecraft:creeper",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 700,
+			"weightMult": 2.0
+		},
+
+		"all_obj_pillager": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "minecraft:pillager",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 750,
+			"weightMult": 2.0
+		},
+
+		"all_obj_witch": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "minecraft:witch",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 800,
+			"weightMult": 2.0
+		},
+
+		"all_obj_vindicator": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "minecraft:vindicator",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 900,
+			"weightMult": 2.0
+		},
+
+		"all_obj_creeper": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "minecraft:creeper",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1100,
+			"weightMult": 2.0
+		},
+
+		"all_obj_basher": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "illagerinvasion:basher",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1300,
+			"weightMult": 2.0
+		},
+
+		"all_obj_basher": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "illagerinvasion:marauder",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1300,
+			"weightMult": 2.0
+		},
+
+		"all_obj_provoker": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "illagerinvasion:basher",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1300,
+			"weightMult": 2.0
+		},
+
+		"all_obj_piglin": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:piglin",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 8
+			},
+			"unitWorth": 1500,
+			"weightMult": 2.0
+		},
+
+		"all_obj_wither_skeleton": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:wither_skeleton",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1700,
+			"weightMult": 2.0
+		},
+
+		"all_obj_blaze": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "minecraft:blaze",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1800,
+			"weightMult": 2.0
+		},
+
+		"all_obj_red_wyrm": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "realmrpg_wyrms:red_wyrm",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 1850,
+			"weightMult": 2.0
+		},
+
+		"all_obj_rotling": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "undergarden:rotling",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2100,
+			"weightMult": 2.0
+		},
+
+		"all_obj_forgotten": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "undergarden:forgotten",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2300,
+			"weightMult": 2.0
+		},
+
+		"all_obj_tortured_soul": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "aquamirae:tortured_soul",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2500,
+			"weightMult": 2.0
+		},
+
+		"all_obj_maw": {
+			"type": "entity",
+			"timeMult": 6.0,
+			"content": "aquamirae:maw",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2600,
+			"weightMult": 2.0
+		},
+
+		"all_obj_restless_spirit": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "born_in_chaos_v1:restless_spirit",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2200,
+			"weightMult": 2.0
+		},
+
+		"all_obj_mother_spider": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "born_in_chaos_v1:mother_spider",
+			"rarity": "RARE",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 2400,
+			"weightMult": 2.0
+		},
+
+		"all_obj_armored_frost_spirit": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "blue_skies:armored_frost_spirit",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_armored_frost_spirit": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "blue_skies:armored_frost_spirit",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_diophyde_prowler": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "blue_skies:diophyde_prowler",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_infested_swarmer": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "blue_skies:infested_swarmer",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_venom_spider": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "blue_skies:venom_spider",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_nightmare_stalker": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "born_in_chaos_v1:nightmare_stalker",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 2
+			},
+			"unitWorth": 3500,
+			"weightMult": 2.0
+		},
+
+		"all_obj_lifestealer": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "born_in_chaos_v1:lifestealer_true_form",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 2
+			},
+			"unitWorth": 3500,
+			"weightMult": 2.0
+		},
+
+		"all_obj_ender_wyrm": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "realmrpg_wyrms:ender_wyrm",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 3600,
+			"weightMult": 2.0
+		},
+
+		"all_obj_farseer": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "alexsmobs:farseer",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 2
+			},
+			"unitWorth": 4000,
+			"weightMult": 2.0
+		},
+
+		"all_obj_shattered": {
+			"type": "entity",
+			"timeMult": 7.0,
+			"content": "deeperdarker:shattered",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 4200,
+			"weightMult": 2.0
+		},
+
+		"all_obj_shriek_worm": {
+			"type": "entity",
+			"timeMult": 8.0,
+			"content": "deeperdarker:shriek_worm",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 1,
+				"max": 2
+			},
+			"unitWorth": 4500,
+			"weightMult": 2.0
+		}
+
+	}
+
+
+}

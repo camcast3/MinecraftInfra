@@ -1,0 +1,265 @@
+{
+  "attached": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "minecraft:note",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "cursed_power_chord"
+              }
+            },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "charm",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 50.0,
+                "particle_type": "minecraft:enchanted_hit",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 20.0,
+                "particle_type": "minecraft:note",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 20.0,
+                "particle_type": "minecraft:soul",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_song_hit",
+                "volume": 1.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_power_chord",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 20.0,
+              "proj_count": 3.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.25
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "sword_slash_double"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "projectile",
+      "damage",
+      "song",
+	  "magic",
+	  "physical",
+	  "cast_speed_to_cooldown",
+		"cursed"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "cursed_power_chord",
+  "loc_name": "Cursed Power Chord",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "spell_manasteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "spell_energysteal"
+    }
+  ],
+  "weight": 1000
+}

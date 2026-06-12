@@ -1,0 +1,13 @@
+{
+  "id": "fish2_max_energy",
+  "attribute_id": "mine_and_meals:fish2_max_energy",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "energy",
+  "conversion": 0.5,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "PERCENT"
+}

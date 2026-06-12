@@ -1,0 +1,7 @@
+{
+  "id": "is_projectile",
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "projectile"
+  }
+}

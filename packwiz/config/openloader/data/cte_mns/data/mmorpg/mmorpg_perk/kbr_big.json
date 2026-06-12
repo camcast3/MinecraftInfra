@@ -1,0 +1,21 @@
+{
+  "type": "SPECIAL",
+  "icon": "mmorpg:textures/gui/stat_icons/misc/kbr.png",
+  "id": "kbr_big",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "knockback_resist",
+      "v1": 15.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "armor",
+      "v1": 5.0
+    }
+  ]
+}

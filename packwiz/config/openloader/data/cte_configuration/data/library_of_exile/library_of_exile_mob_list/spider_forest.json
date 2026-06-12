@@ -1,0 +1,41 @@
+{
+  "id": "spider_forest",
+  "mobs": [
+    {
+      "mob_id": "minecraft:spider",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:cave_spider",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:witch",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:stray",
+      "weight": 250
+    },
+    {
+      "mob_id": "twilightforest:maze_slime",
+      "weight": 125
+    },
+    {
+      "mob_id": "twilightforest:mosquito_swarm",
+      "weight": 125
+    },
+    {
+      "mob_id": "twilightforest:skeleton_druid",
+      "weight": 50
+    },
+    {
+      "mob_id": "twilightforest:slime_beetle",
+      "weight": 125
+    }
+  ],
+  "tags": {
+    "tags": []
+  },
+  "weight": 1000
+}

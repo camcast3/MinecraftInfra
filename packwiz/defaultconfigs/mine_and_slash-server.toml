@@ -1,0 +1,157 @@
+
+#General Configs
+[general]
+	GET_STARTER_ITEMS = false
+	loot_announcements = true
+	require_team_for_dungeons = true
+	dont_sync_ambient_mob_data = true
+	log_errors = true
+	stop_error_spam = true
+	STATION_SUCK_NEARBY_CHESTS = false
+	#Range: > 0
+	min_level_map_drops = 55
+	#Range: > 0
+	MIN_SLIME_SIZE_FOR_LOOT = 3
+	#Range: > 0
+	DEATH_PENALTY_START_LEVEL = 50
+	#Range: > 0
+	LEVEL_DISTANCE_PENALTY_LEEWAY = 3
+	#Range: 0 ~ 100
+	PERC_OFFHAND_WEP_STAT = 25
+	#Range: 0.0 ~ 1000.0
+	regen_hunger_cost = 20.0
+	#Range: 0.0 ~ 1.0
+	death_exp_penalty = 0.05
+	#Range: 0.0 ~ 1.0
+	death_exp_debt = 0.0
+	#Range: 0.0 ~ 100.0
+	max_death_exp_debt_multi = 0.0
+	#Range: 0.0 ~ 1000.0
+	exp_gain_multi = 1.0
+	#Range: 0.0 ~ 1000.0
+	party_radius = 100.0
+	#When you are higher or lower level than mobs by X levels, decreases the loot and exp droprate.
+	#Range: 0.0 ~ 1.0
+	lvl_distance_loot_penalty_per_level = 0.33
+	#Range: 0.0 ~ 1.0
+	min_loot_chance = 0.25
+	#Range: 0.0 ~ 1000.0
+	extra_mob_stats_per_lvl = 0.15
+	#Range: 0.0 ~ 1000.0
+	vanilla_mob_dmg_as_exile_dmg = 1.0
+	#Range: 0.0 ~ 10.0
+	pvp_dmg_multi = 1.0
+	#Range: 0.0 ~ 100000.0
+	max_team_distance = 100.0
+	#Range: 0.0 ~ 10.0
+	in_combat_regen_multi = 1.0
+	#Range: 0.0 ~ 1.0
+	COMBAT_TO_PROFESSION_RESTED_XP_GENERATION = 0.25
+	#Range: 0.0 ~ 1.0
+	PROFESSION_TO_COMBAT_RESTED_XP_GENERATION = 0.05
+	#Range: 0.0 ~ 1.0
+	RESTED_XP_DEATH_PENALTY = 0.75
+	#Additional exp before splitting between players.
+	#Range: 0.0 ~ 1.0
+	PARTY_EXP_BONUS = 1.0
+	#Additional drop before splitting between players.
+	#Range: 0.0 ~ 1.0
+	PARTY_DROP_BONUS = 0.25
+	#Range: 0.0 ~ 10000.0
+	favor_death_loss = 500.0
+	#Range: 0.0 ~ 10000.0
+	favor_chest_gain = 5.0
+	#Range: 0.0 ~ 1000.0
+	gear_drop_rate = 10.0
+	#Range: 0.0 ~ 1000.0
+	soul_drop_rate = 0.0
+	#Range: 0.0 ~ 1000.0
+	gem_drop_rate = 1.0
+	#Range: 0.0 ~ 1000.0
+	skill_gem_drop_rate = 2.0
+	#Range: 0.0 ~ 1000.0
+	support_gem_drop_rate = 1.0
+	#Range: 0.0 ~ 1000.0
+	aura_gem_drop_rate = 0.75
+	#Range: 0.0 ~ 1000.0
+	rune_drop_rate = 0.01
+	#Range: 0.0 ~ 1000.0
+	currency_drop_rate = 0.4
+	#Range: 0.0 ~ 1000.0
+	WATCHER_EYE_DROPRATE = 25.0
+	#Range: 0.0 ~ 1000.0
+	PROPHECY_COIN_DROPRATE = 1.5
+	#Range: 0.0 ~ 100.0
+	PROPHECY_GEAR_TYPE_CHANCE = 75.0
+	#Range: 0.0 ~ 100.0
+	PROPHECY_JEWEL_RARITY_CHANCE = 75.0
+	#Range: 0.0 ~ 100.0
+	PROPHECY_SKILL_GEM_RARITY_CHANCE = 75.0
+	#Range: 0.0 ~ 100.0
+	PROPHECY_GEAR_RARITY = 75.0
+	#Range: 0.0 ~ 100.0
+	PROPHECY_SEARCH_RADIUS = 0.0
+	#Range: 0.0 ~ 1000.0
+	jewel_drop_rate = 0.25
+	#Range: 0.0 ~ 1000.0
+	loot_chest_drop_rate = 0.0
+	#Range: 0.0 ~ 1000.0
+	OMEN_DROPRATE = 0.05
+	#Range: 0.0 ~ 1000.0
+	block_cost = 0.5
+	#Range: 0 ~ 6
+	MAP_GEN_MOB_RADIUS = 3
+	#Range: 0 ~ 10
+	MAP_GEN_TERRAIN_RADIUS = 6
+	#Range: 0 ~ 100
+	ITEM_LEVEL_VARIANCE = 1
+	#Range: 0 ~ 100
+	MOB_LEVEL_VARIANCE = 1
+	#Range: 1 ~ 18
+	PROPHECY_OFFERS_PER_REROLL = 18
+	#Range: 0 ~ 1000
+	BONUS_EXP_PERCENT_PER_HIGHER_LVL_CHARACTERS = 10
+	#Range: 1 ~ 7
+	MAX_CHARACTERS = 3
+	#Range: 0.0 ~ 100.0
+	UNARMED_ENERGY_COST = 5.0
+	#This is for modded gear that can't be automatically recognized by the mod. If there's say a weapon like a staff in another mod, but this mod doesn't recognize it. Put it here. The usage is: modid:path:gear_slot_id. Example: minecraft:diamond_sword:sword
+	gear_compatibility = ["minecraft:iron_sword:sword", "minecraft:wooden_axe:axe", "minecraft:stone_axe:axe", "minecraft:iron_axe:axe", "minecraft:golden_axe:axe", "minecraft:diamond_axe:axe", "minecraft:netherite_axe:axe", "undergarden:cloggrum_battleaxe:axe", "undergarden:cloggrum_axe:axe", "undergarden:froststeel_axe:axe", "undergarden:utherium_axe:axe", "undergarden:forgotten_battleaxe:axe", "undergarden:forgotten_axe:axe", "kobolds:kobold_iron_axe:axe", "deeperdarker:warden_axe:axe", "aquaculture:neptunium_axe:axe", "illagerinvasion:platinum_infused_hatchet:axe", "mutantmonsters:mutant_skeleton_skull:helmet", "aquaculture:wooden_fillet_knife:dagger", "aquaculture:stone_fillet_knife:dagger", "aquaculture:iron_fillet_knife:dagger", "aquaculture:gold_fillet_knife:dagger", "aquaculture:diamond_fillet_knife:dagger", "aquaculture:neptunium_fillet_knife:dagger", "farmersdelight:flint_knife:dagger", "farmersdelight:iron_knife:dagger", "farmersdelight:golden_knife:dagger", "farmersdelight:diamond_knife:dagger", "farmersdelight:netherite_knife:dagger", "minecraft:trident:spear", "alexsmobs:shield_of_the_deep:shield", "stalwart_dungeons:tungsten_axe:axe", "stalwart_dungeons:chorundum_axe:axe", "stalwart_dungeons:wooden_hammer:hammer", "stalwart_dungeons:stone_hammer:hammer", "stalwart_dungeons:iron_hammer:hammer", "stalwart_dungeons:golden_hammer:hammer", "stalwart_dungeons:diamond_hammer:hammer", "stalwart_dungeons:netherite_hammer:hammer", "stalwart_dungeons:tungsten_hammer:hammer", "stalwart_dungeons:nether_hammer:hammer", "stalwart_dungeons:tungsten_shield:shield", "stalwart_dungeons:warted_tungsten_shield:shield", "stalwart_dungeons:chorundum_shield:shield", "stalwart_dungeons:awful_dagger:dagger", "undergarden:slingshot:bow", "aquamirae:terrible_sword:sword", "aquamirae:fin_cutter:sword", "aquamirae:divider:sword", "aquamirae:remnants_saber:sword", "aquamirae:poisoned_blade:sword", "aquamirae:dagger_of_greed:dagger", "aquamirae:whisper_of_the_abyss:spear", "aquamirae:coral_lance:spear", "aquamirae:sweet_lance:spear", "blue_skies:bluebright_spear:spear", "blue_skies:starlit_spear:spear", "blue_skies:frostbright_spear:spear", "blue_skies:lunar_spear:spear", "blue_skies:dusk_spear:spear", "blue_skies:maple_spear:spear", "blue_skies:comet_spear:spear", "blue_skies:soulbound_spear:spear", "blue_skies:bluebright_axe:axe", "blue_skies:starlit_axe:axe", "blue_skies:frostbright_axe:axe", "blue_skies:lunar_axe:axe", "blue_skies:dusk_axe:axe", "blue_skies:maple_axe:axe", "blue_skies:comet_axe:axe", "blue_skies:bluebright_axe:axe", "blue_skies:turquoise_stone_axe:axe", "blue_skies:lunar_stone_axe:axe", "blue_skies:pyrope_axe:axe", "blue_skies:aquite_axe:axe", "blue_skies:diopside_axe:axe", "blue_skies:charoite_axe:axe", "blue_skies:horizonite_axe:axe", "blue_skies:crushing_hammer:hammer", "nethersdelight:iron_machete:sword", "nethersdelight:golden_machete:sword", "nethersdelight:diamond_machete:sword", "nethersdelight:netherite_machete:sword", "cte2modpackarmors:lightning_edge_staff:staff", "cte2modpackarmors:sinful_lights_staff:staff", "cte2modpackarmors:desolating_light_staff:staff", "cte2modpackarmors:soulcursed_skewer_dagger:dagger", "cte2modpackarmors:twin_agony_dagger:dagger", "cte2modpackarmors:venom_tears_dagger:dagger", "undergardendelight:cloggrum_knife:dagger", "undergardendelight:forgotten_knife:dagger", "undergardendelight:frosteel_knife:dagger", "undergardendelight:utherium_knife:dagger", "blueskiesdelight:charoite_knife:dagger", "blueskiesdelight:diopside_knife:dagger", "blueskiesdelight:falsite_knife:dagger", "blueskiesdelight:horizonite_knife:dagger", "blueskiesdelight:moonstonr_knife:dagger", "blueskiesdelight:pyrope_knife:dagger", "blueskiesdelight:ventium_knife:dagger", "aquaculturedelight:neptunium_knife:dagger", "aquaculturedelight:brute_tusk_knife:dagger", "seadwellers:depth_sword:sword", "seadwellers:depth_axe:axe", "mca:scythe:scythe", "twilightforest:ironwood_axe:axe", "twilightforest:diamond_minotaur_axe:axe", "twilightforest:gold_minotaur_axe:axe", "twilightforest:knightmetal_axe:axe", "twilightforest:steeleaf_axe:axe", "mowziesmobs:spear:spear", "mowziesmobs:naga_fang_dagger:dagger", "mowziesmobs:sculptor_staff:staff", "outer_end:sinker_dagger:dagger", "botania:ender_dagger:dagger", "botania:manasteel_axe:axe", "botania:elementium_axe:axe", "botania:terra_axe:axe", "mowziesmobs:wrought_axe:axe", "born_in_chaos_v1:skullbreaker_hammer:hammer", "born_in_chaos_v1:great_reaper_axe:axe", "born_in_chaos_v1:dark_ritual_dagger:dagger", "born_in_chaos_v1:staff_of_magic_arrows:staff", "born_in_chaos_v1:bonescaller_staff:staff", "born_in_chaos_v1:intoxicating_dagger:dagger", "born_in_chaos_v1:shell_mace:hammer", "born_in_chaos_v1:pumpkinstaffa:staff", "born_in_chaos_v1:sweet_axe:axe", "born_in_chaos_v1:trident_hayfork:spear", "born_in_chaos_v1:wood_splitter_axe:axe", "born_in_chaos_v1:monster_flesh:hammer", "born_in_chaos_v1:smoked_monster_flesh:hammer", "minecraft:elytra:elytra", "alexsmobs:tarantula_hawk_elytra:elytra", "deeperdarker:soul_elytra:elytra", "botania:flight_tiara:head", "roe_weapons:spear_0:spear", "roe_weapons:spear_1:spear", "roe_weapons:spear_2:spear", "roe_weapons:spear_3:spear", "roe_weapons:spear_4:spear", "roe_weapons:spear_5:spear", "roe_weapons:spear_6:spear", "roe_weapons:spear_7:spear", "roe_weapons:cursed_spear:spear", "roe_weapons:dagger_0:dagger", "roe_weapons:dagger_1:dagger", "roe_weapons:dagger_2:dagger", "roe_weapons:dagger_3:dagger", "roe_weapons:dagger_4:dagger", "roe_weapons:dagger_5:dagger", "roe_weapons:dagger_6:dagger", "roe_weapons:dagger_7:dagger", "roe_weapons:cursed_dagger:dagger", "roe_weapons:axe_0:axe", "roe_weapons:axe_1:axe", "roe_weapons:axe_2:axe", "roe_weapons:axe_3:axe", "roe_weapons:axe_4:axe", "roe_weapons:axe_5:axe", "roe_weapons:axe_6:axe", "roe_weapons:axe_7:axe", "roe_weapons:cursed_axe:axe", "roe_weapons:hammer_0:hammer", "roe_weapons:hammer_1:hammer", "roe_weapons:hammer_2:hammer", "roe_weapons:hammer_3:hammer", "roe_weapons:hammer_4:hammer", "roe_weapons:hammer_5:hammer", "roe_weapons:hammer_6:hammer", "roe_weapons:hammer_7:hammer", "roe_weapons:cursed_hammer:hammer", "roe_weapons:wirtsleg:hammer", "roe_weapons:staff_0:staff", "roe_weapons:staff_1:staff", "roe_weapons:staff_2:staff", "roe_weapons:staff_3:staff", "roe_weapons:staff_4:staff", "roe_weapons:staff_5:staff", "roe_weapons:staff_6:staff", "roe_weapons:staff_7:staff", "roe_weapons:cursed_staff:staff", "roe_weapons:gauntlet_0:gauntlet", "roe_weapons:gauntlet_1:gauntlet", "roe_weapons:gauntlet_2:gauntlet", "roe_weapons:gauntlet_3:gauntlet", "roe_weapons:gauntlet_4:gauntlet", "roe_weapons:gauntlet_5:gauntlet", "roe_weapons:gauntlet_6:gauntlet", "roe_weapons:gauntlet_7:gauntlet", "roe_weapons:katar:gauntlet", "roe_weapons:wolf_claws:gauntlet", "roe_weapons:tome_0:tome", "roe_weapons:tome_1:tome", "roe_weapons:tome_2:tome", "roe_weapons:tome_3:tome", "roe_weapons:tome_4:tome", "roe_weapons:tome_5:tome", "roe_weapons:tome_6:tome", "roe_weapons:tome_7:tome", "roe_weapons:lantern_of_poe:totem", "roe_weapons:totem_0:totem", "roe_weapons:totem_1:totem", "roe_weapons:totem_2:totem", "roe_weapons:totem_3:totem", "roe_weapons:totem_4:totem", "roe_weapons:totem_5:totem", "roe_weapons:totem_6:totem", "roe_weapons:totem_7:totem", "roe_weapons:greatsword_0:greatsword", "roe_weapons:greatsword_1:greatsword", "roe_weapons:greatsword_2:greatsword", "roe_weapons:greatsword_3:greatsword", "roe_weapons:greatsword_4:greatsword", "roe_weapons:greatsword_5:greatsword", "roe_weapons:greatsword_6:greatsword", "roe_weapons:greatsword_7:greatsword", "roe_weapons:bustersword:greatsword", "roe_weapons:dragon_slayer:greatsword", "roe_weapons:cursed_greatsword:greatsword", "roe_weapons:mace_0:hammer", "roe_weapons:mace_1:hammer", "roe_weapons:mace_2:hammer", "roe_weapons:mace_3:hammer", "roe_weapons:mace_4:hammer", "roe_weapons:mace_5:hammer", "roe_weapons:mace_6:hammer", "roe_weapons:mace_7:hammer", "roe_weapons:orderofdespair:tome", "roe_weapons:scythe_0:scythe", "roe_weapons:scythe_1:scythe", "roe_weapons:scythe_2:scythe", "roe_weapons:scythe_3:scythe", "roe_weapons:scythe_4:scythe", "roe_weapons:scythe_5:scythe", "roe_weapons:scythe_6:scythe", "roe_weapons:scythe_7:scythe", "roe_weapons:kunai_0:dagger", "roe_weapons:kunai_1:dagger", "roe_weapons:kunai_2:dagger", "roe_weapons:kunai_3:dagger", "roe_weapons:kunai_4:dagger", "roe_weapons:kunai_5:dagger", "roe_weapons:kunai_6:dagger", "roe_weapons:kunai_7:dagger", "roe_weapons:bow_0:bow", "roe_weapons:bow_1:bow", "roe_weapons:bow_2:bow", "roe_weapons:bow_3:bow", "roe_weapons:bow_4:bow", "roe_weapons:bow_5:bow", "roe_weapons:bow_6:bow", "roe_weapons:bow_7:bow", "roe_weapons:featherdraw:bow", "roe_weapons:admin_bow:bow", "roe_weapons:cursed_bow:bow", "roe_weapons:cursed_scythe:scythe", "born_in_chaos_v1:darkwarblade:greatsword", "born_in_chaos_v1:nightmare_scythe:scythe", "remnant_bosses:ossukage_sword:greatsword"]
+	#Distance needed from player to despawn mobs in maps, lower means more despawning
+	#Range: 5.0 ~ 200.0
+	MOB_DESPAWN_DISTANCE_IN_MAPS = 30.0
+	#Range: 5.0 ~ 99.0
+	MAP_PERCENT_COMPLETE_NEEDED_FOR_BOSS_ARENA = 30.0
+	#Mobs that are much higher level will hide their levels.
+	SKULL_HIDES_LEVEL = true
+	#When mobs are this many levels higher than you, a skull will show, indicating danger.
+	#Range: 1 ~ 1000
+	SHOW_SKULL_ON_MOBS_THAT_ARE_X_LEVELS_HIGHER_THAN_YOU = 10
+	SCALE_MOB_LEVEL_TO_NEAREST_PLAYER = true
+	SOUL_CLEANER_ITEM_BLACKLIST = ["botania:flight_tiara", "minecraft:elytra", "alexsmobs:tarantula_hawk_elytra", "deeperdarker:soul_elytra", "botania:terra_sword", "cte2modpackarmors:tempered_samurai_armor_helmet", "cte2modpackarmors:tempered_samurai_armor_chestplate", "cte2modpackarmors:tempered_samurai_armor_leggings", "cte2modpackarmors:tempered_samurai_armor_boots", "cte2modpackarmors:divine_plate_armor_helmet", "cte2modpackarmors:divine_plate_armor_chestplate", "cte2modpackarmors:divine_plate_armor_leggings", "cte2modpackarmors:divine_plate_armor_boots", "cte2modpackarmors:undead_cultist_armor_helmet", "cte2modpackarmors:blood_glass_sword", "cte2modpackarmors:venom_tears_dagger", "cte2modpackarmors:twin_agony_dagger", "cte2modpackarmors:soulcursed_skewer_dagger", "cte2modpackarmors:desolating_light_staff", "cte2modpackarmors:metallic_melody_armor_leggings", "cte2modpackarmors:metallic_melody_armor_boots", "cte2modpackarmors:oath_of_mahj_armor_helmet", "cte2modpackarmors:oath_of_mahj_armor_chestplate", "cte2modpackarmors:oath_of_mahj_armor_leggings", "cte2modpackarmors:oath_of_mahj_armor_boots", "cte2modpackarmors:lightning_edge_staff", "cte2modpackarmors:sinful_lights_staff", "cte2modpackarmors:unsealing_fate_sword", "cte2modpackarmors:metallic_melody_armor_chestplate", "cte2modpackarmors:endless_blood_armor_helmet", "cte2modpackarmors:natures_blessings_armor_boots", "cte2modpackarmors:corrupted_paladin_armor_leggings", "cte2modpackarmors:royal_berserker_armor_chestplate", "cte2modpackarmors:royal_berserker_armor_helmet", "cte2modpackarmors:corrupted_paladin_armor_chestplate", "cte2modpackarmors:natures_blessings_armor_leggings", "cte2modpackarmors:undead_psionic_robes_boots", "cte2modpackarmors:metallic_melody_armor_helmet", "cte2modpackarmors:magnum_opus_armor_boots", "cte2modpackarmors:undead_psionic_robes_leggings", "cte2modpackarmors:natures_blessings_armor_chestplate", "cte2modpackarmors:corrupted_paladin_armor_helmet", "cte2modpackarmors:mage_hunter_armor_boots", "cte2modpackarmors:mage_hunter_armor_leggings", "cte2modpackarmors:mage_hunter_armor_chestplate", "cte2modpackarmors:mage_hunter_armor_helmet", "cte2modpackarmors:undead_cultist_armor_boots", "cte2modpackarmors:undead_cultist_armor_leggings", "cte2modpackarmors:undead_cultist_armor_chestplate", "cte2modpackarmors:royal_berserker_armor_leggings", "cte2modpackarmors:corrupted_paladin_armor_boots", "cte2modpackarmors:woven_samurai_armor_helmet", "cte2modpackarmors:endless_blood_armor_chestplate", "cte2modpackarmors:endless_blood_armor_leggings", "cte2modpackarmors:endless_blood_armor_boots", "cte2modpackarmors:magnum_opus_armor_helmet", "cte2modpackarmors:magnum_opus_armor_chestplate", "cte2modpackarmors:magnum_opus_armor_leggings", "cte2modpackarmors:undead_psionic_robes_chestplate", "cte2modpackarmors:natures_blessings_armor_helmet", "cte2modpackarmors:last_tracker_armor_boots", "cte2modpackarmors:last_tracker_armor_leggings", "cte2modpackarmors:overloaded_mage_armor_boots", "cte2modpackarmors:undead_psionic_robes_helmet", "cte2modpackarmors:woven_samurai_armor_boots", "cte2modpackarmors:overloaded_mage_armor_leggings", "cte2modpackarmors:last_tracker_armor_chestplate", "cte2modpackarmors:last_tracker_armor_helmet", "cte2modpackarmors:overloaded_mage_armor_chestplate", "cte2modpackarmors:woven_samurai_armor_leggings", "cte2modpackarmors:woven_samurai_armor_chestplate", "cte2modpackarmors:overloaded_mage_armor_helmet", "cte2modpackarmors:royal_berserker_armor_boots"]
+	#Range: 0 ~ 10000000
+	MAX_POSSIBLE_FAVOR = 2500
+	#Mns tries to replicate vanilla atk speed and reduces dmg of basic attacks if hit too often
+	REMOVE_ATK_SPEED_COOLDOWN = true
+	#Range: 0 ~ 10000000
+	MAP_START_COOLDOWN_SECONDS = 120
+	#Range: 0.0 ~ 1000.0
+	MAP_DROPRATE = 0.5
+	#Mns tries to replicate vanilla bow draw and reduces dmg of basic attacks if bow is not fully drawn. Enable for machine gun bows.
+	REMOVE_DRAW_SPEED_COOLDOWN = false
+	#Entities that summons should not attack
+	ENTITY_SUMMON_BLACKLIST = ["minecraft:allay", "minecraft:armor_stand"]
+
+	#These are just default values for the Mine and slash Hub > features
+	[general."Default Feature Configs"]
+		cast_fail_messages = true
+		mob_death_messages = true
+		exp_chat_messages = true
+		damage_messages = true
+		profession_exp_messages = true
+		auto_pve = false
+		aggressive_summons = true
+		stat_order_test = false
+		damage_conflict_check = false
+		everyone_is_ally = false
+

@@ -1,0 +1,41 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "corn_delight:caramel_popcorn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:creamy_corn_drink",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_juice",
+      "required": false
+    },
+    {
+      "id": "endersdelight:pearl_pasta",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:sweet_berry_jam",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:glow_berry_marmalade",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:apple_jelly",
+      "required": false
+    },
+    {
+      "id": "blue_skies:comet_berries",
+      "required": false
+    },
+    {
+      "id": "supplementaries:pancake",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "author": "CTE2 Team",
+  "data": {
+    "curved_hallways": [
+      "abandoned",
+      "cemetary",
+      "escape",
+      "witch_hut"
+    ],
+    "ends": [
+      "cauldron",
+      "dracula",
+      "crop_circle",
+      "skull"
+    ],
+    "entrances": [
+      "pump_spawn"
+    ],
+    "folder": "night_terror",
+    "four_ways": [
+      "barn",
+      "portal",
+      "pumpkin",
+      "spider"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"generic_undead",
+			"otherworldly"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "door_maze",
+      "spider_cave",
+      "crimson_rose",
+      "festival"
+    ],
+    "triple_hallway": [
+      "forest",
+      "neighborhood",
+      "gas_station",
+      "library"
+    ]
+  },
+  "id": "night_terror",
+  "weight": 1000
+}

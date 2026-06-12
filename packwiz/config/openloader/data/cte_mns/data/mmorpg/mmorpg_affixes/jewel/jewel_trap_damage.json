@@ -1,0 +1,29 @@
+{
+  "type": "jewel",
+  "eye_aura_req": "",
+  "guid": "jewel_trap_damage",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "jewel_int",
+          "jewel_dex"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "trap_spell_dmg"
+    }
+  ],
+  "weight": 1000
+}

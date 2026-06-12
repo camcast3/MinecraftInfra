@@ -1,0 +1,21 @@
+{
+  "type": "prefix",
+  "format": "DARK_RED",
+  "icon": "",
+  "id": "vampire",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 0.5,
+      "min": 0.5,
+      "stat": "health_per_sec"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "health_on_hit_hit"
+    }
+  ],
+  "weight": 1000
+}

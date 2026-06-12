@@ -1,0 +1,39 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/immutable.png",
+  "id": "immutable",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "elemental_resist",
+      "v1": -15.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "burn_resistance",
+      "v1": 50.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "freeze_resistance",
+      "v1": 50.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "electrify_resistance",
+      "v1": 50.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "poison_resistance",
+      "v1": 50.0
+    }
+  ]
+}

@@ -1,0 +1,238 @@
+
+{
+	"content": {
+
+        "armorer_obj_lava_bucket": {
+            "type": "item",
+            "content": "minecraft:lava_bucket",
+            "amount": {
+                "min": 1,
+                "max": 3
+            },
+            "unitWorth": 500
+        },
+
+        "armorer_obj_water_bucket": {
+            "type": "item",
+            "content": "minecraft:water_bucket",
+            "amount": {
+                "min": 1,
+                "max": 3
+            },
+            "unitWorth": 300
+        },
+
+        "armorer_obj_blast_furnace": {
+            "type": "item",
+            "rarity": "UNCOMMON",
+            "content": "minecraft:blast_furnace",
+            "amount": {
+                "min": 1,
+                "max": 4
+            },
+            "unitWorth": 1000
+        },
+
+        "armorer_obj_hammer": {
+            "type": "item",
+            "rarity": "UNCOMMON",
+            "content": "stalwart_dungeons:iron_hammer",
+            "amount": {
+                "min": 1,
+                "max": 1
+            },
+            "unitWorth": 1000
+        },
+
+        "armorer_obj_iron_helm": {
+            "type": "item",
+            "content": "minecraft:iron_helmet",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 625,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_iron_chest": {
+            "type": "item",
+            "content": "minecraft:iron_chestplate",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 1000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_iron_legs": {
+            "type": "item",
+            "content": "minecraft:iron_leggings",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 875,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_iron_boots": {
+            "type": "item",
+            "content": "minecraft:iron_boots",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 600,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_diamond_helm": {
+            "type": "item",
+            "rarity": "RARE",
+            "content": "minecraft:diamond_helmet",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 3000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_diamond_chest": {
+            "type": "item",
+            "rarity": "RARE",
+            "content": "minecraft:diamond_chestplate",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 4800,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_diamond_legs": {
+            "type": "item",
+            "rarity": "RARE",
+            "content": "minecraft:diamond_leggings",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 4200,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_diamond_boots": {
+            "type": "item",
+            "rarity": "RARE",
+            "content": "minecraft:diamond_boots",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 2400,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_cloggrum_helm": {
+            "type": "item",
+            "rarity": "EPIC",
+            "content": "undergarden:cloggrum_helmet",
+            "amount": {
+                "min": 1,
+                "max": 4
+            },
+            "unitWorth": 3000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_cloggrum_chest": {
+            "type": "item",
+            "rarity": "EPIC",
+            "content": "undergarden:cloggrum_chestplate",
+            "amount": {
+                "min": 1,
+                "max": 4
+            },
+            "unitWorth": 4800,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_cloggrum_legs": {
+            "type": "item",
+            "rarity": "EPIC",
+            "content": "undergarden:cloggrum_leggings",
+            "amount": {
+                "min": 1,
+                "max": 4
+            },
+            "unitWorth": 4200,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_cloggrum_boots": {
+            "type": "item",
+            "rarity": "EPIC",
+            "content": "undergarden:cloggrum_boots",
+            "amount": {
+                "min": 1,
+                "max": 4
+            },
+            "unitWorth": 2400,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_froststeel_helm": {
+            "type": "item",
+            "rarity": "LEGENDARY",
+            "content": "undergarden:froststeel_helmet",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 5000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_froststeel_chest": {
+            "type": "item",
+            "rarity": "LEGENDARY",
+            "content": "undergarden:froststeel_chestplate",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 8000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_froststeel_legs": {
+            "type": "item",
+            "rarity": "LEGENDARY",
+            "content": "undergarden:froststeel_leggings",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 7000,
+            "nbt": "{Damage:0}"
+        },
+
+        "armorer_obj_froststeel_boots": {
+            "type": "item",
+            "rarity": "LEGENDARY",
+            "content": "undergarden:froststeel_boots",
+            "amount": {
+                "min": 1,
+                "max": 2
+            },
+            "unitWorth": 4000,
+            "nbt": "{Damage:0}"
+        }
+
+	}
+
+
+}

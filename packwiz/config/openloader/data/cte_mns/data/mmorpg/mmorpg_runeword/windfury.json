@@ -1,0 +1,54 @@
+{
+  "id": "windfury",
+  "runes": [
+    "ano",
+    "yun",
+    "wir",
+    "oru",
+    "end"
+  ],
+  "slots": [
+    "sword",
+    "greatsword",
+    "hammer",
+    "gauntlet"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_physical_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "area_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 30.0,
+      "stat": "proc_cyclone_on_crit"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "accuracy"
+    }
+  ]
+}

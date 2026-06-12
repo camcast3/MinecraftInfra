@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_blessed_hammer",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "blessed_hammer"
+  }
+}

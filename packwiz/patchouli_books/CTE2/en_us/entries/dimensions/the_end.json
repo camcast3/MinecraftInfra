@@ -1,0 +1,41 @@
+{
+    "name": "The End",
+    "icon": "minecraft:end_portal_frame",
+    "category": "patchouli:dimensions",
+	"sortnum":4,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lThe End&r
+&n&6&lArea Level:&r&r    &n50 - 65 &r&r
+&n&6&lEnraged Area Level:&r &n70 - 90&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nAct V;&r
+&n&6&lDimension gateways:&r  &nAct V Gateway;
+&n&6&lDimension Bosses:&r &nEnder Dragon; Void Worm; Shelterer  &r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": " Dimension that looks like The End of everything there is. Just a fractured plane of floating islands in complete nothingness.$(br) The main island seems to be guarded by the Ender Dragon preventing easy escape. Killing the dragon opens 2 paths: a portal home and a portal deeper into the void to explore further islands."
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting into The End",
+  "item": "minecraft:ender_eye",
+  "text": "If you are looking to get to this dimension, you need to lay your hands on&n&l total of 12 Ender Eyes inserted into portal frame found in a Stronghold.&r$(2br)Sometimes you can find a portal with few eyes inserted into sockets from previous attempts to reach it." 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"End Portal",
+			"text": "This portal cannot be built in survival, you can only find one and insert eyes in the sockets to activate",
+            "multiblock": {
+    "pattern": [
+        [ "SOOOS","O   O","O 0 O","O   O","SOOOS"]
+    ],
+    "mapping": {
+        "O": "minecraft:end_portal_frame",
+		"S": "minecraft:air"
+    }
+}
+		}
+    ]
+}

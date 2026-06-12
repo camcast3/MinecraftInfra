@@ -1,0 +1,64 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 6.0,
+      "stat": "weapon_damage"
+    }
+  ],
+  "gear_slot": "spear",
+  "guid": "spear",
+  "possible_items": [
+    {
+      "item_id": "roe_weapons:spear_0",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "roe_weapons:spear_1",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "roe_weapons:spear_2",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "roe_weapons:spear_3",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "roe_weapons:spear_4",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "roe_weapons:spear_5",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "strength": 0.25,
+      "dexterity": 0.25
+    }
+  },
+  "style": "STR",
+  "tags": {
+    "tags": [
+      "dexterity",
+      "spear",
+      "strength",
+      "melee_weapon",
+      "weapon_family",
+      "two_handed"
+    ]
+  },
+  "weapon_type": "spear",
+  "weight": 1000
+}

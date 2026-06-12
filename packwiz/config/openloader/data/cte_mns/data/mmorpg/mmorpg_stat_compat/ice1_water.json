@@ -1,0 +1,13 @@
+{
+  "id": "ice1_water",
+  "attribute_id": "mine_and_meals:ice1_water",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "all_water_damage",
+  "conversion": 1.0,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "FLAT"
+}

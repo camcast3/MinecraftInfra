@@ -1,0 +1,28 @@
+{
+  "id": "battery",
+  "manaMulti": 1.4,
+  "min_lvl": 30,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 1.5,
+      "min": 1.5,
+      "stat": "skill_damage_per_magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": -10.0,
+      "min": -30.0,
+      "stat": "int_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": -20.0,
+      "min": -60.0,
+      "stat": "inc_leech"
+    }
+  ],
+  "style": "INT",
+  "weight": 1000
+}

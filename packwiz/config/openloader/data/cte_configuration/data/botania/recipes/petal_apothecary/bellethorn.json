@@ -1,0 +1,32 @@
+{
+  "type": "botania:petal_apothecary",
+  "ingredients": [
+    {
+      "tag": "botania:petals/red"
+    },
+    {
+      "tag": "botania:petals/red"
+    },
+    {
+      "tag": "botania:petals/red"
+    },
+    {
+      "tag": "botania:petals/cyan"
+    },
+    {
+      "tag": "botania:petals/cyan"
+    },
+    {
+      "item": "botania:redstone_root"
+    }
+  ],
+  "output": {
+    "item": "botania:bellethorn"
+  },
+  "reagent": {
+    "tag": "botania:seed_apothecary_reagent"
+  },
+  "conditions": [{
+            "type": "forge:false"
+  }]
+}

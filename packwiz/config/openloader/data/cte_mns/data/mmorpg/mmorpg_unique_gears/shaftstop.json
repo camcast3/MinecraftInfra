@@ -1,0 +1,39 @@
+{
+  "base_gear": "plate_chest",
+  "guid": "shaftstop",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 40,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_all_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 7.0,
+      "min": 5.0,
+      "stat": "dmg_reduction"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 7.0,
+      "stat": "health"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,38 @@
+{
+  "base": 0.0,
+  "effect": [
+    {
+      "effects": [
+        "proc_spell_ms_regen",
+        "remove_ghost_shroud_from_target"
+      ],
+      "events": [
+        "on_damage"
+      ],
+      "ifs": [
+        "attack_type_is_hit",
+        "is_is_dodged_true_is_false"
+      ],
+      "order": "final_damage",
+      "side": "Target"
+    }
+  ],
+  "ele": "Physical",
+  "format": "aqua",
+  "group": "Misc",
+  "gui_group": "NONE",
+  "has_softcap": false,
+  "icon": "★",
+  "id": "ms_regen_remove_ghost_shroud",
+  "is_long": true,
+  "is_perc": false,
+  "max": 1.0,
+  "min": 0.0,
+  "minus_is_good": false,
+  "multiUseType": "MULTIPLY_STAT",
+  "order": 100,
+  "scaling": "NONE",
+  "ser": "data",
+  "show_in_gui": true,
+  "softcap": 0.0
+}

@@ -1,0 +1,86 @@
+{
+	"size": "small",
+	"color": "#8000ff",
+	"waves": [{
+			"entities": [
+				{
+					"entity": "blue_skies:armored_frost_spirit",
+					"count": 3
+				},
+				{
+					"entity": "blue_skies:diophyde_prowler",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "blue_skies:emberback",
+					"count": 3
+				},
+				{
+					"entity": "blue_skies:venom_spider",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "blue_skies:crynocerous",
+					"count": 3
+				},
+				{
+					"entity": "blue_skies:infested_swarmer",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "blue_skies:polargeist",
+					"count": 3
+				},
+				{
+					"entity": "blue_skies:nyctofly",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1800,
+			"setup_time": 60
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 3,
+            "desc": "rewards.gateways.loot_table.drops"
+        },
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_bri_daw",
+            "rolls": 1,
+            "desc": "rewards.gateways.loot_table.bri_daw"
+        }
+    ],
+    "failures": [
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

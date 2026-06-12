@@ -1,0 +1,13 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "oceansdelight:guardian_tail": {
+            "next": "oceansdeight:cooked_guardian_tail",
+            "stage": "COOKED"
+        },
+        "oceansdelight:elder_guardian_slice": {
+            "next": "oceansdelight:cooked_elder_guardian_slice",
+            "stage": "COOKED"
+        }
+    }
+}

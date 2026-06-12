@@ -1,0 +1,7 @@
+{
+  "effect": "elemental_overload",
+  "give_to": "Source",
+  "id": "give_elemental_overload_to_source",
+  "seconds": 8,
+  "ser": "give_exile_effect"
+}

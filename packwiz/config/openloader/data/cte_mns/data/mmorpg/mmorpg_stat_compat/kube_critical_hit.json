@@ -1,0 +1,13 @@
+{
+  "attribute_id": "kubejs:critical_hit",
+  "conversion": 0.3,
+  "enchant_id": "",
+  "id": "kube_critical_hit",
+  "maximum_cap": 600,
+  "minimum_cap": 0,
+  "mns_stat_id": "critical_hit",
+  "mod_type": "FLAT",
+  "per_item_max": 600,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

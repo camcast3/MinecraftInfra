@@ -1,0 +1,21 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/combat_talent.png",
+  "id": "combat_talent",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "combat_talent_melee_hit",
+      "v1": 100.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "combat_talent_ranged_hit",
+      "v1": 100.0
+    }
+  ]
+}

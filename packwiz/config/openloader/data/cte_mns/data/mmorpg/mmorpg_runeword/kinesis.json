@@ -1,0 +1,63 @@
+{
+  "id": "kinesis",
+  "runes": [
+    "fey",
+    "oru",
+    "owd",
+    "end",
+	"yun",
+	"dos"
+  ],
+  "slots": [
+	"hammer",
+	"spear",
+	"axe",
+	"gauntlet",
+	"scythe",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "proc_focus_on_basic_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": -35.0,
+      "min": -35.0,
+      "stat": "cdr"
+    },
+    {
+      "type": "MORE",
+      "max": -50.0,
+      "min": -50.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "move_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 80.0,
+      "min": 60.0,
+      "stat": "basic_attack_dmg_per_move_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "skill_damage_per_move_speed"
+    }
+  ]
+}

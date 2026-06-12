@@ -1,0 +1,24 @@
+{
+  "type": "gateways:gate_recipe",
+  "group": "gateways",
+  "pattern": [
+    "EEE",
+    "GAG",
+    "EEE"
+  ],
+  "key": {
+	"E": {
+      "item": "deeperdarker:sculk_bone"
+    },
+	"G": {
+      "item": "mmorpg:stone/5"
+    },
+	"A": {
+      "item": "alexsmobs:void_worm_eye"
+    }
+  },
+  "result": {
+    "item": "gateways:gate_pearl"
+  },
+  "gateway": "gateways:remnant"
+}

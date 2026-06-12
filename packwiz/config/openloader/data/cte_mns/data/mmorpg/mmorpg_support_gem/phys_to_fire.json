@@ -1,0 +1,22 @@
+{
+  "id": "phys_to_fire",
+  "manaMulti": 1.2,
+  "min_lvl": 20,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "phys_to_fire"
+    },
+    {
+      "type": "FLAT",
+      "max": 21.0,
+      "min": 7.0,
+      "stat": "all_fire_damage"
+    }
+  ],
+  "style": "STR",
+  "weight": 1000
+}

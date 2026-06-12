@@ -1,0 +1,35 @@
+[
+
+	{
+        "itemId": "lightmanscurrency:coin_chocolate_iron",
+        "dropChance": 30.0,
+        "minAmount": 4,
+        "maxAmount": 9,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_gold",
+        "dropChance": 20.0,
+        "minAmount": 3,
+        "maxAmount": 8,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_emerald",
+        "dropChance": 10.0,
+        "minAmount": 2,
+        "maxAmount": 6,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_diamond",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    }
+]

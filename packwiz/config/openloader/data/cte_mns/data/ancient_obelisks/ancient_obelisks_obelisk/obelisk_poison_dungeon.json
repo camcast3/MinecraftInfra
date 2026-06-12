@@ -1,0 +1,21 @@
+{
+  "id": "obelisk_poison_dungeon",
+  "mob_list_tag_check": {
+    "checks": [
+      {
+        "check": "HAS_ANY",
+        "tags": [
+          "obelisk"
+        ]
+      }
+    ]
+  },
+  "structure_data": {
+    "rooms_folder": "ancient_obelisks:obelisk/poison_dungeon",
+    "size": 1,
+    "teleport_offset_x": 0,
+    "teleport_offset_y": 0,
+    "teleport_offset_z": 0
+  },
+  "weight": 1000
+}

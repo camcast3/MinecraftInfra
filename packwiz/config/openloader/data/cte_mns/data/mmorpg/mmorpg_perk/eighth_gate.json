@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/icons/eighth_gate.png",
+  "id": "eighth_gate",
+  "is_entry": false,
+  "max_lvls": 4,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "learn_eighth_gate",
+      "v1": 1.0
+    }
+  ]
+}

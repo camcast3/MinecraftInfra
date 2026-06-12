@@ -1,0 +1,38 @@
+{
+  "id": "steel",
+  "runes": [
+    "nos",
+    "fey"
+  ],
+  "slots": [
+    "sword",
+	"axe",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 40.0,
+      "stat": "bleed_damage"
+    }
+  ]
+}

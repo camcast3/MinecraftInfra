@@ -1,0 +1,242 @@
+{
+  "attached": {
+    "entity_components": {},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.25,
+              "sound": "mmorpg:dash",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "aggro",
+            "map": {
+              "aggro": "AGGRO",
+				"disable_knockback": true,
+                "value_calculation": "taunt"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 30.0,
+              "particle_type": "minecraft:flame",
+              "radius": 4.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 30.0,
+              "particle_type": "minecraft:bubble_pop",
+              "radius": 4.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 20.0,
+              "particle_type": "minecraft:angry_villager",
+              "radius": 4.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Fire",
+				"disable_knockback": true,
+                "value_calculation": "blood_boil"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Cold",
+				"disable_knockback": true,
+                "value_calculation": "blood_boil"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "spell_taunt"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 160,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 11.0,
+      "min": 8.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "area",
+	  "magic",
+	  "fire",
+	  "cold",
+	  "damage"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "blood_boil",
+  "loc_name": "Blood Boil",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "burn_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "freeze_chance"
+    }
+  ],
+  "weight": 1000
+}

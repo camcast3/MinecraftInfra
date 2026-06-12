@@ -1,0 +1,17 @@
+[
+  {
+    "itemId": "minecraft:experience_bottle",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "commandChance": 0.0,
+    "commandCooldown": 0,
+    "dropCommand": "tellraw {player} {\"text\":\"Found an Experience Bottle!\",\"color\":\"green\"}",
+    "dropCommandChance": 0.0,
+    "dropCommandCooldown": 0,
+    "extraDropChance": 0.0,
+    "extraAmountMin": 1,
+    "extraAmountMax": 1,
+    "comment": "1% chance for experience bottle on any fishing catch"
+  }
+]

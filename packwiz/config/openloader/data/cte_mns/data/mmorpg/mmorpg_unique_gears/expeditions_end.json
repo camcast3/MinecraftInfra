@@ -1,0 +1,39 @@
+{
+  "base_gear": "vest_pants",
+  "guid": "expeditions_end",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "proc_frost_nova_when_hit"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "freeze_chance"
+    }
+  ],
+  "weight": 1000
+}

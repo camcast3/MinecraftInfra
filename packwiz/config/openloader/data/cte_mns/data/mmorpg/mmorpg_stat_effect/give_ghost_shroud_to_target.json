@@ -1,0 +1,7 @@
+{
+  "effect": "ghost_shroud",
+  "give_to": "Target",
+  "id": "give_ghost_shroud_to_target",
+  "seconds": 6,
+  "ser": "give_exile_effect"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_deep_sea_gateway",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "deep_sea_gateway",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

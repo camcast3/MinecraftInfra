@@ -1,0 +1,45 @@
+{
+  "base_gear": "totem",
+  "guid": "lantern_of_lost_ghost",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:lantern_of_poe",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "ghost_shroud_on_dodge"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "proc_smoke_bomb_when_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 8.0,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "dmg_received"
+    }
+  ],
+  "weight": 1000
+}

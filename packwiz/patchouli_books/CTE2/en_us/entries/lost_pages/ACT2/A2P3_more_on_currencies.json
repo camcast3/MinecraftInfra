@@ -1,0 +1,18 @@
+{
+    "name": "More On Currencies",
+    "icon": "mmorpg:currency/affix_tier_up_down",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":10,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 68EB4F5B367C3C47)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eCurrencies&r are various items that can be used directly on your Gear. They will modify your Gear and empower them.
+
+Each Gear comes with a set amount of &ePotential&r. Using a Currency on the Gear will reduce the Gear's &ePotential&r. Once the Potential has reached 0, Currency with Potential Cost may no longer be applied to it. 
+"},
+{            "type": "patchouli:spotlight",
+            "text": "Not all Currencies use Potential, however, and may be used at any time. Certain Currencies, such as the &eOrb of Chaos,&r can add very powerful effects, but may cause negative effects to your Gear. &cWith the Orb of Chaos, there is a 25% chance that your item will turn into Coal&r.",
+			"item": "mmorpg:currency/chaos_orb"
+		}
+    ]
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "entityId": "blue_skies:starlit_crusher",
+    "itemId": "blue_skies:loot_bag_starlit_crusher",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/starlit_crusher/common\", Rarity: 0}",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:starlit_crusher",
+    "itemId": "blue_skies:loot_bag_starlit_crusher",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/starlit_crusher/uncommon\", Rarity: 1}",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:starlit_crusher",
+    "itemId": "blue_skies:loot_bag_starlit_crusher",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/starlit_crusher/rare\", Rarity: 2}",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  }
+]

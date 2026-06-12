@@ -1,0 +1,7 @@
+{
+  "id": "spell_has_tag_affected_by_faster_projectiles",
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "affected_by_faster_projectiles"
+  }
+}

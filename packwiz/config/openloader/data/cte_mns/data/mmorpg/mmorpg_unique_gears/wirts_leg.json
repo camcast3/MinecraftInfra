@@ -1,0 +1,27 @@
+{
+  "base_gear": "hammer",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:wirtsleg",
+  "guid": "wirts_leg",
+  "league": "",
+  "min_drop_lvl": 55,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 3.0,
+      "stat": "accuracy"
+    }
+  ],
+  "weight": 250
+}

@@ -1,0 +1,7 @@
+{
+  "effect": "reckless_defender",
+  "give_to": "Target",
+  "id": "give_reckless_defender_to_target",
+  "seconds": 5,
+  "ser": "give_exile_effect"
+}

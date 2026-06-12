@@ -1,0 +1,22 @@
+{
+  "id": "faster_attacks",
+  "manaMulti": 1.1,
+  "min_lvl": 1,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "weapon_skill_cdr"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "weapon_skill_spell_dmg"
+    }
+  ],
+  "style": "DEX",
+  "weight": 1000
+}

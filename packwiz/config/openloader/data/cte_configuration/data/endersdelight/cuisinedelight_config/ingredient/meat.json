@@ -1,0 +1,116 @@
+{
+    "entries": [
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:shulker_mollusk"
+                }
+            ],
+            "max_time": 360,
+            "min_time": 240,
+            "nutrition": 8,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:shulker_filet"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 180,
+            "nutrition": 4,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:enderman_sight"
+                }
+            ],
+            "max_time": 280,
+            "min_time": 200,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:sight_fragment"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 160,
+            "nutrition": 3,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:enderman_sight"
+                }
+            ],
+            "max_time": 280,
+            "min_time": 200,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:mite_crust"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 160,
+            "nutrition": 4,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "endersdelight:ender_shard"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 160,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.1,
+            "size": 1,
+            "stir_time": 80
+        }                                              
+    ]
+}

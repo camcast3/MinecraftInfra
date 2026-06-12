@@ -1,0 +1,57 @@
+{
+  "base_gear": "tome",
+  "guid": "order_of_despair",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:orderofdespair",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 40,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "dmg_to_cursed_per_soul_stack"
+    },
+    {
+      "type": "FLAT",
+      "max": -40.0,
+      "min": -40.0,
+      "stat": "inc_effect_of_curse_buff_given"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "chaos_penetration"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "chaos_resist"
+    },
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "mana_regen"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,101 @@
+{
+  "type": "beneficial",
+  "id": "defiance",
+  "max_stacks": 1,
+  "mc_stats": [],
+  "one_of_a_kind_id": "aura",
+  "spell": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+				"height": 0.25,
+                "motion": "None",
+                "particle_count": 50.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5,
+                "particle_type": "aquamirae:shine",
+                "radius": 4.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "defiance_effect",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": 20.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "allies",
+                "radius": 4.0,
+                "selection_type": "RADIUS"
+              }
+            }
+		  ]
+        }
+      ]
+    },
+    "on_cast": []
+  },
+  "spell_tags": {
+    "tags": []
+  },
+  "stacks_affect_stats": true,
+  "stats": [
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "energy_regen"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "blood_regen"
+    }
+  ],
+  "tags": {
+    "tags": [
+    "aura"
+    ]
+  }
+}

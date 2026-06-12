@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "weight": 2,
+          "quality": 0,
+          "name": "minecraft:chests/end_city_treasure"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "weight": 2,
+          "quality": 0,
+          "name": "outer_end:chests/catacomb_treasure"
+        }
+      ]
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_treasure"
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 2.0,
+        "min": 1.0
+      }
+    }
+  ]
+}

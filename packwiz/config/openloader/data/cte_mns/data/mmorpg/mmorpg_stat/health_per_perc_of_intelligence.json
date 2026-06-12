@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "health",
+    "adder_stat": "intelligence",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 25,
+    "id": "health_per_perc_of_intelligence",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

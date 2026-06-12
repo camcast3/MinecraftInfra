@@ -1,0 +1,17 @@
+{
+    "name": "BOMD",
+    "icon": "bosses_of_mass_destruction:levitation_block",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list5",
+			"heading":"Disabled",
+  "item1": "bosses_of_mass_destruction:monolith_block",
+  "item2": "bosses_of_mass_destruction:earthdive_spear",
+  "item3": "bosses_of_mass_destruction:charged_ender_pearl",
+  "item4": "bosses_of_mass_destruction:levitation_block",
+  "item5": "bosses_of_mass_destruction:mob_ward"
+		}
+    ]
+}

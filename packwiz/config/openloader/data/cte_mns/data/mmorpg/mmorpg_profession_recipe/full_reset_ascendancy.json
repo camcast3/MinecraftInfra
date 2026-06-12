@@ -1,0 +1,31 @@
+{
+  "exp": 150,
+  "id": "full_reset_ascendancy",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "minecraft:glass_bottle",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/2",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "undergarden:utherium_crystal",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:emerald",
+      "num": 1
+    }
+  ],
+  "set_tier_nbt": false,
+  "profession": "alchemy",
+  "result": "mmorpg:potions/full_reset_ascendancy",
+  "result_num": 1,
+  "tier": 0
+}

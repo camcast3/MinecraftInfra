@@ -1,0 +1,39 @@
+{
+  "base_gear": "necklace",
+  "guid": "rabbit_paw",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "proc_turbo_when_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "move_speed"
+    },
+    {
+      "type": "PERCENT",
+      "max": 25.0,
+      "min": 15.0,
+      "stat": "energy_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "dexterity"
+    }
+  ],
+  "weight": 1000
+}

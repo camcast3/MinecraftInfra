@@ -1,0 +1,19 @@
+{
+  "id": "moo",
+  "mobs": [
+    {
+      "type": "twilightforest:minotaur",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 2000	
+    }
+  ],
+  "possible_dungeon_tags": {
+    "tags": [
+      "moo"
+    ]
+  },
+  "weight": 0
+}

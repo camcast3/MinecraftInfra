@@ -1,0 +1,7 @@
+{
+  "id": "spell_has_tag_ricochet_shot",
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "ricochet_shot"
+  }
+}

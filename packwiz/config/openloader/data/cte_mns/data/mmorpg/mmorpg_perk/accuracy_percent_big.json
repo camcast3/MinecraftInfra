@@ -1,0 +1,21 @@
+{
+  "type": "SPECIAL",
+  "icon": "mmorpg:textures/gui/stat_icons/main/accuracy.png",
+  "id": "accuracy_percent_big",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "accuracy",
+      "v1": 3.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "accuracy",
+      "v1": 12.0
+    }
+  ]
+}

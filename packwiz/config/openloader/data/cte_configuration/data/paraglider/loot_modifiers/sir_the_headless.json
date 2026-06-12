@@ -1,0 +1,23 @@
+{
+  "type": "paraglider:vessel",
+  "conditions": [
+    {
+      "condition": "minecraft:entity_properties",
+      "entity": "this",
+      "predicate": {
+        "type": "born_in_chaos_v1:sir_the_headless"
+      }
+    },
+    {
+      "condition": "minecraft:killed_by_player"
+    },
+    {
+      "condition": "paraglider:config_wither_drops_vessel"
+    },
+    {
+      "chance": 0.25,
+      "condition": "minecraft:random_chance"
+    }
+  ],
+  "count": 1
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "entityId": "blue_skies:summoner",
+    "itemId": "blue_skies:loot_bag_summoner",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/summoner/common\", Rarity: 0}",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:summoner",
+    "itemId": "blue_skies:loot_bag_summoner",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/summoner/uncommon\", Rarity: 1}",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:summoner",
+    "itemId": "blue_skies:loot_bag_summoner",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/summoner/rare\", Rarity: 2}",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  }
+]

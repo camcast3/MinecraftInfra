@@ -1,0 +1,130 @@
+#Compatibility Presets. Unlocked by installing the Compatibility addon
+#Allowed Values: LITE_MODE, ORIGINAL_MODE, COMPATIBLE_MODE
+COMPATIBILITY_PRESETS = "ORIGINAL_MODE"
+
+#It's advised to ONLY pick a COMPATIBILITY_PRESETS and not mess further with the configs.
+[compatibility_configs]
+
+	#[Unlocked by installing Mine and Slash Compatibility Addon]: Mine and Slash will be lighted, less invasive and work more like other vanilla-like mods. No more mobs with 1 million hp and so on.
+	[compatibility_configs.LITE_MODE]
+		#Bonus means mns dmg will act as bonus damage, while override means it will replace the vanilla damage. The Bonus mode requires installing the Compatibility Addon Mod
+		#Allowed Values: DAMAGE_OVERRIDE, DAMAGE_BONUS
+		DAMAGE_SYSTEM = "DAMAGE_BONUS"
+		#Vanilla means mns will add to your hearts, imaginary means mns won't add hearts but instead just scale damage based on mob's imaginary/mns hp
+		#Allowed Values: IMAGINARY_MINE_AND_SLASH_HEALTH, VANILLA_HEALTH
+		HEALTH_SYSTEM = "VANILLA_HEALTH"
+		DISABLE_VANILLA_HEALTH_REGEN = false
+		#When trying to attack on low energy, you will get slow and hunger.
+		ENERGY_PENALTY = false
+		IGNORE_WEAPON_REQUIREMENTS_FOR_SPELLS = true
+		#The balance datapack the game will use. Compat mode for example has lower stat scalings by default.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BALANCE_DATAPACK = "COMPAT_BALANCE"
+		#The player base stats datapack the game will use. Compat mode gives player less base stats for example.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BASE_STATS_DATAPACK = "COMPAT_BALANCE"
+		#Caps how much your items can be damaged in a single hit. This prevents items insta-breaking when you have high amounts of HP
+		#Range: 0 ~ 100
+		ITEM_DAMAGE_CAP_PER_HIT = 3
+		#Enables item damage cap. WARNING! Disabling this means your items will instantly break if you get hit by a high level mob
+		CAP_ITEM_DAMAGE = true
+		#By default you have a lot of free newbie resistances at the start but they go in minus upon reaching certain levels. Best disabled if playing without high level scaling.
+		ENABLE_MINUS_RESISTS_PER_LEVEL = false
+		#Range: 0.0 ~ 100.0
+		MOB_FLAT_DAMAGE_BONUS = 0.0
+		#Range: 0.0 ~ 100.0
+		MOB_PERCENT_DAMAGE_AS_BONUS = 0.33000001311302185
+		#Range: 0.0 ~ 100.0
+		STAT_REQUIREMENTS_MULTIPLIER = 0.10000000149011612
+		#Range: 0.0 ~ 100.0
+		SPELL_BASE_DAMAGE_MULTIPLIER = 2.0
+		DISABLE_MOB_IFRAMES = false
+		#This decides how much of the vanilla>mns converted damage is lost.
+		#Range: 0 ~ 100
+		DAMAGE_CONVERSION_LOSS = 0
+		#When dealing damage with ways Mine and Slash can't detect. For example you cast a spell from another mod, it does 5 vanilla damage, your VANILLA_TO_WEAPON_DAMAGE_PERCENT config is 10, so you end up dealing 50% weapon damage Mine and Slash damage.
+		#Range: 0.0 ~ 100.0
+		VANILLA_TO_WEAPON_DAMAGE_PERCENT = 10.0
+
+	#[Default Mine and Slash]: The Original mode, it makes it incompatible with some other mods, like spell mods and overrides damage fully. Makes balancing modpacks a lot easier at the cost of compatibility with some mods.
+	[compatibility_configs.ORIGINAL_MODE]
+		#Bonus means mns dmg will act as bonus damage, while override means it will replace the vanilla damage. The Bonus mode requires installing the Compatibility Addon Mod
+		#Allowed Values: DAMAGE_OVERRIDE, DAMAGE_BONUS
+		DAMAGE_SYSTEM = "DAMAGE_OVERRIDE"
+		#Vanilla means mns will add to your hearts, imaginary means mns won't add hearts but instead just scale damage based on mob's imaginary/mns hp
+		#Allowed Values: IMAGINARY_MINE_AND_SLASH_HEALTH, VANILLA_HEALTH
+		HEALTH_SYSTEM = "IMAGINARY_MINE_AND_SLASH_HEALTH"
+		DISABLE_VANILLA_HEALTH_REGEN = true
+		#When trying to attack on low energy, you will get slow and hunger.
+		ENERGY_PENALTY = false
+		IGNORE_WEAPON_REQUIREMENTS_FOR_SPELLS = false
+		#The balance datapack the game will use. Compat mode for example has lower stat scalings by default.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BALANCE_DATAPACK = "ORIGINAL_BALANCE"
+		#The player base stats datapack the game will use. Compat mode gives player less base stats for example.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BASE_STATS_DATAPACK = "ORIGINAL_BALANCE"
+		#Caps how much your items can be damaged in a single hit. This prevents items insta-breaking when you have high amounts of HP
+		#Range: 0 ~ 100
+		ITEM_DAMAGE_CAP_PER_HIT = 5
+		#Enables item damage cap. WARNING! Disabling this means your items will instantly break if you get hit by a high level mob
+		CAP_ITEM_DAMAGE = true
+		#By default you have a lot of free newbie resistances at the start but they go in minus upon reaching certain levels. Best disabled if playing without high level scaling.
+		ENABLE_MINUS_RESISTS_PER_LEVEL = true
+		#Range: 0.0 ~ 100.0
+		MOB_FLAT_DAMAGE_BONUS = 6.0
+		#Range: 0.0 ~ 100.0
+		MOB_PERCENT_DAMAGE_AS_BONUS = 0.33000001311302185
+		#Range: 0.0 ~ 100.0
+		STAT_REQUIREMENTS_MULTIPLIER = 1.0
+		#Range: 0.0 ~ 100.0
+		SPELL_BASE_DAMAGE_MULTIPLIER = 1.0
+		DISABLE_MOB_IFRAMES = true
+		#This decides how much of the vanilla>mns converted damage is lost.
+		#Range: 0 ~ 100
+		DAMAGE_CONVERSION_LOSS = 100
+		#When dealing damage with ways Mine and Slash can't detect. For example you cast a spell from another mod, it does 5 vanilla damage, your VANILLA_TO_WEAPON_DAMAGE_PERCENT config is 10, so you end up dealing 50% weapon damage Mine and Slash damage.
+		#Range: 0.0 ~ 100.0
+		VANILLA_TO_WEAPON_DAMAGE_PERCENT = 10.0
+
+	#[Unlocked by installing Mine and Slash Compatibility Addon]: Similar to the original mode, except spells from other mods will be converted to mine and slash damage and work.
+	[compatibility_configs.COMPATIBLE_MODE]
+		#Bonus means mns dmg will act as bonus damage, while override means it will replace the vanilla damage. The Bonus mode requires installing the Compatibility Addon Mod
+		#Allowed Values: DAMAGE_OVERRIDE, DAMAGE_BONUS
+		DAMAGE_SYSTEM = "DAMAGE_OVERRIDE"
+		#Vanilla means mns will add to your hearts, imaginary means mns won't add hearts but instead just scale damage based on mob's imaginary/mns hp
+		#Allowed Values: IMAGINARY_MINE_AND_SLASH_HEALTH, VANILLA_HEALTH
+		HEALTH_SYSTEM = "IMAGINARY_MINE_AND_SLASH_HEALTH"
+		DISABLE_VANILLA_HEALTH_REGEN = true
+		#When trying to attack on low energy, you will get slow and hunger.
+		ENERGY_PENALTY = true
+		IGNORE_WEAPON_REQUIREMENTS_FOR_SPELLS = false
+		#The balance datapack the game will use. Compat mode for example has lower stat scalings by default.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BALANCE_DATAPACK = "ORIGINAL_BALANCE"
+		#The player base stats datapack the game will use. Compat mode gives player less base stats for example.
+		#Allowed Values: ORIGINAL_BALANCE, COMPAT_BALANCE
+		BASE_STATS_DATAPACK = "ORIGINAL_BALANCE"
+		#Caps how much your items can be damaged in a single hit. This prevents items insta-breaking when you have high amounts of HP
+		#Range: 0 ~ 100
+		ITEM_DAMAGE_CAP_PER_HIT = 25
+		#Enables item damage cap. WARNING! Disabling this means your items will instantly break if you get hit by a high level mob
+		CAP_ITEM_DAMAGE = false
+		#By default you have a lot of free newbie resistances at the start but they go in minus upon reaching certain levels. Best disabled if playing without high level scaling.
+		ENABLE_MINUS_RESISTS_PER_LEVEL = true
+		#Range: 0.0 ~ 100.0
+		MOB_FLAT_DAMAGE_BONUS = 6.0
+		#Range: 0.0 ~ 100.0
+		MOB_PERCENT_DAMAGE_AS_BONUS = 0.33000001311302185
+		#Range: 0.0 ~ 100.0
+		STAT_REQUIREMENTS_MULTIPLIER = 1.0
+		#Range: 0.0 ~ 100.0
+		SPELL_BASE_DAMAGE_MULTIPLIER = 1.0
+		DISABLE_MOB_IFRAMES = true
+		#This decides how much of the vanilla>mns converted damage is lost.
+		#Range: 0 ~ 100
+		DAMAGE_CONVERSION_LOSS = 100
+		#When dealing damage with ways Mine and Slash can't detect. For example you cast a spell from another mod, it does 5 vanilla damage, your VANILLA_TO_WEAPON_DAMAGE_PERCENT config is 10, so you end up dealing 50% weapon damage Mine and Slash damage.
+		#Range: 0.0 ~ 100.0
+		VANILLA_TO_WEAPON_DAMAGE_PERCENT = 10.0
+

@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/0",
+          "weight": 500
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/1",
+          "weight": 250
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/2",
+          "weight": 100
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/3",
+          "weight": 60
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/4",
+          "weight": 30
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:keys/5",
+          "weight": 15
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_arch_key"
+}

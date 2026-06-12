@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "crafting",
+  "category": "equipment",
+  "pattern": [
+    " a ",
+    "aaa",
+    " b "
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:iron_ingot"
+    },
+    "b": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "roe_weapons:mace_0",
+    "count": 1
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "base_gear": "gauntlet",
+  "guid": "druidic_claw",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:wolf_claws",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "armor_penetration"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "bleed_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "proc_blood_explosion_bleed"
+    }
+  ],
+  "weight": 1000
+}

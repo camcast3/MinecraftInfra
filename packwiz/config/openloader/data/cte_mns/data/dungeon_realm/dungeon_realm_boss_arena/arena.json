@@ -1,0 +1,27 @@
+{
+  "id": "arena",
+  "possible_bosses": [
+	"minecraft:evoker",
+	"mutantmonsters:mutant_skeleton",
+	"mutantmonsters:mutant_zombie",
+	"friendsandfoes:wildfire",
+	"mutantmonsters:mutant_creeper",
+	"illagerinvasion:inquisitor",
+	"monsterplus:abyssologer",
+	"aquamirae:maw",
+	"riskofrain_mobs:stone_golem_entity",
+	"born_in_chaos_v1:dire_hound_leader",
+	"born_in_chaos_v1:bonescaller",
+	"born_in_chaos_v1:spirit_guide",
+	"born_in_chaos_v1:skeleton_thrasher"
+  ],
+  "structure": {
+    "rooms_folder": "dungeon_realm:map_boss/arena",
+    "size": 1,
+    "teleport_offset_x": 0,
+    "teleport_offset_y": 0,
+    "teleport_offset_z": 0
+  },
+  "size": 2,
+  "weight": 1000
+}

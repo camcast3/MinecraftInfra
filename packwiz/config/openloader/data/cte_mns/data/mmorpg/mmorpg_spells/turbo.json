@@ -1,0 +1,141 @@
+{
+  "attached": {
+    "entity_components": {},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.5,
+              "sound": "minecraft:block.enchantment_table.use",
+              "volume": 2.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 20.0,
+              "particle_type": "minecraft:sculk_soul",
+              "radius": 2.0
+            }
+          },
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 20.0,
+              "particle_type": "minecraft:witch",
+              "radius": 2.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "alpha",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": 120.0
+            }
+          },
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "beta",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": 120.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "spell_taunt"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 12.5,
+      "min": 16.5
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "magic",
+        "buff"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "turbo",
+  "loc_name": "Turbo",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 8,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [],
+  "weight": 1000
+}

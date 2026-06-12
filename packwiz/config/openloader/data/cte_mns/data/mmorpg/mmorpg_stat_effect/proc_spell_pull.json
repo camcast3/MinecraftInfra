@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_pull",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "pull",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

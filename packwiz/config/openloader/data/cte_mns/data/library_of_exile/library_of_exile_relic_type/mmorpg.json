@@ -1,0 +1,6 @@
+{
+  "id": "mmorpg",
+  "item_id": "mmorpg:relic",
+  "max_equipped": 3,
+  "weight": 3000
+}

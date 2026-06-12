@@ -1,0 +1,16 @@
+{
+  "id": "enlighten",
+  "manaMulti": 1.0,
+  "min_lvl": 40,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 3.0,
+      "stat": "bonus_exp"
+    }
+  ],
+  "style": "INT",
+  "weight": 0
+}

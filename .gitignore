@@ -17,3 +17,14 @@ checklist.md
 # the git commit so Portainer GitOps + PR 2's publish flow can keep the
 # server's mod manifest and the published client zip in lockstep.
 !docker/proxmox/.env
+
+# packwiz override files that exceed GitHub's 100 MB blob limit. Both
+# are CLIENT-side cosmetic assets shipped via the upstream CurseForge
+# zip's overrides/ (custom main-menu animation + custom resource-pack
+# ZIP). The server doesn't render either, so excluding them from the
+# packwiz manifest only affects the client install. Also excluded from
+# the packwiz index via packwiz/.packwizignore. PR 2's "publish Prism
+# client zip" flow will need to source these separately (Git LFS,
+# Release attachment, or download-at-build-time).
+packwiz/config/fancymenu/assets/mahj_1294853429_mainmenu.fma
+packwiz/config/openloader/resources/resources.zip

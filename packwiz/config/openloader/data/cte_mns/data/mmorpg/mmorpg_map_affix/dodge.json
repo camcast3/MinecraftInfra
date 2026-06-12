@@ -1,0 +1,23 @@
+{
+  "affected": "Mobs",
+  "id": "dodge",
+  "map_resist": "Physical",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "MORE",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "dodge"
+    },
+    {
+      "type": "MORE",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "spell_dodge"
+    }
+  ],
+  "weight": 1000
+}

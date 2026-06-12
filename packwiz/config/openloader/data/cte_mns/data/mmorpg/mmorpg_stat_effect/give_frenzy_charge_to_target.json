@@ -1,0 +1,7 @@
+{
+  "effect": "frenzy_charge",
+  "give_to": "Target",
+  "id": "give_frenzy_charge_to_target",
+  "seconds": 30,
+  "ser": "give_exile_effect"
+}

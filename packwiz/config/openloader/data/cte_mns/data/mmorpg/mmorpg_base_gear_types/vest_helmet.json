@@ -1,0 +1,76 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 3.75,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.5,
+      "min": 2.25,
+      "stat": "dodge"
+    }
+  ],
+  "gear_slot": "helmet",
+  "guid": "vest_helmet",
+  "possible_items": [
+    {
+      "item_id": "cte_essentials:cloth_0_helmet",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "cte_essentials:cloth_1_helmet",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "cte_essentials:cloth_2_helmet",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "cte_essentials:cloth_3_helmet",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "cte_essentials:cloth_4_helmet",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "cte_essentials:cloth_5_helmet",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "intelligence": 0.25,
+      "dexterity": 0.25
+    }
+  },
+  "style": "INT",
+  "tags": {
+    "tags": [
+      "armor_family",
+      "helmet",
+      "dodge_stat",
+      "dodge_stat_half",
+      "magic_shield_stat",
+      "magic_shield_stat_half",
+      "intelligence",
+	  "cloth_helmet",
+      "dexterity",
+	  "leather_helmet",
+	  "dual_stat",
+	  "vest"
+    ]
+  },
+  "weapon_type": "none",
+  "weight": 1000
+}

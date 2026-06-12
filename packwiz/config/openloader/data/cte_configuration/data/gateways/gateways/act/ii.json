@@ -1,0 +1,82 @@
+{
+	"size": "small",
+	"color": "#ff0000",
+	"waves": [{
+			"entities": [
+				{
+					"entity": "minecraft:piglin",
+					"count": 4
+				},
+				{
+					"entity": "minecraft:hoglin",
+					"count": 2
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "riskofrain_mobs:lemurian_entity",
+					"count": 3
+				},
+				{
+					"entity": "alexsmobs:crimson_mosquito",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "minecraft:wither_skeleton",
+					"count": 6
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "minecraft:blaze",
+					"count": 3
+				},
+				{
+					"entity": "realmrpg_wyrms:red_wyrm",
+					"count": 3
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1800,
+			"setup_time": 60
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 3,
+            "desc": "rewards.gateways.loot_table.drops"
+        },
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_net",
+            "rolls": 1,
+            "desc": "rewards.gateways.loot_table.net"
+        }
+    ],
+    "failures": [
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

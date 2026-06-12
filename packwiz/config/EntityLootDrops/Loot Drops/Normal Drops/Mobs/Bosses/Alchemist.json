@@ -1,0 +1,29 @@
+[
+  {
+    "entityId": "blue_skies:alchemist",
+    "itemId": "blue_skies:loot_bag_alchemist",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/alchemist/common\", Rarity: 0}",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:alchemist",
+    "itemId": "blue_skies:loot_bag_alchemist",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/alchemist/uncommon\", Rarity: 1}",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  },
+  {
+    "entityId": "blue_skies:alchemist",
+    "itemId": "blue_skies:loot_bag_alchemist",
+    "nbtData": "{LootTable: \"blue_skies:loot_bags/alchemist/rare\", Rarity: 2}",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requirePlayerKill": false
+  }
+]

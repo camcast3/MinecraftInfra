@@ -2,7 +2,6 @@
 # `packwiz update`. Don't commit them — the index.toml hashes are the
 # real source of truth, and the cache directory can be re-populated on
 # demand from the URLs in each mod's [download] block.
-.packwizignore
 .packwiz/
 .cache/
 

@@ -1,0 +1,64 @@
+
+[overlay]
+	#Range: 1000 ~ 300000
+	timeWindowMs = 10000
+	rollingWindowEnabled = true
+	#Range: 1 ~ 15
+	topNSources = 10
+	#Range: 0 ~ 10000
+	x = 153
+	#Range: 0 ~ 10000
+	y = 8
+	#Range: 120 ~ 1000
+	maxWidth = 300
+	#Range: 80 ~ 2000
+	maxHeight = 400
+	enabledByDefault = false
+
+[overlayBg]
+	enabled = true
+	#Range: > -2147483648
+	colorARGB = -10066330
+	#Range: 0 ~ 255
+	alpha = 255
+	#Range: 0 ~ 32
+	padding = 6
+
+[rowStyle]
+	#Range: 0 ~ 255
+	barAlpha = 200
+	#Range: 10 ~ 40
+	height = 14
+	#Range: 0 ~ 12
+	gap = 2
+	#Range: 2 ~ 40
+	valueGap = 8
+
+[capture]
+	requireSelfOnly = true
+	#Range: 0 ~ 1000
+	dedupeMs = 150
+	preferDealtOverApplied = true
+	#Range: 0 ~ 60000
+	idleFreezeMs = 1500
+
+[colors]
+	#Range: > -2147483648
+	physical = -23296
+	#Range: > -2147483648
+	fire = -65536
+	#Range: > -2147483648
+	lightning = -256
+	#Range: > -2147483648
+	cold = -10040065
+	#Range: > -2147483648
+	nature = -9511826
+	#Range: > -2147483648
+	shadow = -5085441
+	#Range: > -2147483648
+	holy = -3152
+	#Range: > -2147483648
+	multi = -7722014
+	#Range: > -2147483648
+	chaos = -8388480
+

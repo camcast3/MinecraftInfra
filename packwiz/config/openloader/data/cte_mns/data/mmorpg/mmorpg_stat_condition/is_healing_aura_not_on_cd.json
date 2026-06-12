@@ -1,0 +1,5 @@
+{
+  "cd_id": "healing_aura",
+  "id": "is_healing_aura_not_on_cd",
+  "ser": "is_not_on_cd"
+}

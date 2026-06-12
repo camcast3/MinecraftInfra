@@ -1,0 +1,17 @@
+{
+    "display": {
+      "icon": { "item": "minecraft:campfire" },
+      "title": { "text": "HarvestFix", "color": "red", "bold": true },
+      "background": "minecraft:textures/block/netherite_block.png",
+      "description": "",
+      "frame": "task",
+      "show_toast": true,
+      "announce_to_chat": false,
+      "hidden": true
+    },
+    "criteria": {
+      "grant": {
+        "trigger": "minecraft:impossible"
+      }
+    }
+  }

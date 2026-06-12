@@ -1,0 +1,369 @@
+{
+  "attached": {
+    "entity_components": {
+      "heat_remover": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "overheat",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 400.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 2.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 0.15
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 7.0,
+                "particle_type": "minecraft:snowflake",
+                "radius": 0.3
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Cold",
+				"disable_knockback": true,
+                "value_calculation": "iceball"
+              }
+            },
+          {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "slow",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 60.0
+              }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "bosses_of_mass_destruction:fluff",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 15.0,
+                "particle_type": "minecraft:snowflake",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_iceshard",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "mmorpg:projectile/snowball",
+              "life_ticks": 8.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 2.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "heat_remover",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "overheat"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "restore_mana",
+            "map": {
+              "value_calculation": "mage_restore"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "overheat"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+             {
+              "type": "particles_in_radius",
+              "map": {
+				"height": 0.5,
+                "motion": "None",
+                "particle_count": 10.0,
+                "particle_type": "bosses_of_mass_destruction:sparkles",
+                "radius": 0.5
+              }
+            }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "overheat"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "cast_finish"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "MAGE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 4.0,
+      "min": 3.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "projectile",
+      "damage",
+	  "magic",
+	  "cold",
+	  "cast_speed_to_cooldown"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "frostball",
+  "loc_name": "Ice Shard",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "freeze_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 64.0,
+      "min": 4.0,
+      "stat": "faster_projectiles"
+    }
+  ],
+  "weight": 1000
+}

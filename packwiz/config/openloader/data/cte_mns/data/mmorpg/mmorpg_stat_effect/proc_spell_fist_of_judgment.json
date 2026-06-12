@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_fist_of_judgment",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "fist_of_judgment",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

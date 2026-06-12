@@ -1,0 +1,32 @@
+{
+  "id": "end",
+  "item_id": "mmorpg:runes/end",
+  "min_lvl_multi": 0.55,
+  "on_armor_stats": [
+    {
+      "type": "FLAT",
+      "max": 7.0,
+      "min": 4.0,
+      "stat": "dmg_reduction_chance"
+    }
+  ],
+  "on_jewelry_stats": [
+    {
+      "type": "FLAT",
+      "max": 7.0,
+      "min": 4.0,
+      "stat": "dmg_reduction_chance"
+    }
+  ],
+  "on_weapons_stats": [
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 4.5,
+      "stat": "all_physical_damage"
+    }
+  ],
+  "tier": 4,
+  "uses_unlucky_ran": false,
+  "weight": 0
+}

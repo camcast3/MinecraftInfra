@@ -1,0 +1,30 @@
+{
+  "type": "gateways:gate_recipe",
+  "group": "gateways",
+  "pattern": [
+    "DED",
+    "GAG",
+    "BGB"
+  ],
+  "key": {
+    "D": {
+      "item": "undergarden:froststeel_ingot"
+    },
+	"E": {
+      "item": "undergarden:utherium_crystal"
+    },
+	"G": {
+      "item": "mmorpg:stone/4"
+    },
+	"A": {
+      "item": "minecraft:ender_eye"
+    },
+	"B": {
+      "item": "mowziesmobs:naga_fang"
+    }
+  },
+  "result": {
+    "item": "gateways:gate_pearl"
+  },
+  "gateway": "gateways:depths"
+}

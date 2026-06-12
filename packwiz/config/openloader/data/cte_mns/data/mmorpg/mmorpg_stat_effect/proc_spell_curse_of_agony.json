@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_curse_of_agony",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "curse_of_agony",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

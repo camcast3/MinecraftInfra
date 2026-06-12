@@ -1,0 +1,31 @@
+{
+  "exp": 475,
+  "id": "buff_potion_mythic_might0",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/0",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/5",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:redstone",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_emerald",
+      "num": 1
+	}
+  ],
+  "profession": "alchemy",
+  "result": "mmorpg:buff_potion/mythic_might",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 0
+}

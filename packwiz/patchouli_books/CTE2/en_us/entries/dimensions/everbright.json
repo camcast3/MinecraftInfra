@@ -1,0 +1,46 @@
+{
+    "name": "Everbright",
+    "icon": "blue_skies:everbright_portal",
+    "category": "patchouli:dimensions",
+	"sortnum":3,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lEverbright&r
+&n&6&lArea Level:&r&r    &n35 - 55 &r&r
+&n&6&lEnraged Area Level:&r &n65 - 85&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nAct IV;&r
+&n&6&lDimension gateways:&r  &nAct IV Gateway;
+&n&6&lDimension Bosses:&r &nSummoner; Starlit Crusher &r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": "$(br) It looks like this dimension is perpetual day but its always freezing.$(br) This dimension is home to lots of large thick-coated fauna.$(br) Plenty of snow and spirit like enemies can be found here especially during the snow as they prefer to roam during colder weather.$(br) You might find much more detailed information if you read the Blue Journal you got from a Gatekeeper."
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting into the Everbright",
+  "item": "blue_skies:zeal_lighter,blue_skies:turquoise_stonebrick",
+  "text": "If you are looking to get to this dimension you need to lay your hands on&n&l at least 10 Turquoise Stone Bricks and a Zeal Lighter obtained from a Gatekeeper &r.
+  &oCorner blocks are completely optional but they would grant &2+5 to Aestetics&r stat if it exsisted" 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"Everbright Portal",
+			"text": "Click on eye icon to visualize portal in game",
+            "multiblock": {
+    "pattern": [
+        [ "SOOS"],
+        [ "O  O"],
+        [ "O  O"],
+        [ "O 0O"],
+        [ "SOOS"]
+    ],
+    "mapping": {
+        "O": "blue_skies:turquoise_stonebrick",
+		"S": "#minecraft:mineable/pickaxe"
+    }
+}
+		}
+    ]
+}

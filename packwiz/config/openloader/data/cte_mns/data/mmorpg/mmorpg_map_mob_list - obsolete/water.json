@@ -1,0 +1,400 @@
+{
+  "id": "water",
+  "mobs": [
+    {
+      "type": "minecraft:blaze",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "ranged",
+          "fire"
+        ]
+      },
+      "weight": 25
+    },
+    {
+      "type": "minecraft:zombie",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 750
+    },
+    {
+      "type": "minecraft:skeleton",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "ranged",
+          "undead"
+        ]
+      },
+      "weight": 350
+    },
+    {
+      "type": "minecraft:endermite",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 50
+    },
+    {
+      "type": "minecraft:cave_spider",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "spider"
+        ]
+      },
+      "weight": 125
+    },
+    {
+      "type": "minecraft:spider",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "spider"
+        ]
+      },
+      "weight": 250
+    },
+    {
+      "type": "minecraft:pillager",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "ranged"
+        ]
+      },
+      "weight": 250
+    },
+    {
+      "type": "minecraft:witch",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "ranged"
+        ]
+      },
+      "weight": 100
+    },
+    {
+      "type": "minecraft:vindicator",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125
+    },
+    {
+      "type": "minecraft:slime",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 5
+    },
+    {
+      "type": "minecraft:evoker",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 25
+    },
+    {
+      "type": "minecraft:husk",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 500
+    },
+    {
+      "type": "minecraft:stray",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "ranged",
+          "undead"
+        ]
+      },
+      "weight": 250
+    },
+    {
+      "type": "mutantmonsters:mutant_skeleton",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "ranged",
+          "undead"
+        ]
+      },
+      "weight": 25
+    },
+    {
+      "type": "mutantmonsters:mutant_zombie",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 25
+    },
+    {
+      "type": "twilightforest:blockchain_goblin",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125	
+    },
+    {
+      "type": "twilightforest:redcap",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125
+    },
+    {
+      "type": "twilightforest:redcap_sapper",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125	
+    },
+    {
+      "type": "twilightforest:troll",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 25	
+    },
+    {
+      "type": "twilightforest:minotaur",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 25	
+    },
+    {
+      "type": "aquamirae:tortured_soul",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 250
+    },
+    {
+      "type": "aquamirae:maw",
+      "canBeBoss": true,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125
+    },
+    {
+      "type": "blue_skies:armored_frost_spirit",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 250
+    },
+    {
+      "type": "blue_skies:crynocerous",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125
+    },
+    {
+      "type": "blue_skies:diophyde_prowler",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 125
+    },
+    {
+      "type": "blue_skies:polargeist",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 125
+    },
+    {
+      "type": "minecraft:stray",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "ranged",
+          "undead"
+        ]
+      },
+      "weight": 350
+    },
+    {
+      "type": "minecraft:drowned",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 500
+    },
+    {
+      "type": "riskofrain_mobs:stone_golem_entity",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "ranged"
+        ]
+      },
+      "weight": 25
+    },
+    {
+      "type": "twilightforest:winter_wolf",
+      "canBeBoss": false,
+      "tags": {
+        "tags": []
+      },
+      "weight": 250	
+    },
+    {
+      "type": "twilightforest:snow_guardian",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 25	
+    },
+    {
+      "type": "born_in_chaos_v1:barrel_zombie",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 125	
+    },
+    {
+      "type": "born_in_chaos_v1:dread_hound",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 125	
+    },
+    {
+      "type": "born_in_chaos_v1:decrepit_skeleton",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 125	
+    },
+    {
+      "type": "born_in_chaos_v1:door_knight",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 125
+    },
+    {
+      "type": "born_in_chaos_v1:fallen_chaos_knight",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 25	
+    },
+    {
+      "type": "born_in_chaos_v1:skeleton_thrasher",
+      "canBeBoss": true,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 25	
+    },
+    {
+      "type": "born_in_chaos_v1:zombie_bruiser",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 50	
+    },
+    {
+      "type": "born_in_chaos_v1:zombie_clown",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 50	
+    },
+    {
+      "type": "born_in_chaos_v1:zombie_fisherman",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 50	
+    },
+    {
+      "type": "born_in_chaos_v1:zombie_lumberjack",
+      "canBeBoss": false,
+      "tags": {
+        "tags": [
+          "undead"
+        ]
+      },
+      "weight": 50	
+    }
+  ],
+  "possible_dungeon_tags": {
+    "tags": [
+      "water"
+    ]
+  },
+  "weight": 1000
+}

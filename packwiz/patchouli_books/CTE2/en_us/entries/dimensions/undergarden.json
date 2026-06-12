@@ -1,0 +1,46 @@
+{
+    "name": "Undergarden",
+    "icon": "undergarden:catalyst",
+    "category": "patchouli:dimensions",
+	"sortnum":2,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lUndergarden&r
+&n&6&lArea Level:&r&r    &n25 - 40 &r&r
+&n&6&lEnraged Area Level:&r &n60 - 80&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nAct III;&r
+&n&6&lDimension gateways:&r  &nAct III Gateway;
+&n&6&lDimension Bosses:&r &nFerrous Wroughtnaut; Umvuthi, the Sunbird; Tongbi, the Sculptor; Forgotten Guardian; Eel &r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": " Dimension that is as wet and moist as overworld swamps but feels more claustrophobic and gross.$(br) Creatures here seem to be some kind of mutated rotting beasts after being affected by some virulent liquid that burns when touched. I've managed to find some traces of massive Knights and Guardians each having their own structure.$(br) It seems there is also a cult of strange masked creatures that are somewhat resistant to magic damage, so travelers should be careful around them."
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting into the Undergarden",
+  "item": "undergarden:catalyst,minecraft:stone_bricks",
+  "text": "If you are looking to get to this dimension you need to lay your hands on&n&l at least 10 Stone Bricks and a Catalyst crafted from a Nether star (check recipe in EMI/JEI)&r.
+  &oCorner blocks are completely optional but they would grant &2+5 to Aestetics&r stat if it exsisted" 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"Undergarden Portal",
+			"text": "Click on eye icon to visualize portal in game",
+            "multiblock": {
+    "pattern": [
+        [ "SOOS"],
+        [ "O  O"],
+        [ "O  O"],
+        [ "O 0O"],
+        [ "SOOS"]
+    ],
+    "mapping": {
+        "O": "minecraft:stone_bricks",
+		"S": "#minecraft:mineable/pickaxe"
+    }
+}
+		}
+    ]
+}

@@ -1,0 +1,13 @@
+name = "MC VR API"
+filename = "vrapi-3.0.12-1.20.1-forge.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "5a6e7327628fc23d7ea8f91ef0ed9abf0d52a86f"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6061309
+project-id = 591092

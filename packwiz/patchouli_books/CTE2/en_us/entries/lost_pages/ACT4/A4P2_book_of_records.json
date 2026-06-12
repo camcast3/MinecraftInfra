@@ -1,0 +1,19 @@
+{
+    "name": "Book of Records",
+    "icon": "mmorpg:omen",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":18,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 65FD2E8334B1DF1C)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eThe &eCodex&r is an accessory/gear item that you can equip, which starts dropping at level 50. The &eCodex&r provides powerful stats to the player depending on the diversity of gear equipped.
+
+The bottom lists the requirements, such as: having 2 &cUniques&r, 1 piece of Normal gear (&7Common&r -> &5Mythic&r), and 2 &eRunewords&r equipped.
+
+"},
+{            "type": "patchouli:spotlight",
+  "item": "mmorpg:omen",
+            "text": " Depending on the number of these you have equipped, the &eCodex&r provides more stats which can be seen in the tooltip."
+		}
+    ]
+}

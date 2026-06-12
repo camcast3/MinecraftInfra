@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:ender_eye"
+    },
+    {
+      "item": "deeperdarker:soul_crystal"
+    }
+  ],
+  "result": {
+    "item": "bosses_of_mass_destruction:soul_star"
+  }
+}

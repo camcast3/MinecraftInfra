@@ -1,0 +1,21 @@
+{
+  "id": "obelisk_amethyst_library",
+  "mob_list_tag_check": {
+    "checks": [
+      {
+        "check": "HAS_ANY",
+        "tags": [
+          "obelisk"
+        ]
+      }
+    ]
+  },
+  "structure_data": {
+    "rooms_folder": "ancient_obelisks:obelisk/amethyst_library",
+    "size": 1,
+    "teleport_offset_x": -4,
+    "teleport_offset_y": 2,
+    "teleport_offset_z": 8
+  },
+  "weight": 1000
+}

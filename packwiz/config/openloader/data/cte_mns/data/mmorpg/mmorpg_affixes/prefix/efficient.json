@@ -1,0 +1,29 @@
+{
+  "type": "prefix",
+  "eye_aura_req": "",
+  "guid": "efficient",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "staff",
+		  "sword"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": -10.0,
+      "min": -2.0,
+      "stat": "mana_cost"
+    }
+  ],
+  "weight": 1000
+}

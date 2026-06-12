@@ -1,0 +1,29 @@
+{
+  "type": "jewel",
+  "eye_aura_req": "",
+  "guid": "jewel_energy",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "jewel_str",
+          "jewel_dex"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 7.5,
+      "min": 1.5,
+      "stat": "energy"
+    }
+  ],
+  "weight": 1000
+}

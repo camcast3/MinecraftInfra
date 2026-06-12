@@ -1,0 +1,9 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "undergarden:underbeans": {
+            "next": "undergarden:roasted_underbeans",
+            "stage": "COOKED"
+        }
+    }
+}

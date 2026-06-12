@@ -1,0 +1,31 @@
+{
+  "exp": 350,
+  "id": "seafood_legendary_exp2",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/2",
+      "num": 5
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:tropical_fish",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/4",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_gold",
+      "num": 1
+	}
+  ],
+  "set_tier_nbt": true,
+  "profession": "cooking",
+  "result": "mmorpg:seafood/legendary_exp",
+  "result_num": 1,
+  "tier": 2
+}

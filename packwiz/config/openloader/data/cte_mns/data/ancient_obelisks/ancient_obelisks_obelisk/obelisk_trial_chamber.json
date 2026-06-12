@@ -1,0 +1,21 @@
+{
+  "id": "obelisk_trial_chamber",
+  "mob_list_tag_check": {
+    "checks": [
+      {
+        "check": "HAS_ANY",
+        "tags": [
+          "obelisk"
+        ]
+      }
+    ]
+  },
+  "structure_data": {
+    "rooms_folder": "ancient_obelisks:obelisk/trial_chamber",
+    "size": 2,
+    "teleport_offset_x": 34,
+    "teleport_offset_y": 1,
+    "teleport_offset_z": 16
+  },
+  "weight": 1000
+}

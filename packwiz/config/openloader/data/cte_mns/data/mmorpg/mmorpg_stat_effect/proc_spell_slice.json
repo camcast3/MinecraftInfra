@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_slice",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "slice",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

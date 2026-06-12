@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "endersdelight:steak_fries",
+      "required": false
+    },
+    {
+      "id": "endersdelight:veil_of_flames_risotto",
+      "required": false
+    },
+    {
+      "id": "nethersdelight:magma_gelatin",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_platter",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_with_seafood",
+      "required": false
+    },
+    {
+      "id": "projectvibrantjourneys:nettle_soup",
+      "required": false
+    }
+  ]
+}

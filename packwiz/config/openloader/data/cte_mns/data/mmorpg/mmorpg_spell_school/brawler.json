@@ -1,0 +1,118 @@
+{
+  "id": "brawler",
+  "lvl_reqs": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "perks": {
+    "fury": {
+      "x": 1,
+      "y": 0
+    },
+    "zen": {
+      "x": 1,
+      "y": 3
+    },
+    "eighth_gate": {
+      "x": 1,
+      "y": 6
+    },
+    "piercing_strike": {
+      "x": 3,
+      "y": 0
+    },
+    "debilitating_blow": {
+      "x": 3,
+      "y": 1
+    },
+    "goading_strike": {
+      "x": 3,
+      "y": 2
+    },
+    "elemental_assault": {
+      "x": 3,
+      "y": 3
+    },
+    "sweeping_blow": {
+      "x": 3,
+      "y": 4
+    },
+    "triple_blitz": {
+      "x": 4,
+      "y": 1
+    },
+    "rallying_sweep": {
+      "x": 4,
+      "y": 2
+    },
+    "anti_gravity_smash": {
+      "x": 4,
+      "y": 3
+    },
+    "flowing_river_rush": {
+      "x": 4,
+      "y": 4
+    },
+    "spirit_offensive": {
+      "x": 4,
+      "y": 5
+    },
+    "raging_dragon": {
+      "x": 5,
+      "y": 2
+    },
+    "glacial_phoenix": {
+      "x": 5,
+      "y": 3
+    },
+    "storming_tiger": {
+      "x": 5,
+      "y": 4
+    },
+    "omnislash": {
+      "x": 5,
+      "y": 5
+    },
+    "asura": {
+      "x": 5,
+      "y": 6
+    },
+    "p_attack_speed_bwl": {
+      "x": 8,
+      "y": 1
+    },
+    "p_energy_bwl": {
+      "x": 9,
+      "y": 1
+    },
+    "p_roll_cooldown_bwl": {
+      "x": 8,
+      "y": 2
+    },
+    "p_melee_damage_bwl": {
+      "x": 8,
+      "y": 3
+    },
+    "p_proc_combo_starter_bwl": {
+      "x": 8,
+      "y": 4
+    },
+    "p_elemental_resist_bwl": {
+      "x": 9,
+      "y": 4
+    },
+    "p_health_bwl": {
+      "x": 8,
+      "y": 5
+    },
+    "p_inc_aoe_bwl": {
+      "x": 8,
+      "y": 6
+    }
+  }
+}

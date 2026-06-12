@@ -1,0 +1,18 @@
+{
+    "entries": [
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                    "item": "alexsmobs:banana_slug_slime"
+                },
+            "max_time": 320,
+            "min_time": 80,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 1,
+            "stir_time": 60
+        }
+    ]
+}

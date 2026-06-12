@@ -1,0 +1,29 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_helmet_chaos_pen_flat",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "helmet"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 6,
+      "min": 2,
+      "stat": "chaos_penetration"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,15 @@
+{
+  "type": "blue_skies:catylist",
+  "blacklist": [
+    "moresnifferflowers:corrupted_sapling"
+  ],
+  "catylists": [
+    "minecraft:echo_shard"
+  ],
+  "input_tags": [
+    "minecraft:saplings"
+  ],
+  "results_tags": [
+    "minecraft:saplings"
+  ]
+}

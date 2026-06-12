@@ -1,0 +1,27 @@
+{
+  "base_gear": "plate_chest",
+  "guid": "kaoms_heart",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 90,
+  "min_tier": 100,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "health"
+    }
+  ],
+  "weight": 250
+}

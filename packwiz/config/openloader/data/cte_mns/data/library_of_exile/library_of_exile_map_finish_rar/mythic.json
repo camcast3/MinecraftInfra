@@ -1,0 +1,9 @@
+{
+  "id": "mythic",
+  "loot_table": "library_of_exile:chests/tier_5_dungeon",
+  "mns_loot_multi": 4.75,
+  "perc_to_unlock": 75,
+  "reward_chests": 4,
+  "text_format": "DARK_PURPLE",
+  "tier": 5
+}

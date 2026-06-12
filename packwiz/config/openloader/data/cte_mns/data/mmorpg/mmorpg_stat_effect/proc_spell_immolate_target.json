@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_immolate_target",
+  "pos": "TARGET",
+  "ser": "proc_spell",
+  "spellId": "immolate",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

@@ -1,0 +1,7 @@
+{
+  "effect": "pants_resource_cost",
+  "give_to": "Target",
+  "id": "give_pants_resource_cost_to_target",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

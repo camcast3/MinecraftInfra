@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/passives/p_roll_cooldown_bwl.png",
+  "id": "p_roll_cooldown_bwl",
+  "is_entry": false,
+  "max_lvls": 8,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "roll_cooldown",
+      "v1": 3.0
+    }
+  ]
+}

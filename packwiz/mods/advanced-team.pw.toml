@@ -1,0 +1,13 @@
+name = "Advanced Team"
+filename = "Advanced Team-forge-1.20.1-1.4.6.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/7150/558/Advanced%20Team-forge-1.20.1-1.4.6.jar"
+hash-format = "sha1"
+hash = "8c5e995082b95e494550f1199715402a6e63166c"
+
+[update]
+[update.curseforge]
+file-id = 7150558
+project-id = 1190555

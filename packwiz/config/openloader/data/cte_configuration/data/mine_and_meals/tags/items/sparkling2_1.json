@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:mint_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:chicken_curry",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveil_stew",
+      "required": false
+    },
+    {
+      "id": "botania:mana_cookie",
+      "required": false
+    }
+  ]
+}

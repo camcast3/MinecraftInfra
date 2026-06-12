@@ -1,0 +1,5 @@
+{
+  "id": "increase_energy_cost_num",
+  "num_id": "energy_cost",
+  "ser": "increase_number"
+}

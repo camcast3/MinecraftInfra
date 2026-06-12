@@ -1,0 +1,74 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 4.0,
+      "stat": "weapon_damage"
+    },
+	{
+	  "type": "FLAT",
+	  "max": 1.0,
+	  "min": 1.0,
+	  "stat": "learn_bolt"
+	},
+	{
+	  "type": "FLAT",
+	  "max": 4.0,
+	  "min": 2.0,
+	  "stat": "mana_on_bolt_hit"
+	}
+  ],
+  "gear_slot": "staff",
+  "guid": "staff",
+  "possible_items": [
+    {
+      "item_id": "roe_weapons:staff_0",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "roe_weapons:staff_1",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "roe_weapons:staff_2",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "roe_weapons:staff_3",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "roe_weapons:staff_4",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "roe_weapons:staff_5",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "intelligence": 0.4
+    }
+  },
+  "style": "INT",
+  "tags": {
+    "tags": [
+      "mage_weapon",
+      "staff",
+      "weapon_family",
+      "melee_weapon",
+      "intelligence"
+    ]
+  },
+  "weapon_type": "staff",
+  "weight": 1000
+}

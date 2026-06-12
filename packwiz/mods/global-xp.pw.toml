@@ -1,0 +1,13 @@
+name = "Global XP"
+filename = "globalxp-forge-1.20.1-1.12.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "4002f17959290ccbe3869707f3d516d151ffb284"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5644158
+project-id = 268647

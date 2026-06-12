@@ -1,0 +1,11 @@
+[
+  {
+    "entityId": "minecraft:disabled",
+    "itemId": "minecraft:jack_o_lantern",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "_comment": "Halloween event jack o lantern from zombie",
+    "requirePlayerKill": true
+  }
+]

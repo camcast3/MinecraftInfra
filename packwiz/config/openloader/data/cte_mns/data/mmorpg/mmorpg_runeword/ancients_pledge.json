@@ -1,0 +1,39 @@
+{
+  "id": "ancients_pledge",
+  "runes": [
+    "cen",
+    "mos",
+    "dos"
+  ],
+  "slots": [
+    "shield",
+	"tome",
+	"totem"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 22.0,
+      "min": 22.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 27.0,
+      "min": 27.0,
+      "stat": "chaos_resist"
+    },
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "mana_regen"
+    }
+  ]
+}

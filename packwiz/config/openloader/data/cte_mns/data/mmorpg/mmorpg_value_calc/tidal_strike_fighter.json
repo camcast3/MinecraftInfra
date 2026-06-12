@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 1.125,
+    "min": 0.25
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 0.575,
+      "min": 0.4025
+    },
+    "stat": "health"
+  },
+  "id": "tidal_strike_fighter",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 0.575,
+        "min": 0.4025
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+
+#Enchantment Configuration for RoeWeapons
+[enchantments]
+
+	[enchantments."Lightning Strike"]
+		#Enable Lightning Strike enchantment
+		enabled = true
+		#Chance for lightning strike at level 1 (0.0-1.0)
+		#Range: 0.0 ~ 1.0
+		chanceLevelOne = 0.075
+		#Chance for lightning strike at level 2 (0.0-1.0)
+		#Range: 0.0 ~ 1.0
+		chanceLevelTwo = 0.1
+		#Chance for lightning strike at level 3 (0.0-1.0)
+		#Range: 0.0 ~ 1.0
+		chanceLevelThree = 0.125
+		#Durability damage dealt to weapon when lightning strikes
+		#Range: 0 ~ 10
+		durabilityDamage = 2
+
+		[enchantments."Lightning Strike"."AOE Settings"]
+			#Enable AOE damage from lightning strikes
+			aoeEnabled = true
+			#Area of effect radius for lightning strike damage
+			#Range: 0.0 ~ 10.0
+			aoeRadius = 3.0
+			#Base damage dealt to entities within AOE radius
+			#Range: 0.0 ~ 20.0
+			aoeDamage = 6.0
+
+		[enchantments."Lightning Strike"."Fire Settings"]
+			#Base fire duration in seconds for target
+			#Range: 0 ~ 30
+			fireDurationBase = 5
+			#Additional fire duration per enchantment level
+			#Range: 0 ~ 10
+			fireDurationPerLevel = 2
+			#Fire duration for AOE targets
+			#Range: 0 ~ 15
+			aoeFireDuration = 3
+

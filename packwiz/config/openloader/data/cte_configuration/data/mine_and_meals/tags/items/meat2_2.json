@@ -1,0 +1,37 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:hot_dog",
+      "required": false
+    },
+    {
+      "id": "twilightforest:hydra_chop",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:crab_cakes",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_bake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:seafood_gumbo",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:roasted_mutton_chops",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_crab",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_clawster",
+      "required": false
+    }
+  ]
+}

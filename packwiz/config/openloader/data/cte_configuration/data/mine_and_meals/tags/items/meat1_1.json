@@ -1,0 +1,117 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:stalker_meat",
+      "required": false
+    },
+    {
+      "id": "outer_end:cured_jerky",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:stuffed_cod",
+      "required": false
+    },
+    {
+      "id": "undergarden:raw_dweller_meat",
+      "required": false
+    },
+    {
+      "id": "undergarden:raw_gloomper_leg",
+      "required": false
+    },
+    {
+      "id": "undergarden:blood_globule",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:dweller_meat_slice",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:ham",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:blood_tomato_soup",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:white_puffball_cap",
+      "required": false
+    },
+    {
+      "id": "blue_skies:carabeef",
+      "required": false
+    },
+    {
+      "id": "blue_skies:venison",
+      "required": false
+    },
+    {
+      "id": "blue_skies:monitor_tail",
+      "required": false
+    },
+    {
+      "id": "twilightforest:raw_venison",
+      "required": false
+    },
+    {
+      "id": "twilightforest:raw_meef",
+      "required": false
+    },
+    {
+      "id": "endersdelight:mite_crust",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crispy_skewer",
+      "required": false
+    },
+    {
+      "id": "endersdelight:veil_of_flames_risotto",
+      "required": false
+    },
+    {
+      "id": "chococraft:chocobo_drumstick_raw",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:raw_frog_leg",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:corpse_maggot",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:monster_flesh",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:gummy_vampire_teeth",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:small_turtle_meat",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:scarlet_pierogi",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:jerky",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:raw_gloomper_cuts",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coconut_halve",
+      "required": false
+    }
+  ]
+}

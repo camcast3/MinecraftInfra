@@ -1,0 +1,69 @@
+{
+  "base_gear": "scythe",
+  "guid": "zazzith_curse_of_the_restless_dead",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:cursed_scythe",
+  "league": "prophecy",
+  "min_drop_lvl": 70,
+  "min_tier": 1,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 80.0,
+      "min": 70.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "proc_cursed_summon_zombie_on_kill"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "spirit_on_kill"
+    },
+    {
+      "type": "MORE",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "summon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "summon_undead_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "summon_duration"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "PERCENT",
+      "max": -15.0,
+      "min": -15.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "PERCENT",
+      "max": -15.0,
+      "min": -15.0,
+      "stat": "magic_shield_regen"
+    }
+  ],
+  "weight": 1000
+}

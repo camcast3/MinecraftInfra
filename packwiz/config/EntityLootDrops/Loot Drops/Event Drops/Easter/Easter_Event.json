@@ -1,0 +1,12 @@
+[
+  {
+	"_comment": "Easter Drop Event",
+    "itemId": "simplehats:hatscraps_easter",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "command": "summon minecraft:rabbit {entity_x} {entity_y} {entity_z}",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  }
+]

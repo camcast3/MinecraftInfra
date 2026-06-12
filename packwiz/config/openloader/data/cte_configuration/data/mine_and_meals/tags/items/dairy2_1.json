@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:oyakodon",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:pale_jane",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:kombucha",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coconut_pudding",
+      "required": false
+    }
+  ]
+}

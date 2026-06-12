@@ -1,0 +1,20 @@
+{
+  "id": "dodge",
+  "min_lvl": 10,
+  "reservation": 0.4,
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 40.0,
+      "min": 8.0,
+      "stat": "dodge"
+    },
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 1.5,
+      "stat": "dodge"
+    }
+  ],
+  "style": "DEX"
+}

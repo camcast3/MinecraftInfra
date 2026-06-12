@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "X": {
+      "item": "mmorpg:stone/3"
+    },
+    "Y": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    " X ",
+    "YYY",
+    "YYY"
+  ],
+  "result": {
+    "count": 8,
+    "item": "dungeon_realm:home_pearl"
+  },
+  "show_notification": true
+}

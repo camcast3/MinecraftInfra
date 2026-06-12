@@ -1,0 +1,62 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergarden:meat_with_seafood",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:depth_shroom_cream_soup",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:mogsteak",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:glitterwrap",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gronglet_roll",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:white_puffball_stew",
+      "required": false
+    },
+    {
+      "id": "endersdelight:steak_fries",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chicken_curry",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:surf_and_turf",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:frog_leg_kebob",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:pasta_with_mutton_chop",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:bacon_and_eggs",
+      "required": false
+    },
+    {
+      "id": "corn_delight:classic_corn_dog",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:horror_lasagna",
+      "required": false
+    }
+  ]
+}
+

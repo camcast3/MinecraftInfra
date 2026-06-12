@@ -1,0 +1,12 @@
+[
+  {
+    "catchId": "stardew_fishing:sabretoothed_tigerfish",
+    "itemId": "lightmanscurrency:coin_emerald",
+    "dropChance": 100.0,
+    "minAmount": 1,
+    "maxAmount": 5,
+    "dropCommand": "mine_and_slash give prof_xp_times_lvl {player} fishing 2000",
+    "dropCommandChance": 100.0,
+    "comment": "Get extra coins and lots of bonus experience for catching legendary fish!"
+  }
+]

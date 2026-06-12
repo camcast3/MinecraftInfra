@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "crafting",
+  "category": "equipment",
+  "pattern": [
+    "  a",
+    " a ",
+    "b  "
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:iron_block"
+    },
+    "b": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "result": {
+    "item": "roe_weapons:greatsword_0",
+    "count": 1
+  }
+}

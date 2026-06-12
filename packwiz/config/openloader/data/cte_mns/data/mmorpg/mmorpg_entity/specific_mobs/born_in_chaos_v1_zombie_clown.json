@@ -1,0 +1,28 @@
+{
+  "dmg_multi": 1.0,
+  "exp_multi": 1.0,
+  "hp_multi": 1.0,
+  "identifier": "born_in_chaos_v1:zombie_clown",
+  "loot_multi": 1.0,
+  "max_lvl": 1000000,
+  "min_lvl": 1,
+  "set_health_damage_override": false,
+  "set_rar": "",
+  "stat_multi": 1.0,
+  "stats": {
+    "stats": [
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 25.0,
+        "stat": "phys_to_chaos"
+      },
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 75.0,
+        "stat": "chaos_resist"
+      }
+	]
+  }
+}

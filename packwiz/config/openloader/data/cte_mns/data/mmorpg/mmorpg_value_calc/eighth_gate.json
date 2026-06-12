@@ -1,0 +1,33 @@
+{
+  "base": {
+    "max": 0.0,
+    "min": 0.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 0.1,
+      "min": 0.1
+    },
+    "stat": "health"
+  },
+  "id": "eighth_gate",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 0.1,
+        "min": 0.1
+      },
+      "stat": "weapon_damage"
+    },
+    {
+      "multi": {
+        "max": 0.175,
+        "min": 0.35
+      },
+      "stat": "health"
+    }
+  ]
+}

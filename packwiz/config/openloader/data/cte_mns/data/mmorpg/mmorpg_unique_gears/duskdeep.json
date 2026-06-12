@@ -1,0 +1,45 @@
+{
+  "base_gear": "plate_helmet",
+  "guid": "duskdeep",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 55.0,
+      "min": 45.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "flat",
+      "max": 13.0,
+      "min": 9.0,
+      "stat": "health"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "lightning_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": -35.0,
+      "min": -25.0,
+      "stat": "proj_dmg_received"
+    }
+  ],
+  "weight": 1000
+}

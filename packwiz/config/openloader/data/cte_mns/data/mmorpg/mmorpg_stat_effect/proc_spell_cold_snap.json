@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_cold_snap",
+  "pos": "TARGET",
+  "ser": "proc_spell",
+  "spellId": "cold_snap",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

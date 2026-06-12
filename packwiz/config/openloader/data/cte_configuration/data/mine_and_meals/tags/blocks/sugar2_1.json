@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "amendments:double_cake",
+      "required": false
+    },
+    {
+      "id": "amendments:directional_cake"
+    }
+  ]
+}

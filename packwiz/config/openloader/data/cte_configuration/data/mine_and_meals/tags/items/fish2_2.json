@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:poseidons_breakfast",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_platter",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_bake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:seafood_gumbo",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:bowl_of_guardian_soup",
+      "required": false
+    }
+  ]
+}

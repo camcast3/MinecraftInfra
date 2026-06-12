@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "amendments:double_cake",
+      "required": false
+    },
+    {
+      "id": "amendments:directional_cake"
+    },
+    {
+      "id": "blue_skies:comet_berry_pie",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie_slice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:magical_holiday_candy",
+      "required": false
+    }
+  ]
+}

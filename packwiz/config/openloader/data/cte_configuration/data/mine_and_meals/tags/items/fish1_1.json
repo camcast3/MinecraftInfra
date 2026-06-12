@@ -1,0 +1,109 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:spinefish",
+      "required": false
+    },
+    {
+      "id": "aquamirae:fin",
+      "required": false
+    },
+    {
+      "id": "doggytalents:salmon_sushi",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:tentacles",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cut_tentacles",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:tentacle_on_a_stick",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:elder_guardian_slice",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:fugu_slice",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:braised_sea_pickle",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:stuffed_cod",
+      "required": false
+    },
+    {
+      "id": "undergarden:raw_gwibling",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:raw_gwibling_fillet",
+      "required": false
+    },
+    {
+      "id": "blue_skies:grittle_flatfish",
+      "required": false
+    },
+    {
+      "id": "blue_skies:municipal_monkfish",
+      "required": false
+    },
+    {
+      "id": "blue_skies:charscale_moki",
+      "required": false
+    },
+    {
+      "id": "blue_skies:horizofin_tunid",
+      "required": false
+    },
+    {
+      "id": "endersdelight:shulker_mollusk",
+      "required": false
+    },
+    {
+      "id": "endersdelight:shulker_filet",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:raw_clam_meat",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:raw_squid_tentacles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:raw_glow_squid_tentacles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:tropical_fish_slice",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:sea_pickle_juice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:rotten_fish",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:turtle_soup",
+      "required": false
+    },
+    {"id":"crabbersdelight:crab","required":false },
+    {"id":"crabbersdelight:clawster","required":false },
+    {"id":"crabbersdelight:shrimp","required":false },
+    {"id":"crabbersdelight:clam_meat","required":false }                      
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_necklace_all_percent",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "necklace"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 6.0,
+      "min": 2.0,
+      "stat": "all_attributes"
+    }
+  ],
+  "weight": 1000
+}

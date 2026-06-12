@@ -1,0 +1,71 @@
+{
+  "id": "obelisk",
+  "mobs": [
+    {
+      "mob_id": "minecraft:blaze",
+      "weight": 25
+    },
+    {
+      "mob_id": "minecraft:zombie",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:skeleton",
+      "weight": 350
+    },
+    {
+      "mob_id": "minecraft:endermite",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:cave_spider",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:spider",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:pillager",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:witch",
+      "weight": 100
+    },
+    {
+      "mob_id": "minecraft:vindicator",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:slime",
+      "weight": 5
+    },
+    {
+      "mob_id": "minecraft:evoker",
+      "weight": 25
+    },
+    {
+      "mob_id": "minecraft:husk",
+      "weight": 500
+    },
+    {
+      "mob_id": "minecraft:stray",
+      "weight": 250
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_skeleton",
+      "weight": 25
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_zombie",
+      "weight": 25
+    }
+  ],
+  "tags": {
+    "tags": [
+      "obelisk"
+    ]
+  },
+  "weight": 1000
+}

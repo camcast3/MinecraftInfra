@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 2.25,
+    "min": 0.5
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.145,
+      "min": 1.5015
+    },
+    "stat": "health"
+  },
+  "id": "fire_nova",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.145,
+        "min": 1.5015
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

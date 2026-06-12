@@ -1,0 +1,57 @@
+{
+  "base_gear": "vest_helmet",
+  "guid": "mind_of_the_council",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 40,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "mana"
+    },
+    {
+      "type": "PERCENT",
+      "max": -20.0,
+      "min": -15.0,
+      "stat": "energy"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "lightning_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "archmage"
+    },
+    {
+      "type": "PERCENT",
+      "max": -50.0,
+      "min": -50.0,
+      "stat": "mana_regen"
+    }
+  ],
+  "weight": 1000
+}

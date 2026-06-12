@@ -1,0 +1,1733 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "epilogue"
+	group: "1E3C4B5FFAE48A39"
+	icon: "bosses_of_mass_destruction:blazing_eye"
+	id: "5A7D6B87115D3B91"
+	order_index: 6
+	quest_links: [ ]
+	quests: [
+		{
+			dependencies: ["6149D163ABF06A15"]
+			description: [
+				"At long last... your notes from your various adventures have brought you to &eThe Otherside&r."
+				""
+				"From your humble beginnings in the &eOverworld&r, perilous journey through the &eNether&r and &eUnderdark&r, encounters in the &eEverbright and Everdawn&r, and close calls in &eThe End&r, you are now at what you believe to be the source of the evil."
+				""
+				"What did that researcher back at the village call it? A \"quarrel\" amongst the &bPrimal Titans&r? According to the researcher, it should be enough to just eliminate the four elemental creatures found in &eThe End&r and &eThe Otherside&r."
+				""
+				"Get ready to embark on your final quest! There's no way they'll come back after killing them, right..?"
+			]
+			icon: "minecraft:paper"
+			id: "749D138B0222E744"
+			rewards: [{
+				id: "6222458583FAAFB2"
+				item: "lightmanscurrency:coin_copper"
+				type: "item"
+			}]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "The Final Lost Page"
+			tasks: [{
+				id: "67B1853D30A8EE31"
+				title: "Click Once Read"
+				type: "checkmark"
+			}]
+			title: "Primal Evils"
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: [
+				"The &eNight Lich&r resides in the &eLich Tower&r found in &eCrystal Crags&r in &eThe End&r. To find the structure, you can craft &eSoul Stars&r. Using the &eSoul Star&r will consume it to indicate the direction of the nearest &eLich Tower&r!"
+				""
+				"&cThe Night Lich spawns at minimum level of 90 and at Mythic Rarity.&r"
+				""
+				"The Night Lich Has:"
+				"&b+50% Physical to Cold Damage&r"
+				"&b+50% Freeze Chance&r"
+				"&b+25% Shatter Chance&r"
+				"&b+50% Elemental Resistance&r"
+				"&a15% Chance of Dropping Sid Rune&r"
+			]
+			id: "07EBFDA1B8808DAF"
+			rewards: [
+				{
+					id: "21701E1566499449"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					icon: "ftb_ph:ascend"
+					id: "591C192B05D51076"
+					title: "Ascendant (1/4)"
+					type: "custom"
+				}
+			]
+			size: 1.25d
+			subtitle: "Cold"
+			tasks: [{
+				entity: "bosses_of_mass_destruction:lich"
+				icon: "bosses_of_mass_destruction:ancient_anima"
+				id: "0A39027CB9F70D32"
+				type: "kill"
+				value: 1L
+			}]
+			title: "The Frozen Tower"
+			x: -1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: [
+				"The &eNether Gauntlet&r can be found in &eGauntlet Arenas&r located in the &eBlooming Caverns&r biome of &eThe Otherside&r."
+				""
+				"&cThe Nether Gauntlet spawns at minimum level of 90 and at Mythic Rarity.&r"
+				""
+				"The Nether Gauntlet Has:"
+				"&b+50% Physical to Fire Damage&r"
+				"&b+75% Burn Chance&r"
+				"&b+40% Dodge&r"
+				"&b+75% Fire Resistance&r"
+				"&a15% Chance of Dropping Sid Rune&r"
+			]
+			id: "005E75571665043C"
+			rewards: [
+				{
+					id: "100B3BFFAADCD105"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					icon: "ftb_ph:ascend"
+					id: "656169856B5F549C"
+					title: "Ascendant (1/4)"
+					type: "custom"
+				}
+			]
+			size: 1.255d
+			subtitle: "Fire"
+			tasks: [{
+				entity: "bosses_of_mass_destruction:gauntlet"
+				icon: "bosses_of_mass_destruction:blazing_eye"
+				id: "67B908871A5282C2"
+				type: "kill"
+				value: 1L
+			}]
+			title: "The Ardent Depths"
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: [
+				"You can find the &eVoid Blossom&r in the &eEchoing Forests&r of &eThe Otherside&r. You can use &eVoid Lilies&r to indicate the direction to these &eVoid Blossoms&r."
+				""
+				"&cThe Void Blossom spawns at minimum level of 90 and at Mythic Rarity.&r"
+				""
+				"The Void Blossom Has:"
+				"&b+100% Physical to Chaos Damage&r"
+				"&b+33% Poison Chance&r"
+				"&b+1% of Health Regenerated Per Second&r"
+				"&b+75% Chaos Resistance&r"
+				"&c-25% Fire Resistance&r"
+				"&a15% Chance of Dropping Sid Rune&r"
+			]
+			id: "56B2B51011037E61"
+			rewards: [
+				{
+					id: "15F97D81BF787C79"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					icon: "ftb_ph:ascend"
+					id: "78E77C83F56373C6"
+					title: "Ascendant (1/4)"
+					type: "custom"
+				}
+			]
+			size: 1.25d
+			subtitle: "Chaos"
+			tasks: [{
+				entity: "bosses_of_mass_destruction:void_blossom"
+				icon: "bosses_of_mass_destruction:void_lily"
+				id: "507D5A8FDD10ECE3"
+				type: "kill"
+				value: 1L
+			}]
+			title: "The Sprawling Vinelands"
+			x: -1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: [
+				"The &eObsidilith&r resides in the &eObsidilith Arena&r found in &ePrimordial Pools&r in &eThe End&r."
+				""
+				"&cThe Obsidilith spawns at minimum level of 90 and at Mythic Rarity.&r"
+				""
+				"The Obsidilith Has:"
+				"&b+100% Physical to Lightning Damage&r"
+				"&b+50% Electrify Chance&r"
+				"&b+25% Shock Chance&r"
+				"&b+100% Armor&r"
+				"&b+50% Lightning Resist&r"
+				"&a15% Chance of Dropping Sid Rune&r"
+			]
+			id: "6B2C722AC00A07C0"
+			rewards: [
+				{
+					id: "631C758E74857E09"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					icon: "ftb_ph:ascend"
+					id: "4253CD136D9F9A5E"
+					title: "Ascendant (1/4)"
+					type: "custom"
+				}
+			]
+			size: 1.25d
+			subtitle: "Lightning"
+			tasks: [{
+				entity: "bosses_of_mass_destruction:obsidilith"
+				icon: "bosses_of_mass_destruction:obsidian_heart"
+				id: "32DF2007C57A60F9"
+				type: "kill"
+				value: 1L
+			}]
+			title: "The Galvanic Stronghold"
+			x: 1.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: ["Someone already cleared out a structure before you got there? You can use &eBrimstone Nectar&r on any of the &bPrimal Titans' structures&r to reset them!"]
+			id: "71F71326D81053D9"
+			rewards: [{
+				id: "1E5C69E4282912F2"
+				item: "bosses_of_mass_destruction:brimstone_nectar"
+				type: "item"
+			}]
+			subtitle: "Resetting Boss Structures"
+			tasks: [{
+				id: "6BA69F80620210D3"
+				item: "bosses_of_mass_destruction:brimstone_nectar"
+				type: "item"
+			}]
+			title: "They're Back!"
+			x: -1.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["749D138B0222E744"]
+			description: [
+				"As you go through Map after Map, you hear echoes of another &eLich&r... One that can be found in the &eTwilight Forest&r. A new portal appears and you step through to find a whole new dimension."
+				""
+				"To enter the Twilight Forest, you need to create a 2x2 shallow pool of water in a grassy area, surrounded by plants and/or leaves in &eThe Otherside&r. You may need to bring grass with you. Then throw in a diamond and watch the portal form."
+				""
+				"&l&cMobs from Twilight Forest spawn at a minimum of level 90!&r&r"
+			]
+			id: "77E6AE329E337151"
+			rewards: [
+				{
+					count: 3
+					id: "0D4BA9A55B97BA9E"
+					item: "mmorpg:currency/affix_common_reroll"
+					type: "item"
+				}
+				{
+					id: "1488B29B5798BA1F"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				dimension: "twilightforest:twilight_forest"
+				icon: "twilightforest:twilight_portal_miniature_structure"
+				id: "51F52DF9B052A4B9"
+				title: "Visit The Twilight Forest"
+				type: "dimension"
+			}]
+			title: "The Unknown Beyond"
+			x: 1.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["77E6AE329E337151"]
+			description: [
+				"Nestled in small clearings throughout the &eTwilight Forest&r, &eHedge Mazes&r are a curious sight for new explorers in the dimension. Much like the ruined standing stones, monuments and other landmarks that dot the landscape, there has been endless speculation on why these mazes were built, but no answers have been found to date."
+				""
+				"Hedge blocks form the walls of a typical maze, with dense, prickly foliage to deter adventurers from simply chopping their way through the twisting corridors. Fireflies and Jack-o-Lanterns are common, helping to light up the maze in contrast to the dim light elsewhere. Canopy Trees have been sometimes seen in a maze, forming a kind of tall post in the hedge walls."
+				""
+				"The other main feature common to hedge mazes are the small open \"rooms\" within the maze. These have been found to always contain a magical spawner, as well as 1-2 chests and more Jack-o-Lanterns. Typically, they generate &eHostile Wolves, Swarm Spiders or Hedge Spiders&r but unlike spawners found elsewhere, bright light does not prevent them from functioning."
+			]
+			id: "54B478D596CE17D6"
+			rewards: [
+				{
+					count: 2
+					id: "2D561080DD23BA36"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "3C2A412FD724071E"
+					item: "mmorpg:currency/upgrade_common_affix"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "twilightforest:hedge"
+				id: "01A930C680639445"
+				structure: "twilightforest:hedge_maze"
+				title: "Find a Hedge Maze"
+				type: "structure"
+			}]
+			title: "Natural Mazes"
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["54B478D596CE17D6"]
+			description: ["&eHostile Wolves&r are strange Wolves that can only be found in a &eHedge Maze&r. Legend says these Wolves hate humans because they always steal their treasures. Unfortunately, these Wolves cannot be tamed."]
+			icon: "doggytalents:dog_plushie_toy_item"
+			id: "2BE20402219A9B78"
+			rewards: [
+				{
+					count: 3
+					id: "5B3AB3D09BD7747A"
+					item: "mmorpg:material/meat/4"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "2D1C81F8C6BAB0D7"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:hostile_wolf"
+				icon: "ftb_ph:hostile_wolf"
+				id: "4C5ACBBF6C6B901D"
+				type: "kill"
+				value: 10L
+			}]
+			title: "Unbridled Aggression"
+			x: 4.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["54B478D596CE17D6"]
+			description: ["&eHedge Spiders&r are almost identical to normal overworld Spiders aside from their distinct green color. The only difference between this species and their Overworld counterparts is that they are able to spawn in brightly-lit &eHedge Mazes&r. Legend says these Spiders are brave enough to protect their treasure from explorers."]
+			icon: "chipped:stringy_cobweb"
+			id: "039BE2259D553B13"
+			rewards: [
+				{
+					count: 3
+					id: "22076FAC6370473E"
+					item: "mmorpg:material/farming/4"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "0D037E40BE697582"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:hedge_spider"
+				icon: "ftb_ph:hedge_spider"
+				id: "793117DC4193D9C8"
+				type: "kill"
+				value: 10L
+			}]
+			title: "Trapped"
+			x: 4.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["77E6AE329E337151"]
+			description: [
+				"Rising out of the otherwise flat terrain of the &eTwilight Forest&r, &eHollow Hills&r are conspicuous mounds of dirt that conceal a vast hollow cave packed with stalactites and stalagmites, some of which are formed with precious ores and minerals. Explorers have found these large dome-shaped hills in three distinct sizes, large enough to be detected and marked on a &eMagic Map&r, with an appropriate icon indicating its size. Some hills have been found to have other caves and ravines cutting into them, so those adventurers tunneling beneath the earth may find themselves inside one of these hills in their explorations."
+				""
+				"Small hills measure approximately 30 metres across and usually contain the basic minerals such as Coal, Iron, with Redstone and Glowstone occasionally being found. Explorers can expect to find a couple of treasure chests containing common tools and items such as food, arrows, ladders and torches, but rarely, a valuable Ore Magnet may be found along with a Diamond and &eSteeleaf&r. &eSwarm Spiders, Redcap Goblins and Kobolds&r reside in these hills, with other creatures common to the Overworld as well."
+			]
+			id: "75103126CFA64857"
+			rewards: [
+				{
+					count: 2
+					id: "1C323A27F2B1118B"
+					item: "mmorpg:material/mining/4"
+					type: "item"
+				}
+				{
+					id: "111D5F6783D074B7"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				icon: "twilightforest:hollow_twilight_oak_log"
+				id: "54592C0A736AE877"
+				structure: "twilightforest:small_hollow_hill"
+				title: "Find a Small Hollow Hill"
+				type: "structure"
+			}]
+			title: "A Small Mound"
+			x: 3.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["54B478D596CE17D6"]
+			description: [
+				"The &eNaga Courtyard&r is a large, walled-off structure built from various forms of stone and Nagastone. Inside the Naga Courtyard, there are various hedges of Twilight Oak Leaves, pillars of Polished Andesite and Etched Nagastone, and additional decorative features. In the middle of the structure is a Boss Spawner containing the &eNaga&r."
+				""
+				"Slaying the Naga will unlock the next structure in Progression, the &eLich Tower&r, removing the structure's protection."
+				""
+				"&cThe Naga spawns at Mythic Rarity.&r"
+				""
+				"The Naga Has:"
+				"&b+100% Physical to Chaos Damage&r"
+				"&b+40% Poison Chance&r"
+				"&b+30% Chaos Penetration&r"
+				"&b+50% Cold Resistance&r"
+				"&b+50% Chaos Resistance&r"
+			]
+			id: "09AFF8CC33BD244B"
+			rewards: [
+				{
+					auto: "enabled"
+					icon: {
+						Count: 1
+						id: "minecraft:written_book"
+						tag: {
+							author: "Unknown"
+							generation: 3
+							pages: [
+								"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+								"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+							]
+							resolved: 1b
+							title: "Pillagers Ship Logbook"
+						}
+					}
+					id: "23AD45244978A5A3"
+					title: "2 Skill Points"
+					type: "custom"
+				}
+				{
+					id: "37776D6144DBDA7D"
+					item: "mmorpg:potions/full_reset_talent"
+					type: "item"
+				}
+				{
+					id: "529776CB2E015F07"
+					item: "mmorpg:potions/full_reset_spell"
+					type: "item"
+				}
+				{
+					id: "1F4F10A8BE8F9410"
+					item: "mmorpg:potions/full_reset_passive"
+					type: "item"
+				}
+				{
+					id: "59E013EF3A97101E"
+					item: "mmorpg:potions/full_reset_ascendancy"
+					type: "item"
+				}
+				{
+					id: "3CEAB295D78E83AA"
+					item: "mmorpg:potions/full_reset_stat"
+					type: "item"
+				}
+				{
+					count: 3
+					id: "5D51EB762212D5EC"
+					item: "mmorpg:currency/socket_adder"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "5408016296E2B4E9"
+				item: "twilightforest:naga_trophy"
+				type: "item"
+			}]
+			title: "Solely Snakular"
+			x: 4.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["09AFF8CC33BD244B"]
+			description: [
+				"The &eLich Tower&r consists of a single central spire, from which many smaller towers and chambers jut out haphazardly from the sides, connecting directly into the next tower or via bridge."
+				""
+				"Numerous hostile mobs spawn in the Lich Tower normally or through spawners. The usual assortment of vanilla mobs naturally spawn. The &eDeath Tome&r also spawns in the Lich Tower, and is the only structure to find this mob."
+				""
+				"In order to unlock the Lich Tower, the &eNaga&r must be defeated."
+				""
+				"The Lich Tower is also key to unlocking three other biomes and structures:"
+				""
+				"- Dispelling the mosquito swarm around the &eTwilight Swamp&r, allowing exploration into the &eLabyrinth&r."
+				"- Dispelling the darkness covering the &eDark Forest&r, allowing exploration into the &eGoblin Knight Stronghold&r."
+				"- Dispelling the blizzard over the &eSnowy Forest&r, allowing entry into the &eYeti Cave&r."
+			]
+			id: "05E813C595DBC7AB"
+			rewards: [
+				{
+					count: 5
+					id: "550F848D0AFF9FDF"
+					item: "mmorpg:material/mining/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "7AC5E8E78128C2BA"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "twilightforest:lich_tower_miniature_structure"
+				id: "41B2B655D8ABB2AF"
+				structure: "twilightforest:lich_tower"
+				title: "Find a Lich Tower"
+				type: "structure"
+			}]
+			title: "The Tower of Power"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["05E813C595DBC7AB"]
+			description: [
+				"&eDeath Tomes&r are dangerous books float in the staircases and libraries of the Lich Tower. They fire a projectile that slows the creature they hit for a brief time. Death Tomes occasionally lose pages when struck."
+				""
+				"Death Tomes may also drop a &eMagic Map Focus&r upon death."
+				""
+				"The Death Tome Has:"
+				"&b+50% Physical to Lightning Damage&r"
+				"&b+50% Physical to Chaos Damage&r"
+			]
+			icon: "mca:book_death"
+			id: "7CEF2BA760AB0B2E"
+			rewards: [
+				{
+					count: 2
+					id: "14CD63892C5E3F41"
+					item: "mmorpg:currency/socket_adder"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "3E5F010430704713"
+					item: "mmorpg:currency/affix_tier_up_down"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "5CB516DD49306C90"
+					item: "mmorpg:currency/enchant_reroll"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "792CBFC517AE25A6"
+					item: "mmorpg:currency/unique_reroll"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "30AE5F37C62C7EB7"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:death_tome"
+				icon: "ftb_ph:death_tome"
+				id: "154CA20889C9EDB5"
+				type: "kill"
+				value: 10L
+			}]
+			title: "Enchanted Library"
+			x: 6.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["05E813C595DBC7AB"]
+			description: [
+				"The &eTwilight Lich&r, also referred to as just the &eLich&r, resides on the top of a &eLich Tower&r. It appears as a tall humanoid skeleton wearing a purple cape, and a large golden crown. Surrounding itself is a wall of shields to protect itself from any damage, but maybe they can be broken."
+				""
+				"Adventurers report that the projectiles can be deflected with a properly-timed swing. Every time the player reflects the Lich's projectiles back at it, it will remove one of its shields."
+				""
+				"&cThe Lich spawns at Mythic Rarity.&r"
+				""
+				"The Lich Has:"
+				"&b+100% Physical to Lightning Damage&r"
+				"&b+50% Electrify Chance&r"
+				"&b+25% Shock Chance&r"
+				"&b+25% Lightning Penetration&r"
+				"&b+75% Elemental Resistance&r"
+				"&b+50% Chaos Resistance&r"
+				""
+				"&6This Quest Unlocks New Shops In the Campaign Shop."
+			]
+			id: "1F3C2718AE550D5C"
+			rewards: [
+				{
+					auto: "enabled"
+					icon: {
+						Count: 1
+						id: "minecraft:written_book"
+						tag: {
+							author: "Unknown"
+							generation: 3
+							pages: [
+								"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+								"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+							]
+							resolved: 1b
+							title: "Pillagers Ship Logbook"
+						}
+					}
+					id: "78E598DDB8CEEE03"
+					title: "2 Skill Points"
+					type: "custom"
+				}
+				{
+					id: "15E955610563E40C"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					id: "41295C50FCBC7A5D"
+					item: "mmorpg:gems/topaz/6"
+					type: "item"
+				}
+				{
+					id: "44C98A1EC1B45829"
+					item: "simplehats:toy_story_alien"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "5156617EB99C3B38"
+				item: "twilightforest:lich_trophy"
+				type: "item"
+			}]
+			title: "The Master Mastermind"
+			x: 7.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1F3C2718AE550D5C"]
+			description: [
+				"&eHollow Hills&r are an excellent source of ores to be mined and treasures to be looted, with the more valuable loot contained in the larger hills. The treasure to be found tend to be guarded by the dangerous creatures abound in the darkness, which can easily spell the doom of an unwary explorer. Unfortunately, it also seems that the larger the hill, the more creatures that live there. Explorers should remember the basic rules of caving, and never tunnel directly down into a Hollow Hill; instead, approach from the side and bring plenty of light sources to illuminate the interior as various spawners are around every corner."
+				""
+				"Medium hills are about 60 metres in diameter, and 25+ metres tall in the center. The interior becomes more spacious, but this has also attracted more and deadlier creatures. Gold and Lapis can be found here as well as Diamond and Emerald being seen, albeit rarely. As the value of the ores increase, so do the treasures - up to 6 chests can usually be found in a medium hill containing &eIronwood Ingots and Transformation Powder&r, along with unique artifacts such as a Moonworm Queen, and the Peacock Feather Fan. &eFire Beetles and Redcap Sappers&r live in medium hills, in addition to those seen in small hills."
+			]
+			id: "2820ABD72802B6F2"
+			rewards: [
+				{
+					count: 4
+					id: "4B00DACD9470CF87"
+					item: "mmorpg:material/mining/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "4A53AC07D15CF95F"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				icon: "twilightforest:hollow_time_log"
+				id: "583B2BF97EA1E832"
+				structure: "twilightforest:medium_hollow_hill"
+				type: "structure"
+			}]
+			title: "A Medium Mound"
+			x: 9.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["1F3C2718AE550D5C"]
+			description: ["The &eLabyrinth&r is a major landmark tied to Progression. It appears as an unremarkable small hill in the &eTwilight Swamp&r, but opens up to an entrance to an underground structure of sprawling maze passages. In the deep levels of the Labyrinth, a fenced-off room contains a Boss Spawner with the &eMinoshroom&r."]
+			id: "1C58F38B9890D6BA"
+			rewards: [
+				{
+					count: 2
+					id: "68678804DB1B0A4A"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "6B43C3B5A633A10F"
+					item: "mmorpg:gems/opal/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "twilightforest:maze_map"
+				id: "3E00882F2A14F4C6"
+				structure: "twilightforest:labyrinth"
+				title: "Find a Labyrinth"
+				type: "structure"
+			}]
+			title: "A Magic Maze"
+			x: 9.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1C58F38B9890D6BA"]
+			description: [
+				"The &eMinoshroom&r is a mini-boss found lurking in its prison at the bottom of a &eLabyrinth&r. The &eMinoshroom&r is a bizarre hybrid of a Mooshroom and a Minotaur."
+				""
+				"The Minoshroom Has:"
+				"&b+10 Armor Penetration (Scales)&r"
+				"&b+50% Accuracy&r"
+				"&b+30% Physical Resistance&r"
+				"&b+20% Health Regeneration&r"
+			]
+			icon: "twilightforest:minoshroom_trophy"
+			id: "78EB450B57F9B7E7"
+			rewards: [
+				{
+					count: 3
+					id: "19BA04335CBBAEF0"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+				{
+					id: "4D369FC4FA80DC2F"
+					item: "mmorpg:currency/upgrade_common_affix"
+					type: "item"
+				}
+				{
+					count: 5
+					id: "02C4B1A5FC2F4BF9"
+					item: "mmorpg:currency/level_up_orb"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "5BBA7A672D914F6C"
+				item: "twilightforest:minoshroom_trophy"
+				type: "item"
+			}]
+			title: "Mooooooooo"
+			x: 10.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1C58F38B9890D6BA"]
+			description: [
+				"&eMaze Slimes&r are &eTwilight Forest&r variants of the Overworld Slime. These Slimes have a gray color and spawn in &eLabyrinths&r."
+				""
+				"The Maze Slime Has:"
+				"&b+25% Armor&r"
+				"&b+25% Physical Resistance&r"
+				"&b+50% Lightning Resistance&r"
+			]
+			id: "26D545606AA14974"
+			rewards: [
+				{
+					id: "3C9B5B2C5838A9E2"
+					item: "mmorpg:stone/3"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "1D7B27AF6930907B"
+					item: "mmorpg:currency/orb_of_quality"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:maze_slime"
+				icon: "twilightforest:mazestone"
+				id: "5F809DB4B920DBD2"
+				type: "kill"
+				value: 10L
+			}]
+			title: "Concrete... Slime?"
+			x: 10.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["78EB450B57F9B7E7"]
+			description: ["Resembling a large &eHollow Hill&r, the &eHydra Lair&r looms out of the flat swamplands providing a natural lair for the multi-headed Hydra at the heart of the &eFire Swamp&r. The &eHydra&r seems to have hollowed out the hill itself, providing it with shelter and forcing anyone who would challenge it to approach it head on. The area that faces the Hydra is also bereft of vegetation or cover, so that there is nowhere to hide."]
+			id: "1A2A1F3575A8159B"
+			rewards: [
+				{
+					count: 2
+					id: "4E1C822C955889FC"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "1829DFB6A35F0F6B"
+					item: "mmorpg:gems/topaz/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "twilightforest:hydra_chop"
+				id: "10F427A4198C5961"
+				structure: "twilightforest:hydra_lair"
+				title: "Find a Hydra Lair"
+				type: "structure"
+			}]
+			title: "The Lair"
+			x: 12.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["1A2A1F3575A8159B"]
+			description: [
+				"The &eHydra&r can be found in a unique, cracked-open &eHydra Lair&r in a &eFire Swamp&r. The Hydra appears as a massive creature, with two stumpy legs supporting a wide, scaly body. Multiple serpentine necks end in heads that bear a passing resemblance to that of the Ender Dragon. The entire creature is covered in blue-green and dark blue scales."
+				""
+				"&cThe Hydra spawns at Mythic Rarity.&r"
+				""
+				"The Hydra Has:"
+				"&b+100% Physical to Fire Damage&r"
+				"&b+60% Burn Chance&r"
+				"&b+40% Fire Penetration&r"
+				"&b+25% Damage Reduction&r"
+				"&b+35% Lightning Resistance&r"
+			]
+			id: "18C4B8D73A50CFAC"
+			rewards: [
+				{
+					auto: "enabled"
+					icon: {
+						Count: 1
+						id: "minecraft:written_book"
+						tag: {
+							author: "Unknown"
+							generation: 3
+							pages: [
+								"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+								"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+							]
+							resolved: 1b
+							title: "Pillagers Ship Logbook"
+						}
+					}
+					id: "43D1F2E8681A6250"
+					title: "2 Skill Points"
+					type: "custom"
+				}
+				{
+					id: "06CDDFAA60B2313C"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					id: "442655A6C145A711"
+					item: "mmorpg:gems/emerald/6"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "1A83F081741ED7A4"
+				item: "twilightforest:hydra_trophy"
+				type: "item"
+			}]
+			title: "Multi-Headed Beast"
+			x: 13.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["78EB450B57F9B7E7"]
+			description: [
+				"&eMeef Stroganoff&r can be quite filling and potent, allowing any adventurer the energy to explore even the hottest of biomes after eating a single bowl."
+				""
+				"Upon consuming &eMeef Stroganoff&r, the player is granted access to both the &eFire Swamp&r and the &eHydra&r."
+			]
+			id: "7187E491F0DB8671"
+			rewards: [
+				{
+					count: 2
+					id: "5C46D448EFC87623"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "4E328E95911DAEA1"
+					item: "mmorpg:currency/affix_tier_up_down"
+					type: "item"
+				}
+				{
+					id: "58D2C2F14A786F55"
+					item: "mmorpg:material/farming/4"
+					type: "item"
+				}
+				{
+					id: "7275AB1F3B39A5DF"
+					item: "mmorpg:material/meat/4"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				id: "3D81F5F7AA614C5D"
+				item: "twilightforest:meef_stroganoff"
+				type: "item"
+			}]
+			title: "A Hearty Meal"
+			x: 12.0d
+			y: 1.5d
+		}
+		{
+			dependencies: ["1F3C2718AE550D5C"]
+			description: [
+				"The &eDark Forest&r is a densely vegetated biome with a thick canopy that blocks almost all light from the forest floor. Darkwood Trees grow most commonly in this biome, with some smaller vegetation such as tall grass and flowers covering the grass. Occasionally, Mushglooms grow in the area, providing a faint source of light."
+				""
+				"Despite the darkness, monsters such as Zombies and Skeletons will not spawn on the surface. However, other monsters such as &eMist Wolves&r and &eKing Spiders&r will spawn, making traversal in the Dark Forest more dangerous."
+			]
+			id: "7E14A7756FB4B78B"
+			rewards: [
+				{
+					id: "7B40532F3F039222"
+					item: "mmorpg:material/farming/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "666D99C820AFA04B"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "53505C138F5F5996"
+					item: "mmorpg:gems/tourmaline/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				biome: "twilightforest:dark_forest"
+				icon: "twilightforest:canopy_sapling"
+				id: "3B00F80F4C4025E2"
+				title: "Visit a Dark Forest"
+				type: "biome"
+			}]
+			title: "Blinded By Darkness"
+			x: 7.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["7E14A7756FB4B78B"]
+			description: [
+				"&eMist Wolves&r are mysterious monsters that spawn in the &eDark Forest&r. These monsters wait for their victim in the darkness of the forest. They will turn transparent in the dark, and only take solid form in areas of bright light. If they attack a player in the dark, their attacks can blind the player, but this affliction doesn't seem to happen near a light source."
+				""
+				"The Mist Wolf Has:"
+				"&b+50% Physical to Chaos Damage&r"
+				"&b+30% Dodge Rating&r"
+				"&b+30% Spell Dodge Rating&r"
+				"&b+25% Elemental Resistance&r"
+			]
+			icon: "outer_end:ender_roots"
+			id: "700E3C92E9C27B04"
+			rewards: [
+				{
+					count: 2
+					id: "63E33F53FF3193C1"
+					item: "mmorpg:gems/azurite/5"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "58F31A094952CF4B"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:mist_wolf"
+				icon: "ftb_ph:mist_wolf"
+				id: "493B46FB942D8A16"
+				type: "kill"
+				value: 10L
+			}]
+			title: "Hidden In The Mist"
+			x: 9.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["7E14A7756FB4B78B"]
+			description: [
+				"&eKing Spiders&r can only be found in the &eDark Forest&r and the first sign of them is usually their red eyes glowing in the darkness. They are twice the size, speed and toughness of normal spiders, and are found with a &eSkeleton Druid&r riding on their back, making them a formidable foe to deal with."
+				""
+				"The King Spider Has:"
+				"&b+100% Physical to Chaos Damage&r"
+				"&b+30% Chaos Penetration&r"
+			]
+			icon: "born_in_chaos_v1:spider_mandible"
+			id: "67CCD11ABBB75DF3"
+			rewards: [
+				{
+					id: "2404378E98FDF0DD"
+					item: "mmorpg:gems/emerald/5"
+					type: "item"
+				}
+				{
+					id: "499095977A582D7B"
+					item: "mmorpg:gems/garnet/5"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "547FDEA4C9F24547"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:king_spider"
+				icon: "ftb_ph:king_spider"
+				id: "315594F7D6D8B953"
+				type: "kill"
+				value: 5L
+			}]
+			title: "Fear-Inducing Spiders"
+			x: 6.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["7E14A7756FB4B78B"]
+			description: ["Ancient and forlorn, the &eGoblin Knight Strongholds&r rest amongst the unnaturally dense canopy of the &eDark Forest&r. They can be difficult to spot amongst the darkness with little remaining above ground apart from broken walls and cracked bricks. Beneath the surface however, is a vast complex of rooms and hallways and tombs."]
+			id: "11768894E8B672B5"
+			rewards: [
+				{
+					count: 2
+					id: "5F891BF39E8515BC"
+					item: "mmorpg:material/mining/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "1A8290CD9BB7C782"
+					item: "mmorpg:material/farming/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "4972BFCA3275C5DA"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "twilightforest:stronghold_shield"
+				id: "54FDAF28D194B2C1"
+				structure: "twilightforest:knight_stronghold"
+				title: "Find a Goblin Knight Stronhold"
+				type: "structure"
+			}]
+			title: "Goblin Usurpers"
+			x: 7.5d
+			y: -3.0d
+		}
+		{
+			dependencies: ["11768894E8B672B5"]
+			description: [
+				"The &eKnight Phantoms&r reside in a brick-layered room in the &eGoblin Knight Stronghold&r. They appear as ghostly pieces of Phantom Armor, and appear to have a spooky, ghost-like look when attacking."
+				""
+				"Defeating the &e6 Knight Phantoms&r will progress the Dark Forest Phase, thus removing the protections over the &eDark Forest Center&r, now allowing access to the &eUr-Ghast&r and its &eDark Tower&r."
+				""
+				"The Knight Phantom Has:"
+				"&b+100% Physical to Lightning Damage&r"
+				"&b+25% Critical Hit&r"
+				"&b+50% Dodge Rating&r"
+				"&b+50% Spell Dodge Rating&r"
+			]
+			id: "42922690F74AC7FE"
+			rewards: [
+				{
+					count: 3
+					id: "5D5B35924A7177B3"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "5E60295E386C4F31"
+					item: "mmorpg:currency/affix_tier_up_down"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "501346F0CBF0B449"
+					item: "mmorpg:gems/opal/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "70290AE8EF83F6A1"
+				item: "twilightforest:knight_phantom_trophy"
+				type: "item"
+			}]
+			title: "Cursed Knights"
+			x: 7.5d
+			y: -4.5d
+		}
+		{
+			dependencies: ["42922690F74AC7FE"]
+			description: [
+				"Rising ominously over the &eDark Forest&r are the awe-inspiring &eDark Towers&r. So tall that they seem to pierce the sky itself, these immense constructions contain all manner of unique rooms, obstacles, treasure and monsters to explore and fight on the epic journey to the top. They are generally found at the very heart of a Dark Forest, where the thick, choking foliage becomes a strange, autumn-like hue, perhaps due to the sinister influence of the Tower."
+				""
+				"&eCarminite creatures mostly deal Fire Damage.&r"
+			]
+			id: "0E85C58F1DA0564C"
+			rewards: [
+				{
+					count: 2
+					id: "411163FE27556CEA"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "0DA6290C80A32C41"
+					item: "mmorpg:gems/ruby/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "born_in_chaos_v1:spawn_structures_dark_tower"
+				id: "03F883F2D01DF89A"
+				structure: "twilightforest:dark_tower"
+				title: "Find a Dark Tower"
+				type: "structure"
+			}]
+			title: "Dark Spires"
+			x: 9.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["0E85C58F1DA0564C"]
+			description: [
+				"The &eUr-Ghast&r can be found flying around at the top of the gigantic &eDark Tower&r. It appears as a large, supernatural creature with many large, waving tentacles. It is covered in what adventurers fear is blood, or could be Carminite. This creature resembles the Carminite Ghastguard, due to their ability to stalk players, as well as the Nether-exclusive Ghasts, but is much larger and much more dangerous."
+				""
+				"&cThe Ur-Ghast spawns at Mythic Rarity.&r"
+				""
+				"The Ur-Ghast Has:"
+				"&b+100% Physical to Fire Damage&r"
+				"&b+25% Burn Chance&r"
+				"&b+100% Burn Damage&r"
+				"&b+5% Maximum Fire Resistance&r"
+				"&b+100% Fire Resistance&r"
+			]
+			id: "5BB55F41502BE69C"
+			rewards: [
+				{
+					auto: "enabled"
+					icon: {
+						Count: 1
+						id: "minecraft:written_book"
+						tag: {
+							author: "Unknown"
+							generation: 3
+							pages: [
+								"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+								"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+							]
+							resolved: 1b
+							title: "Pillagers Ship Logbook"
+						}
+					}
+					id: "26A037B5BB43D730"
+					title: "2 Skill Points"
+					type: "custom"
+				}
+				{
+					id: "70D77D8F4DC32B5F"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					id: "4AC6E089CE9FA0A2"
+					item: "mmorpg:gems/ruby/6"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "1484F0626CF00EDA"
+				item: "twilightforest:ur_ghast_trophy"
+				type: "item"
+			}]
+			title: "Blood, or Carminite?"
+			x: 10.5d
+			y: -6.0d
+		}
+		{
+			dependencies: ["1F3C2718AE550D5C"]
+			description: [
+				"The &eSnowy Forest&r is an unnaturally cold biome that stands in stark contrast to much of the rest of the Twilight Forest dimension. Explorers have noted many similarities to the Overworld Snowy Taiga biome, with snow covering the ground between large stands of spruce trees growing in place of the usual Canopy Trees, with some growing just as large. Why such an icy climate should exist in a predominantly mild and wet dimension is a mystery, though some suspect the large &eGlacier&r that nestles amongst the fir trees may have something to do with it."
+				""
+				"Care must be taken when trekking through these areas, as &eWinter Wolves&r roam the land along with dangerous &eYetis&r. These creatures should be approached cautiously, especially when delving into the &eYeti Caves&r, as many dozens can be found in these icy caves. The &eAlpha Yeti&r who claim dominion over their kin will not take kindly to intrusion from the curious, or the foolish."
+			]
+			id: "15B1E394B4FBB981"
+			rewards: [
+				{
+					id: "0B1583B14CE6405B"
+					item: "mmorpg:material/farming/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "0CAE6DB8E7EDB259"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "00866B8B5706A607"
+					item: "mmorpg:gems/azurite/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				biome: "twilightforest:snowy_forest"
+				icon: "blue_skies:snowbloom"
+				id: "7ED21F382B9E41B3"
+				title: "Visit a Snowy Forest"
+				type: "biome"
+			}]
+			title: "Snowed In"
+			x: 7.5d
+			y: 1.5d
+		}
+		{
+			dependencies: ["15B1E394B4FBB981"]
+			description: [
+				"&eWinter Wolves&r are large, bluish-white canines that live in the &eSnowy Forest&r. These monsters resembles their &eDark Forest&r counterparts, but with a white coat. They pursue and attack players in their territory, attacking with both their bite and with a freezing breath attack that applies a slow."
+				""
+				"The Winter Wolf Has:"
+				"&b+100% Physical to Cold Damage&r"
+				"&b+30% Cold Penetration&r"
+				"&b+30% Cold Resistance&r"
+			]
+			icon: "born_in_chaos_v1:fangofthe_hound_leader"
+			id: "38BFA9B6AC5CBD12"
+			rewards: [
+				{
+					id: "477E6F483D6AABCD"
+					item: "mmorpg:currency/sharpening_stone_3"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "6C66DC9E98CDE941"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:winter_wolf"
+				icon: "ftb_ph:winter_wolf"
+				id: "4BF835E79D59F65E"
+				type: "kill"
+				value: 10L
+			}]
+			title: "A Chilling Awooo"
+			x: 9.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["15B1E394B4FBB981"]
+			description: [
+				"&eYeti&r are large, white, blocky creatures that live in the &eSnowy Forest&r or within the &eYeti Cave&r. They are semi-passive in nature, only taking interest in players that move within about 4 blocks of them. They have no directly damaging attacks. Instead, they will pick up their target and throw them in a random direction. Adventurers will not be directly harmed by a Yeti, but the fall damage will hurt. If attacked, they will become aggressive, pursuing their target."
+				""
+				"The Yeti Has:"
+				"&b+0.5% of Health Regenerated Per Second&r"
+				"&b+30% Cold Resistance&r"
+			]
+			icon: {
+				Count: 1
+				id: "twilightforest:yeti_helmet"
+				tag: {
+					Damage: 0
+					Enchantments: [{
+						id: "minecraft:protection"
+						lvl: 2s
+					}]
+				}
+			}
+			id: "10B572A9358F338B"
+			rewards: [
+				{
+					count: 5
+					id: "021419E747103F83"
+					item: "mmorpg:stone/3"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "7661B1B922262EAF"
+					item: "mmorpg:material/meat/4"
+					type: "item"
+				}
+				{
+					count: 4
+					id: "20201B9A398A123F"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			subtitle: "Twilight Forest"
+			tasks: [{
+				entity: "twilightforest:yeti"
+				icon: "ftb_ph:yetitwilight"
+				id: "0C5B0388632D3E64"
+				type: "kill"
+				value: 10L
+			}]
+			title: "The Yeti"
+			x: 6.0d
+			y: 3.0d
+		}
+		{
+			dependencies: ["4B93763BFB5F5E0D"]
+			description: [
+				"The fearsome &eAlpha Yeti&r is much larger than the rest of the Yetis in its pack. It has six large blue horns and is constantly aggressive towards players."
+				""
+				"Defeating the &eAlpha Yeti&r will remove the protections over the &eGlacier&r, now allowing access to the &eSnow Queen&r and its &eAurora Palace&r."
+				""
+				"The Alpha Yeti Has:"
+				"&b+50% Physical to Cold Damage&r"
+				"&b+8 Armor Penetration (Scales)&r"
+				"&b+30% Cold Penetration&r"
+				"&b+25% Physical Resistance&r"
+				"&b+50% Cold Resistance&r"
+			]
+			id: "44B4EC276B4CD776"
+			rewards: [
+				{
+					count: 3
+					id: "2BA208A9FDAC9C96"
+					item: "mmorpg:stone/4"
+					type: "item"
+				}
+				{
+					count: 10
+					id: "79ACA445473BD88D"
+					item: "mmorpg:material/meat/4"
+					type: "item"
+				}
+				{
+					id: "26B9B73CD18DC085"
+					item: "mmorpg:gems/amethyst/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "04298BD3152A19E7"
+				item: "twilightforest:alpha_yeti_trophy"
+				type: "item"
+			}]
+			title: "The Alpha Yeti"
+			x: 7.5d
+			y: 4.5d
+		}
+		{
+			dependencies: ["44B4EC276B4CD776"]
+			description: [
+				"Standing over the desolate &eGlaciers&r, the &eAurora Palace&r is a striking and beautiful sight for adventurers in the Twilight Forest, with its walls constantly shifting in a variety of colours reaching into the sky. Beauty is only skin deep sadly, as there are dangers within who will not hesitate to defend their magical home."
+				""
+				"Adventurers who defeat the &eAlpha Yeti&r will find that just &etouching his downy fur&r will transfer a portion of the magical power from the fur to themselves, dispelling the winds and leaving the Palace open for exploration."
+			]
+			icon: "twilightforest:blue_castle_door"
+			id: "2FDCA05F4CD502C8"
+			rewards: [
+				{
+					count: 2
+					id: "591FB17C2BAA0199"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+				{
+					id: "2F9DB93942234A2C"
+					item: "mmorpg:gems/sapphire/5"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [
+				{
+					icon: "twilightforest:aurora_pillar"
+					id: "3E8D88BC87345DAC"
+					structure: "twilightforest:aurora_palace"
+					title: "Find an Aurora Palace"
+					type: "structure"
+				}
+				{
+					id: "3F7D90DB38D24943"
+					item: "twilightforest:alpha_yeti_fur"
+					type: "item"
+				}
+			]
+			title: "A Palace of Beauty"
+			x: 9.0d
+			y: 6.0d
+		}
+		{
+			dependencies: ["2FDCA05F4CD502C8"]
+			description: [
+				"The &eSnow Queen&r is found in an ice-encrusted room near the top of the &eAurora Palace&r. She is perhaps the most human-like creature encountered in the Twilight Forest, resembling a woman, but with large violet eyes and pale blue skin. She is immediately hostile towards any intruders in her vicinity, launching quickly into one of three main attack patterns."
+				""
+				"The Snow Queen flies on a saucer-shaped sled of magical ice blocks. The sled serves a powerful defense, both moving the Queen up and out of range of close-range attacks, while &eblocking any ranged attacks made from below&r. To successfully attack the Snow Queen, you must anticipate her movements, &eattacking only when she moves close enough that you can get around the ice sled&r."
+				""
+				"&cThe Snow Queen spawns at Mythic Rarity.&r"
+				""
+				"The Snow Queen Has:"
+				"&b+100% Physical to Cold Damage&r"
+				"&b+80% Freeze Chance&r"
+				"&b+25% Shatter Chance&r"
+				"&b+30% Cold Penetration&r"
+				"&b+30% Damage Reduction&r"
+			]
+			id: "1E2D94E70E2A1134"
+			rewards: [
+				{
+					auto: "enabled"
+					icon: {
+						Count: 1
+						id: "minecraft:written_book"
+						tag: {
+							author: "Unknown"
+							generation: 3
+							pages: [
+								"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+								"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+							]
+							resolved: 1b
+							title: "Pillagers Ship Logbook"
+						}
+					}
+					id: "7EF3ECDA9B97A8F7"
+					title: "2 Skill Points"
+					type: "custom"
+				}
+				{
+					id: "1DC1DDFC5481AC98"
+					item: "dungeon_realm:uber_fragment"
+					type: "item"
+				}
+				{
+					id: "13F0A36E7B35C9D3"
+					item: "mmorpg:gems/sapphire/6"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			size: 1.25d
+			subtitle: "Epilogue"
+			tasks: [{
+				consume_items: true
+				id: "30915EF9976C000F"
+				item: "twilightforest:snow_queen_trophy"
+				type: "item"
+			}]
+			title: "The Queen of Ice"
+			x: 10.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["09AFF8CC33BD244B"]
+			description: [
+				"Upon killing the &eNaga&r, a &eRespawn Monument&r will appear. You can activate the block to respawn the boss by placing &eBlocks of Ironwood&r in a circle around the monument like so:"
+				""
+				"{image:cte2:textures/Naga-Respawn.png width:160 height:140 align:center}"
+				""
+				"Then, on the monument itself, place a &eWither Skeleton Skull&r facing &eNorth&r. &cIt MUST face North!&r"
+			]
+			id: "249CFC4219E590E5"
+			rewards: [{
+				count: 5
+				id: "1F089CDD411E7807"
+				item: "lightmanscurrency:coin_gold"
+				type: "item"
+			}]
+			subtitle: "Respawning"
+			tasks: [{
+				advancement: "dimasic_server:nagaresp"
+				criterion: ""
+				id: "4443B8B332438AA1"
+				type: "advancement"
+			}]
+			x: 6.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["1F3C2718AE550D5C"]
+			description: [
+				"Upon killing the &eLich&r, a &eRespawn Monument&r will appear. You can activate the block to respawn the boss by placing &eBlocks of Gold&r in a circle around the monument like so:"
+				""
+				"{image:cte2:textures/Lich_respawn.png width:160 height:140 align:center}"
+				""
+				"Then, on the monument itself, place a &eWither Skeleton Skull&r facing &eNorth&r. &cIt MUST face North!&r"
+			]
+			id: "478246DF0A50447C"
+			rewards: [{
+				count: 5
+				id: "53945B5AF1249FE5"
+				item: "lightmanscurrency:coin_gold"
+				type: "item"
+			}]
+			subtitle: "Respawning"
+			tasks: [{
+				advancement: "dimasic_server:lichresp"
+				criterion: ""
+				id: "46647FC4FDDBF7CE"
+				type: "advancement"
+			}]
+			x: 9.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5BB55F41502BE69C"]
+			description: [
+				"Upon killing the &eUr-Ghast&r, a &eRespawn Monument&r will appear. You can activate the block to respawn the boss by placing &eCrying Obsidian&r in a circle around the monument like so:"
+				""
+				"{image:cte2:textures/Ur-Ghast_Respawn.png width:160 height:140 align:center}"
+				""
+				"Then, on the monument itself, place a &eWither Skeleton Skull&r facing &eNorth&r. &cIt MUST face North!&r"
+			]
+			id: "52FABBC48E005524"
+			rewards: [{
+				count: 5
+				id: "1FED6032BF28DDCD"
+				item: "lightmanscurrency:coin_gold"
+				type: "item"
+			}]
+			subtitle: "Respawning"
+			tasks: [{
+				advancement: "dimasic_server:urghastresp"
+				criterion: ""
+				id: "16328367B255603E"
+				type: "advancement"
+			}]
+			x: 10.5d
+			y: -4.5d
+		}
+		{
+			dependencies: ["1E2D94E70E2A1134"]
+			description: [
+				"Upon killing the &eSnow Queen&r, a &eRespawn Monument&r will appear. You can activate the block to respawn the boss by placing &eBlocks of Lapis Lazuli&r in a circle around the monument like so:"
+				""
+				"{image:cte2:textures/Snow-Queen_Respawn.png width:160 height:140 align:center}"
+				""
+				"Then, on the monument itself, place a &eWither Skeleton Skull&r facing &eNorth&r. &cIt MUST face North!&r"
+			]
+			id: "15CD2A688D39C87D"
+			rewards: [{
+				count: 5
+				id: "3467E2DEDB8FA565"
+				item: "lightmanscurrency:coin_gold"
+				type: "item"
+			}]
+			subtitle: "Respawning"
+			tasks: [{
+				advancement: "dimasic_server:snawqueenresp"
+				criterion: ""
+				id: "4F68D5C6E346A550"
+				type: "advancement"
+			}]
+			x: 10.5d
+			y: 4.5d
+		}
+		{
+			dependencies: ["18C4B8D73A50CFAC"]
+			description: [
+				"Upon killing the &eHydra&r, a &eRespawn Monument&r will appear. You can activate the block to respawn the boss by placing &eAncient Debris&r in a circle around the monument like so:"
+				""
+				"{image:cte2:textures/Hydra_Respawn.png width:160 height:140 align:center}"
+				""
+				"Then, on the monument itself, place a &eWither Skeleton Skull&r facing &eNorth&r. &cIt MUST face North!&r"
+			]
+			id: "1DD47026109BE225"
+			rewards: [{
+				count: 5
+				id: "6A599A8C876376B3"
+				item: "lightmanscurrency:coin_gold"
+				type: "item"
+			}]
+			subtitle: "Respawning"
+			tasks: [{
+				advancement: "dimasic_server:hydraresp"
+				criterion: ""
+				id: "5757A2AFA61E5A7F"
+				type: "advancement"
+			}]
+			x: 13.5d
+			y: -1.5d
+		}
+		{
+			dependencies: [
+				"5BB55F41502BE69C"
+				"1E2D94E70E2A1134"
+				"18C4B8D73A50CFAC"
+				"1F3C2718AE550D5C"
+				"09AFF8CC33BD244B"
+			]
+			description: ["Defeat all of the &eTwilight Forest&r bosses in the Epilogue to complete this achievement. Then show it off with your new hat!"]
+			hide_dependency_lines: true
+			icon: "simplehats:pog"
+			id: "481C3C4D8D5AF5B8"
+			rewards: [
+				{
+					id: "6350309B873FAF80"
+					item: "simplehats:pog"
+					type: "item"
+				}
+				{
+					id: "675B5B35C383CF3D"
+					item: "lightmanscurrency:coin_netherite"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					icon: "ftb_ph:passive"
+					id: "3C311586BF920909"
+					title: "4 Passive Points"
+					type: "custom"
+				}
+			]
+			shape: "hexagon"
+			subtitle: "Achievement"
+			tasks: [{
+				id: "4405B159442E256A"
+				title: "Click Once Read"
+				type: "checkmark"
+			}]
+			title: "Defeat All Twilight Forest Bosses!"
+			x: 13.5d
+			y: 6.0d
+		}
+		{
+			dependencies: ["15B1E394B4FBB981"]
+			description: ["Nestled among the hills and fir trees of the &eSnowy Forest&r, the &eYeti Cave&r appears as a square-shaped hill. Four entrances allow access to the ice-covered insides, where packed ice hangs from stalactites and covers the floor. Many fierce &eYetis&r make their home in these frigid caves, lorded over by an &eAlpha Yeti&r."]
+			id: "4B93763BFB5F5E0D"
+			rewards: [
+				{
+					count: 3
+					id: "1F78FFBE5A9A85B2"
+					item: "mmorpg:material/fishing/4"
+					type: "item"
+				}
+				{
+					count: 2
+					id: "56F92CFDECE8EB68"
+					item: "lightmanscurrency:coin_gold"
+					type: "item"
+				}
+			]
+			shape: "rsquare"
+			subtitle: "Epilogue"
+			tasks: [{
+				icon: "blue_skies:snowcap_mushroom_block"
+				id: "0A566E2109FCE4C5"
+				structure: "twilightforest:yeti_cave"
+				title: "Find a Yeti Cave"
+				type: "structure"
+			}]
+			title: "A Cold, Humble Abode"
+			x: 7.5d
+			y: 3.0d
+		}
+		{
+			dependencies: ["77E6AE329E337151"]
+			description: [
+				"&oFind certain structures and kill bosses? Seems easy enough... You pull out your Explorer's Compass and- wait what? It doesn't work?&r"
+				""
+				"In the Twilight Forest, you'll need to rely on your navigation skills. You'll need to rely on Twilight Forest the &eMap Focus&r!"
+			]
+			icon: "twilightforest:magic_map"
+			id: "5081032C6E395EA9"
+			rewards: [{
+				id: "0AE3865B01EA1ACD"
+				item: "twilightforest:raven_feather"
+				type: "item"
+			}]
+			subtitle: "Epilogue"
+			tasks: [{
+				id: "2BF7F6856AC56540"
+				title: "Click Once Read"
+				type: "checkmark"
+			}]
+			title: "Nomadic Travels"
+			x: 3.0d
+			y: 1.5d
+		}
+	]
+	subtitle: ["Lv. 90"]
+	title: "Epilogue"
+}

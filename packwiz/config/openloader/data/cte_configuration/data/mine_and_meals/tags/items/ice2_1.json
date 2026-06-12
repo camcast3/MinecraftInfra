@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:cobalt_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coral_crunch",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:mint_ice_cream",
+      "required": false
+    }
+  ]
+}

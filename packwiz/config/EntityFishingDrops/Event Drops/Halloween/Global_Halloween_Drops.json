@@ -1,0 +1,11 @@
+[
+  {
+    "itemId": "minecraft:emerald",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "dropCommand": "tellraw {player} {\"text\":\"Halloween bonus emerald!\",\"color\":\"green\"}",
+    "dropCommandChance": 100.0,
+    "comment": "Halloween event - 10% chance for emerald on any fishing catch"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergarden:goo_ball",
+      "required": false
+    },
+    {
+      "id": "undergarden:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:twisted_cereal",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:glittering_grenadine",
+      "required": false
+    },
+    {
+      "id": "bosses_of_mass_destruction:crystal_fruit",
+      "required": false
+    }
+  ]
+}

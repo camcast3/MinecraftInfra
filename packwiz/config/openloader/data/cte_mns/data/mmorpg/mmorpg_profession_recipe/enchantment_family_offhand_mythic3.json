@@ -1,0 +1,40 @@
+{
+  "exp": 850,
+  "id": "enchantment_family_offhand_mythic3",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/mining/3",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/5",
+      "num": 4
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:paper",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "undergarden:regalium_crystal",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:string",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_emerald",
+      "num": 1    }
+  ],
+  "set_tier_nbt": true,
+  "profession": "enchanting",
+  "result": "mmorpg:enchantment/family/offhand/mythic",
+  "result_num": 1,
+  "tier": 3
+}

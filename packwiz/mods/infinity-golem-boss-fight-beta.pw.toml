@@ -1,0 +1,13 @@
+name = "Infinity Golem Boss Fight"
+filename = "infinitygolem-1.0.0-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "65cddff15269a86220a0803c0a22d91c0ab08f0a"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6350945
+project-id = 1229163

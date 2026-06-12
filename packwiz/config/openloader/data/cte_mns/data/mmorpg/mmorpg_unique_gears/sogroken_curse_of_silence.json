@@ -1,0 +1,63 @@
+{
+  "base_gear": "staff",
+  "guid": "sogroken_curse_of_silence",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:cursed_staff",
+  "league": "prophecy",
+  "min_drop_lvl": 70,
+  "min_tier": 1,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 80.0,
+      "min": 70.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "proc_cursed_meteor_on_spell_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "spirit_on_kill"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "spell_manasteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "mana_leech_cap"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "burn_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "burn_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": -10.0,
+      "min": -10.0,
+      "stat": "cast_speed"
+    }
+  ],
+  "weight": 1000
+}

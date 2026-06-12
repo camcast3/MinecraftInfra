@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_cursed_lightning_nova",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "cursed_lightning_nova",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

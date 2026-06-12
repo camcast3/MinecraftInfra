@@ -1,0 +1,60 @@
+{
+  "id": "carpe_noctem",
+  "runes": [
+    "yun",
+    "fey",
+    "und",
+	"ano"
+  ],
+  "slots": [
+    "axe",
+	"sword",
+	"greatsword",
+	"hammer",
+	"scythe"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "plus_lvl_cold_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "phys_to_water"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "all_water_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "lifesteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "move_speed"
+    }
+  ]
+}

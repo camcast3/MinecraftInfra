@@ -1,0 +1,7 @@
+{
+  "id": "spell_has_tag_power_chord",
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "power_chord"
+  }
+}

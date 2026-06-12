@@ -1,0 +1,13 @@
+name = "Jauml"
+filename = "jauml-1.1.0-forge-1.20.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "8adbcc2d0689d5819c0a3886205c2268eb7f3866"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7182524
+project-id = 1281310

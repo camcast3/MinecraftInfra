@@ -1,0 +1,34 @@
+{
+  "id": "lmp_barrage",
+  "manaMulti": 1.4,
+  "min_lvl": 10,
+  "one_of_a_kind": "proj_count",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "projectile_barrage"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "projectile_count"
+    },
+    {
+      "type": "MORE",
+      "max": -52.5,
+      "min": -65.0,
+      "stat": "projectile_damage"
+    },
+    {
+      "type": "MORE",
+      "max": -52.5,
+      "min": -65.0,
+      "stat": "increase_healing"
+    }
+  ],
+  "style": "DEX",
+  "weight": 1000
+}

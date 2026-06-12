@@ -1,0 +1,57 @@
+{
+  "base_gear": "shield",
+  "guid": "eyfor_anai",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "PERCENT",
+      "max": -15.0,
+      "min": -20.0,
+      "stat": "block_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_puncture"
+    },
+    {
+      "type": "FLAT",
+      "max": 80.0,
+      "min": 60.0,
+      "stat": "proc_puncture_on_block"
+    },
+    {
+      "type": "MORE",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "bleed_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "skill_damage_per_bleed_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": -1.0,
+      "min": -1.0,
+      "stat": "max_endurance_charge_charges"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,13 @@
+name = "Armor Set Bonuses (NeoForge /Forge)"
+filename = "spacecatasb-forge-20.14.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "0510dc943813a667b41a1624401761cbb1116f16"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6843216
+project-id = 549892

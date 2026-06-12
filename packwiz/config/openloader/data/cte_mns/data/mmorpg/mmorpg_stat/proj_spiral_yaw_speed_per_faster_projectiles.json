@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "proj_spiral_yaw_speed",
+    "adder_stat": "faster_projectiles",
+    "base": 0.0,
+    "ele": "Physical",
+    "priority": 100,
+    "id": "proj_spiral_yaw_speed_per_faster_projectiles",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

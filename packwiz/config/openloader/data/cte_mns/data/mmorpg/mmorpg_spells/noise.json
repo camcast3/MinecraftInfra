@@ -1,0 +1,354 @@
+{
+  "attached": {
+    "entity_components": {},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 2.0,
+              "sound": "roe_sfx:spell_clamor",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 200.0,
+              "particle_type": "minecraft:effect",
+              "radius": 4.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+              "value_calculation": "noise"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+              "value_calculation": "noise_self",
+			  "allow_self_damage": true,
+			  "disable_knockback": true
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Fire",
+              "value_calculation": "noise"
+            }
+          },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "elemental_weakness",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 60.0
+              }
+            }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "endurance_charge"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Nature",
+              "value_calculation": "noise"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "power_charge"
+            }
+          }
+        ],
+        "per_entity_hit": [
+          {
+            "acts": [
+			  {
+				"type": "exile_effect",
+				"map": {
+				  "count": 1.0,
+				  "exile_potion_id": "stun",
+				  "potion_action": "GIVE_STACKS",
+				  "potion_dur": 20.0
+				}
+			  }
+            ],
+            "en_preds": [],
+            "ifs": [],
+            "targets": []
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Cold",
+              "value_calculation": "noise"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "frenzy_charge"
+            }
+          }
+        ],
+        "per_entity_hit": [
+          {
+            "acts": [
+			  {
+				"type": "exile_effect",
+				"map": {
+				  "count": 1.0,
+				  "exile_potion_id": "slow",
+				  "potion_action": "GIVE_STACKS",
+				  "potion_dur": 60.0
+				}
+			  }
+            ],
+            "en_preds": [],
+            "ifs": [],
+            "targets": []
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 4.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "endurance_charge",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 600.0
+            }
+          },
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "power_charge",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 600.0
+            }
+          },
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "frenzy_charge",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 600.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "spell_taunt"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 20,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 120,
+    "ene_cost": {
+      "max": 15.0,
+      "min": 12.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 15.0,
+      "min": 12.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "area",
+      "damage",
+	  "magic",
+	  "physical",
+	  "song",
+	  "cast_speed_to_cooldown",
+    "self_damage"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "noise",
+  "loc_name": "Noise",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "bleed_chance"
+    }
+  ],
+  "weight": 1000
+}

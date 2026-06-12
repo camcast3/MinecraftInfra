@@ -1,0 +1,181 @@
+{
+  "attached": {
+    "entity_components": {},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "minecraft:block.glass.break",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 100.0,
+              "particle_type": "minecraft:snowflake",
+              "radius": 2.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 100.0,
+              "particle_type": "realmrpg_wyrms:wyrm_fireball_trail",
+              "radius": 2.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "disable_knockback": true,
+              "element": "Cold",
+              "value_calculation": "shatter"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 2.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "disable_knockback": true,
+              "element": "Fire",
+              "value_calculation": "shatter"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 2.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "cast_finish"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 20,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "area",
+        "magic",
+        "damage",
+        "cold",
+		"fire"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": "frost_lich_armor"
+  },
+  "default_lvl": 1,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "bone_shatter",
+  "loc_name": "Bone Shatter",
+  "lvl_based_on_spell": "frost_lich_armor",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [],
+  "weight": 1000
+}

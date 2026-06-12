@@ -1,0 +1,10 @@
+[{
+  "entityId": "monsterplus:mother_lava_squid",
+  "itemId": "mmorpg:runes/net",
+  "dropChance": 5.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"Net Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": true
+}]

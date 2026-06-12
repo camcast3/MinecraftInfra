@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 0.5625,
+    "min": 0.125
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 0.75,
+      "min": 0.5625
+    },
+    "stat": "health"
+  },
+  "id": "omnislash",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 0.75,
+        "min": 0.5625
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

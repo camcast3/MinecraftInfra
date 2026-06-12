@@ -1,0 +1,47 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "nasty_lava_parkour",
+      "infested_house",
+      "hideout"
+    ],
+    "ends": [
+      "boss1",
+      "lava_boss_room"
+    ],
+    "entrances": [
+      "simple2"
+    ],
+    "folder": "mine",
+    "four_ways": [
+      "shaft0",
+      "huge_pit",
+      "trader"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"illagers",
+			"otherworldly"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "parkour0",
+      "chest_down_pit",
+      "tight_mine"
+    ],
+    "triple_hallway": [
+      "redstone_ore_hidden_room",
+      "simple2",
+      "train_station"
+    ]
+  },
+  "id": "mine",
+  "weight": 1000
+}

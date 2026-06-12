@@ -1,0 +1,366 @@
+{
+  "attached": {
+    "entity_components": {
+      "default_entity_name_alpha": [
+        {
+          "acts": [
+            {
+              "type": "projectile",
+              "map": {
+                "entity_name": "default_entity_name_back",
+                "expire_on_en_hit": false,
+                "gravity": false,
+                "item": "supplementaries:cannonball",
+                "life_ticks": 5.0,
+                "proj_count": 1.0,
+                "proj_en": "mmorpg:spell_projectile",
+                "proj_speed": -2.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 8.0,
+                "particle_type": "undergarden:snowflake",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 2.0,
+                "particle_type": "footprintparticle:snowdust",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Cold",
+				"disable_knockback": true,
+                "value_calculation": "cursed_timewinder"
+              }
+            },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "slow",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 60.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "per_entity_hit": [
+            {
+              "acts": [
+                {
+                  "type": "sound",
+                  "map": {
+                    "pitch": 1.5,
+                    "sound": "roe_sfx:spell_ice_hit",
+                    "volume": 1.0
+                  }
+                }
+              ],
+              "en_preds": [],
+              "ifs": [],
+              "targets": []
+            },
+            {
+              "acts": [
+                {
+                  "type": "exile_effect",
+                  "map": {
+                    "count": 1.0,
+                    "exile_potion_id": "timewinder",
+                    "potion_action": "GIVE_STACKS",
+                    "potion_dur": 60.0
+                  }
+                }
+              ],
+              "en_preds": [],
+              "ifs": [],
+              "targets": []
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        }
+      ],
+      "default_entity_name_back": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 8.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 2.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+				"disable_knockback": true,
+                "value_calculation": "cursed_timewinder"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "per_entity_hit": [
+            {
+              "acts": [
+                {
+                  "type": "sound",
+                  "map": {
+                    "pitch": 1.5,
+                    "sound": "roe_sfx:spell_lightning_hit",
+                    "volume": 1.0
+                  }
+                }
+              ],
+              "en_preds": [],
+              "ifs": [],
+              "targets": []
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.20,
+              "sound": "roe_sfx:spell_timewinder",
+              "volume": 0.8
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_alpha",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "supplementaries:cannonball",
+              "life_ticks": 10.0,
+              "proj_count": 3.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "cast_finish"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "MAGE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "damage",
+        "magic",
+        "cold",
+        "lightning",
+        "projectile",
+        "cast_speed_to_cooldown",
+		"cursed"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "cursed_timewinder",
+  "loc_name": "Cursed Timewinder",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "freeze_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "faster_projectiles"
+    }
+  ],
+  "weight": 1000
+}

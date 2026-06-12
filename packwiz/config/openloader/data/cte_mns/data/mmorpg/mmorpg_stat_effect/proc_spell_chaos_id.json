@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_chaos_id",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "chaos_id",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

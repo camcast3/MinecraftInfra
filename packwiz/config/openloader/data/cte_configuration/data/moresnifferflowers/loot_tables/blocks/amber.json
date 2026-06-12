@@ -1,0 +1,140 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:match_tool",
+          "predicate": {
+            "enchantments": [
+              {
+                "enchantment": "minecraft:silk_touch",
+                "levels": {
+                  "min": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:amber"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:inverted",
+          "term": {
+            "condition": "minecraft:match_tool",
+            "predicate": {
+              "enchantments": [
+                {
+                  "enchantment": "minecraft:silk_touch",
+                  "levels": {
+                    "min": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:stick",
+          "weight": 200
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:amber_shard",
+          "weight": 100
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:dragonfly",
+          "weight": 100
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:carrot",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:potato",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:beetroot",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:beetroot_seeds",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:nether_wart",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wheat",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:wheat_seeds",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:torchflower_seeds",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:pitcher_pod",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:sniffer_egg",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:dawnberry_vine_seeds",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:ambush_seeds",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:dyespria_seeds",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:bonmeelia_seeds",
+          "weight": 12
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "moresnifferflowers:blocks/amber"
+}

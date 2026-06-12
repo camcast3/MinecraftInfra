@@ -1,0 +1,5 @@
+{
+    "name":"Disabled Crafts",
+    "description": "List containing most disabled items.$(br) Some of these items are still obtainable but not craftable. $(br)f.e. Terrablade (Botania) is obtainable through a special unique drop etc...$(2br) Always double check availability with JEI/EMI",
+    "icon": "minecraft:barrier"
+}

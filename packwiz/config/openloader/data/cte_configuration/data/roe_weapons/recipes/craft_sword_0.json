@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "crafting",
+  "category": "equipment",
+  "pattern": [
+    " a ",
+    "aba"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:iron_ingot"
+    },
+    "b": {
+      "item": "minecraft:iron_sword"
+    }
+  },
+  "result": {
+    "item": "roe_weapons:sword_0",
+    "count": 1
+  }
+}

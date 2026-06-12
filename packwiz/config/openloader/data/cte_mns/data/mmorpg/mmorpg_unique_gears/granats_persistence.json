@@ -1,0 +1,45 @@
+{
+  "base_gear": "brigandine_chest",
+  "guid": "granats_persistence",
+  "flavor_text": "",
+  "force_item_id": "cte2modpackarmors:endless_blood_armor_chestplate",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 7.0,
+      "stat": "health"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "blood_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 4.0,
+      "stat": "fortify_on_melee_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "water_resist"
+    }
+  ],
+  "weight": 1000
+}

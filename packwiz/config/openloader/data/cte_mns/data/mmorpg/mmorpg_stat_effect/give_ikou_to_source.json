@@ -1,0 +1,7 @@
+{
+  "effect": "ikou",
+  "give_to": "Source",
+  "id": "give_ikou_to_source",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

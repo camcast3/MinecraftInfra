@@ -1,0 +1,45 @@
+{
+  "base_gear": "greatsword",
+  "guid": "buster_sword",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:bustersword",
+  "league": "",
+  "min_drop_lvl": 40,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "MORE",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "area_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 15.0,
+      "stat": "dmg_received"
+    }
+  ],
+  "weight": 1000
+}

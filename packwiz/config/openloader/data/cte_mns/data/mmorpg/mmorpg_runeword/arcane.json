@@ -1,0 +1,48 @@
+{
+  "id": "arcane",
+  "runes": [
+    "mos",
+	"bri"
+  ],
+  "slots": [
+    "pants"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 45.0,
+      "min": 35.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "PERCENT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "spell_mssteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "spell_manasteal"
+    },
+    {
+      "type": "FLAT",
+      "max": -5.0,
+      "min": -5.0,
+      "stat": "mana_cost"
+    }
+  ]
+}

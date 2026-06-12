@@ -1,0 +1,14 @@
+{
+  "enabled": false,
+  "takeNormalDamage": true,
+  "takeMobDamage": true,
+  "takeGenericSpellDamage": true,
+  "takeMineSlashSpellDamage": true,
+  "takeIronSpellDamage": true,
+  "canDamagePlayer": true,
+  "cancelAggroTime": 0,
+  "neutralUntilAttacked": true,
+  "excludeEntitys": [
+    "modid:entityid"
+  ]
+}

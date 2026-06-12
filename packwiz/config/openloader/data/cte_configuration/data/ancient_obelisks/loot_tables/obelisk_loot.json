@@ -1,0 +1,94 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "ancient_obelisks:ancient_envy"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "ancient_obelisks:ancient_wrath"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "ancient_obelisks:ancient_greed"
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 6.0,
+        "min": 3.0
+      }
+    },
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:lapis_lazuli"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:redstone"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:coal"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:copper_ingot"
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 6.0,
+        "min": 3.0
+      }
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_treasure"
+        }
+      ],
+      "rolls": {
+        "type": "minecraft:uniform",
+        "max": 3.0,
+        "min": 1.0
+      }
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_high_rune"
+        }
+      ],
+	  "conditions": [
+		{
+		  "condition": "minecraft:random_chance",
+		  "chance": 0.1
+		}
+	  ]
+    }
+  ],
+  "random_sequence": "ancient_obelisks:obelisk_loot"
+}

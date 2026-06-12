@@ -1,0 +1,387 @@
+{
+  "attached": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "fighter_stance"
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        },
+        {
+          "acts": [
+			  {
+				"type": "sound",
+				"map": {
+				  "pitch": 2.0,
+				  "sound": "alexsmobs:guster_idle",
+				  "volume": 0.9
+				}
+			  }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 20.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+			  {
+				"type": "sound",
+				"map": {
+				  "pitch": 1.3,
+				  "sound": "roe_sfx:spell_effect_heat_tick",
+				  "volume": 1.0
+				}
+			  }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Fire",
+                "value_calculation": "weapon_toss_explode"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance"
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "motion": "None",
+                  "particle_count": 100.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 3.0
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance"
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "motion": "None",
+                  "particle_count": 10.0,
+                  "particle_type": "supplementaries:bomb_explosion",
+                  "radius": 3.0
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance"
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Fire",
+                "value_calculation": "weapon_toss"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "motion": "None",
+                  "particle_count": 20.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 1.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "motion": "None",
+                  "particle_count": 30.0,
+                  "particle_type": "minecraft:smoke",
+                  "radius": 1.5,
+                  "shape": "CIRCLE_2D",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_fireball",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "minecraft:iron_axe",
+              "life_ticks": 10.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+		{
+		  "acts": [
+			{
+			  "type": "damage",
+			  "map": {
+				"disable_knockback": true,
+				"element": "Fire",
+				"value_calculation": "weapon_toss"
+			  }
+			}
+		  ],
+		  "en_preds": [],
+		  "ifs": [],
+		  "targets": [
+			  {
+				"type": "in_front",
+				"map": {
+				  "distance": 4.0,
+				  "en_predicate": "enemies",
+				  "width": 2.0
+				}
+			  }
+          ]
+		}
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "sword_slash_single"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 5,
+    "castingWeapon": "MELEE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 80,
+    "ene_cost": {
+      "max": 14.0,
+      "min": 11.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 2.5,
+      "min": 2.0
+    },
+    "slows_when_casting": true,
+    "style": "str",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "weapon_skill",
+	  "area",
+      "damage",
+	  "melee",
+	  "movement",
+	  "fire",
+	  "affected_by_faster_projectiles"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "incinerating_weapon_toss",
+  "loc_name": "Incinerating Weapon Toss",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 20,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "burn_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "double_attack_chance"
+    }
+  ],
+  "weight": 1000
+}

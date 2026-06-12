@@ -1,0 +1,21 @@
+{
+  "comment": "Event configuration for EntityLootDrops mod",
+  "enableDropChanceEvent": true,
+  "enableDoubleDropsEvent": true,
+  "affectVanillaDrops": true,
+  "affectModdedDrops": true,
+  "dropChanceMultiplier": 0.5,
+  "doubleDropChanceMultiplier": 2.0,
+  "allowedMods": [
+    "minecraft",
+    "mmorpg",
+    "age_of_exile",
+    "mine_and_slash",
+    "dungeons_gear",
+    "reliquary"
+  ],
+  "blockedMods": [
+    "create",
+    "immersiveengineering"
+  ]
+}

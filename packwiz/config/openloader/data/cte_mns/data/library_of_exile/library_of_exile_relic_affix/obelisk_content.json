@@ -1,0 +1,12 @@
+{
+  "id": "obelisk_content",
+  "mods": [
+    {
+      "max": 100.0,
+      "min": 33.0,
+      "stat": "obelisk_content"
+    }
+  ],
+  "relic_type": "ancient_obelisks",
+  "weight": 1000
+}

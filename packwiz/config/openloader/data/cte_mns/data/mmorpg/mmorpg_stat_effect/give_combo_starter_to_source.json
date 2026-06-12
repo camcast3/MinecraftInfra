@@ -1,0 +1,7 @@
+{
+  "effect": "combo_starter",
+  "give_to": "Source",
+  "id": "give_combo_starter_to_source",
+  "seconds": 6,
+  "ser": "give_exile_effect"
+}

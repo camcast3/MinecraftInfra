@@ -1,0 +1,24 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "ese",
+        "sts",
+        "ese"
+    ],
+    "key": {
+        "e": {
+            "item": "minecraft:ender_eye"
+        },
+		"s": {
+            "item": "mmorpg:stone/3"
+        },
+        "t": {
+            "item": "doggytalents:super_treat"
+        }
+    },
+    "result": {
+        "count": 1,
+        "item": "doggytalents:kami_treat"
+    }
+}

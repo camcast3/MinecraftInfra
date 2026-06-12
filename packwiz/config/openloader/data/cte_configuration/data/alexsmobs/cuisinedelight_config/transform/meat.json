@@ -1,0 +1,29 @@
+{
+  "fluidTransform": {},
+  "itemTransform": {
+    "alexsmobs:lobster_tail": {
+      "next": "alexsmobs:cooked_lobster_tail",
+      "stage": "COOKED"
+    },
+    "alexsmobs:emu_egg": {
+      "next": "cuisinedelight:fried_egg",
+      "stage": "RAW"
+    },
+    "alexsmobs:crocodile_egg": {
+      "next": "cuisinedelight:fried_egg",
+      "stage": "RAW"
+    },
+    "alexsmobs:caiman_egg": {
+      "next": "cuisinedelight:fried_egg",
+      "stage": "RAW"
+    },
+    "alexsmobs:terrapin_egg": {
+      "next": "cuisinedelight:fried_egg",
+      "stage": "RAW"
+    },
+    "alexsmobs:platypus_egg": {
+      "next": "cuisinedelight:fried_egg",
+      "stage": "RAW"
+    }
+  }
+}

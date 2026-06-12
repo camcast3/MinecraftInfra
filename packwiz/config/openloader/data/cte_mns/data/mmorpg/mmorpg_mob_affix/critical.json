@@ -1,0 +1,15 @@
+{
+  "type": "prefix",
+  "format": "GOLD",
+  "icon": "",
+  "id": "critical",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "critical_hit"
+    }
+  ],
+  "weight": 1000
+}

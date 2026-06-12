@@ -1,0 +1,11 @@
+[
+  {
+    "entityId": "minecraft:disabled",
+    "itemId": "minecraft:ice",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "_comment": "Winter event ice from zombie",
+    "requirePlayerKill": true
+  }
+]

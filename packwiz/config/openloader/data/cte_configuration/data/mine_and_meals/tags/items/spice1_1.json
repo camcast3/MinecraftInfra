@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "blue_skies:fiery_beans",
+      "required": false
+    },
+    {
+      "id": "corn_delight:grilled_corn",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveil_stew",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_monster_flesh",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:caramel_pepper",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:strongroot_ale",
+      "required": false
+    }   
+  ]
+}

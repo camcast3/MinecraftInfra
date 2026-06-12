@@ -1,0 +1,35 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_boots_proc_ritardando_on_dodge",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "boots"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 45,
+      "min": 15,
+      "stat": "proc_ritardando_on_dodge"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_ritardando"
+    }
+  ],
+  "weight": 1000
+}

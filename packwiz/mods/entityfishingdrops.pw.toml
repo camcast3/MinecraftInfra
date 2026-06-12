@@ -1,0 +1,13 @@
+name = "Entity Fishing Drops"
+filename = "EntityFishingDrops-1.1.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/6818/277/EntityFishingDrops-1.1.jar"
+hash-format = "sha1"
+hash = "b080ccb9c26de5c2fb3d3bbd7fb28cc50cb21eef"
+
+[update]
+[update.curseforge]
+file-id = 6818277
+project-id = 1311350

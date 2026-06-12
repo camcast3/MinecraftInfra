@@ -1,0 +1,54 @@
+{
+  "id": "crater",
+  "runes": [
+    "daw",
+    "und",
+    "net",
+    "bri"
+  ],
+  "slots": [
+    "dagger",
+    "spear",
+    "gauntlet",
+    "bow",
+    "crossbow"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "instant_traps"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "charge_recovery_rate"
+    },
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -40.0,
+      "stat": "trap_spell_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "fire_resist"
+    }
+  ]
+}

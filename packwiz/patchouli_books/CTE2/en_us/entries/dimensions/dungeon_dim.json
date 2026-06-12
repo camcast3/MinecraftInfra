@@ -1,0 +1,30 @@
+{
+    "name": "Dungeons Dimension",
+    "icon": "dungeon_realm:map_device",
+    "category": "patchouli:dimensions",
+	"sortnum":6,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r  &n&lDungeons&r
+&n&6&lArea Level:&r&r  &n&lScaled to Player &r&r
+$(br) Dungeon dimensions work differently from all other dimensions you may experience. You cannot break or place blocks here. To access this dimension you need to use a specific &n&l&6Map&r on desiganted &n&l&6Map device&r to get into randomly generated dungeons full of monsters and loot."
+		},
+		{
+            "type": "patchouli:spotlight",
+			"title":"Harvest",
+  "item": "the_harvest:harvest,the_harvest:harvest_map",
+  "text": "Harvests are a type of Dungeon Dimension that generates a single random arena with mobs constantly spawning from Harvest Spawners with a set timer. Notably, these mobs drop crafting materials used to craft special crafting currencies." 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Obelisk",
+  "item": "ancient_obelisks:obelisk,ancient_obelisks:obelisk_map",
+  "text": "Obelisks are a type of Dungeon Dimension that generates a single random arena that spawns enemies in waves with random modifiers. Notably, the Obelisk maps can be modified with currencies from the mod in order to greatly boost their difficulty and rewards. Be prepared for a challenge if you dare." 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Map Device",
+  "item": "dungeon_realm:dungeon_map,dungeon_realm:map_device",
+  "text": "Maps are a type of Dungeon Dimension that generate randomly matched rooms full of enemies and loot. This is the primary endgame mechanic for CTE2." 
+		}
+    ]
+}

@@ -1,0 +1,45 @@
+{
+  "base_gear": "plate_helmet",
+  "guid": "oath_of_mahj_helmet",
+  "flavor_text": "",
+  "force_item_id": "cte2modpackarmors:oath_of_mahj_armor_helmet",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 60,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 14.0,
+      "min": 10.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 14.0,
+      "min": 10.0,
+      "stat": "energy"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "threat_generated"
+    }
+  ],
+  "weight": 1000
+}

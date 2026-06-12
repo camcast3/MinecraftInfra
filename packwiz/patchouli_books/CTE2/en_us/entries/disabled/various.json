@@ -1,0 +1,56 @@
+{
+    "name": "Various(Multiple Mods)",
+    "icon": "monsterplus:ancient_crystal",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "constructionwand:core_destruction",
+  "item2": "constructionwand:infinity_wand",
+  "item3": "deeperdarker:warden_leggings",
+  "item4": "doggytalents:golden_a_five_wagyu",
+  "item5": "doggytalents:sussy_sickle",
+  "item6": "monsterplus:ancient_crystal"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "monsterplus:crystal_arrow",
+  "item2": "monsterplus:crystal_boots",
+  "item3": "monsterplus:crystal_chestplate",
+  "item4": "monsterplus:crystal_clump",
+  "item5": "monsterplus:crystal_helmet",
+  "item6": "monsterplus:crystal_leggings"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "monsterplus:crystal_sword",
+  "item2": "mowziesmobs:blowgun",
+  "item3": "mowziesmobs:dart",
+  "item4": "mutantmonsters:mutant_skeleton_chestplate",
+  "item5": "mutantmonsters:mutant_skeleton_leggings",
+  "item6": "mutantmonsters:mutant_skeleton_boots"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "sophisticatedbackpacks:magnet_upgrade",
+  "item2": "sophisticatedbackpacks:advanced_magnet_upgrade",
+  "item3": "sophisticatedbackpacks:inception_upgrade",
+  "item4": "supplementaries:cannon",
+  "item5": "twilightforest:twilight_scepter",
+  "item6": "twilightforest:lifedrain_scepter"
+		},
+		{
+            "type": "patchouli:vert_item_list4",
+			"heading":"Disabled",
+  "item1": "twilightforest:zombie_scepter",
+  "item2": "twilightforest:fortification_scepter",
+  "item3": "wstweaks:blaze_blade",
+  "item4": "wstweaks:lava_blade"
+		}
+    ]
+}

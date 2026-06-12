@@ -1,0 +1,23 @@
+{
+    "name": "Stat and Enchantment Compat",
+    "icon": "minecraft:enchanted_book",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":14,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 11DB53435CA1D59E)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rIn CTE2, some Vanilla stats have compatibility with Mine and Slash!
+Vanilla : &aMine and Slash&r
+Health : &b+0.5% Magic Shield&r
+Armor : &b+0.1% Gear Defense&r
+Armor Toughness : &b+0.1% Gear Defense&r
+Attack Damage : &b+0.5% Total Damage&r
+Luck : &b+3% Magic Find&r
+Additionally, Enchantment compatibility is included.
+"},
+{            "type": "patchouli:text",
+            "text": " You can see how the Enchantment affects Mine and Slash stats in the &bEnchantment description in blue&r.
+Enchantment stat bonuses cap out per item equal to the Max Enchantment level + 1. For example, Protection gives +2% Armor, but each item with this enchantment can only give +12%, even if you somehow get a Protection VIII item. However, there is also a global cap of the item cap x3. If you equipped 4 Protection VI items, you would receive only +36% Armor."
+		}
+    ]
+}

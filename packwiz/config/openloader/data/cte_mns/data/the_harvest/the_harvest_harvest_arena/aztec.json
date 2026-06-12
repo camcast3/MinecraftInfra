@@ -1,0 +1,21 @@
+{
+  "id": "aztec",
+  "mob_list_tag_check": {
+    "checks": [
+      {
+        "check": "HAS_ALL",
+        "tags": [
+          "harvest"
+        ]
+      }
+    ]
+  },
+  "structure_data": {
+    "rooms_folder": "the_harvest:harvest/aztec",
+    "size": 2,
+    "teleport_offset_x": 0,
+    "teleport_offset_y": 1,
+    "teleport_offset_z": 0
+  },
+  "weight": 1000
+}

@@ -1,0 +1,18 @@
+{
+    "entries": [
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                    "item": "outer_end:halite_crystal"
+                },
+            "max_time": 320,
+            "min_time": 0,
+            "nutrition": 3,
+            "overcook_penalty": 0,
+            "raw_penalty": 0,
+            "size": 0,
+            "stir_time": 320
+        }
+    ]
+}

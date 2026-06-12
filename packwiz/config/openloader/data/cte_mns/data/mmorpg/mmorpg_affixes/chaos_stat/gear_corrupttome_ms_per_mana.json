@@ -1,0 +1,28 @@
+{
+  "type": "chaos_stat",
+  "eye_aura_req": "",
+  "guid": "gear_corrupttome_ms_per_mana",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "tome"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "magic_shield_per_perc_of_mana"
+    }
+  ],
+  "weight": 1000
+}

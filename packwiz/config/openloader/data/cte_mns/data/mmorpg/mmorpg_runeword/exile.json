@@ -1,0 +1,51 @@
+{
+  "id": "exile",
+  "runes": [
+    "und",
+    "wir",
+    "net",
+    "nos",
+    "yun"
+  ],
+  "slots": [
+    "shield"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 3.0,
+      "stat": "block_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 8.0,
+      "stat": "lifesteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 3.0,
+      "stat": "inc_effect_of_offensive_buff_given"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 1.0,
+      "stat": "max_water_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 1.0,
+      "stat": "max_fire_resist"
+    }
+  ]
+}

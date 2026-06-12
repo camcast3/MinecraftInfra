@@ -1,0 +1,51 @@
+{
+  "base_gear": "tome",
+  "guid": "atronach",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 4.0,
+      "stat": "learn_summon_lightning_golem"
+    },
+    {
+      "type": "FLAT",
+      "max": 35.0,
+      "min": 25.0,
+      "stat": "golem_spell_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "all_lightning_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 1.0,
+      "stat": "spell_manasteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "lightning_resist"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,9 @@
+{
+  "fluidTransform": {},
+  "itemTransform": {
+    "aquaculture:fish_filet_raw": {
+      "next": "aquaculture:fish_filet_cooked",
+      "stage": "COOKED"
+    }
+  }
+}

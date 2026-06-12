@@ -1,0 +1,12 @@
+[
+  {
+    "catchId": "minecraft:cod",
+    "itemId": "minecraft:gold_ingot",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "dropCommand": "tellraw {player} {\"text\":\"You found gold in the cod!\",\"color\":\"gold\"}",
+    "dropCommandChance": 100.0,
+    "comment": "25% chance for gold ingot when catching cod"
+  }
+]

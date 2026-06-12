@@ -1,0 +1,49 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "endersdelight:chorus_pie",
+      "required": false
+    },
+    {
+      "id": "minecraft:cake",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:mint_ice_cream",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:cocoa_fudge",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_apple_cider",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_apple_cider",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:chocolate_pie_slice",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:honey_glazed_ham",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_melon_juice",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_hot_cocoa",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coconut_pudding",
+      "required": false
+    }
+  ]
+}

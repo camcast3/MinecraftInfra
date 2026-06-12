@@ -1,0 +1,31 @@
+{
+  "exp": 250,
+  "id": "food_epic_life2",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/2",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/3",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "aquaculture:fish_fillet_cooked",
+      "num": 2
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_iron",
+      "num": 5
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/epic_life",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 2
+}

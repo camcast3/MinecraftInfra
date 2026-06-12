@@ -1,0 +1,122 @@
+{
+  "id": "crusader",
+  "lvl_reqs": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "perks": {
+    "safeguard": {
+      "x": 1,
+      "y": 0
+    },
+    "holy_shield_throw": {
+      "x": 1,
+      "y": 1
+    },
+    "persecutory_thrust": {
+      "x": 1,
+      "y": 2
+    },
+    "reckoners_flail": {
+      "x": 2,
+      "y": 2
+    },
+    "martyrdom": {
+      "x": 1,
+      "y": 3
+    },
+    "comeuppance": {
+      "x": 1,
+      "y": 4
+    },
+    "blessed_hammer": {
+      "x": 2,
+      "y": 4
+    },
+    "fist_of_judgment": {
+      "x": 1,
+      "y": 5
+    },
+    "holy_immolation": {
+      "x": 2,
+      "y": 5
+    },
+    "prayer": {
+      "x": 5,
+      "y": 0
+    },
+    "blessed_aim": {
+      "x": 4,
+      "y": 1
+    },
+    "defiance": {
+      "x": 5,
+      "y": 1
+    },
+    "holy_shock": {
+      "x": 4,
+      "y": 2
+    },
+    "fanaticism": {
+      "x": 4,
+      "y": 3
+    },
+    "meditation": {
+      "x": 5,
+      "y": 3
+    },
+    "concentration": {
+      "x": 4,
+      "y": 4
+    },
+    "redemption": {
+      "x": 5,
+      "y": 5
+    },
+    "holy_fire": {
+      "x": 4,
+      "y": 6
+    },
+    "salvation": {
+      "x": 5,
+      "y": 6
+    },
+    "p_health_regen_cru": {
+      "x": 8,
+      "y": 1
+    },
+    "p_block_chance_cru": {
+      "x": 8,
+      "y": 2
+    },
+    "p_burn_damage_cru": {
+      "x": 8,
+      "y": 3
+    },
+    "p_proc_electrify_chance_cru": {
+      "x": 9,
+      "y": 3
+    },
+    "p_health_cru": {
+      "x": 8,
+      "y": 4
+    },
+    "p_dmg_when_low_hp_cru": {
+      "x": 8,
+      "y": 5
+    },
+    "p_retribution_on_block_cru": {
+      "x": 9,
+      "y": 5
+    },
+    "p_increase_healing_cru": {
+      "x": 8,
+      "y": 6
+    }
+  }
+}

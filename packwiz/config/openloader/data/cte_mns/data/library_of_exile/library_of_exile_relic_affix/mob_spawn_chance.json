@@ -1,0 +1,12 @@
+{
+  "id": "mob_spawn_chance",
+  "mods": [
+    {
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "mob_spawn_chance"
+    }
+  ],
+  "relic_type": "ancient_obelisks",
+  "weight": 1000
+}

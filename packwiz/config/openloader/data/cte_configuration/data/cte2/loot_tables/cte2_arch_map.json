@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "ancient_obelisks:obelisk_map",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "the_harvest:harvest_map",
+          "weight": 1
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_arch_map"
+}

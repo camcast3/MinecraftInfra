@@ -1,0 +1,16 @@
+{
+  "id": "archmage",
+  "manaMulti": 1.4,
+  "min_lvl": 30,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 2.0,
+      "stat": "archmage"
+    }
+  ],
+  "style": "INT",
+  "weight": 1000
+}

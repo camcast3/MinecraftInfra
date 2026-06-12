@@ -1,0 +1,17 @@
+{
+  "placement": {
+    "type": "structure_gel:grid_placement",
+    "allowed_near_spawn": false,
+    "frequency": 0.7,
+    "offset": 24,
+    "salt": 958495324,
+    "spacing": 16,
+    "structure": "blue_skies:frozen_bunker"
+  },
+  "structures": [
+    {
+      "structure": "blue_skies:frozen_bunker",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,252 @@
+{
+    "size": "large",
+    "color": "#0a2e0b",
+    "waves": [{
+            "entities": [
+				{
+					"entity": "undergarden:forgotten",
+					"count": 8
+				}
+            ],
+            "modifiers": [
+            ],
+            "rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "undergarden:forgotten",
+                    "rolls": 2
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 1,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+            "max_wave_time": 600,
+            "setup_time": 100
+        },
+        {
+            "entities": [
+				{
+					"entity": "undergarden:rotwalker",
+					"count": 6
+				},
+				{
+					"entity": "undergarden:rotbeast",
+					"count": 4
+				}
+            ],
+            "modifiers": [
+                {
+                    "attribute": "generic.max_health",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.10
+                },
+                {
+                    "attribute": "generic.movement_speed",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.05
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "undergarden:rotwalker",
+                    "rolls": 2
+                },
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "undergarden:rotbeast",
+                    "rolls": 2
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 2,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+            "max_wave_time": 1200,
+            "setup_time": 100
+        },
+        {
+            "entities": [
+				{
+					"entity": "mowziesmobs:umvuthana",
+					"count": 3
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_crane",
+					"count": 2
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_raptor",
+					"count": 2
+				}
+            ],
+            "modifiers": [
+                {
+                    "attribute": "generic.max_health",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.15
+                },
+                {
+                    "attribute": "generic.movement_speed",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.05
+                },
+                {
+                    "attribute": "attributeslib:life_steal",
+                    "operation": "ADDITION",
+                    "value": 0.10
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "mowziesmobs:umvuthana",
+                    "rolls": 2
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 3,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+            "max_wave_time": 1600,
+            "setup_time": 100
+        },
+        {
+            "entities": [
+                {
+                    "entity": "mowziesmobs:umvuthi",
+                    "count": 1
+                },
+				{
+					"entity": "mowziesmobs:umvuthana",
+					"count": 1
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_crane",
+					"count": 1
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_raptor",
+					"count": 1
+				}
+            ],
+            "modifiers": [
+                {
+                    "attribute": "generic.max_health",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.25
+                },
+                {
+                    "attribute": "generic.knockback_resistance",
+                    "operation": "ADDITION",
+                    "value": 0.5
+                },
+                {
+                    "attribute": "generic.armor",
+                    "operation": "ADDITION",
+                    "value": 3
+                },
+                {
+                    "attribute": "attributeslib:life_steal",
+                    "operation": "ADDITION",
+                    "value": 0.10
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "mowziesmobs:umvuthana",
+                    "rolls": 3
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 4,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+            "max_wave_time": 2400,
+            "setup_time": 100
+        },
+        {
+            "entities": [
+                {
+                    "entity": "mowziesmobs:sculptor",
+                    "count": 1
+                }
+            ],
+            "modifiers": [
+                {
+                    "attribute": "generic.max_health",
+                    "operation": "MULTIPLY_TOTAL",
+                    "value": 0.25
+                },
+                {
+                    "attribute": "generic.knockback_resistance",
+                    "operation": "ADDITION",
+                    "value": 0.5
+                },
+                {
+                    "attribute": "generic.armor",
+                    "operation": "ADDITION",
+                    "value": 3
+                },
+                {
+                    "attribute": "attributeslib:life_steal",
+                    "operation": "ADDITION",
+                    "value": 0.10
+                }
+            ],
+            "rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "mowziesmobs:sculptor",
+                    "rolls": 1
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 5,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+            "max_wave_time": 2400,
+            "setup_time": 200
+        }
+    ],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 5,
+            "desc": "rewards.gateways.loot_table.drops"
+        }
+    ],
+    "failures": [
+        {
+            "type": "gateways:explosion",
+            "strength": 4,
+            "fire": true,
+            "block_damage": true
+        },
+        {
+            "type": "gateways:summon",
+            "entity": {
+                "entity": "mowziesmobs:naga",
+                "count": 2
+            }
+        }
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

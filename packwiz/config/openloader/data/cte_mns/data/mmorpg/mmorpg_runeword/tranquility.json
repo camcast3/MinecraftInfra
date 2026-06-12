@@ -1,0 +1,51 @@
+{
+  "id": "tranquility",
+  "runes": [
+    "fey",
+    "ita",
+    "dos"
+  ],
+  "slots": [
+    "shield",
+	"tome",
+	"totem"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 45.0,
+      "min": 35.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "proc_rejuvenation_on_crit"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "energy_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "chaos_resist"
+    }
+  ]
+}

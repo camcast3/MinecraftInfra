@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " EE",
+    "ECE",
+    "E  "
+  ],
+  "key": {
+    "C": {
+      "item": "stalwart_dungeons:chorundum"
+    },
+    "E": {
+      "item": "minecraft:phantom_membrane"
+    }
+  },
+  "result": {
+    "item": "customizableelytra:elytra_wing"
+  }
+}

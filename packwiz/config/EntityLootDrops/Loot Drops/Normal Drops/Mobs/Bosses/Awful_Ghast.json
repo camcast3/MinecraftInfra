@@ -1,0 +1,19 @@
+[{
+  "entityId": "stalwart_dungeons:awful_ghast",
+  "itemId": "mmorpg:runes/net",
+  "dropChance": 15.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"Net Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": false
+},{
+  "entityId": "stalwart_dungeons:awful_ghast",
+  "itemId": "stalwart_dungeons:awful_crystal",
+  "dropChance": 100.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"Net Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 0.0,
+  "requirePlayerKill": false
+}]

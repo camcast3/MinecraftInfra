@@ -1,0 +1,18 @@
+{
+    "name": "Primal Evils",
+    "icon": "bosses_of_mass_destruction:ancient_anima",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":20,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 749D138B0222E744)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rAt long last... your notes from your various adventures have brought you to &eThe Otherside&r.
+
+From your humble beginnings in the &eOverworld&r, perilous journey through the &eNether&r and &eUnderdark&r, encounters in the &eEverbright and Everdawn&r, and close calls in &eThe End&r, you are now at what you believe to be the source of the evil."},
+{            "type": "patchouli:text",
+            "text": "What did that researcher back at the village call it? A 'quarrel' amongst the &bPrimal Titans&r? According to the researcher, it should be enough to just eliminate the four elemental creatures found in &eThe End&r and &eThe Otherside&r.
+
+Get ready to embark on your final quest! There's no way they'll come back after killing them, right..?"
+		}
+    ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "uber_frag_chance",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_boss_frag_chance"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

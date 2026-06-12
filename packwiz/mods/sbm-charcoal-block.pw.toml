@@ -1,0 +1,13 @@
+name = "[SBM] Charcoal Block"
+filename = "SBM-CharcoalBlock-1.20-1.1.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "9519cf7f9aac1252d31b67007f3b56939713f251"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 4580104
+project-id = 312122

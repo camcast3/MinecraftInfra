@@ -1,0 +1,33 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "blue_skies:monitor_tail": {
+            "next": "blue_skies:cooked_monitor_tail",
+            "stage": "COOKED"
+        },
+        "blue_skies:carabeef": {
+            "next": "blue_skies:cooked_carabeef",
+            "stage": "COOKED"
+        },
+        "blue_skies:venison": {
+            "next": "blue_skies:cooked_venison",
+            "stage": "COOKED"
+        },
+        "blue_skies:charscale_moki": {
+            "next": "blue_skies:cooked_charscale_moki",
+            "stage": "COOKED"
+        },
+        "blue_skies:grittle_flatfish": {
+            "next": "blue_skies:cooked_grittle_flatfish",
+            "stage": "COOKED"
+        },
+        "blue_skies:municipal_monkfish": {
+            "next": "blue_skies:cooked_municipal_monkfish",
+            "stage": "COOKED"
+        },
+        "blue_skies:horizofin_tunid": {
+            "next": "blue_skies:cooked_horizofin_tunid",
+            "stage": "COOKED"
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+  "base_gear": "necklace",
+  "guid": "maras_kaleidoscope",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 100,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "plus_lvl_all_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "all_attributes"
+    }
+  ],
+  "weight": 250
+}

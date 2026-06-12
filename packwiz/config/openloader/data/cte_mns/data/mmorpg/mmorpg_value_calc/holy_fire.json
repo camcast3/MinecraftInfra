@@ -1,0 +1,33 @@
+{
+  "base": {
+    "max": 2.25,
+    "min": 0.5
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 0.11,
+      "min": 0.11
+    },
+    "stat": "health"
+  },
+  "id": "holy_fire",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 0.11,
+        "min": 0.11
+      },
+      "stat": "health"
+    },
+    {
+      "multi": {
+        "max": 0.11,
+        "min": 0.11
+      },
+      "stat": "magic_shield"
+    }
+  ]
+}

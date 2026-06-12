@@ -1,0 +1,42 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "trader",
+      "0"
+    ],
+    "ends": [
+      "boss_evoker",
+      "mythic_mob_house"
+    ],
+    "entrances": [
+      "simple"
+    ],
+    "folder": "nature",
+    "four_ways": [
+      "simple2"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"forest",
+			"spider_forest"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "hard_to_find_mobs",
+      "tent_treasure"
+    ],
+    "triple_hallway": [
+      "simple4",
+      "simple5"
+    ]
+  },
+  "id": "nature",
+  "weight": 1000
+}

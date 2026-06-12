@@ -1,0 +1,13 @@
+name = "Temporary Spawners"
+filename = "Temporary-Spawners-1.20.1-1.5.3.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "168b5ad971526e7bf43b9601685f6638f28c8359"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6017261
+project-id = 342655

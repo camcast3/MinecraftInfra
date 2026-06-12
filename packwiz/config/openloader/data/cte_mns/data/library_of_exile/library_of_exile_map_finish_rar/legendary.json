@@ -1,0 +1,9 @@
+{
+  "id": "legendary",
+  "loot_table": "library_of_exile:chests/tier_4_dungeon",
+  "mns_loot_multi": 3.5,
+  "perc_to_unlock": 60,
+  "reward_chests": 4,
+  "text_format": "GOLD",
+  "tier": 4
+}

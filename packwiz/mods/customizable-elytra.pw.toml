@@ -1,0 +1,13 @@
+name = "Customizable Elytra"
+filename = "customizableelytra-forge-2.1.2+1.20.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "6e1eef652c3b0b5dc814f830ce02f447715031cf"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5276553
+project-id = 440047

@@ -1,0 +1,39 @@
+{
+  "base": 0.0,
+  "effect": [
+    {
+      "effects": [
+        "proc_spell_healing_aura"
+      ],
+      "events": [
+        "on_damage"
+      ],
+      "ifs": [
+        "random_roll",
+        "is_source_very_low_hp",
+        "attack_type_is_hit",
+        "is_healing_aura_not_on_cd"
+      ],
+      "order": "data_modification",
+      "side": "Source"
+    }
+  ],
+  "ele": "Physical",
+  "format": "aqua",
+  "group": "Misc",
+  "gui_group": "NONE",
+  "has_softcap": false,
+  "icon": "★",
+  "id": "proc_healing_aura_on_hit_vll",
+  "is_long": true,
+  "is_perc": true,
+  "max": 100.0,
+  "min": -1000.0,
+  "minus_is_good": false,
+  "multiUseType": "MULTIPLY_STAT",
+  "order": 100,
+  "scaling": "NONE",
+  "ser": "data",
+  "show_in_gui": true,
+  "softcap": 0.0
+}

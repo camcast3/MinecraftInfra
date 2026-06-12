@@ -1,0 +1,31 @@
+{
+  "exp": 250,
+  "id": "buff_potion_epic_arcane0",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/0",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/3",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:lapis_lazuli",
+      "num": 5
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_iron",
+      "num": 5
+	}
+  ],
+  "profession": "alchemy",
+  "result": "mmorpg:buff_potion/epic_arcane",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 0
+}

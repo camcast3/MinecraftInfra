@@ -1,0 +1,22 @@
+{
+  "id": "imbuement",
+  "manaMulti": 1.2,
+  "min_lvl": 30,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 3.0,
+      "stat": "imbuement"
+    },
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 3.0,
+      "stat": "imbuement_energy_cost"
+    }
+  ],
+  "style": "DEX",
+  "weight": 1000
+}

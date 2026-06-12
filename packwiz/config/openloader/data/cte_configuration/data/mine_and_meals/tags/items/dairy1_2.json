@@ -1,0 +1,65 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:onsen_tamago",
+      "required": false
+    },
+    {
+      "id": "doggytalents:gyudon",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:depth_shroom_cream_soup",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:green_apple_pie",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:blooming_oddion",
+      "required": false
+    },
+    {
+      "id": "corn_delight:creamed_corn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_soup",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_dog",
+      "required": false
+    },
+    {
+      "id": "corn_delight:nachos_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:twisted_cereal",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:bisque",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coral_crunch",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:creamy_onion_soup",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:coconut_milk",
+      "required": false
+    }
+  ]
+}

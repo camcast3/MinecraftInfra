@@ -1,0 +1,23 @@
+{
+  "affected": "Mobs",
+  "id": "movespeed",
+  "map_resist": "Physical",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 25.0,
+      "stat": "knockback_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,13 @@
+{
+    "values": [
+        "minecraft:wolf",
+        "alexsmobs:maned_wolf",
+        "mmorpg:spirit_wolf",
+        "twilightforest:hostile_wolf",
+        "twilightforest:mist_wolf",
+        "twilightforest:winter_wolf",
+        "born_in_chaos_v1:dire_hound_leader",
+        "born_in_chaos_v1:dread_hound",
+        "born_in_chaos_v1:dread_hound_not_despawn"
+    ]
+}

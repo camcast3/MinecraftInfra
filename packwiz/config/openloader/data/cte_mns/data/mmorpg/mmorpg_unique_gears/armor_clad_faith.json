@@ -1,0 +1,63 @@
+{
+  "base_gear": "plate_chest",
+  "guid": "armor_clad_faith",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 40,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 75.0,
+      "min": 50.0,
+      "stat": "health_per_perc_of_strength"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "dmg_reduction_ll"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "dmg_reduction_vll"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_pull"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 30.0,
+      "stat": "knockback_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -40.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -40.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

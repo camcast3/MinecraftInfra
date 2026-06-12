@@ -1,0 +1,32 @@
+[
+  {
+	"_comment": "Halloween Event Drops",
+    "itemId": "simplehats:hatscraps_halloween",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "command": "summon minecraft:creeper {entity_x} {entity_y} {entity_z}",
+    "commandChance": 1.0,
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "minecraft:jack_o_lantern",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "",
+    "command": "particle minecraft:soul {entity_x} {entity_y} {entity_z} 1 1 1 0.1 50",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "supplementaries:candy",
+    "dropChance": 20.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "",
+    "command": "",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  }
+]

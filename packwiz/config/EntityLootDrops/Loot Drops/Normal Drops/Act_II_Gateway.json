@@ -1,0 +1,14 @@
+[
+  {
+    "_comment": "Act II Gateway spawn on mob kill",
+    "itemId": "",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "minecraft:the_nether",
+    "command": "open_gateway {entity_x} {entity_y} {entity_z} gateways:act/ii",
+    "commandChance": 1.5,
+	"commandCoolDown": 300,
+    "requirePlayerKill": true
+  }
+]

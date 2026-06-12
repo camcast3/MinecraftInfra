@@ -1,0 +1,51 @@
+{
+  "base_gear": "brigandine_boots",
+  "guid": "darkray_vectors",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 55.0,
+      "min": 45.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "lightning_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "max_frenzy_charge_charges"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "dmg_per_frenzy_charge"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "dodge_er_power_charge"
+    },
+    {
+      "type": "FLAT",
+      "max": 18.0,
+      "min": 14.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

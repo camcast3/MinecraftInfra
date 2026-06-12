@@ -1,0 +1,32 @@
+{
+  "id": "daw",
+  "item_id": "mmorpg:runes/daw",
+  "min_lvl_multi": 0.4,
+  "on_armor_stats": [
+    {
+      "type": "FLAT",
+      "max": 12.5,
+      "min": 7.5,
+      "stat": "chaos_resist"
+    }
+  ],
+  "on_jewelry_stats": [
+    {
+      "type": "FLAT",
+      "max": 12.5,
+      "min": 7.5,
+      "stat": "chaos_resist"
+    }
+  ],
+  "on_weapons_stats": [
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 4.5,
+      "stat": "all_chaos_damage"
+    }
+  ],
+  "tier": 3,
+  "uses_unlucky_ran": false,
+  "weight": 0
+}

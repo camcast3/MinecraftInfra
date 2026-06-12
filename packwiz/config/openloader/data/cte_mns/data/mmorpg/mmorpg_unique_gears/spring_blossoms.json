@@ -1,0 +1,45 @@
+{
+  "base_gear": "ring",
+  "guid": "spring_blossoms",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_heal_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "heal_cleanse"
+    },
+    {
+      "type": "PERCENT",
+      "max": 8.0,
+      "min": 5.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 35.0,
+      "min": 30.0,
+      "stat": "increase_healing"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 15.0,
+      "stat": "chaos_resist"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,27 @@
+[
+
+	{
+        "itemId": "lightmanscurrency:coin_iron",
+        "dropChance": 75.0,
+        "minAmount": 2,
+        "maxAmount": 8,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_gold",
+        "dropChance": 25.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_emerald",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 2,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    }
+]

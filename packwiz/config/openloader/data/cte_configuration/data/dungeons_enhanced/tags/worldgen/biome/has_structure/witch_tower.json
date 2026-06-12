@@ -1,0 +1,9 @@
+{
+  "remove": [
+    "#dungeons_enhanced:no_structures/overworld/surface"
+  ],
+  "values": [
+    "#minecraft:is_taiga",
+    "#undergarden:is_undergarden"
+  ]
+}

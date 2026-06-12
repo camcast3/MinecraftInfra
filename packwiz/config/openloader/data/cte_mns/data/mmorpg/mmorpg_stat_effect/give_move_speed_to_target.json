@@ -1,0 +1,7 @@
+{
+  "effect": "move_speed",
+  "give_to": "Target",
+  "id": "give_move_speed_to_target",
+  "seconds": 4,
+  "ser": "give_exile_effect"
+}

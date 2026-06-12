@@ -1,0 +1,89 @@
+{
+	"size": "small",
+	"color": "#700099",
+	"waves": [{
+			"entities": [
+                {
+                    "entity": "aquamirae:tortured_soul",
+                    "count": 5
+                },
+				{
+                    "entity": "aquamirae:maw",
+                    "count": 3
+                }
+            ],
+			"modifiers": [
+            ],
+			"rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "aquamirae:tortured_soul",
+                    "rolls": 1
+                },
+				{
+                    "type": "gateways:entity_loot",
+                    "entity": "aquamirae:maw",
+                    "rolls": 1
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 1,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+            ],
+			"max_wave_time": 750,
+			"setup_time": 100
+		},
+        {
+			"entities": [
+                {
+                    "entity": "aquamirae:captain_cornelia",
+                    "count": 1
+                }
+            ],
+			"rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "aquamirae:captain_cornelia",
+                    "rolls": 1
+                },
+				{
+					"type": "gateways:loot_table",
+					"loot_table": "cte2:cte2_gateways",
+					"rolls": 1,
+					"desc": "rewards.gateways.loot_table.drops"
+				}
+			],
+			"max_wave_time": 36000,
+			"setup_time": 100
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 3,
+            "desc": "rewards.gateways.loot_table.drops"
+        }
+    ],
+    "failures": [
+        {
+            "type": "gateways:mob_effect",
+            "effect": "minecraft:slowness",
+            "duration": 400
+        },
+        {
+            "type": "gateways:summon",
+            "entity": {
+                "entity": "aquamirae:tortured_soul",
+                "count": 2
+            }
+        }
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

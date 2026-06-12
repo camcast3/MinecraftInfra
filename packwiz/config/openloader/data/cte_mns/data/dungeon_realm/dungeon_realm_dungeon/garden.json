@@ -1,0 +1,52 @@
+{
+  "author": "Neksy21",
+  "data": {
+    "curved_hallways": [
+    "ch_stairs",
+    "ch_1",
+    "ch_2",
+    "ch_3"
+    ],
+    "ends": [
+    "end_throne",
+    "end_terrace",
+    "end_tree",
+    "end_fire_tree",
+    "end_stairs",
+    "end_arches"
+    ],
+    "entrances": [
+    "entrance_down",
+    "entrance_up"
+    ],
+    "folder": "garden",
+    "four_ways": [
+    "4w_fountain",
+    "4w_4trees",
+    "4w_tree"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+		    "map"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "sh_basic",
+    "sh_trunk",
+    "sh_tree",
+    "sh_stairs"
+    ],
+    "triple_hallway": [
+    "3h_trunk",
+    "3h_basic",
+    "3h_stairs"
+    ]
+  },
+  "id": "garden",
+  "weight": 1000
+}

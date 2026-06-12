@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "nethersdelight:magma_gelatin",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:scarlet_cheese_wedge",
+      "required": false
+    }
+  ]
+}

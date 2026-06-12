@@ -1,0 +1,28 @@
+{
+  "affix_types": [
+    "chaos_stat"
+  ],
+  "id": "flames",
+  "lvl_req": 0.5,
+  "mods": [
+    {
+      "type": "MORE",
+      "max": 10.0,
+      "min": 2.0,
+      "stat": "all_fire_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 3.0,
+      "stat": "fire_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 0.6,
+      "stat": "max_fire_resist"
+    }
+  ],
+  "weight": 1000
+}

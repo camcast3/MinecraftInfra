@@ -1,0 +1,40 @@
+{
+  "type": "prefix",
+  "eye_aura_req": "",
+  "guid": "seraphim",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "armor_family"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "health"
+    },
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "mana"
+    },
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "energy"
+    }
+  ],
+  "weight": 500
+}

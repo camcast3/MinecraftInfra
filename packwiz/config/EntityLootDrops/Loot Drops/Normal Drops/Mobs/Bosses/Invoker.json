@@ -1,0 +1,10 @@
+[{
+  "entityId": "illagerinvasion:invoker",
+  "itemId": "mmorpg:runes/owd",
+  "dropChance": 10.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"Owd Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": true
+}]

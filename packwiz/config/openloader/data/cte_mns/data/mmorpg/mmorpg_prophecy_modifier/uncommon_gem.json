@@ -1,0 +1,9 @@
+{
+  "cost_multi": 1.0,
+  "data": "uncommon",
+  "id": "uncommon_gem",
+  "lvl_req": 0,
+  "modifier_type": "SKILL_GEM_RARITY",
+  "tier_req": 0,
+  "weight": 0
+}

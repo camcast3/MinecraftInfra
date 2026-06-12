@@ -1,0 +1,12 @@
+{
+  "id": "harvest_content",
+  "mods": [
+    {
+      "max": 100.0,
+      "min": 33.0,
+      "stat": "harvest_content"
+    }
+  ],
+  "relic_type": "the_harvest",
+  "weight": 1000
+}

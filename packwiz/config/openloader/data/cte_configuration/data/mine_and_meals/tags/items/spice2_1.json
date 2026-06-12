@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:rose_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveiled_curry",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:steel_toe_stout",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:tea_curry",
+      "required": false
+    }
+  ]
+}

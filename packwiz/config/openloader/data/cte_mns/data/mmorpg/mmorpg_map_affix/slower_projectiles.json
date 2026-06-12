@@ -1,0 +1,23 @@
+{
+  "affected": "Players",
+  "id": "slower_projectiles",
+  "map_resist": "Physical",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -15.0,
+      "stat": "faster_projectiles"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -10.0,
+      "stat": "projectile_damage"
+    }
+  ],
+  "weight": 1000
+}

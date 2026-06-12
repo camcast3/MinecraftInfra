@@ -1,0 +1,14 @@
+[
+  {
+    "_comment": "Act III Gateway spawn on mob kill",
+    "itemId": "",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "undergarden:undergarden",
+    "command": "open_gateway {entity_x} {entity_y} {entity_z} gateways:act/iii",
+    "commandChance": 1.5,
+	"commandCoolDown": 300,
+	"requirePlayerKill": true
+  }
+]

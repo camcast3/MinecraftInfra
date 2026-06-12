@@ -1,0 +1,45 @@
+{
+  "base_gear": "cloth_helmet",
+  "guid": "mana_dominion",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 50,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "mana"
+    },
+    {
+      "type": "PERCENT",
+      "max": -5.0,
+      "min": -10.0,
+      "stat": "energy"
+    },
+    {
+      "type": "PERCENT",
+      "max": -5.0,
+      "min": -10.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "mana_per_perc_of_intelligence"
+    }
+  ],
+  "weight": 1000
+}

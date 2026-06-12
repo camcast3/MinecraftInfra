@@ -1,0 +1,223 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:match_tool",
+          "predicate": {
+            "enchantments": [
+              {
+                "enchantment": "minecraft:silk_touch",
+                "levels": {
+                  "min": 1
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:garnet_block"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:inverted",
+          "term": {
+            "condition": "minecraft:match_tool",
+            "predicate": {
+              "enchantments": [
+                {
+                  "enchantment": "minecraft:silk_touch",
+                  "levels": {
+                    "min": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "add": false,
+              "count": {
+                "type": "minecraft:uniform",
+                "max": 4.0,
+                "min": 2.0
+              },
+              "function": "minecraft:set_count"
+            },
+            {
+              "enchantment": "minecraft:fortune",
+              "formula": "minecraft:binomial_with_bonus_count",
+              "function": "minecraft:apply_bonus",
+              "parameters": {
+                "extra": 2,
+                "probability": 0.5
+              }
+            }
+          ],
+          "name": "moresnifferflowers:garnet_shard"
+        }
+      ],
+      "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:inverted",
+          "term": {
+            "condition": "minecraft:match_tool",
+            "predicate": {
+              "enchantments": [
+                {
+                  "enchantment": "minecraft:silk_touch",
+                  "levels": {
+                    "min": 1
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:experience_bottle",
+          "weight": 50
+        },
+{
+          "type": "minecraft:item",
+          "name": "lightmanscurrency:coin_copper",
+          "weight": 300
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:golden_carrot",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:lapis_lazuli",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_ingot",
+          "weight": 75
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:gold_ingot",
+          "weight": 50
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:golden_apple",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:totem_of_undying",
+          "weight": 5
+        },
+		{
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:garbush_seeds",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:carnage_armor_trim_smithing_template",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:evil_banner_pattern",
+          "weight": 25
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:netherite_scrap",
+          "weight": 15
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:enchanted_golden_apple",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:iron_block",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:sniffer_egg",
+          "weight": 12
+        },
+{
+          "type": "minecraft:item",
+          "name": "mmorpg:material/mining/0",
+          "weight": 20
+        },
+{
+          "type": "minecraft:item",
+          "name": "mmorpg:material/mining/1",
+          "weight": 10
+        },
+{
+          "type": "minecraft:item",
+          "name": "mmorpg:material/mining/2",
+          "weight": 5
+        },
+{
+          "type": "minecraft:item",
+          "name": "nethersdelight:propelpearl",
+          "weight": 18
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:netherite_ingot",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:diamond_block",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:dyescrapia",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "moresnifferflowers:acidripia_seeds",
+          "weight": 12
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "moresnifferflowers:blocks/garnet_block"
+}

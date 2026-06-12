@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "mca:baby_boy"
+  },
+  "result": "mca:baby_boy",
+  "experience": 0.0,
+  "cookingtime": 2000
+}

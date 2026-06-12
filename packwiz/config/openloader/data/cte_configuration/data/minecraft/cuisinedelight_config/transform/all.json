@@ -1,0 +1,9 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "minecraft:tropical_fish": {
+            "next": "crabbersdelight:cooked_tropical_fish",
+            "stage": "COOKED"
+        }
+    }
+}

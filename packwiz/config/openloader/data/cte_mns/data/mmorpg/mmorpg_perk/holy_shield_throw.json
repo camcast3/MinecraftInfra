@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/icons/holy_shield_throw.png",
+  "id": "holy_shield_throw",
+  "is_entry": false,
+  "max_lvls": 16,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "learn_holy_shield_throw",
+      "v1": 1.0
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+	"lichConfig": {
+		"eternalNighttime": false,
+		"experienceDrop": 500,
+		"idleHealingPerTick": 0.5,
+		"health": 300.0,
+		"missile": {
+			"mobEffectId": "minecraft:slowness",
+			"mobEffectDuration": 100,
+			"mobEffectAmplifier": 2,
+			"damage": 9.0
+		},
+		"comet": {
+			"explosionStrength": 2.0
+		},
+		"summonMechanic": {
+			"isEnabled": true,
+			"entitiesThatCountToSummonCounter": [
+				"deeperdarker:sculk_snapper",
+				"deeperdarker:shriek_worm",
+				"deeperdarker:stalker",
+				"deeperdarker:shattered",
+				"deeperdarker:sculk_centipede",
+				"deeperdarker:sculk_leech"
+			],
+			"numEntitiesKilledToDropSoulStar": 30
+		}
+	},
+	"obsidilithConfig": {
+		"health": 300.0,
+		"armor": 14.0,
+		"attack": 16.0,
+		"idleHealingPerTick": 0.5,
+		"experienceDrop": 500,
+		"spawnPillarOnDeath": false,
+		"anvilAttackExplosionStrength": 4.0
+	},
+	"gauntletConfig": {
+		"health": 300.0,
+		"armor": 8.0,
+		"attack": 16.0,
+		"idleHealingPerTick": 0.5,
+		"experienceDrop": 500,
+		"spawnAncientDebrisOnDeath": true,
+		"energizedPunchExplosionSize": 4.5,
+		"normalPunchExplosionMultiplier": 1.5
+	},
+	"voidBlossomConfig": {
+		"health": 300.0,
+		"armor": 4.0,
+		"attack": 14.0,
+		"idleHealingPerTick": 0.5,
+		"experienceDrop": 5000
+	},
+	"generalConfig": {
+		"tableOfElevationRadius": 3
+	}
+}

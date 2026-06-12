@@ -1,0 +1,66 @@
+{
+  "author": "Your IGN",
+  "data": {
+    "curved_hallways": [
+    "ch_template1",
+    "ch_template2",
+    "ch_template3",
+	"ch_template4",
+    "ch_template5",
+	"ch_template6"
+    ],
+    "ends": [
+    "end_template1",
+	"end_template2",
+	"end_template3",
+	"end_template4",
+	"end_template5",
+	"end_template6"
+    ],
+    "entrances": [
+    "e_template1",
+	"e_template1",
+	"e_template1",
+	"e_template1",
+	"e_template1",
+	"e_template1"
+    ],
+    "folder": "template",
+    "four_ways": [
+    "4w_template1",
+    "4w_template2",
+	"4w_template3",
+	"4w_template4",
+	"4w_template5",
+	"4w_template6"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+		    "map"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "sh_template1",
+	"sh_template2",
+	"sh_template3",
+	"sh_template4",
+	"sh_template5",
+	"sh_template6"
+    ],
+    "triple_hallway": [
+    "3h_template1",
+	"3h_template2",
+	"3h_template3",
+	"3h_template4",
+	"3h_template5",
+	"3h_template6"
+    ]
+  },
+  "id": "template",
+  "weight": 0
+}

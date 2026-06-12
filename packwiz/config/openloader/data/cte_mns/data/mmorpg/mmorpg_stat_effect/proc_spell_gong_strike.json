@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_gong_strike",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "gong_strike",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

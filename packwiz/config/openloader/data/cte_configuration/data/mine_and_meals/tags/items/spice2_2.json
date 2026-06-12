@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "twilightforest:hydra_chop",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chicken_curry",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:fiery_fondue",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:blazing_chili",
+      "required": false
+    }
+  ]
+}

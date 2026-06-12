@@ -1,0 +1,45 @@
+{
+  "base_gear": "brigandine_helmet",
+  "guid": "deidbell",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 3.0,
+      "stat": "armor"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 3.0,
+      "stat": "strength"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 3.0,
+      "stat": "dexterity"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "str_dmg"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "health_leech_cap"
+    }
+  ],
+  "weight": 1000
+}

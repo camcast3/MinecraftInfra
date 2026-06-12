@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_fan_of_knives",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "fan_of_knives",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

@@ -21,7 +21,8 @@
     Steps:
       1. Sanity-check inputs (zip path, packwiz CLI available).
       2. Snapshot the existing `packwiz/mods/{spark,proxy-compatible-forge,
-         minecraft-prometheus-exporter}.pw.toml` (if present) to a temp dir.
+         minecraft-prometheus-exporter}.pw.toml` (if present) to a temp dir
+         (`packwiz/.import-staging/`, skipped by `.packwizignore`).
       3. `packwiz curseforge import <zip>` against `packwiz/`. This wipes
          pack.toml + index.toml + mods/ and replaces them with the upstream
          C2E2 content.
@@ -36,8 +37,12 @@
          and these two values MUST match (itzg installs the loader
          specified by FORGE_VERSION; packwiz materializes mods that
          expect the loader version in pack.toml's [versions] block).
-       7. `packwiz refresh` to regenerate index.toml.
-       8. Print `git status` so the operator sees what's about to be
+      7. `packwiz refresh` to regenerate index.toml. The committed
+         `packwiz/.packwizignore` is what keeps the snapshot directory
+         out of the index — without it, the three overlay mods would
+         end up indexed twice and Forge would crash on duplicate IDs.
+      8. Delete the snapshot directory now that refresh has succeeded.
+      9. Print `git status` so the operator sees what's about to be
          committed and pushed.
 
     The script does NOT commit or push — review the diff first.
@@ -282,12 +287,23 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "packwiz refresh failed (exit $LASTEXITCODE)."
     }
+
+    # ─── 7. Clean up the staging dir ───────────────────────────────────────
+    # We snapshot the overlays at the start for safety, but on a successful
+    # run there's no reason to leave the snapshot on disk. The committed
+    # `.packwizignore` keeps `packwiz refresh` from ever indexing this
+    # directory, but belt-and-braces: delete it so a successful run leaves
+    # no trace in the working tree.
+    if (Test-Path $stagingDir) {
+        Remove-Item -Recurse -Force $stagingDir
+        Write-Information "Cleaned up $stagingDir"
+    }
 }
 finally {
     Pop-Location
 }
 
-# ─── 7. Show what changed ──────────────────────────────────────────────────
+# ─── 8. Show what changed ──────────────────────────────────────────────────
 Write-Information ''
 Write-Information '── git status ──'
 & git status --short

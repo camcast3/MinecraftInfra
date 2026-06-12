@@ -1,0 +1,13 @@
+name = "ColoredWater"
+filename = "Colored Water-1.20.1-1.3.8.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "209b4e6c93ff176254ed463ac0937c96579da626"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 4704501
+project-id = 534920

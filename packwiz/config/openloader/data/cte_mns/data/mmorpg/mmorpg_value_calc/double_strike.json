@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 8.0,
+    "min": 1.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.2,
+      "min": 1.54
+    },
+    "stat": "health"
+  },
+  "id": "double_strike",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.2,
+        "min": 1.54
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

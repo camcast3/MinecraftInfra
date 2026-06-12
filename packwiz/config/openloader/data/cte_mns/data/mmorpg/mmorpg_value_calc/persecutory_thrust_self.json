@@ -1,0 +1,33 @@
+{
+  "base": {
+    "max": 0.28125,
+    "min": 0.0625
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 0.01,
+      "min": 0.01
+    },
+    "stat": "health"
+  },
+  "id": "persecutory_thrust_self",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 0.01,
+        "min": 0.01
+      },
+      "stat": "health"
+    },
+    {
+      "multi": {
+        "max": 0.01,
+        "min": 0.01
+      },
+      "stat": "magic_shield"
+    }
+  ]
+}

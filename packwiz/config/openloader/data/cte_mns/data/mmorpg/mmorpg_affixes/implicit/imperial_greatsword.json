@@ -1,0 +1,29 @@
+{
+  "type": "implicit",
+  "eye_aura_req": "",
+  "guid": "imperial_greatsword",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "sword",
+          "two_handed"
+        ],
+        "req_type": "HAS_ALL"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 12.5,
+      "min": 6.25,
+      "stat": "all_physical_damage"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,49 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "delightful:matcha",
+      "required": false
+    },
+    {
+      "id": "delightful:green_tea_leaf",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:green_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:yellow_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:dandelion_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:rose_hip_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:purulent_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:black_tea",
+      "required": false
+    },
+    {
+      "id": "blue_skies:winter_leaves",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:gamblers_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_gamblers_tea",
+      "required": false
+    }
+  ]
+}

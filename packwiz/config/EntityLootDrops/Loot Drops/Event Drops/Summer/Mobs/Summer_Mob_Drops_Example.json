@@ -1,0 +1,11 @@
+[
+  {
+    "entityId": "minecraft:disabled",
+    "itemId": "minecraft:melon_slice",
+    "dropChance": 0.0,
+    "minAmount": 2,
+    "maxAmount": 4,
+    "_comment": "Summer event melon from skeleton",
+    "requirePlayerKill": true
+  }
+]

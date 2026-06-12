@@ -1,0 +1,21 @@
+{
+  "type": "suffix",
+  "format": "AQUA",
+  "icon": "",
+  "id": "full_water",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "phys_to_water"
+    },
+    {
+      "type": "FLAT",
+      "max": 75.0,
+      "min": 75.0,
+      "stat": "water_resist"
+    }
+  ],
+  "weight": 0
+}

@@ -1,0 +1,12 @@
+{
+  "id": "bonus_content_chance",
+  "mods": [
+    {
+      "max": 45.0,
+      "min": 15.0,
+      "stat": "bonus_content_chance"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

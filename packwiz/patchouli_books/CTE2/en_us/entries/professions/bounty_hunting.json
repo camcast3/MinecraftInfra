@@ -1,0 +1,19 @@
+{
+    "name": "Bounty Hunting",
+    "icon": "minecraft:iron_sword",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&eBounty Hunting&r is a Mine and Slash Profession which levels up as you complete Bountiful bounties. Complete bounties to earn Bounty Hunting experience and &eBounty Slips&r!"
+},{            "type": "patchouli:text",
+            "text": "&eBounty Boards&r will generate &erandom bounties&r for you to complete. Take out a &erequest&r from the board's interface and complete it within the &etime limit&r to earn the listed rewards. As you complete bounties, your &ereputation&r (tied to that Bounty Board block) will increase, increasing the level of rewards. Empowered Bounty Slips will start appearing at 45 reputation!"
+},{            "type": "patchouli:text",
+            "text": "As you level your Bounty Hunting, you will gain access to more purchasable rewards in the &eProfession Shop&r. Items in this shop are purchasable with &eBounty Slips&r! The shop can be accessed with &eDefault Key: P, or the menu wheel&r.
+
+Craft &eDecrees&r to give new quest types to the board per decree type, which is randomly determined."
+},{            "type": "patchouli:text",
+            "text": "Through Bounty Hunting you will be able to gain &eTiered Meats&r (&7Spritual&r, &aCelestial&r. &9Emyprean&r, &dAngelic&r, &6Divine&r, and &5Godly&r) to be used in Cooking."}
+    ]
+}

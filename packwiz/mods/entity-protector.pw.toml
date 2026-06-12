@@ -1,0 +1,13 @@
+name = "Entity Protector"
+filename = "EntityProtector-1.2.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/6654/501/EntityProtector-1.2.jar"
+hash-format = "sha1"
+hash = "ac555481cae20289d5647c81372954d55c47a717"
+
+[update]
+[update.curseforge]
+file-id = 6654501
+project-id = 1235067

@@ -1,0 +1,17 @@
+{
+  "affected": "Mobs",
+  "id": "elemental_pene",
+  "map_resist": "Elemental",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "elemental_penetration"
+    }
+  ],
+  "weight": 1000
+}

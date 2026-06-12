@@ -1,0 +1,41 @@
+{
+  "placement": {
+    "type": "structure_gel:grid_placement",
+    "allowed_near_spawn": false,
+    "exclusion_zone": {
+      "radius": 7,
+      "structures": "#blue_skies:dungeons"
+    },
+    "frequency": 0.75,
+    "offset": 27,
+    "salt": 1306458484,
+    "spacing": 18,
+    "structure": "blue_skies:village"
+  },
+  "structures": [
+    {
+      "structure": "blue_skies:village_calming_skies",
+      "weight": 1
+    },
+    {
+      "structure": "blue_skies:village_crystal_dunes",
+      "weight": 1
+    },
+    {
+      "structure": "blue_skies:village_brightlands",
+      "weight": 1
+    },
+    {
+      "structure": "blue_skies:village_shaded_woodlands",
+      "weight": 1
+    },
+    {
+      "structure": "blue_skies:village_sunset_maple_forest",
+      "weight": 1
+    },
+    {
+      "structure": "blue_skies:village_slushlands",
+      "weight": 1
+    }
+  ]
+}

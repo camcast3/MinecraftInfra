@@ -1,0 +1,11 @@
+{
+  "disable_salvaging": true,
+  "gear_type": "head",
+  "id": "tiara",
+  "max_lvl": 100,
+  "min_lvl": 1,
+  "possible_rar": [
+    "unique"
+  ],
+  "uniq_id": "flugel_tiara"
+}

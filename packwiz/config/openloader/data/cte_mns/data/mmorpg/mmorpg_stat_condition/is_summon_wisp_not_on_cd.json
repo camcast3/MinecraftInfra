@@ -1,0 +1,5 @@
+{
+  "cd_id": "summon_wisp",
+  "id": "is_summon_wisp_not_on_cd",
+  "ser": "is_not_on_cd"
+}

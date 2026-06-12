@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": "lightmanscurrency:coin_copper",
+    "dropChance": 80.0,
+    "minAmount": 3,
+    "maxAmount": 9,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_iron",
+    "dropChance": 30.0,
+    "minAmount": 1,
+    "maxAmount": 5,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_gold",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  }
+]

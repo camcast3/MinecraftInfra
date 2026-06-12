@@ -1,0 +1,56 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:sea_stew"
+    },
+    {
+      "id": "oceansdelight:cabbage_wrapped_elder_guardian",
+      "required": false
+    },
+    {
+      "id": "undergarden:indigo_stew",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:aloe_vera_juice",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_bake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:stuffed_nautilus_shell",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:jar_of_pickles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:kelp_shake",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:elder_guardian_slab",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_platter",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_meat_and_melon",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_with_vegetables",
+      "required": false
+    }
+  ]
+}

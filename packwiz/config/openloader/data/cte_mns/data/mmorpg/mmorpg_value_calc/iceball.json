@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 4.0,
+    "min": 0.5
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 1.95,
+      "min": 1.365
+    },
+    "stat": "health"
+  },
+  "id": "iceball",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 1.95,
+        "min": 1.365
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

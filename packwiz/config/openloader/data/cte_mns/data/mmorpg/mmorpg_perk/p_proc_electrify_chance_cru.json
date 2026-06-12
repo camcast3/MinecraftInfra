@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/passives/p_proc_electrify_chance_cru.png",
+  "id": "p_proc_electrify_chance_cru",
+  "is_entry": false,
+  "max_lvls": 8,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "electrify_proc_chance",
+      "v1": 4.0
+    }
+  ]
+}

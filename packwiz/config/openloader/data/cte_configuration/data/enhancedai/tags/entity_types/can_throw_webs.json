@@ -1,0 +1,9 @@
+{
+    "values": [
+        "minecraft:spider",
+        "minecraft:cave_spider",
+        "blue_skies:nested_spider",
+        "blue_skies:venom_spider",
+        "twilightforest:hedge_spider"
+    ]
+}

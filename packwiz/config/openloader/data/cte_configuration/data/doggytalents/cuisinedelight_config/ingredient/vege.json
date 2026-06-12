@@ -1,0 +1,88 @@
+{
+    "entries": [
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:soy_beans"
+            },
+            "max_time": 360,
+            "min_time": 240,
+            "nutrition": 5,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0.2,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:soy_milk"
+            },
+            "max_time": 400,
+            "min_time": 180,
+            "nutrition": 12,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.3,
+            "size": 3,
+            "stir_time": 100
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:tofu"
+            },
+            "max_time": 480,
+            "min_time": 180,
+            "nutrition": 10,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:miso_paste"
+            },
+            "max_time": 400,
+            "min_time": 180,
+            "nutrition": 8,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 1,
+            "stir_time": 100
+        },
+        {
+            "type": "CARB",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:uncooked_rice"
+            },
+            "max_time": 360,
+            "min_time": 300,
+            "nutrition": 8,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.7,
+            "size": 2,
+            "stir_time": 80
+        },
+                {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                "item": "doggytalents:natto"
+            },
+            "max_time": 240,
+            "min_time": 0,
+            "nutrition": 8,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 100
+        }        
+    ]
+}

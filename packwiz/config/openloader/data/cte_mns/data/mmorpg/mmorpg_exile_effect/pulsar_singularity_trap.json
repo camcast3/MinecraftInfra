@@ -1,0 +1,69 @@
+{
+  "type": "negative",
+  "id": "pulsar_singularity_trap",
+  "max_stacks": 1,
+  "mc_stats": [],
+  "one_of_a_kind_id": "",
+  "spell": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:sculk_soul",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": []
+  },
+  "spell_tags": {
+    "tags": []
+  },
+  "stacks_affect_stats": true,
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -15.0,
+      "stat": "lightning_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -15.0,
+      "stat": "chaos_resist"
+    }
+  ],
+  "tags": {
+    "tags": [
+    "negative"
+    ]
+  }
+}

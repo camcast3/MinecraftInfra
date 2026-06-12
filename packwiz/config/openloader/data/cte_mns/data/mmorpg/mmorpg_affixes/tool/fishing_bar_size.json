@@ -1,0 +1,29 @@
+{
+  "type": "tool",
+  "eye_aura_req": "",
+  "guid": "fishing_bar_size",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "tool",
+          "fishing_tool"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 15.0,
+      "stat": "fishing_bar_size"
+    }
+  ],
+  "weight": 0
+}

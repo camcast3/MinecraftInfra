@@ -1,0 +1,16 @@
+{
+  "data": {
+    "attribute_id": "stardew_fishing:line_strength",
+    "base": 0.0,
+    "cut_by_hundred": true,
+    "ele": "Physical",
+    "id": "fishing_line_strength",
+    "max": 1.0E8,
+    "min": -1000.0,
+    "operation": "MULTIPLY_TOTAL",
+    "perc": true,
+    "scale": "NONE",
+    "uuid": "24ed2bdc-e19f-4e4d-8f4d-ea701b44b7fa"
+  },
+  "ser": "vanilla_attribute_stat_ser"
+}

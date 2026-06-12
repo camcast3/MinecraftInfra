@@ -1,0 +1,47 @@
+
+#Ancient Obelisk Configs
+[general]
+	#When new wave starts, this cooldown has to pass before a new wave can start
+	#Range: 1 ~ 1000
+	WAVE_COOLDOWN_SECONDS = 30
+	#Range: 1 ~ 50
+	MOB_SPAWNS_PER_SECOND = 4
+	#You can use low mob spawn chance with high mob spawns config to more randomly spawn mobs, or keep chance high and spawn count low to spawn them consistently over time.
+	#Do note, there's usually around 4 spawners in the arena
+	#Range: 1 ~ 100
+	MOB_SPAWN_CHANCE = 50
+	#Each wave will have this many mobs. When the mobs are done spawning, the new wave will start, unless wave cooldown is there.
+	#Range: 1 ~ 100
+	TOTAL_MOBS_PER_WAVE = 25
+	#Each obelisk tier increases the Mob Stats and rewards
+	#Range: 1 ~ 1000
+	MAX_OBELISK_TIER = 10
+	#Maximum amount of chests that can spawn at end of obelisk fight
+	#Useful as a safety net in case you set your loot multipliers too high so you don't spawn.. 1000 chests accidentally
+	#Range: 1 ~ 1000
+	MAX_CHEST_REWARDS = 20
+	#Mob hp multiplier per obelisk tier
+	#Range: 0.0 ~ 1000.0
+	MOB_HP_PER_TIER = 0.12
+	#Mob attack damage multiplier per obelisk tier
+	#Range: 0.0 ~ 1000.0
+	MOB_DMG_PER_TIER = 0.04
+	#Loot Multi x tier for obelisk end of fight reward
+	#Range: 0.0 ~ 1.0
+	LOOT_MULTI_PER_TIER = 0.1
+	#Loot Multi x tier for obelisk end of fight reward
+	#Range: 0.0 ~ 1.0
+	LOOT_MULTI_PER_AFFIX = 0.2
+	#Every mob you kill inside the obelisk will add x chance to spawn loot chests at the end.
+	#If the total is say 50, it means 50% chance to spawn a chest. If it's 150, then it's 1 chest + 50% chance for another.
+	#Make sure this value isn't too big because this chance is multiplied by tier and affix counts
+	#Range: 0.0 ~ 100.0
+	LOOT_CHANCE_PER_MOB_KILL = 1.0
+	#When you loot new chests with loot tables, obelisk maps have a chance to spawn as extra loot
+	#Range: 0.0 ~ 100.0
+	OBELISK_SPAWN_CHANCE_ON_CHEST_LOOT = 2.0
+	#Starts new wave right away if all mobs are dead
+	SKIP_COOLDOWN_IF_NO_MORE_MOBS = true
+	#Obelisk spawn chance multi per dimension
+	DIMENSION_CHANCE_MULTI = ["dungeon_realm:dungeon-0.25", "undergarden:undergarden-1.25", "minecraft:the_end-1.5", "deeperdarker:otherside-1.5", "blue_skies:everbright-1.5", "blue_skies:everdawn-1.5"]
+

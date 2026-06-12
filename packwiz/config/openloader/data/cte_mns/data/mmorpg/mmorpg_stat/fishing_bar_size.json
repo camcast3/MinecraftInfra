@@ -1,0 +1,16 @@
+{
+  "data": {
+    "attribute_id": "stardew_fishing:bar_size",
+    "base": 0.0,
+    "cut_by_hundred": true,
+    "ele": "Physical",
+    "id": "fishing_bar_size",
+    "max": 1.0E8,
+    "min": -1000.0,
+    "operation": "MULTIPLY_TOTAL",
+    "perc": true,
+    "scale": "NONE",
+    "uuid": "5c76746d-b255-4ad1-8e21-d407270ab868"
+  },
+  "ser": "vanilla_attribute_stat_ser"
+}

@@ -1,0 +1,40 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "easy_sandstone_puzzle"
+    ],
+    "ends": [
+      "royal_plus_sewer"
+    ],
+    "entrances": [
+      "0",
+      "royal"
+    ],
+    "folder": "steampunk",
+    "four_ways": [
+      "lava_pit",
+      "slow_cooker_parkour"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"otherworldly"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "flower_lever_combo"
+    ],
+    "triple_hallway": [
+      "no_puzzle_trick",
+      "royal_dwarves"
+    ]
+  },
+  "id": "steampunk",
+  "weight": 1000
+}

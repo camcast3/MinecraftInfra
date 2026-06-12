@@ -1,0 +1,29 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_weapon_family_basicdam_flat",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "weapon_family"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 45,
+      "min": 15,
+      "stat": "basic_attack_dmg"
+    }
+  ],
+  "weight": 1000
+}

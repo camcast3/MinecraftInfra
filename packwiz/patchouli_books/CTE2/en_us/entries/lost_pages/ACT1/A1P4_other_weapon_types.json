@@ -1,0 +1,16 @@
+{
+    "name": "Other Weapon Types",
+    "icon": "roe_weapons:cursed_greatsword",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":3,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 1367285A94791954)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rIn CTE2, there are various custom weapon types. Below is a list of all the weapon types, with the custom ones highlighted in &eyellow&r.$(2br)Sword, Axe, Bow, Crossbow, &eStaff, Dagger, Spear, Hammer, Greatsword, Scythe, Gauntlet&r.$(2br) 
+"},
+		{
+            "type": "patchouli:text",
+            "text": "Keep in mind you will need Gear Stat Souls when crafting these to give them Mine and Slash stats.$(2br)In CTE2 you can also equip &etwo-handed weapons&r. At the moment, &eSpears, Greatswords, and Scythes&r are two-handed.$(2br)You can also &edual-wield any one-handed weapons&r! Weapons in the off-hand provide &e25%&r of their stats."
+		}
+    ]
+}

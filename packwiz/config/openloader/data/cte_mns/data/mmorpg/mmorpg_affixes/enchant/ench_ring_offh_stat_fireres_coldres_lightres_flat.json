@@ -1,0 +1,29 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_ring_offh_fireres_coldres_lightres_flat",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "offhand_family"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 2.0,
+      "stat": "elemental_resist"
+    }
+  ],
+  "weight": 1000
+}

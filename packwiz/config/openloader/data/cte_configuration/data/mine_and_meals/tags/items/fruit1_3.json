@@ -1,0 +1,49 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:droopstew",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:glitterdish",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie_slice",
+      "required": false
+    },
+    {
+      "id": "endersdelight:stuffed_shulker_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:trout_steak",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_green_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_yellow_tea",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:stuffed_pumpkin",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_melon_juice",
+      "required": false
+    }
+  ]
+}

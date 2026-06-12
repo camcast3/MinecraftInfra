@@ -1,0 +1,37 @@
+{
+  "base": 0.0,
+  "effect": [
+    {
+      "effects": [
+        "proc_spell_deep_sea_gateway"
+      ],
+      "events": [
+        "on_mob_kill"
+      ],
+      "ifs": [
+        "random_roll",
+        "is_deep_sea_gateway_not_on_cd"
+      ],
+      "order": "final_damage",
+      "side": "Target"
+    }
+  ],
+  "ele": "Physical",
+  "format": "aqua",
+  "group": "Misc",
+  "gui_group": "NONE",
+  "has_softcap": false,
+  "icon": "★",
+  "id": "proc_deep_sea_gateway_on_death",
+  "is_long": true,
+  "is_perc": true,
+  "max": 4.5,
+  "min": -1000.0,
+  "minus_is_good": false,
+  "multiUseType": "MULTIPLY_STAT",
+  "order": 100,
+  "scaling": "NONE",
+  "ser": "data",
+  "show_in_gui": true,
+  "softcap": 0.0
+}

@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "ggg",
+        "ttt",
+        "ggg"
+    ],
+    "key": {
+        "g": {
+            "item": "minecraft:golden_apple"
+        },
+        "t": {
+            "item": "doggytalents:training_treat"
+        }
+    },
+    "result": {
+        "count": 3,
+        "item": "doggytalents:super_treat"
+    }
+}

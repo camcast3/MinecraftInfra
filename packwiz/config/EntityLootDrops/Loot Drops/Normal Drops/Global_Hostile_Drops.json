@@ -1,0 +1,17 @@
+[
+  {
+    "itemId": "",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "nbtData": "",
+    "requiredAdvancement": "",
+    "requiredEffect": "",
+    "requiredEquipment": "",
+    "requiredDimension": "",
+    "command": "effect give {player} minecraft:speed 10 1",
+    "commandChance": 0.0,
+    "_comment": "Speed on Kill",
+	"requirePlayerKill": true
+  }
+]

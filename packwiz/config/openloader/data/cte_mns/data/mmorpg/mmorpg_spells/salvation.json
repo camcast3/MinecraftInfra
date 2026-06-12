@@ -1,0 +1,276 @@
+{
+  "attached": {
+    "entity_components": {
+      "stack_adder": [
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "salvation",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": -1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "salvation_effect",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "stack_remover": [
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "salvation",
+                "potion_action": "REMOVE_STACKS",
+                "potion_dur": 20.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_salvation",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "stack_adder",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "salvation",
+			  "is_false": true
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "stack_remover",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "salvation"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 50.0,
+              "particle_type": "minecraft:enchanted_hit",
+              "radius": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 50.0,
+              "particle_type": "minecraft:enchant",
+              "radius": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "staff_ground"
+  },
+  "cast_finish_animation": {
+    "id": "spell_taunt"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 10,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+	  "magic",
+	  "aura",
+	  "area",
+	  "buff"
+	  ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "salvation",
+  "loc_name": "Salvation",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 8,
+  "min_lvl": 30,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [],
+  "weight": 1000
+}

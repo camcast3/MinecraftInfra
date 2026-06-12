@@ -1,0 +1,22 @@
+{
+    "name": "Alchemy",
+    "icon": "mmorpg:potion/health/5",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "You can brew potions which can recover health and resources, or provide stat boosts. When brewing, there are a few ingredients:
+
+1. &eTiered Meat/Produce/Fish&r - earned from Hubsandry, Farming, and Fishing they are based on the item level you want to craft. The level ranges are the same as what you'd find in the gathering Professions. "
+},{            "type": "patchouli:text",
+            "text": "The type of food you use depends on what potion you brew: &cMeat&r: Health/Resource Potion
+&2Produce&r: Core Stat Potion
+&bFish&r: Damage Buff Potion
+2. &c1&r &eStone (Rarity)&r - the Stones determine the rarity of the gear you will craft. You can get these Stones while salvaging.
+3. 1-2 &eOther Food Items&r - used as an additional ingredient. Refer to &cJEI&r for recipes!
+4. &eMoney&r
+"
+}
+    ]
+}

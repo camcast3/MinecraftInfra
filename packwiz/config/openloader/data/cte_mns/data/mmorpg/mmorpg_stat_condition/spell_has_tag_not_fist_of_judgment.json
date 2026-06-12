@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_fist_of_judgment",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "fist_of_judgment"
+  }
+}

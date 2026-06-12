@@ -1,0 +1,35 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_chest_dodge_hp_flat",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "chest"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 4.5,
+      "min": 1.5,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 2.0,
+      "stat": "dodge"
+    }
+  ],
+  "weight": 1000
+}

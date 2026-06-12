@@ -1,0 +1,61 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:gronglet_roll",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:blooming_oddion",
+      "required": false
+    },
+    {
+      "id": "blue_skies:comet_berry_pie",
+      "required": false
+    },
+    {
+      "id": "twilightforest:meef_stroganoff",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread_stuffing",
+      "required": false
+    },
+    {
+      "id": "corn_delight:nachos_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:pearl_pasta",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chicken_curry",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:roasted_tambaqui",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:honey_glazed_ham",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:cheesy_pasta",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:chocolate_pie_slice",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:horror_lasagna",
+      "required": false
+    }
+  ]
+}

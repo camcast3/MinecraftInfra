@@ -1,0 +1,40 @@
+{
+  "id": "insight",
+  "runes": [
+    "ita",
+    "dos",
+    "toq"
+  ],
+  "slots": [
+    "bow",
+	"crossbow",
+    "spear",
+	"scythe"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 6.0,
+      "stat": "cast_speed"
+    },
+    {
+      "type": "MORE",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 8.0,
+      "stat": "magic_find"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+[
+    {
+        "itemId": "lightmanscurrency:coin_iron",
+        "dropChance": 50.0,
+        "minAmount": 1,
+        "maxAmount": 6,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_gold",
+        "dropChance": 20.0,
+        "minAmount": 1,
+        "maxAmount": 2,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_emerald",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 1,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_iron",
+        "dropChance": 50.0,
+        "minAmount": 1,
+        "maxAmount": 6,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_gold",
+        "dropChance": 20.0,
+        "minAmount": 1,
+        "maxAmount": 2,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_emerald",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 1,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    }
+]

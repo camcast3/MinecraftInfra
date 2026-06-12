@@ -1,0 +1,12 @@
+{
+  "id": "bonus_loot_chest",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_loot_chest"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

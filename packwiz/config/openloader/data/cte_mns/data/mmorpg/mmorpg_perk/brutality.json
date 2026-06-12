@@ -1,0 +1,21 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/brutality.png",
+  "id": "brutality",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "brutality_on_basic_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "MORE",
+      "scale_to_lvl": false,
+      "stat": "all_elemental_damage",
+      "v1": -40.0
+    }
+  ]
+}

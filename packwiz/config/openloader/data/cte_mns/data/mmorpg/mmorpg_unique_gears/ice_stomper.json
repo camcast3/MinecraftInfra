@@ -1,0 +1,51 @@
+{
+  "base_gear": "plate_boots",
+  "guid": "ice_stomper",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 8.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "freeze_proc_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "electrify_proc_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": -5.0,
+      "min": -5.0,
+      "stat": "chaos_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 10.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

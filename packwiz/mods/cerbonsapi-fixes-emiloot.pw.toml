@@ -1,0 +1,13 @@
+name = "CerbonsAPI fixes EMILoot"
+filename = "cerbonsapi_fix-1.0.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "45ce27a2d2d5494d2a49ccce31519c66096ea017"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6963346
+project-id = 1341053

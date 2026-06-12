@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "spell_damage",
+    "adder_stat": "bleed_damage",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 75,
+    "id": "skill_damage_per_bleed_damage",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "endersdelight:stuffed_shulker_bowl",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:horror_lasagna",
+      "required": false
+    }
+  ]
+}

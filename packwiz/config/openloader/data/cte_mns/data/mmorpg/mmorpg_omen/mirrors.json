@@ -1,0 +1,28 @@
+{
+  "affix_types": [
+    "chaos_stat"
+  ],
+  "id": "mirrors",
+  "lvl_req": 0.5,
+  "mods": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "dmg_reduction_chance"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 2.0,
+      "stat": "dodge"
+    },
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "dexterity"
+    }
+  ],
+  "weight": 1000
+}

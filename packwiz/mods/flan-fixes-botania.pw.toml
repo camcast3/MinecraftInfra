@@ -1,0 +1,13 @@
+name = "Flan Fixes Botania"
+filename = "flan_fixes_botania-1.0.3.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "af39ed9ef873b15425e06985b765bc2b783fc221"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7154652
+project-id = 1309017

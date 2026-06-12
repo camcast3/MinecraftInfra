@@ -1,0 +1,51 @@
+{
+  "base_gear": "vest_helmet",
+  "guid": "curtain_call",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "trap_count"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "charge_recovery_rate"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "intelligence"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "dexterity"
+    }
+  ],
+  "weight": 1000
+}

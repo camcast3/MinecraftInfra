@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_putrid_breath",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "putrid_breath"
+  }
+}

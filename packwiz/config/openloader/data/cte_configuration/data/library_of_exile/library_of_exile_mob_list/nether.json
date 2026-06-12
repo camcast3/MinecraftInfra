@@ -1,0 +1,35 @@
+{
+  "id": "nether",
+  "mobs": [
+    {
+      "mob_id": "minecraft:wither_skeleton",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:blaze",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:zombified_piglin",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:ghast",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:magma_cube",
+      "weight": 125
+    },
+    {
+      "mob_id": "realmrpg_wyrms:red_wyrm",
+      "weight": 125
+    }
+  ],
+  "tags": {
+    "tags": [
+      "has_flying_mobs"
+    ]
+  },
+  "weight": 1000
+}

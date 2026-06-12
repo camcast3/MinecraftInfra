@@ -1,0 +1,10 @@
+{
+  "remove": [
+    "#dungeons_enhanced:no_structures/overworld/surface"
+  ],
+  "values": [
+    "#minecraft:is_badlands",
+	"#blue_skies:everdawn",
+	"#blue_skies:everbright"
+  ]
+}

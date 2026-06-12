@@ -1,0 +1,16 @@
+{
+  "id": "rare_mana_eff",
+  "manaMulti": 0.8,
+  "min_lvl": 40,
+  "one_of_a_kind": "resource_reduction",
+  "stats": [
+    {
+      "type": "MORE",
+      "max": 18.0,
+      "min": 6.0,
+      "stat": "non_crit_damage"
+    }
+  ],
+  "style": "STR",
+  "weight": 50
+}

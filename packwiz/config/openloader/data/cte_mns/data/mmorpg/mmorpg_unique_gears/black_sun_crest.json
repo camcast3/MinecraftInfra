@@ -1,0 +1,45 @@
+{
+  "base_gear": "brigandine_helmet",
+  "guid": "black_sun_crest",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_all_spells"
+    },
+    {
+      "type": "PERCENT",
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "strength"
+    },
+    {
+      "type": "PERCENT",
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "intelligence"
+    },
+    {
+      "type": "PERCENT",
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "dexterity"
+    }
+  ],
+  "weight": 1000
+}

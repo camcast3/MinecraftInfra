@@ -1,0 +1,7 @@
+{
+  "effect": "spirit",
+  "give_to": "Source",
+  "id": "give_spirit_to_source",
+  "seconds": 15,
+  "ser": "give_exile_effect"
+}

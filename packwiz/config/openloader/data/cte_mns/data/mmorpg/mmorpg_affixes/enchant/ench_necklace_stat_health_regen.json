@@ -1,0 +1,29 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_necklace_health_regen",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "necklace"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 4.5,
+      "min": 1.5,
+      "stat": "health_regen"
+    }
+  ],
+  "weight": 1000
+}

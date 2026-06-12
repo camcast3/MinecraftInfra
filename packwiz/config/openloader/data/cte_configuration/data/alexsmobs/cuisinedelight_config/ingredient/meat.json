@@ -1,0 +1,79 @@
+{
+    "entries": [
+        {
+            "type": "NONE",
+            "effects": [],
+            "ingredient": {
+                    "item": "alexsmobs:fish_oil"
+                },
+            "max_time": 400,
+            "min_time": 40,
+            "nutrition": 3,
+            "overcook_penalty": 0.7,
+            "raw_penalty": 0.2,
+            "size": 1,
+            "stir_time": 100
+        },
+        {
+            "type": "NONE",
+            "effects": [
+                {
+                    "effect": "minecraft:resistance",
+                    "level": 1,
+                    "time": 2500
+                },
+                {
+                    "effect": "alexsmobs:knockback_resistance",
+                    "level": 1,
+                    "time": 2500
+                }
+            ],
+            "ingredient": {
+                    "item": "alexsmobs:ambergris"
+                },
+            "max_time": 320,
+            "min_time": 240,
+            "nutrition": 4,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [
+                {
+                    "effect": "minecraft:strength",
+                    "level": 2,
+                    "time": 1800
+                }
+            ],
+            "ingredient": {
+                    "item": "alexsmobs:warped_muscle"
+                },
+            "max_time": 360,
+            "min_time": 240,
+            "nutrition": 14,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 3,
+            "stir_time": 80
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "alexsmobs:centipede_leg"
+                }
+            ],
+            "max_time": 180,
+            "min_time": 100,
+            "nutrition": 3,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 60
+        }
+    ]
+}

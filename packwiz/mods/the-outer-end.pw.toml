@@ -1,0 +1,13 @@
+name = "The Outer End"
+filename = "TheOuterEnd-1.0.12.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "bf6e0635a4983abbedb5d48298a705a3a1b357c6"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6886571
+project-id = 430404

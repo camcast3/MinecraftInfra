@@ -1,0 +1,29 @@
+{
+  "type": "prefix",
+  "eye_aura_req": "",
+  "guid": "rapid",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "crossbow",
+          "bow"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 4.0,
+      "stat": "faster_projectiles"
+    }
+  ],
+  "weight": 1000
+}

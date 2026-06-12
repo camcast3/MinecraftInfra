@@ -1,0 +1,22 @@
+{
+  "id": "void_manipulation",
+  "manaMulti": 1.2,
+  "min_lvl": 10,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "all_chaos_damage"
+    },
+    {
+      "type": "MORE",
+      "max": -80.0,
+      "min": -80.0,
+      "stat": "all_elemental_damage"
+    }
+  ],
+  "style": "DEX",
+  "weight": 1000
+}

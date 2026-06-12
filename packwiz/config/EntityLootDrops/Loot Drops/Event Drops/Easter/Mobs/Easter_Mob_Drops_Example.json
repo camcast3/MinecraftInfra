@@ -1,0 +1,11 @@
+[
+  {
+    "entityId": "minecraft:disabled",
+    "itemId": "minecraft:golden_egg",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "_comment": "Easter event golden egg from chicken",
+    "requirePlayerKill": false
+  }
+]

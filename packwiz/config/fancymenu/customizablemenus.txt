@@ -1,0 +1,86 @@
+type = customizablemenus
+
+de.keksuccino.drippyloadingscreen.customization.DrippyOverlayScreen {
+}
+
+net.minecraft.client.gui.screens.worldselection.SelectWorldScreen {
+}
+
+net.minecraft.client.gui.screens.OptionsScreen {
+}
+
+net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen {
+}
+
+net.minecraft.client.gui.screens.PauseScreen {
+}
+
+com.darkere.crashutils.Screens.PlayerInvScreen {
+}
+
+net.minecraft.client.gui.screens.ChatScreen {
+}
+
+net.minecraft.client.gui.screens.LevelLoadingScreen {
+}
+
+net.minecraft.client.gui.screens.ProgressScreen {
+}
+
+net.minecraft.client.gui.screens.ReceivingLevelScreen {
+}
+
+lain.mods.cos.impl.client.gui.GuiCosArmorInventory {
+}
+
+net.minecraft.client.gui.screens.inventory.ContainerScreen {
+}
+
+net.minecraft.client.gui.screens.TitleScreen {
+}
+
+net.minecraft.client.gui.screens.inventory.InventoryScreen {
+}
+
+top.theillusivec4.curios.client.gui.CuriosScreen {
+}
+
+net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen {
+}
+
+com.robertx22.mine_and_slash.gui.screens.character_screen.MainHubScreen {
+}
+
+com.robertx22.mine_and_slash.gui.screens.stat_gui.StatScreen {
+}
+
+com.robertx22.mine_and_slash.gui.screens.skill_tree.AscendancyTree {
+}
+
+com.robertx22.mine_and_slash.characters.reworked_gui.ToonScreen {
+}
+
+com.robertx22.mine_and_slash.gui.wiki.reworked.NewWikiScreen {
+}
+
+com.robertx22.mine_and_slash.gui.inv_gui.InvGuiScreen {
+}
+
+com.robertx22.mine_and_slash.gui.screens.spell.SpellSchoolScreen {
+}
+
+com.robertx22.mine_and_slash.capability.player.container.SkillGemsScreen {
+}
+
+com.robertx22.mine_and_slash.gui.screens.skill_tree.TalentsScreen {
+}
+
+com.robertx22.mine_and_slash.prophecy.gui.ProphecyScreen {
+}
+
+top.theillusivec4.curios.client.gui.CuriosScreenV2 {
+}
+
+net.minecraft.client.gui.screens.controls.ControlsScreen {
+}
+

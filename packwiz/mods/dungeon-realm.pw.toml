@@ -1,0 +1,13 @@
+name = "Dungeon Realm"
+filename = "Dungeon-Realm-1.20.1-1.1.7.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "b8587edca6b12ceaf1d3b8d61e9f9143d98c83c8"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7190357
+project-id = 1200770

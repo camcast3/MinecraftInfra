@@ -1,0 +1,5 @@
+# Don't change this! Version used to track needed updates.
+version = 0
+replaceMNSTeam = true
+enableTeammateDamageParticle = true
+sendParticleWhenWithinRange = 10.0

@@ -1,0 +1,18 @@
+[
+  {
+    "itemId": "lightmanscurrency:coin_chocolate_copper",
+    "dropChance": 20.0,
+    "minAmount": 1,
+    "maxAmount": 5,
+    "requiredDimension": "minecraft:overworld",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_chocolate_iron",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "minecraft:overworld",
+	"requirePlayerKill": true
+  }
+]

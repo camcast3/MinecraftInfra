@@ -1,0 +1,74 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 7.5,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 4.5,
+      "stat": "dodge"
+    }
+  ],
+  "gear_slot": "pants",
+  "guid": "vest_pants",
+  "possible_items": [
+    {
+      "item_id": "cte_essentials:cloth_0_leggings",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "cte_essentials:cloth_1_leggings",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "cte_essentials:cloth_2_leggings",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "cte_essentials:cloth_3_leggings",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "cte_essentials:cloth_4_leggings",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "cte_essentials:cloth_5_leggings",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "intelligence": 0.25,
+      "dexterity": 0.25
+    }
+  },
+  "style": "INT",
+  "tags": {
+    "tags": [
+      "armor_family",
+      "pants",
+      "dodge_stat",
+      "magic_shield_stat",
+      "intelligence",
+	  "cloth_pants",
+      "dexterity",
+	  "leather_pants",
+	  "dual_stat",
+	  "vest"
+    ]
+  },
+  "weapon_type": "none",
+  "weight": 1000
+}

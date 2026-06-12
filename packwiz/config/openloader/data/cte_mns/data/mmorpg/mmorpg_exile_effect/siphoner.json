@@ -1,0 +1,34 @@
+{
+  "type": "beneficial",
+  "id": "siphoner",
+  "max_stacks": 5,
+  "mc_stats": [],
+  "one_of_a_kind_id": "",
+  "spell_tags": {
+    "tags": []
+  },
+  "stacks_affect_stats": true,
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 0.5,
+      "min": 0.5,
+      "stat": "health_leech_cap"
+    },
+    {
+      "type": "FLAT",
+      "max": 0.5,
+      "min": 0.5,
+      "stat": "blood_leech_cap"
+    }
+  ],
+  "tags": {
+    "tags": []
+  }
+}

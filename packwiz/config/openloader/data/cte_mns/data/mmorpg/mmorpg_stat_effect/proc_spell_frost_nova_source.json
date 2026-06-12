@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_frost_nova_source",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "frost_nova",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

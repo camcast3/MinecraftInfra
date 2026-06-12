@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_cursed_meteor",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "cursed_meteor",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

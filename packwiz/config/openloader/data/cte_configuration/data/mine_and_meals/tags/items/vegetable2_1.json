@@ -1,0 +1,37 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:baked_gwibling_and_vegetables",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:glitterwrap",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:magical_holiday_candy",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_chorba",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:baked_pollock_with_carrots",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:vegetable_omelet",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:creamy_onion_soup",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:bowl_of_guardian_soup",
+      "required": false
+    }
+  ]
+}

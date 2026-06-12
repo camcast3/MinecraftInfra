@@ -1,0 +1,18 @@
+{
+    "name": "Ascendancy",
+    "icon": "ftb_ph:ascend",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":11,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 3C2D7F2998CC495F)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eAscendancy&r is a way to further grow your character by completing challenging tasks. To start, you must &ecomplete the 'Defenders of the Nether' quest&r, which will unlock the &eAscendancy Chapter&r.
+
+The first quest you complete will earn you 1 Ascendancy point, just enough to choose your specialization."},
+{            "type": "patchouli:text",
+            "text": " With each subsequent challenge you complete, you will earn more Ascendancy points! These points are capped at 7, and you can use these points similar to Talent points in the Ascendancy tab of the &eMine and Slash Hub&r.
+
+You can only select one Ascendancy tree at a time. To select another tree, you must first respec and retrieve all of your points in your current tree."
+		}
+    ]
+}

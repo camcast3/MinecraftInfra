@@ -1,0 +1,51 @@
+{
+  "base_gear": "axe",
+  "guid": "stormwielder",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 60,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 75.0,
+      "min": 70.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_chain_lightning"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "proc_chain_lightning_on_attack_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "phys_to_lightning"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "PERCENT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "energy_regen"
+    }
+  ],
+  "weight": 1000
+}

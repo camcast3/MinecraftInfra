@@ -1,0 +1,63 @@
+{
+  "base_gear": "staff",
+  "guid": "replica_pillar_of_the_caged_god",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 45.0,
+      "stat": "total_damage_per_perc_of_strength"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "inc_aoe_per_critical_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "skill_damage_per_critical_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "strength"
+    },
+    {
+      "type": "PERCENT",
+      "max": 15.0,
+      "min": 15.0,
+      "stat": "strength"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "critical_hit"
+    }
+  ],
+  "weight": 1000
+}

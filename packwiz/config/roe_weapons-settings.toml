@@ -1,0 +1,432 @@
+
+#RoeWeapons Configuration
+[general]
+
+	[general.Performance]
+		#Lag compensation for crossbow firing (higher = more lenient)
+		#Range: 0 ~ 10
+		crossbowLagCompensation = 3
+
+	[general."Kunai Settings"]
+		#Number of kunai projectiles to shoot at once
+		#Range: 1 ~ 10
+		kunaiProjectileCount = 3
+		#Spread angle between kunai projectiles in degrees
+		#Range: 0.0 ~ 45.0
+		kunaiSpreadAngle = 5.0
+		#Cooldown in ticks between kunai throws (20 ticks = 1 second)
+		#Range: 0 ~ 200
+		kunaiCooldown = 60
+
+	[general."Arrow Types"]
+		#Allow Infinity enchantment to work with tipped arrows
+		allowTippedInfinity = true
+		#Allow Infinity enchantment to work with spectral arrows
+		allowSpectralInfinity = true
+		#Allow Infinity enchantment to work with modded arrows
+		allowModdedInfinity = true
+
+	[general.bow_0]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_1]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_2]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_3]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_4]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_5]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_6]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.bow_7]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.admin_bow]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 8
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 12
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 4.0
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.800000011920929
+
+	[general.cursed_bow]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 4
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.5
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.699999988079071
+
+	[general.featherdraw]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 3
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 3
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 6
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 3
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.799999952316284
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 0.6000000238418579
+
+	[general.crossbow_0]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_1]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_2]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_3]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_4]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_5]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_6]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general.crossbow_7]
+		#Number of arrows shot without multishot
+		#Range: 1 ~ 10
+		baseArrowCount = 1
+		#Number of arrows consumed per shot without multishot
+		#Range: 0 ~ 10
+		baseArrowConsumption = 1
+		#Number of arrows shot with multishot
+		#Range: 1 ~ 15
+		multishotArrowCount = 3
+		#Number of arrows consumed per shot with multishot
+		#Range: 0 ~ 10
+		multishotArrowConsumption = 1
+		#Velocity multiplier for arrows
+		#Range: 0.5 ~ 5.0
+		velocityMultiplier = 3.1500000953674316
+		#Spread angle between multiple arrows in degrees
+		#Range: 0.1 ~ 10.0
+		spreadAngle = 2.0
+
+	[general."Bow Enchantments"]
+		#Allow Power enchantment on bows
+		allowBowPower = true
+		#Allow Punch enchantment on bows
+		allowBowPunch = true
+		#Allow Flame enchantment on bows
+		allowBowFlame = true
+		#Allow Infinity enchantment on bows
+		allowBowInfinity = true
+		#Allow Multishot enchantment on bows
+		allowBowMultishot = true
+		#Allow Quick Charge enchantment on bows
+		allowBowQuickCharge = true
+		#Allow Piercing enchantment on bows
+		allowBowPiercing = true
+
+	[general."Crossbow Enchantments"]
+		#Allow Power enchantment on crossbows
+		allowCrossbowPower = true
+		#Allow Multishot enchantment on crossbows
+		allowCrossbowMultishot = true
+		#Allow Quick Charge enchantment on crossbows
+		allowCrossbowQuickCharge = true
+

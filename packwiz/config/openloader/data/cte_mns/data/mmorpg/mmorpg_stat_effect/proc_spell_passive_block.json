@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_passive_block",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "passive_block",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

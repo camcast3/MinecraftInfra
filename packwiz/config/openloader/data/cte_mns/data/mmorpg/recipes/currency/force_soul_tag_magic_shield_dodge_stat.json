@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "minecraft:paper"
+    },
+    "X": {
+      "item": "minecraft:leather"
+    },
+    "Y": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "N",
+    "X",
+    "Y"
+  ],
+  "result": {
+    "item": "cte_essentials:forcesoultagmagicshielddodgestat"
+  },
+  "show_notification": true
+}

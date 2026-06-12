@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smoking",
+  "ingredient": {
+    "item": "mca:baby_girl"
+  },
+  "result": "mca:baby_girl",
+  "experience": 0.0,
+  "cookingtime": 1000
+}

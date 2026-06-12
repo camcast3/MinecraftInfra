@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "increase_healing",
+    "adder_stat": "move_speed",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 75,
+    "id": "increase_healing_per_perc_move_speed",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

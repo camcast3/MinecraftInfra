@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_cursed_power_chord",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "cursed_power_chord",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

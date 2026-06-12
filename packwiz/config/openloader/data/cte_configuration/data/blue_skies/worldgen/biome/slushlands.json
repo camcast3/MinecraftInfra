@@ -1,0 +1,114 @@
+{
+  "carvers": {
+    "air": [
+      "blue_skies:everbright_cave_carver",
+      "blue_skies:everbright_canyon_carver",
+      "blue_skies:everbright_noise_carver"
+    ]
+  },
+  "downfall": 0.0,
+  "effects": {
+    "fog_color": 12638463,
+    "foliage_color": 7059637,
+    "grass_color": 12119807,
+    "mood_sound": {
+      "block_search_extent": 8,
+      "offset": 2.0,
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000
+    },
+    "sky_color": 7252691,
+    "water_color": 2903689,
+    "water_fog_color": 2903689
+  },
+  "features": [
+    [],
+    [],
+    [],
+    [
+      "blue_skies:everbright_cave_spawner"
+    ],
+    [],
+    [],
+    [
+      "blue_skies:ore_moonstone",
+      "blue_skies:ore_pyrope",
+      "blue_skies:ore_aquite",
+      "blue_skies:ore_diopside",
+      "blue_skies:ore_charoite",
+      "blue_skies:ore_everbright_falsite",
+      "blue_skies:ore_everbright_ventium",
+      "blue_skies:coarse_turquoise_dirt_blob",
+      "blue_skies:rimestone_blob",
+      "blue_skies:taratite_blob"
+    ],
+    [
+      "blue_skies:slushlands_cave_wall"
+    ],
+    [],
+    [
+      "blue_skies:slushlands_large_snowcap_mushroom",
+      "blue_skies:slushlands_snowcap_mushroom",
+      "blue_skies:slushlands_chilled_lily",
+      "blue_skies:patchy_snow",
+      "blue_skies:turquoise_grass_5",
+      "blue_skies:brittlebush_5",
+      "blue_skies:snowcap_pinhead_8",
+      "blue_skies:slushlands_cave_bluebright_vine",
+      "blue_skies:slushlands_cave_pinhead",
+      "blue_skies:nature_comet_tree",
+      "blue_skies:nature_dungeon_starlit_bush",
+      "blue_skies:spring_water",
+      "blue_skies:cave_turquoise_dripstone",
+      "blue_skies:tall_turquoise_grass_noise"
+    ],
+    [
+      "blue_skies:ice_and_snow_no_path"
+    ]
+  ],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [
+      {
+        "type": "blue_skies:stardust_ram",
+        "maxCount": 4,
+        "minCount": 2,
+        "weight": 5
+      },
+      {
+        "type": "blue_skies:azulfo",
+        "maxCount": 4,
+        "minCount": 4,
+        "weight": 5
+      }
+    ],
+    "misc": [],
+    "monster": [
+      {
+        "type": "blue_skies:armored_frost_spirit",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 12
+      },
+      {
+        "type": "blue_skies:polargeist",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 8
+      },
+      {
+        "type": "blue_skies:shrumpty",
+        "maxCount": 1,
+        "minCount": 1,
+        "weight": 8
+      }
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.5
+}

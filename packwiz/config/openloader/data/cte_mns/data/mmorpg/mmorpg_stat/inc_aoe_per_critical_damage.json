@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "inc_aoe",
+    "adder_stat": "critical_damage",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 50,
+    "id": "inc_aoe_per_critical_damage",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

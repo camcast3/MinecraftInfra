@@ -1,0 +1,7 @@
+{
+  "effect": "wrath",
+  "give_to": "Target",
+  "id": "give_wrath_to_target",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

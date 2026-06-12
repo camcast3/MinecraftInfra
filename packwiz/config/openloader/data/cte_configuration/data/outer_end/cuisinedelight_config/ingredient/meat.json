@@ -1,0 +1,20 @@
+{
+  "entries": [
+    {
+      "type": "SEAFOOD",
+      "effects": [],
+      "ingredient": [
+        {
+            "item": "outer_end:stalker_meat"
+        }
+      ],
+      "max_time": 320,
+      "min_time": 240,
+      "nutrition": 10,
+      "overcook_penalty": 0.5,
+      "raw_penalty": 0.5,
+      "size": 2,
+      "stir_time": 60
+    }
+  ]
+}

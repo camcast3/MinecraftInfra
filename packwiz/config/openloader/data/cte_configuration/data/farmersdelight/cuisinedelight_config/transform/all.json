@@ -1,0 +1,17 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "biomeswevegone:white_puffball_cap": {
+            "next": "cooked_white_puffball_cap",
+            "stage": "COOKED"
+        },
+        "biomeswevegone:oddion_bulb": {
+            "next": "cooked_oddion_bulb",
+            "stage": "COOKED"
+        },
+        "biomeswevegone:yucca_fruit": {
+            "next": "cooked_yucca_fruit",
+            "stage": "COOKED"
+        }                   
+    }
+}

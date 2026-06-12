@@ -1,0 +1,24 @@
+{
+    "name": "Mining",
+    "icon": "minecraft:iron_pickaxe",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(br)Mining any types of ores will grant you Mining experience. However, you will only earn the full amount of experience from ores relative to your Mining level:$(2br)&cThat doesn't mean you won't receive any experience from items outside your level range, just less.&r"
+},{            "type": "patchouli:text",
+            "text": "$(2br)&eLv. 1-20&r (&7Tier 0&r): Coal, Iron, Copper
+&eLv. 21-40&r (&aTier 1&r): Redstone, Lapis Lazuli, Gold, Quartz, Emerald
+&eLv. 41-60&r (&9Tier 2&r): Cloggrum, Diamond, Froststeel, Utherium
+&eLv. 61-80&r (&dTier 3&r): Regalium, Moonstone, Pyrope, Aquite
+&eLv. 81-100&r (&6Tier 4&r): Falsite, Ventium, Horizonite
+&eLv. 100&r (&5Tier 5&r): Charoite, Diopside"
+},{            "type": "patchouli:text",
+            "text": "
+
+While mining, you will find Tiered Ore&r (&7Spritual&r, &aCelestial&r. &9Emyprean&r, &dAngelic&r, &6Divine&r, and &5Godly&r, which drop by chance depending on your level and the level range of the ore you are mining. This ore can be used in other Professions."
+},{            "type": "patchouli:text",
+            "text": ""}
+    ]
+}

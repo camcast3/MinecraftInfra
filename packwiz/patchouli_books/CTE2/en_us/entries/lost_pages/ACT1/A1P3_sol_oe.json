@@ -1,0 +1,16 @@
+{
+    "name": "Spice of Life: Onion Edition",
+    "icon": "solonion:lunchbag",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":2,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 4AF5F24C4B770EA5)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rFinding it difficult to survive?$(2br)&eSpice of Life: Onion Edition &rgives every food a &e'diversity'&r factor. Eating diverse foods gives &ebenefits,&r while sticking to a few foods won't. &eCheck your Food Book in your MineMenu (default: H)&r to check your diversity and current benefits.
+"},
+		{
+            "type": "patchouli:text",
+            "text": " &eKeep eating different foods and increase your Health, Block Reach, Movement Speed, and more!&rThe &eLunchbag&r can be crafted and upgraded to &ehold all your food&r at once by &eshift right clicking&r with it in hand and right clicking to eat with it."
+		}
+    ]
+}

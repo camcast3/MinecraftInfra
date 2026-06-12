@@ -1,0 +1,7 @@
+{
+  "effect": "burn_effect",
+  "give_to": "Target",
+  "id": "give_burn_effect_to_target",
+  "seconds": 3,
+  "ser": "give_exile_effect"
+}

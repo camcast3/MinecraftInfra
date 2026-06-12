@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_flicker_refresh",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "flicker_refresh",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

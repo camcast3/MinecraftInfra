@@ -1,0 +1,35 @@
+{
+  "exp": 600,
+  "id": "stat_soul_family_armor_legendary5",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/mining/5",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/4",
+      "num": 12
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:leather",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "blue_skies:charoite",
+      "num": 2
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_gold",
+      "num": 1    }
+  ],
+  "set_tier_nbt": true,
+  "profession": "gear_crafting",
+  "result": "mmorpg:stat_soul/family/armor/legendary",
+  "result_num": 1,
+  "tier": 5
+}

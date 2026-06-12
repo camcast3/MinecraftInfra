@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_target",
+  "pos": "TARGET",
+  "ser": "proc_spell",
+  "spellId": "target",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

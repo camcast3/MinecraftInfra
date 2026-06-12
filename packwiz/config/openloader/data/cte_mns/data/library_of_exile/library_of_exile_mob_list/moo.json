@@ -1,0 +1,15 @@
+{
+  "id": "moo",
+  "mobs": [
+    {
+      "mob_id": "twilightforest:minotaur",
+      "weight": 2000	
+    }
+  ],
+  "tags": {
+    "tags": [
+      "moo"
+    ]
+  },
+  "weight": 1000
+}

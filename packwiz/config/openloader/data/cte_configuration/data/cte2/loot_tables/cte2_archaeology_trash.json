@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:stone/1",
+          "weight": 255
+        },
+{
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_arch_currency",
+          "weight": 105
+        },
+{
+          "type": "minecraft:item",
+          "name": "minecraft:sniffer_egg",
+          "weight": 15
+        },
+{
+          "type": "minecraft:item",
+          "name": "betterarcheology:growth_totem",
+          "weight": 15
+        },
+{
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_sherd",
+          "weight": 10
+        },
+{
+          "type": "minecraft:item",
+          "name": "betterarcheology:unidentified_artifact",
+          "weight": 10
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_archetrashe"
+}

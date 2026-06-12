@@ -1,0 +1,51 @@
+{
+  "base_gear": "plate_boots",
+  "guid": "oath_of_mahj_boots",
+  "flavor_text": "",
+  "force_item_id": "cte2modpackarmors:oath_of_mahj_armor_boots",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 60,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "increase_healing"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "totem_spell_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.5,
+      "stat": "health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 15.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,38 @@
+{
+    "name": "Lightman's Currency",
+    "icon": "lightmanscurrency:coinblock_gold",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "lightmanscurrency:coinmint",
+  "item2": "lightmanscurrency:speed_upgrade_1",
+  "item3": "lightmanscurrency:speed_upgrade_2",
+  "item4": "lightmanscurrency:speed_upgrade_3",
+  "item5": "lightmanscurrency:speed_upgrade_4",
+  "item6": "lightmanscurrency:speed_upgrade_5"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "lightmanscurrency:coinblock_copper",
+  "item2": "lightmanscurrency:coinblock_iron",
+  "item3": "lightmanscurrency:coinblock_gold",
+  "item4": "lightmanscurrency:coinblock_emerald",
+  "item5": "lightmanscurrency:coinblock_diamond",
+  "item6": "lightmanscurrency:coinblock_netherite"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "lightmanscurrency:coinblock_chocolate_copper",
+  "item2": "lightmanscurrency:coinblock_chocolate_iron",
+  "item3": "lightmanscurrency:coinblock_chocolate_gold",
+  "item4": "lightmanscurrency:coinblock_chocolate_emerald",
+  "item5": "lightmanscurrency:coinblock_chocolate_diamond",
+  "item6": "lightmanscurrency:coinblock_chocolate_netherite"
+		}
+    ]
+}

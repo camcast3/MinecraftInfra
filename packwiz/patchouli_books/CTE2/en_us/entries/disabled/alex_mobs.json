@@ -1,0 +1,17 @@
+{
+    "name": "Alex's Mobs",
+    "icon": "alexsmobs:dimensional_carver",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list5",
+			"heading":"Disabled",
+  "item1": "alexsmobs:blood_sprayer",
+  "item2": "alexsmobs:dimensional_carver",
+  "item3": "alexsmobs:hemolymph_blaster",
+  "item4": "alexsmobs:tendon_whip",
+  "item5": "alexsmobs:transmutation_table"
+		}
+    ]
+}

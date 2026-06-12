@@ -1,0 +1,22 @@
+{
+    "name": "Infusing",
+    "icon": "mmorpg:enchantment/family/armor/common",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "You can craft &eInfusions&r for the following: armor, offhands, jewelry, and weapons. When crafting the scrolls, there are a few ingredients:1. &eTiered Ore&r - earned from Mining, they are based on the item level you want to craft. The level ranges are the same as what you'd find in the Mining Profession.
+&lYou can always check the &cJEI&r &lto see what items are needed for &eInfusions&r&l.&r"
+},{            "type": "patchouli:text",
+            "text": "
+2. &eStones (Rarity)&r - the Stones determine the rarity of the gear you will craft. You can get these Stones while salvaging.
+
+3. &eIngots + Identifier Items&r - the items that determine whether you are crafting armor, offhands, jewelry, or weapons. Refer to &cJEI&r for recipes
+
+4. &ePaper&r
+
+5. &eMoney&r"
+}
+    ]
+}

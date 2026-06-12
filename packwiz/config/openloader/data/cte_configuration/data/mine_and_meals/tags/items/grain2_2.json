@@ -1,0 +1,49 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "cuisinedelight:mixed_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:mixed_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:ham_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_pasta",
+      "required": false
+    }
+  ]
+}
