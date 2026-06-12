@@ -23,18 +23,21 @@
 # the server consumes.
 README.md
 
-# Files exceeding GitHub's 100 MB blob limit. Both are CLIENT-side cosmetic
-# assets (custom main-menu animation + custom resource-pack ZIP) — the
-# server doesn't render menus or load resource packs, so excluding them
-# from the manifest only affects the client install. They were dropped
-# into packwiz/ by the CurseForge import (the upstream C2E2 zip ships
-# them in overrides/); to keep them out of `git push` we exclude here.
+# Cosmetic asset binaries hosted via GitHub Release, NOT committed to git
+# (each exceeds GitHub's 100 MB blob limit).
 #
-# PR 2's "publish Prism client zip" flow will need to source these
-# separately — either commit them via Git LFS, attach to the modpack
-# Release tag, or download into the published zip at build time.
-# Until then, players using a Prism install from the upstream CF zip
-# (the user's current setup) keep them; packwiz-installed clients see
-# the vanilla title screen + no custom resource-pack.
+# The .pw.toml metafiles at the same paths (`*.pw.toml` siblings) ARE
+# committed and ARE indexed — they tell packwiz-installer to fetch the
+# binaries from the `c2e2-blobs-v<PACK_VERSION>` GitHub Release at
+# install time. Excluding the .fma and resources.zip themselves prevents
+# `packwiz refresh` from double-indexing them as raw files alongside the
+# metafiles (which would produce a duplicate-install hazard, and also
+# `git push` would fail on the 100 MB blob limit).
+#
+# The `import-curseforge-pack.ps1` admin script leaves these binaries in
+# place after re-importing a new C2E2 upstream zip; that's expected. The
+# admin's responsibility is to verify the bytes match what's attached to
+# the GitHub Release (and refresh the `mode = "url"` metafiles' hashes
+# accordingly), not to delete the local copies.
 config/fancymenu/assets/mahj_1294853429_mainmenu.fma
 config/openloader/resources/resources.zip

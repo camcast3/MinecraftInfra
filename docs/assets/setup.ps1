@@ -30,6 +30,87 @@ function Write-Step($msg) {
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow }
 
+# URL of the player-side update.ps1, used by the defensive PreLaunchCommand
+# backfill below. Pulled from main so re-running setup always gets the latest
+# update.ps1 even when the player is already on the current modpack version
+# (and therefore won't pick up a fresh zip).
+$UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
+
+# PreLaunchCommand value Prism will run on every launch. Single-quoted so PS
+# doesn't expand `$INST_DIR` — Prism does that substitution at launch time.
+# Outer double quotes are part of the string Prism parses (QProcess::splitCommand
+# respects quoted segments containing spaces, e.g. C:\Users\Jane Doe\...).
+$PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
+
+# Idempotently writes OverrideCommands=true + PreLaunchCommand=... into the
+# given instance.cfg, and downloads update.ps1 into <instanceDir>\.negativezone\
+# if it isn't already there. Safe to call multiple times — existing correct
+# values are detected and left alone.
+#
+# Why this exists separately from the bundled-in-zip wiring: the publish flow
+# bakes both lines into every new client zip, but already-installed players
+# who don't get a fresh zip (because they're already on the current version)
+# still need the launch hook so future modpack updates auto-apply. Re-running
+# the setup one-liner therefore both reinstalls + backfills the launch wiring.
+function Set-PrismPreLaunchHook($instanceDir) {
+    $cfgPath = Join-Path $instanceDir 'instance.cfg'
+    if (-not (Test-Path -LiteralPath $cfgPath)) {
+        Write-Warn "instance.cfg not found at $cfgPath — skipping PreLaunchCommand backfill"
+        return
+    }
+
+    # Make sure the update script is on disk where instance.cfg points to it,
+    # before we write the launch hook. If we wrote the hook with no script
+    # present Prism would fail-closed every launch and block the game.
+    $negDir = Join-Path $instanceDir '.negativezone'
+    $updateScriptPath = Join-Path $negDir 'update.ps1'
+    if (-not (Test-Path -LiteralPath $updateScriptPath)) {
+        if (-not (Test-Path $negDir)) {
+            New-Item -ItemType Directory -Path $negDir -Force | Out-Null
+        }
+        try {
+            Invoke-WebRequest -Uri $UpdateScriptUrl -OutFile $updateScriptPath -UseBasicParsing -ErrorAction Stop
+            Write-Ok "Downloaded update.ps1 to $updateScriptPath"
+        } catch {
+            Write-Warn "Could not download update.ps1 from $UpdateScriptUrl — auto-update will NOT be enabled."
+            Write-Warn "  Re-run this setup script once you have internet access to enable auto-update."
+            return
+        }
+    }
+
+    $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
+    $updated = New-Object System.Collections.Generic.List[string]
+    $sawOverrideCommands = $false
+    $sawPreLaunchCommand = $false
+    $changed = $false
+    foreach ($cfgLine in $cfgLines) {
+        if ($cfgLine -match '^OverrideCommands=') {
+            $sawOverrideCommands = $true
+            if ($cfgLine -ne 'OverrideCommands=true') { $changed = $true }
+            $updated.Add('OverrideCommands=true')
+        } elseif ($cfgLine -match '^PreLaunchCommand=') {
+            $sawPreLaunchCommand = $true
+            $desired = "PreLaunchCommand=$PreLaunchCommand"
+            if ($cfgLine -ne $desired) { $changed = $true }
+            $updated.Add($desired)
+        } else {
+            $updated.Add($cfgLine)
+        }
+    }
+    if (-not $sawOverrideCommands) {
+        $updated.Add('OverrideCommands=true'); $changed = $true
+    }
+    if (-not $sawPreLaunchCommand) {
+        $updated.Add("PreLaunchCommand=$PreLaunchCommand"); $changed = $true
+    }
+    if ($changed) {
+        Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
+        Write-Ok "PreLaunchCommand wired up (auto-update enabled on next launch)"
+    } else {
+        Write-Ok "PreLaunchCommand already in place"
+    }
+}
+
 # ─── Preflight ──────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "NegativeZone Minecraft — automated setup" -ForegroundColor Magenta
@@ -216,6 +297,16 @@ if ($manifest) {
             Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
             Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
         }
+    }
+
+    # Defensive backfill: every run of setup.ps1 re-asserts the PreLaunchCommand
+    # wiring on the installed instance, including when we skipped re-install
+    # because the version already matched. This is how already-onboarded
+    # players who pre-date the auto-update launch hook pick it up — they just
+    # re-run the setup one-liner once and the hook gets stitched in.
+    if (Test-Path -LiteralPath $instanceTarget) {
+        Write-Step "Verifying auto-update launch hook"
+        Set-PrismPreLaunchHook -instanceDir $instanceTarget
     }
 }
 

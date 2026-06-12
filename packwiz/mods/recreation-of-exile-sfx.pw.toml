@@ -1,0 +1,35 @@
+name = "Recreation of Exile - SFX"
+filename = "RoE_SFX-FILL_IN_VERSION.jar"
+side = "both"
+
+# Re-hosted via GitHub Release because CurseForge returns
+# `<Nil N="downloadUrl" />` for this project — its files require browser
+# license click-through and packwiz-installer cannot fetch them directly.
+#
+# Admin runbook (per packwiz/README.md "Re-hosted CF-blocked mods" section):
+#   1. Open the CF page and download the matching Forge 1.20.1 file
+#      manually (browser-only, completes the license click-through).
+#   2. Verify the redistribution clause in the mod's license file is
+#      compatible with attaching the JAR to a public GitHub Release.
+#      The other RoE sibling mods we ship (RoE Weapons etc.) are open
+#      to redistribution; SFX needs separate license check before publish.
+#      RECORD THE OUTCOME IN THE PR 2 DESCRIPTION.
+#   3. Upload the JAR to the `c2e2-blobs-v<PACK_VERSION>` release.
+#   4. Update `filename` to match the JAR you uploaded.
+#   5. Replace the FILL_IN placeholders below with the real download URL
+#      and the file's actual SHA-256 hash (Get-FileHash <jar> -Algorithm SHA256).
+#   6. Update [update.curseforge] file-id to the current CF file-id so PR 4's
+#      daily workflow can still notice upstream version bumps.
+#   7. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
+[download]
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-vFILL_IN/RoE_SFX-FILL_IN_VERSION.jar"
+hash-format = "sha256"
+hash = "0000000000000000000000000000000000000000000000000000000000000000"
+mode = "url"
+
+# See ftb-placeholders.pw.toml for the rationale on keeping
+# [update.curseforge] alongside `mode = "url"`.
+[update]
+[update.curseforge]
+file-id = 0
+project-id = 0

@@ -10,6 +10,13 @@ nav_order: 2
 Two paths to get connected: a **one-line automated setup** (recommended) or
 **manual step-by-step** if you'd rather see what's happening.
 
+> **Already playing?** A new auto-update launch hook is now part of the
+> Craft to Exile 2 instance. **Re-run the setup one-liner once** (see
+> [Path A](#path-a--automated-setup-recommended)) to enable zero-action
+> modpack updates on your installed instance. After that, future modpack
+> publishes apply automatically on the next Prism launch — no manual
+> action required. See [Modpack updates](#modpack-updates) for how it works.
+
 <details markdown="1" open>
 <summary>Table of contents</summary>
 
@@ -198,6 +205,56 @@ try again.
 
 ---
 
+## Modpack updates
+
+Once you've installed the modpack (via Path A, or Path B + the setup
+one-liner re-run), **updates apply automatically** on the next Prism launch.
+You don't need to download anything manually or re-run the setup script.
+
+### How it works
+
+When you click **Launch** in Prism, a small script runs first that:
+
+1. Checks our published manifest at
+   `stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json`
+   to see if a new modpack version is available.
+2. If you're already up to date, the game launches normally — no delay.
+3. If a new version is available, the script downloads it, verifies the
+   SHA-256 hash, and atomically swaps in the new mods, configs, and
+   resource packs. Your **worlds (`saves/`), screenshots, and personal
+   options stay intact.**
+4. The game then launches the freshly updated instance.
+
+A typical update takes **30–60 seconds** before the game starts, depending
+on your internet speed and how much the modpack changed.
+
+### Failure behavior
+
+The update is designed to fail-safe in both directions:
+
+- **No internet, or our blob storage is down (fail-open):** the update step
+  gives up quickly and lets the game launch with whatever you currently
+  have installed. (The server may kick you if your mod set is too stale —
+  that's covered in the troubleshooting table.)
+- **Corrupted download / SHA-256 mismatch (fail-closed):** the update
+  **blocks the launch** rather than installing a broken modpack. You'll see
+  an error in the Prism launch log. Re-launch — the next attempt usually
+  succeeds.
+- **Major version bump (Minecraft version or Forge version changed):** the
+  update refuses to swap automatically and asks you to re-run the setup
+  one-liner so you get a full clean reinstall.
+
+### Disabling auto-update
+
+If you need to launch without the update step (e.g. you're testing custom
+mods locally and don't want them overwritten), uncheck **Custom commands**
+in Prism: select the instance → **Edit** → **Settings** → **Custom commands**
+tab → uncheck **Custom commands**. Note that **the server will kick you if
+your mod set doesn't match** — this escape hatch is for offline / dev work
+only.
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -212,6 +269,8 @@ try again.
 | `Failed to verify username` / `Bad login` | Prism → top-right account dropdown → **Manage Accounts** → click your account → **Refresh**. |
 | `winget` errors during setup script | Update Windows (Settings → Windows Update), or install [App Installer](https://apps.microsoft.com/detail/9NBLGGH4NNS1) from the Store. |
 | Java still says version 8 after install | Restart your PC — Windows sometimes doesn't pick up the new PATH until reboot. |
+| Prism shows `PreLaunchCommand failed` / instance won't launch | The auto-update step failed and refused to start the game. Open `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\update.log` for the actual error. Most common cause is a corrupted download — re-launch and the next attempt usually succeeds. As a one-time escape hatch you can uncheck **Custom commands** in the instance's **Edit → Settings → Custom commands** tab to launch without the update step, but the server may kick you if your mods are out of date. |
+| Custom mods or config tweaks reverted after launch | The auto-update step replaces anything that isn't in the official manifest. This is **expected** — the server kicks players with mismatched mods anyway. To test custom mods locally without them being overwritten, uncheck **Custom commands** in the instance's **Edit → Settings → Custom commands** tab (you won't be able to connect to the live server while it's unchecked). |
 
 Still stuck? DM the admin with the exact error (screenshot is best), your Minecraft
 username, and what step you got stuck on.

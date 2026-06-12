@@ -3,11 +3,14 @@
 .SYNOPSIS
     Export a Prism Launcher instance and publish it to Azure Blob storage so
     player setup.ps1 can pull it in seconds instead of waiting through
-    a CurseForge download.
+    a CurseForge download. Bundles update.ps1 + wires the PreLaunchCommand
+    so installed instances auto-update against the latest published manifest.
 
 .DESCRIPTION
     Steps:
-      1. Reads the Prism instance directory directly from your local Prism install
+      1. Reads the Prism instance directory — by default the staging instance
+         produced by `build-instance-from-packwiz.ps1` at <RepoRoot>/build/,
+         or an explicit -InstancePath for hand-curated test runs.
       2. Zips it into a distributable pack, excluding user-specific files
          (saves, logs, screenshots, options.txt, etc.) while keeping mods,
          configs, resourcepacks, shaderpacks, servers.dat, and instance.cfg
@@ -15,29 +18,54 @@
       3. Sanitizes instance.cfg so it imports cleanly on any player's machine:
          strips your local JavaPath/JavaSignature/etc., sets AutomaticJava=true
          so Prism picks the right Java itself, pins memory to a C2E2-friendly
-         default, forces iconKey=<IconKey> so players see the branded icon, and
-         drops user-state fields (play time, window layout)
+         default, forces iconKey=<IconKey> so players see the branded icon,
+         drops user-state fields (play time, window layout), sets
+         `name=<InstanceName> v<Version>` so Prism's instance grid shows
+         the live version, and writes the `PreLaunchCommand` hook that
+         runs the bundled update.ps1 on every launch
       4. Bundles the repo-tracked instance icon (default: cte2-icon.png next to
          this script) into the zip at top-level `icons/<IconKey>.<ext>` so the
          icon is reproducible regardless of what the admin's local Prism has
          set (Prism stores icons globally at %APPDATA%\PrismLauncher\icons\,
          not inside the instance folder)
-      5. Computes SHA-256 of the zip
-      6. Uploads the versioned zip + an updated `latest.json` manifest to the
-         `minecraft-modpack` public-read blob container
-      7. Sets cache headers so updates propagate quickly
+      5. Bundles the player-side update.ps1 into the zip at
+         <InstanceName>/.negativezone/update.ps1 so the PreLaunchCommand has
+         something to run on first launch
+      6. Computes SHA-256 of the zip
+      7. Uploads the versioned zip to the `minecraft-modpack` public-read
+         blob container with cache-immutable headers
+      8. Atomically commits `modpack.yml` (audit record) + in-place edits to
+         `docker/proxmox/docker-compose.yml` (`PACKWIZ_URL` pinned to current
+         origin/main HEAD SHA, `MOTD` pinned to the new version string) on a
+         fresh `modpack/v<Version>` branch, opens a PR, and enables
+         auto-merge. Portainer GitOps redeploys C2E2 within ~5 min of merge —
+         server and client mod-set move in lockstep. We rewrite the compose
+         YAML directly rather than a .env file because Portainer's GitOps
+         mode polls compose changes and ignores .env files in git.
+      9. Uploads `latest.json` AFTER the PR succeeds so audit trail is always
+         present before any player can download the new version.
 
     Authenticates via your existing Azure CLI session (`az login`). You need
     Storage Blob Data Contributor on the container — your user account already
     has this if you can deploy the rest of the stack.
 
 .PARAMETER InstanceName
-    The exact folder name of the instance in Prism's instances directory.
-    Defaults to "Craft to Exile 2".
+    Folder name to use for the in-zip instance + as `name=` (with version
+    suffix) in the sanitized instance.cfg. Defaults to "Craft to Exile 2".
+    When -InstancePath is given, the leaf of that path takes precedence
+    and this value is overridden to match.
 
 .PARAMETER Version
     Semantic-ish version string for this publish, e.g. "1.0.0" or "2026.06.04".
     Used as the blob filename suffix and stored in latest.json.
+
+.PARAMETER InstancePath
+    Path to the source Prism instance directory to package. Default: the
+    staging instance produced by build-instance-from-packwiz.ps1 at
+    <RepoRoot>/build/<InstanceName>. Pass this when packaging a
+    hand-curated instance from Prism's installed-instances directory
+    (testing / hotfix scenarios); omit it for the normal manifest-driven
+    flow.
 
 .PARAMETER StorageAccount
     Azure Storage account name. Defaults to stmcminecraftprod.
@@ -46,7 +74,15 @@
     Blob container name. Defaults to minecraft-modpack.
 
 .PARAMETER PrismInstancesDir
-    Path to Prism's instances directory. Defaults to %APPDATA%\PrismLauncher\instances.
+    Path to Prism's instances directory. Used as the legacy fallback only
+    when neither -InstancePath nor the staging directory exists.
+    Defaults to %APPDATA%\PrismLauncher\instances.
+
+.PARAMETER UpdateScriptPath
+    Path to the player-side `update.ps1` to bundle into the zip at
+    <InstanceName>/.negativezone/update.ps1. Defaults to
+    docs/assets/update.ps1 from the repo root (the version that gets
+    pulled at install/update time via the setup.ps1 one-liner).
 
 .PARAMETER IconPath
     Path to the PNG (or other Prism-supported image format) used as the instance
@@ -80,9 +116,11 @@
 param(
     [string]$InstanceName = "Craft to Exile 2",
     [Parameter(Mandatory = $true)][string]$Version,
+    [string]$InstancePath,
     [string]$StorageAccount = "stmcminecraftprod",
     [string]$Container = "minecraft-modpack",
     [string]$PrismInstancesDir = "$env:APPDATA\PrismLauncher\instances",
+    [string]$UpdateScriptPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
     [switch]$Force
@@ -115,14 +153,68 @@ if (-not (Test-Path -LiteralPath $IconPath)) {
 }
 $iconFile = Get-Item -LiteralPath $IconPath
 
-$instancePath = Join-Path $PrismInstancesDir $InstanceName
-if (-not (Test-Path $instancePath)) {
-    throw "Instance not found at: $instancePath`nCheck -InstanceName and -PrismInstancesDir."
+# Resolve repo root early — we need it for the staging-instance default path
+# AND for the post-upload .env bump that pins PACKWIZ_COMMIT_SHA. Resolve
+# from $PSScriptRoot rather than $PWD so the caller can invoke this script
+# from anywhere on disk.
+Push-Location $PSScriptRoot
+try {
+    $repoRoot = (git rev-parse --show-toplevel | Out-String).Trim()
+} finally {
+    Pop-Location
 }
+if (-not $repoRoot) {
+    throw "Could not resolve repo root via 'git rev-parse --show-toplevel'."
+}
+
+# ─── Instance path resolution ───────────────────────────────────────────────
+# Preferred source: the staging instance materialized by
+# build-instance-from-packwiz.ps1. Falls back to a hand-curated instance in
+# the admin's local Prism install for hotfix / one-off publishes (with a
+# loud warning so the source-of-truth status is obvious in the log).
+$stagingInstance = Join-Path $repoRoot ('build/' + $InstanceName)
+if (-not $InstancePath) {
+    if (Test-Path -LiteralPath $stagingInstance) {
+        $InstancePath = $stagingInstance
+        Write-Step "Using staging instance from build-instance-from-packwiz.ps1: $InstancePath"
+    } else {
+        $InstancePath = Join-Path $PrismInstancesDir $InstanceName
+        Write-Host "    [warn] No staging instance at '$stagingInstance' — falling back to local Prism instance at '$InstancePath'." -ForegroundColor Yellow
+        Write-Host "    [warn] Run infra/azure/scripts/build-instance-from-packwiz.ps1 first for the manifest-driven flow." -ForegroundColor Yellow
+    }
+}
+
+if (-not (Test-Path -LiteralPath $InstancePath)) {
+    throw "Instance not found at: $InstancePath`nPass -InstancePath, or run build-instance-from-packwiz.ps1 to materialize the staging instance."
+}
+
+# If the leaf of -InstancePath doesn't match -InstanceName, prefer the leaf
+# (it dictates the in-zip folder name, which setup.ps1 maps to the player's
+# %APPDATA%\PrismLauncher\instances\<leaf>\). Bail loudly if a non-default
+# -InstanceName was passed and conflicts — silent rename is too magical.
+$instanceLeaf = Split-Path -Leaf $InstancePath
+if ($instanceLeaf -ne $InstanceName) {
+    if ($PSBoundParameters.ContainsKey('InstanceName')) {
+        throw "InstancePath leaf '$instanceLeaf' does not match -InstanceName '$InstanceName'. Pass one or the other, not both."
+    }
+    Write-Host "    [info] Using InstanceName from -InstancePath leaf: '$instanceLeaf'" -ForegroundColor Cyan
+    $InstanceName = $instanceLeaf
+}
+
+$instancePath = $InstancePath
 
 if (-not (Test-Path (Join-Path $instancePath 'instance.cfg'))) {
     throw "Path '$instancePath' doesn't look like a Prism instance (no instance.cfg)."
 }
+
+# ─── update.ps1 resolution ──────────────────────────────────────────────────
+if (-not $UpdateScriptPath) {
+    $UpdateScriptPath = Join-Path $repoRoot 'docs/assets/update.ps1'
+}
+if (-not (Test-Path -LiteralPath $UpdateScriptPath)) {
+    throw "update.ps1 not found at: $UpdateScriptPath`nPass -UpdateScriptPath to override."
+}
+$UpdateScriptPath = (Resolve-Path -LiteralPath $UpdateScriptPath).Path
 
 # ─── Git preflight ─────────────────────────────────────────────────────────
 # Catch the two failure modes that produced PR #121's merge conflict:
@@ -132,7 +224,6 @@ if (-not (Test-Path (Join-Path $instancePath 'instance.cfg'))) {
 #      clobber each other).
 # Both fail fast, BEFORE the expensive zip + blob upload, so a bad git state
 # doesn't waste a multi-minute publish.
-$repoRoot = git rev-parse --show-toplevel
 $publishBranch = "modpack/v$Version"
 
 Push-Location $repoRoot
@@ -235,7 +326,16 @@ function ShouldExclude([string]$relativePath) {
 # Prism's Java/memory settings or set the icon after import. iconKey is forced
 # to the bundled icon so the published pack is reproducible regardless of what
 # the admin's local Prism instance happens to have set.
-function Get-SanitizedInstanceCfg([string]$path, [string]$iconKey) {
+#
+# Also wires up the PreLaunchCommand hook so the bundled .negativezone/update.ps1
+# runs on every Prism launch, giving us zero-action client auto-update against
+# Azure Blob's latest.json manifest.
+function Get-SanitizedInstanceCfg(
+    [string]$path,
+    [string]$iconKey,
+    [string]$instanceName,
+    [string]$version
+) {
     $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
     # Normalize line endings to CRLF (Prism writes CRLF on Windows).
     $lines = $raw -split "\r?\n"
@@ -250,10 +350,25 @@ function Get-SanitizedInstanceCfg([string]$path, [string]$iconKey) {
         'ExportOptionalFiles'
     )
 
+    # Single-quoted PS string keeps `$INST_DIR` as a literal — Prism does
+    # the variable substitution at launch time, not PowerShell now. The outer
+    # double-quotes are part of the command value: Prism uses QProcess::splitCommand
+    # to parse the string, which respects double-quoted segments containing spaces
+    # (e.g. C:\Users\Jane Doe\AppData\Roaming\PrismLauncher\instances\...).
+    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
+
     # Fields whose values we override to a known-good default. Order: existing
     # lines get rewritten in place; missing fields get appended to [General].
     # 8192 MB matches C2E2's recommended ceiling — players on 8 GB-total
     # systems should lower it to 4096 in Prism after install.
+    #
+    # name= carries the version suffix so players see the live version in
+    # Prism's instance grid. update.ps1 patches this line on every swap so
+    # subsequent updates keep the label fresh (one-launch lag is acceptable).
+    #
+    # OverrideCommands + PreLaunchCommand wire up the auto-update hook. The
+    # hook is fail-open on network errors (lets the game launch when offline)
+    # and fail-closed on SHA mismatch (blocks corrupted installs).
     $overrides = [ordered]@{
         'AutomaticJava'         = 'true'
         'OverrideJavaLocation'  = 'false'
@@ -261,6 +376,9 @@ function Get-SanitizedInstanceCfg([string]$path, [string]$iconKey) {
         'MinMemAlloc'           = '512'
         'MaxMemAlloc'           = '8192'
         'iconKey'               = $iconKey
+        'name'                  = "$instanceName v$version"
+        'OverrideCommands'      = 'true'
+        'PreLaunchCommand'      = $preLaunchCommand
     }
 
     $out = New-Object System.Collections.Generic.List[string]
@@ -305,7 +423,7 @@ function Get-SanitizedInstanceCfg([string]$path, [string]$iconKey) {
 }
 
 $instanceCfgPath = Join-Path $instancePath 'instance.cfg'
-$sanitizedCfg = Get-SanitizedInstanceCfg $instanceCfgPath $IconKey
+$sanitizedCfg = Get-SanitizedInstanceCfg $instanceCfgPath $IconKey $InstanceName $Version
 
 $zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
@@ -335,6 +453,16 @@ try {
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
         $zip, $iconFile.FullName, $iconEntry, 'Optimal') | Out-Null
     Write-Ok "Bundled icon: $($iconFile.Name) -> $iconEntry"
+
+    # Bundle the player-side update.ps1 at <InstanceName>/.negativezone/update.ps1
+    # so Prism's PreLaunchCommand (written into the sanitized instance.cfg
+    # above) can invoke it. Each published zip embeds the matching update.ps1
+    # — admins can't roll back the script without also re-publishing the
+    # client zip, which is fine because update.ps1 is small + stable.
+    $updateEntry = "$InstanceName/.negativezone/update.ps1"
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+        $zip, $UpdateScriptPath, $updateEntry, 'Optimal') | Out-Null
+    Write-Ok "Bundled update.ps1 -> $updateEntry"
 } finally {
     $zip.Dispose()
 }
@@ -384,7 +512,7 @@ $manifest = [ordered]@{
 $manifestPath = Join-Path $env:TEMP 'latest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
-# ─── Update modpack.yml + open PR ──────────────────────────────────────────
+# ─── Update modpack.yml + .env + open PR ───────────────────────────────────
 Write-Step "Creating branch '$publishBranch' from origin/main"
 Push-Location $repoRoot
 try {
@@ -393,6 +521,17 @@ try {
     # cause of PR #121's conflict: re-running the script from a leftover
     # publish branch silently stacked the new commit on stale history.
     git checkout -B $publishBranch "origin/main"
+
+    # Capture the SHA we just checked out — this is the packwiz/ snapshot
+    # the staging instance was materialized from (build-instance-from-packwiz
+    # reads the working tree, and the working-tree-clean preflight above
+    # ensured local packwiz/ matches origin/main). Pinning .env's
+    # PACKWIZ_COMMIT_SHA to this value is what locks the server side to
+    # exactly the manifest the client zip ships.
+    $packwizSha = (git rev-parse HEAD | Out-String).Trim()
+    if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
+        throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
+    }
 
     # Write modpack.yml AFTER the branch reset so the new content survives.
     $modpackYml = Join-Path $repoRoot 'modpack.yml'
@@ -409,8 +548,57 @@ publishedAt: "$publishedAt"
 "@
     Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
 
-    git add modpack.yml
-    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha"
+    # Atomic SHA + version bump for the C2E2 server: by rewriting the two
+    # tracked literal values in docker/proxmox/docker-compose.yml in the same
+    # commit as modpack.yml, Portainer GitOps's next 5-min poll will redeploy
+    # the server with the new PACK_VERSION (visible in MOTD) and the new
+    # PACKWIZ_COMMIT_SHA (pinning the server's mod set to the same snapshot
+    # that's in the client zip just uploaded). Players' next Prism launch
+    # fetches the new client zip via PreLaunchCommand, so server + client
+    # move together — no kicked-by-mod-mismatch window.
+    #
+    # We rewrite the compose YAML directly (not a .env file) because
+    # Portainer CE's GitOps mode polls the compose file and triggers
+    # redeploy on content change; Portainer ignores .env files in git
+    # (per project convention, all UI-managed env vars live in Portainer's
+    # stack environment UI). Inline literals = single source of truth.
+    $composeFile = Join-Path $repoRoot 'docker/proxmox/docker-compose.yml'
+    if (-not (Test-Path -LiteralPath $composeFile)) {
+        throw "Expected $composeFile to exist. Cannot bump PACK_VERSION / PACKWIZ_COMMIT_SHA."
+    }
+    $composeContent = Get-Content -Raw -LiteralPath $composeFile -Encoding UTF8
+
+    # Pin the packwiz manifest URL to the SHA we just captured. The pattern
+    # is anchored on the github.com path so we don't accidentally rewrite
+    # any unrelated URL that happens to look like a sha. Fail loudly if
+    # the line isn't found in the expected shape — a silently-no-op
+    # publish would let server and client drift.
+    $urlRegex = '(?m)^(\s*PACKWIZ_URL:\s*"https://raw\.githubusercontent\.com/camcast3/MinecraftInfra/)([^/"]+)(/packwiz/pack\.toml")\s*$'
+    $urlMatches = [regex]::Matches($composeContent, $urlRegex)
+    if ($urlMatches.Count -ne 1) {
+        throw ("Expected exactly 1 PACKWIZ_URL line in $composeFile (matched {0}). " +
+               "Has the line been manually edited?") -f $urlMatches.Count
+    }
+    $composeContent = [regex]::Replace($composeContent, $urlRegex, "`${1}$packwizSha`${3}")
+
+    # Pin the MOTD version. Same one-match guard.
+    $motdRegex = '(?m)^(\s*MOTD:\s*"Craft to Exile 2 v)([^"]+)(")\s*$'
+    $motdMatches = [regex]::Matches($composeContent, $motdRegex)
+    if ($motdMatches.Count -ne 1) {
+        throw ("Expected exactly 1 MOTD line in $composeFile (matched {0}). " +
+               "Has the line been manually edited?") -f $motdMatches.Count
+    }
+    $composeContent = [regex]::Replace($composeContent, $motdRegex, "`${1}$Version`${3}")
+
+    # Write back with UTF-8 no-BOM, original line endings preserved (Get-Content
+    # -Raw keeps the existing `r`n vs `n; Set-Content -NoNewline writes the
+    # buffer verbatim).
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
+    Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
+
+    git add modpack.yml 'docker/proxmox/docker-compose.yml'
+    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
     Write-Step "Pushing $publishBranch to origin"
     if ($Force -and $expectedRemoteSha) {
@@ -434,6 +622,14 @@ Automated modpack publish.
 - **SHA-256:** ``$sha``
 - **Size:** ${sizeMb} MB
 - **Published:** $publishedAt
+- **packwiz SHA pin:** ``$packwizSha``
+
+This PR atomically bumps:
+- ``modpack.yml`` — the published-version audit record consumed by ``setup.ps1``.
+- ``docker/proxmox/docker-compose.yml`` — ``PACKWIZ_URL`` pinned to the new
+  packwiz SHA, ``MOTD`` pinned to the new version. Portainer GitOps redeploys
+  C2E2 within ~5 min of merge, pulling the same packwiz snapshot that's bundled
+  in the client zip above. Server + client move in lockstep.
 "@
     $prUrl = $null
     try {

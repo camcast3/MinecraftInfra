@@ -1,0 +1,34 @@
+name = "FTB Placeholders"
+filename = "ftb-placeholders-forge-1900.1.5-build.43.jar"
+side = "both"
+
+# Re-hosted via GitHub Release because CurseForge returns
+# `<Nil N="downloadUrl" />` for this project — its files require browser
+# license click-through and packwiz-installer cannot fetch them directly.
+#
+# Admin runbook (per packwiz/README.md "Re-hosted CF-blocked mods" section):
+#   1. Open the CF page and download the matching Forge 1.20.1 file
+#      manually (browser-only, completes the license click-through).
+#   2. Verify the redistribution clause in the mod's license file is
+#      compatible with attaching the JAR to a public GitHub Release.
+#   3. Upload the JAR to the `c2e2-blobs-v<PACK_VERSION>` release.
+#   4. Replace the FILL_IN placeholders below with the real download URL
+#      and the file's actual SHA-256 hash (Get-FileHash <jar> -Algorithm SHA256).
+#   5. Update [update.curseforge] file-id to the current CF file-id so PR 4's
+#      daily workflow can still notice upstream version bumps for this entry.
+#   6. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
+[download]
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-vFILL_IN/ftb-placeholders-forge-1900.1.5-build.43.jar"
+hash-format = "sha256"
+hash = "0000000000000000000000000000000000000000000000000000000000000000"
+mode = "url"
+
+# Keep the [update.curseforge] block alongside `mode = "url"` so PR 4's
+# daily `packwiz update --all` workflow still pings CF for upstream version
+# bumps and surfaces them in the daily PR. packwiz refreshes the metadata
+# fields without overwriting our GH Release `download.url`, per the
+# "preferred path" spike outcome documented in packwiz/README.md.
+[update]
+[update.curseforge]
+file-id = 0
+project-id = 0

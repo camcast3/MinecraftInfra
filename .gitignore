@@ -23,3 +23,10 @@ checklist.md
 # Release attachment, or download-at-build-time).
 packwiz/config/fancymenu/assets/mahj_1294853429_mainmenu.fma
 packwiz/config/openloader/resources/resources.zip
+
+# PR 2's admin tooling artefacts. Both are reproducible from the
+# committed packwiz manifest + scripts, so there's no value in tracking
+# them in git, and the staging tree contains player-facing mod JARs
+# (~3-4 GB) that would balloon the repo.
+build/
+infra/azure/scripts/cache/
