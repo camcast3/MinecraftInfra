@@ -49,6 +49,10 @@ services:
     stdin_open: true
     ports:
       - "25565:25565"
+      # Prometheus exporter metrics endpoint (mod listens on :19565). Exposed
+      # for parity with prod's MODS overlay validation — `curl localhost:19565`
+      # should return Prometheus-format text after boot.
+      - "19565:19565"
     networks:
       - c2e2
     depends_on:
@@ -71,18 +75,24 @@ services:
       # dir, so uncommitted .pw.toml / `packwiz refresh` results are
       # live-testable.
       PACKWIZ_URL: "http://c2e2-packwiz-server/pack.toml"
-      # Local stack is intentionally MODPACK-ONLY. The prod stack overlays
-      # three server-only admin mods (PCF, spark, prometheus-exporter) via
-      # its own `MODS:` env block in docker/proxmox/docker-compose.yml,
-      # along with their TOML configs (APPLY_EXTRA_FILES) and PCF secret
-      # injection (PATCH_DEFINITIONS). Local doesn't run any of that — no
-      # Velocity in front to forward, no Prometheus scraping the metrics
-      # endpoint, and spark profiling isn't useful for "does packwiz work"
-      # validation. If you ever need to test prod-faithfully, copy the
-      # `MODS:`, `APPLY_EXTRA_FILES:`, `PATCH_DEFINITIONS:`, and `configs:`
-      # blocks from the proxmox compose, then ALSO add a local PCF override
-      # with `forwarding.enabled = false` so direct localhost connections
-      # work without a Velocity proxy.
+      # Local stack runs the MODPACK from packwiz plus minecraft-prometheus-exporter
+      # from the admin overlay (same URL the prod compose uses in its MODS: env),
+      # so we can sanity-check the hybrid PACKWIZ_URL + MODS architecture against
+      # the live packwiz manifest before prod adopts it. The other two prod admin
+      # mods (PCF, spark) are deliberately OUT here: PCF would reject direct
+      # localhost connections (no Velocity in front) and spark profiling adds
+      # nothing to "does this work?" validation. To go fully prod-faithful copy
+      # the rest of the prod compose's `MODS:`, `APPLY_EXTRA_FILES:`,
+      # `PATCH_DEFINITIONS:`, and top-level `configs:` blocks, then add a local
+      # PCF override TOML with `forwarding.enabled = false`.
+      MODS: |-
+        https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar
+      # Fetch the prom-exporter config from main HEAD on first run (--skip-existing
+      # default, so re-runs don't clobber local edits). Pulls from the same
+      # canonical source the prod compose uses, so any drift between local-test
+      # and prod is impossible.
+      APPLY_EXTRA_FILES: |-
+        world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
       MEMORY: ""
       JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
       ONLINE_MODE: "FALSE"
