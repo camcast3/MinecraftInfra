@@ -27,10 +27,12 @@
 #
 # All ${VAR} values for SECRETS must be set in Portainer's stack environment
 # variable UI — never hardcode secret values here. Non-secret build metadata
-# (PACK_VERSION, PACKWIZ_COMMIT_SHA) lives in the committed `docker/proxmox/.env`
-# file alongside this compose, which docker-compose auto-loads at deploy time;
-# Portainer's UI variables take precedence over .env if both are set, which is
-# fine for these two (a runtime override is a useful escape hatch for testing).
+# (the modpack version in MOTD and the SHA-pinned PACKWIZ_URL) is inlined as
+# literal values in this compose file and rewritten in-place by PR 2's
+# `infra/azure/scripts/publish-prism-pack.ps1` on every publish. Portainer's
+# GitOps polling detects the YAML change and redeploys the stack within
+# ~5 min — no Portainer UI env-var, no separate .env file (which Portainer
+# wouldn't read from git anyway).
 #
 # Variables to configure in Portainer UI:
 #   TS_AUTHKEY                  - TailScale auth key (REUSABLE + preauthorized,
@@ -184,13 +186,13 @@ services:
       # picks the Forge version from the upstream C2E2 zip; if that changes, update
       # both pack.toml and this line in the same commit.
       FORGE_VERSION: "47.4.10"
-      # SHA-pinned packwiz manifest URL. ${PACKWIZ_COMMIT_SHA} comes from
-      # docker/proxmox/.env (which Portainer GitOps loads alongside this compose
-      # file). The :-main default keeps a fresh stand-up working before PR 2's
-      # publish flow has set a specific SHA — acceptable for bootstrap, NOT
-      # steady-state (means main HEAD wins on every restart instead of waiting for
-      # an explicit publish-time SHA bump).
-      PACKWIZ_URL: "https://raw.githubusercontent.com/camcast3/MinecraftInfra/${PACKWIZ_COMMIT_SHA:-main}/packwiz/pack.toml"
+      # SHA-pinned packwiz manifest URL. The SHA segment is rewritten in
+      # place by publish-prism-pack.ps1 on every publish; "main" is the
+      # bootstrap default that's only in effect before the first publish
+      # (or if someone manually resets it). Floating to main HEAD on every
+      # restart is fine for bootstrap but NOT for steady-state, hence the
+      # publish-time pin.
+      PACKWIZ_URL: "https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/packwiz/pack.toml"
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       # Required by C2E2 — Mine and Slash Dungeons triggers world commands via
@@ -199,11 +201,10 @@ services:
       ENABLE_COMMAND_BLOCK: "TRUE"
       # Server-list MOTD shown to clients via Velocity's ping-passthrough = "ALL".
       # Plain text — itzg writes this verbatim into server.properties on every start.
-      # ${PACK_VERSION} comes from docker/proxmox/.env (kept in lockstep with the
-      # published client zip by PR 2's publish flow); the :-unknown default keeps a
-      # fresh stand-up working before .env is set.
+      # The version segment is rewritten in place by publish-prism-pack.ps1 on every
+      # publish (kept in lockstep with the published client zip).
       # Keep in sync with the Velocity fallback motd in docker/azure/velocity/velocity.toml.tmpl.
-      MOTD: "Craft to Exile 2 v${PACK_VERSION:-unknown}"
+      MOTD: "Craft to Exile 2 v0.3.0"
       # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
       # going larger forces 64-bit object pointers and is a net regression.
       # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
