@@ -1,0 +1,69 @@
+# Local Velocity proxy config — mirrors docker/azure/velocity/velocity.toml.tmpl
+# but routes to the c2e2 backend over the docker bridge network (not Tailscale)
+# and intentionally runs offline so we don't need real Mojang creds for the
+# local validation.
+#
+# Differences vs prod (docker/azure/velocity/velocity.toml.tmpl):
+#   - bind = 0.0.0.0:25577  → published as 25565 on the host (same scheme as prod)
+#   - online-mode = false   → prod has true (Mojang auth at the proxy). Local
+#                             runs offline so any client username works, matching
+#                             c2e2's own ONLINE_MODE: FALSE; this also keeps a
+#                             previously-used direct-localhost character intact
+#                             when switching between proxied + direct testing.
+#   - servers.c2e2          → "c2e2:25565" (docker DNS) instead of
+#                             "${C2E2_TAILSCALE_IP}:25565"
+#
+# The forwarding secret is NOT in this file. Velocity reads it from
+# /server/forwarding.secret (bind-mounted from docker/local/velocity/forwarding.secret).
+
+config-version = "2.7"
+
+bind = "0.0.0.0:25577"
+
+# Velocity 3.3.0+ parses motd as MiniMessage — plain text only.
+motd = "Craft to Exile 2 (local proxy)"
+show-max-players = 20
+
+# LOCAL ONLY — see header for prod difference.
+online-mode = false
+force-key-authentication = true
+
+# Modern forwarding — backend (c2e2 via PCF) shares the secret in
+# forwarding.secret. Works with online-mode = false because the proxy
+# derives a deterministic offline UUID from the username and signs that.
+player-info-forwarding-mode = "modern"
+
+announce-forge = false
+kick-existing-players = false
+ping-passthrough = "ALL"
+enable-player-address-logging = true
+
+[servers]
+# Docker DNS — "c2e2" is the container_name of the backend service.
+c2e2 = "c2e2:25565"
+
+try = ["c2e2"]
+
+[forced-hosts]
+
+[advanced]
+compression-threshold = 256
+compression-level = -1
+login-ratelimit = 3000
+connection-timeout = 5000
+read-timeout = 30000
+haproxy-protocol = false
+tcp-fast-open = false
+bungee-plugin-message-channel = true
+show-ping-requests = false
+failover-on-unexpected-server-disconnect = true
+announce-proxy-commands = true
+log-command-executions = false
+log-player-connections = true
+accepts-transfers = false
+
+[query]
+enabled = false
+port = 25577
+map = "Velocity"
+max-players = 20

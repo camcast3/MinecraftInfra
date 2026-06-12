@@ -1,0 +1,12 @@
+# Local-only Velocity modern-forwarding secret. Bind-mounted into the
+# velocity container at /server/forwarding.secret. PCF on the c2e2
+# backend validates HMACs signed with the same string (the value also
+# flows into the c2e2 container as CFG_VELOCITY_FORWARDING_SECRET via
+# docker/local/.env — both must match).
+#
+# Generate a fresh one with:
+#   $b = New-Object byte[] 24
+#   [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+#   ([Convert]::ToBase64String($b) -replace '[+/=]', '') | Set-Content -NoNewline forwarding.secret
+forwarding.secret
+!forwarding.secret.example
