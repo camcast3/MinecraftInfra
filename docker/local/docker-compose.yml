@@ -1,6 +1,8 @@
 ---
 # Local C2E2 dev stack — full prod-faithful path: Velocity proxy in front of
-# Forge backend with PCF + Prometheus exporter overlay.
+# Forge backend. PCF + spark + prometheus-exporter ship through packwiz with
+# side = "server" (same as prod), so this stack exercises the exact mod
+# install path that runs in production.
 #
 #   packwiz-server (nginx)    ── serves packwiz/ over HTTP on the bridge
 #                                network so c2e2 can fetch pack.toml
@@ -101,13 +103,11 @@ services:
       # dir, so uncommitted .pw.toml / `packwiz refresh` results are
       # live-testable.
       PACKWIZ_URL: "http://c2e2-packwiz-server/pack.toml"
-      # Admin overlay — exact same URLs the prod compose uses. PCF makes the
-      # backend accept Velocity's modern forwarding; spark is omitted (no
-      # value for "does packwiz work" validation); prometheus-exporter feeds
-      # /metrics on :19565.
-      MODS: |-
-        https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
-        https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar
+      # Admin overlay (PCF + spark + prometheus-exporter) is in packwiz with
+      # side = "server" — packwiz-installer's --side server picks them up here
+      # while Prism clients with --side client skip them. Their configs still
+      # flow through APPLY_EXTRA_FILES + PATCH_DEFINITIONS below (operator
+      # concern; secrets stay out of the manifest).
       # Fetch both admin-overlay TOMLs from main HEAD on first run
       # (--skip-existing default — re-runs don't clobber local edits).
       # Pulls from the same canonical source the prod compose uses, so

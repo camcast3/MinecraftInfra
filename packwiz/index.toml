@@ -30808,6 +30808,16 @@ hash = "9376f6519de3bbf6a86cc1fc911c80357767633cf83f7e0da68cdc1959e3dd3f"
 metafile = true
 
 [[files]]
+file = "mods/prometheus-exporter.pw.toml"
+hash = "78d17adb22ffb4e48c8dab4565a45bd8de87c185a8e09e4c8f202bdaff3a0012"
+metafile = true
+
+[[files]]
+file = "mods/proxy-compatible-forge.pw.toml"
+hash = "c80a96963f867c8c01c8e72df13abc9e97bc9ae99575b94fd95605875c60b88b"
+metafile = true
+
+[[files]]
 file = "mods/puzzles-lib.pw.toml"
 hash = "5ca42f4c23aee558ed76923d4fb92ecee736ebacb53790445c09d46bd9ccb27e"
 metafile = true
@@ -31005,6 +31015,11 @@ metafile = true
 [[files]]
 file = "mods/sound.pw.toml"
 hash = "6f7a53e9d96b5afc1f256685c87ad5b951ea8eed1bd40d296fb42c65ebdbccce"
+metafile = true
+
+[[files]]
+file = "mods/spark.pw.toml"
+hash = "0ef2a47f506c83478052262348c105c307d970fbff3f6b0917e46d67f61d8953"
 metafile = true
 
 [[files]]

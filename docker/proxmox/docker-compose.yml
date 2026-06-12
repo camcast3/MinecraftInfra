@@ -170,14 +170,12 @@ services:
       # Modpack content is materialized at every container start by packwiz-installer
       # (itzg native PACKWIZ_URL support). The packwiz/ manifest in this repo holds
       # the full Craft to Exile 2 modlist (388 client+server mods + configs/scripts/
-      # kubejs/resourcepacks/shaderpacks). The three server-only ADMIN mods
-      # (Proxy-Compatible-Forge, spark, minecraft-prometheus-exporter) are NOT in
-      # the packwiz manifest — they're loaded as an overlay via the MODS env below
-      # so they stay decoupled from the modpack lifecycle (their configs come from
-      # docker/shared/config/ via APPLY_EXTRA_FILES, secret injection happens via
-      # PATCH_DEFINITIONS — both unchanged from the AUTO_CURSEFORGE era). itzg's
-      # start-setupModpack runs PACKWIZ_URL FIRST, then appends the MODS list, so
-      # the two compose cleanly.
+      # kubejs/resourcepacks/shaderpacks) PLUS the three server-only ADMIN mods
+      # (Proxy-Compatible-Forge, spark, minecraft-prometheus-exporter), each marked
+      # side = "server" so Prism clients (--side client) skip them and only the
+      # backend installs them. Their configs still come from docker/shared/config/
+      # via APPLY_EXTRA_FILES below, and secret injection happens via
+      # PATCH_DEFINITIONS — operator concerns kept out of the player-facing manifest.
       # Reference: https://docs.itzg.me/docker-minecraft-server/mods-and-plugins/packwiz/
       TYPE: FORGE
       VERSION: "1.20.1"
@@ -221,27 +219,30 @@ services:
       EXISTING_OPS_FILE: SYNCHRONIZE
       ENFORCE_WHITELIST: "TRUE"
       # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
-      # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
-      # PCF registers no new content — safe to overlay alongside the packwiz modlist
-      # (no Forge channel handshake issues with packwiz-installed mods).
+      # Server-side only (packwiz side = "server"); clients connect with unmodified
+      # CurseForge C2E2 pack. PCF registers no new content — safe to ship alongside
+      # the packwiz modlist (no Forge channel handshake issues with packwiz-installed
+      # mods).
       #
       # spark — JVM profiler/perf-diagnostics mod (https://spark.lucko.me/). Complements
       # the Prometheus monitoring below: mc-monitor (SLP) + cpburnz exporter (in-JVM) +
       # cAdvisor surface "what's wrong" (TPS dips, CPU spikes); /spark profiler,
       # /spark health, /spark heapdump answer "why" by sampling the JVM and uploading
       # shareable reports to spark.lucko.me.
-      # Server-side only; ops use it via the in-game /spark command (ops.json grants access).
+      # Server-side only (packwiz side = "server"); ops use it via the in-game /spark
+      # command (ops.json grants access).
       # No metrics endpoint — no Prometheus scrape, no port, completely independent of the sidecars.
       #
       # minecraft-prometheus-exporter (cpburnz) — white-box server metrics from inside
       # the C2E2 JVM: TPS (mc_server_tick_seconds), per-dimension tick histograms,
       # chunks loaded, entity counts by dim/type, plus JVM heap/GC/threads. This is the
       # Forge equivalent of Velocity's bungeecord-prometheus-exporter on the Azure side
-      # — server-side only, no client install required (same model as spark). The mod
-      # listens on :19565; because c2e2 shares the tailscale netns, Prometheus scrapes
-      # it at <proxmox-tailnet-ip>:19565. Baseline config is shipped from this repo via
-      # APPLY_EXTRA_FILES below — see docker/shared/config/prometheus_exporter-server.toml
-      # for the values and how to change them.
+      # — server-side only (packwiz side = "server"), no client install required. The
+      # mod listens on :19565; because c2e2 shares the tailscale netns, Prometheus
+      # scrapes it at <proxmox-tailnet-ip>:19565. Baseline config is shipped from this
+      # repo via APPLY_EXTRA_FILES below — see
+      # docker/shared/config/prometheus_exporter-server.toml for the values and how to
+      # change them.
       #
       # Important: the mod binds :19565 inside `onServerStarted` (see PrometheusExporterMod.java
       # in cpburnz/minecraft-prometheus-exporter), not at JVM/mod-load time. So the
@@ -251,10 +252,6 @@ services:
       # flapping Prometheus alerts during normal restarts, pair the `up{job=...19565}`
       # alert with the mc-monitor SLP probe on :8081 (e.g. fire only when the SLP
       # exporter also reports c2e2 down for N consecutive minutes).
-      MODS: |-
-        https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
-        https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
-        https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar
       # Extra config files fetched from the repo on first run only (--skip-existing
       # semantics — mc-image-helper mcopy parses this as newline-delimited entries,
       # each entry "<dest-relative-to-/data><<source-url>"; filename = URL basename).
@@ -408,8 +405,8 @@ services:
   # directive is allowed when network_mode: service:tailscale is set —
   # the ports listed in comments below are accessed via that tailnet IP.
   # The c2e2 container itself also lives in this netns, so the cpburnz
-  # Prometheus exporter mod (loaded in MODS above) is reachable on the
-  # same tailnet IP at :19565 alongside these sidecars.
+  # Prometheus exporter mod (shipped via packwiz with side = "server") is
+  # reachable on the same tailnet IP at :19565 alongside these sidecars.
   #
   # Known limitation: node-exporter and cadvisor run inside the tailscale
   # network namespace, so they miss some host network interface metrics
