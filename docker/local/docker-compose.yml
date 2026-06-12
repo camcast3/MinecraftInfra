@@ -132,6 +132,10 @@ services:
       # so we don't need Mojang creds).
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
+      # Required by C2E2 — Mine and Slash Dungeons triggers world commands via
+      # command blocks. Without this, players see a chat warning on every login
+      # and dungeon mechanics break.
+      ENABLE_COMMAND_BLOCK: "TRUE"
       MOTD: "Craft to Exile 2 (local)"
       # Local dev: whitelist entirely off. Any username can join (ONLINE_MODE
       # is FALSE so any username is accepted at auth too). Ops file still
