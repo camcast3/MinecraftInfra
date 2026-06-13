@@ -1,0 +1,236 @@
+---
+name: Publish Prism Pack
+
+# ─── Forever-loop prevention (critical, do not relax without analysis) ──────
+# This workflow modifies docker/proxmox/docker-compose.yml + modpack.yml and
+# opens a PR. Any trigger that fires on those file paths OR on the publish
+# PR merging to main would create an infinite loop:
+#
+#   FORBIDDEN  push: branches: [main]               → re-fires every publish-PR merge
+#   FORBIDDEN  push: paths: [docker/proxmox/**]     → re-fires every publish-PR merge
+#   FORBIDDEN  push: paths: [modpack.yml]           → re-fires every publish-PR merge
+#   FORBIDDEN  pull_request on the publish branch   → not needed; the commit is
+#                                                     already on the branch the
+#                                                     script just pushed.
+#
+# Allow-list (exhaustive — adding a new trigger requires re-doing this
+# forever-loop analysis):
+#
+#   ALLOWED    workflow_dispatch                     → admin clicks "Run workflow"
+#                                                     or `gh workflow run ...`
+#   ALLOWED    push: tags: 'modpack/v*'              → a human pushed a versioned
+#                                                     tag. The workflow itself
+#                                                     never creates these tags;
+#                                                     the publish script only
+#                                                     pushes the modpack/v<ver>
+#                                                     BRANCH, not the tag.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semantic-ish version (no v prefix), e.g. 0.3.1 or 2026.06.13'
+        required: true
+        type: string
+  push:
+    tags:
+      - 'modpack/v*'
+
+# Serialize publish runs. Two admins racing must not double-publish to the
+# same version. cancel-in-progress: false because killing a half-done publish
+# would leave partial state (blob uploaded, no PR opened, or compose rewritten
+# but not pushed). Let the prior run finish.
+concurrency:
+  group: publish-prism-pack
+  cancel-in-progress: false
+
+permissions:
+  contents: write       # push modpack/v<ver> branch
+  pull-requests: write  # open the publish PR via gh
+  id-token: write       # Azure OIDC via azure/login
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # The production environment gates manual approval (if configured) and
+    # scopes the federated credential to publish identity. Same environment
+    # as deploy-azure.yml so admins have a single approval surface.
+    environment: production
+
+    steps:
+      - name: Resolve and validate version
+        id: version
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_EVENT_NAME -eq 'push') {
+            # Tag refs come through GITHUB_REF_NAME as 'modpack/v0.3.1'.
+            $version = $env:GITHUB_REF_NAME -replace '^modpack/v', ''
+          } else {
+            $version = '${{ inputs.version }}'
+          }
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Could not resolve a version from the trigger."
+          }
+          # Lock to chars that are safe in branch names, tag names, blob
+          # filenames, and JSON. No spaces, no shell metacharacters.
+          if ($version -notmatch '^[A-Za-z0-9.+_-]+$') {
+            throw "Version '$version' contains characters that aren't safe for branch / tag / filenames."
+          }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Resolved publish version: $version"
+
+      - name: Checkout main
+        # ref: main is critical. The publish script writes the SHA pin from
+        # `git rev-parse HEAD` after `git checkout -B publishBranch origin/main`.
+        # Even on tag triggers we want main as the source of truth so the tag
+        # doesn't have to be on main for the script to find it (it never does
+        # — origin/main is the only ref the script consults). fetch-depth: 0
+        # so the script's git log / branch operations have full history.
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: No-op short-circuit (version already published)
+        id: noop_check
+        shell: pwsh
+        run: |
+          $modpackMatch = Select-String -Path 'modpack.yml' -Pattern '^version:\s*"(.+)"\s*$'
+          if (-not $modpackMatch) {
+            throw "Could not parse 'version: ""...""' line in modpack.yml."
+          }
+          $current = $modpackMatch.Matches[0].Groups[1].Value
+          $requested = '${{ steps.version.outputs.version }}'
+          Write-Host "modpack.yml currently at: $current"
+          Write-Host "Requested:                $requested"
+          if ($current -eq $requested) {
+            $summary = @"
+          ## No-op publish
+
+          ``modpack.yml`` is already pinned to ``$current`` — nothing to do.
+
+          The workflow exited **before any side effects**: no blob upload, no
+          ``docker/proxmox/docker-compose.yml`` rewrite, no PR opened, no
+          ``modpack/v$current`` branch pushed.
+
+          If you intended to re-publish (e.g. blob corrupt, need to rotate
+          the SHA pin to a newer ``packwiz/`` commit), bump the version
+          input — or run ``publish-prism-pack.ps1 -Version $current -Force``
+          locally if you really need to overwrite the existing branch.
+          "@
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
+            Write-Host "::notice::Requested version matches modpack.yml; exiting without side effects."
+            "noop=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+          "noop=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      # Defensive belt-and-suspenders: actions/checkout produces a clean tree
+      # from origin/main, so a dirty packwiz/ here means something went wrong
+      # (a hook, a misconfigured self-hosted runner, a Renovate-like bot
+      # commit that didn't get pushed). Fail loud rather than producing a
+      # SHA-pin that mismatches the bundled zip.
+      - name: Verify clean packwiz/ tree
+        if: steps.noop_check.outputs.noop != 'true'
+        run: git diff --exit-code HEAD -- packwiz/
+
+      - name: Configure git identity for publish commit
+        if: steps.noop_check.outputs.noop != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up Go (for packwiz CLI)
+        if: steps.noop_check.outputs.noop != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Install packwiz CLI
+        if: steps.noop_check.outputs.noop != 'true'
+        run: |
+          go install github.com/packwiz/packwiz@latest
+          packwiz --version
+
+      - name: Set up Java (for packwiz-installer-bootstrap)
+        if: steps.noop_check.outputs.noop != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache packwiz-installer-bootstrap.jar
+        if: steps.noop_check.outputs.noop != 'true'
+        uses: actions/cache@v4
+        with:
+          path: infra/azure/scripts/cache/
+          # Bump this key when build-instance-from-packwiz.ps1's
+          # $BootstrapVersion default changes (currently v0.0.3).
+          key: pwiz-bootstrap-v0.0.3
+
+      - name: Materialize staging instance from packwiz manifest
+        if: steps.noop_check.outputs.noop != 'true'
+        shell: pwsh
+        run: ./infra/azure/scripts/build-instance-from-packwiz.ps1 -InstanceName "Craft to Exile 2"
+
+      - name: Azure login (OIDC)
+        if: steps.noop_check.outputs.noop != 'true'
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Publish (zip + sha + blob upload + compose rewrite + git push + PR)
+        if: steps.noop_check.outputs.noop != 'true'
+        shell: pwsh
+        env:
+          # publish-prism-pack.ps1 calls `gh pr create` and `gh pr list`;
+          # gh CLI reads GH_TOKEN. The default GITHUB_TOKEN has
+          # pull-requests: write per the permissions block above.
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The script handles every side effect atomically inside one PS
+          # process — no need to split into multiple workflow steps:
+          #   1. Zip the staging instance (excludes saves/logs/screenshots).
+          #   2. Compute sha256.
+          #   3. Upload blob to Azure (uses the azure/login OIDC session
+          #      established above).
+          #   4. Rewrite docker/proxmox/docker-compose.yml in-place
+          #      (PACKWIZ_URL pinned to current HEAD SHA, MOTD pinned to
+          #      the new version string).
+          #   5. Bump modpack.yml.
+          #   6. Commit to modpack/v<ver> branch + push.
+          #   7. Open the publish PR via `gh pr create`.
+          #   8. Upload latest.json AFTER PR push so audit trail is always
+          #      present before any player can download.
+          # The script does NOT enable auto-merge — admin merges manually
+          # after CI on the publish PR passes. This is the second layer of
+          # defense against forever-loops (the first being the trigger
+          # allow-list above).
+          ./infra/azure/scripts/publish-prism-pack.ps1 -Version '${{ steps.version.outputs.version }}'
+
+      - name: Publish summary
+        if: always() && steps.noop_check.outputs.noop != 'true'
+        shell: pwsh
+        run: |
+          $status = if ('${{ job.status }}' -eq 'success') { '✅ Succeeded' } else { '❌ Failed' }
+          $summary = @"
+          ## Publish v${{ steps.version.outputs.version }} — $status
+
+          - Triggered by: ``${{ github.event_name }}``
+          - Triggering ref: ``${{ github.ref }}``
+          - Run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          On success the script will have:
+
+          - Uploaded the zip to the ``minecraft-modpack`` blob container.
+          - Rewritten ``docker/proxmox/docker-compose.yml`` with the new SHA pin + MOTD.
+          - Bumped ``modpack.yml``.
+          - Opened the publish PR against ``main`` from branch ``modpack/v${{ steps.version.outputs.version }}``.
+          - Portainer GitOps will redeploy C2E2 within ~5 min of PR merge.
+
+          **Next step:** review and merge the publish PR. The workflow does
+          NOT auto-merge — that's a deliberate forever-loop safety gate.
+          "@
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
