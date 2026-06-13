@@ -1,90 +1,41 @@
 #requires -Version 7.0
 <#
 .SYNOPSIS
-    Bootstrap or refresh the `packwiz/` manifest by importing a Craft to
-    Exile 2 CurseForge zip and folding the three server-only overlay mods
-    (spark, Proxy-Compatible-Forge, minecraft-prometheus-exporter) back on
-    top of the freshly imported pack.
+    Import a Craft to Exile 2 CurseForge zip into packwiz/ and re-add the
+    three server-only overlay mods (spark, Proxy-Compatible-Forge,
+    minecraft-prometheus-exporter) on top.
 
 .DESCRIPTION
-    One-shot admin helper for PR 1's packwiz migration (server-side mods)
-    and ongoing C2E2 upstream-version bumps.
-
-    Why this script exists:
-      packwiz's `curseforge import` recreates pack.toml, index.toml, and
-      mods/*.pw.toml from scratch — it does NOT merge into an existing
-      pack. So every C2E2 upstream bump wipes the three server-only
-      overlay mods we layer on top of the upstream modpack. This script
-      backs them up, runs the import, then re-adds them, so the resulting
-      packwiz/ snapshot is the same shape every time.
-
-    Steps:
-      1. Sanity-check inputs (zip path, packwiz CLI available).
-      2. Snapshot the existing `packwiz/mods/{spark,proxy-compatible-forge,
-         minecraft-prometheus-exporter}.pw.toml` (if present) to a temp dir
-         (`packwiz/.import-staging/`, skipped by `.packwizignore`).
-      3. `packwiz curseforge import <zip>` against `packwiz/`. This wipes
-         pack.toml + index.toml + mods/ and replaces them with the upstream
-         C2E2 content.
-      4. Re-add the three overlay mods at the exact URLs the snapshot
-         used (so version drift on the overlays is its own conscious
-         decision via `packwiz update`, not an accidental side-effect of
-         a C2E2 bump).
-      5. Set side="server" on each overlay mod's metadata file.
-      6. Sync the `forge` version in `packwiz/pack.toml` back into
-         `docker/proxmox/docker-compose.yml`'s `FORGE_VERSION:` line —
-         the import step picks the Forge version from the upstream zip,
-         and these two values MUST match (itzg installs the loader
-         specified by FORGE_VERSION; packwiz materializes mods that
-         expect the loader version in pack.toml's [versions] block).
-      7. `packwiz refresh` to regenerate index.toml. The committed
-         `packwiz/.packwizignore` is what keeps the snapshot directory
-         out of the index — without it, the three overlay mods would
-         end up indexed twice and Forge would crash on duplicate IDs.
-      8. Delete the snapshot directory now that refresh has succeeded.
-      9. Print `git status` so the operator sees what's about to be
-         committed and pushed.
-
-    The script does NOT commit or push — review the diff first.
+    `packwiz curseforge import` recreates pack.toml + index.toml + mods/
+    from scratch — it does not merge. So every C2E2 upstream bump would
+    wipe the three server-only overlay mods. This script snapshots them,
+    runs the import, re-adds them at pinned URLs with side="server",
+    syncs FORGE_VERSION into docker/proxmox/docker-compose.yml, and
+    `packwiz refresh`es the index. Review the resulting `git status`
+    diff before committing.
 
 .PARAMETER PackZip
-    Path to the downloaded Craft to Exile 2 CurseForge zip. Grab the
-    latest from https://www.curseforge.com/minecraft/modpacks/craft-to-exile-2
-    (Files tab → choose a version → manual download). The file naming
-    pattern is typically `Craft+To+Exile+2-<version>.zip`.
+    Path to the C2E2 CurseForge zip (Files tab → manual download from
+    curseforge.com/minecraft/modpacks/craft-to-exile-2).
 
 .PARAMETER PackwizDir
-    Path to the packwiz manifest directory. Defaults to `packwiz/` at
-    the repo root (resolved relative to this script).
+    Defaults to packwiz/ at the repo root.
 
 .PARAMETER CurseForgeApiKey
-    Optional. CurseForge API key from https://console.curseforge.com/.
-    If omitted, packwiz falls back to the public CFCore proxy. Setting
-    it avoids rate limits on large packs and removes a third-party hop.
-    Can also be supplied via the CURSEFORGE_API_KEY environment variable.
+    Optional. From https://console.curseforge.com/. Defaults to
+    $env:CURSEFORGE_API_KEY. Without it, packwiz uses the public CFCore
+    proxy (subject to rate limits on large packs).
 
 .PARAMETER YesAllPrompts
-    Forward `-y` to every packwiz invocation. Useful in CI; in normal
-    interactive use, leave this off so packwiz can prompt on ambiguous
-    search results.
+    Pass -y to every packwiz call (use for CI).
 
 .EXAMPLE
     ./infra/azure/scripts/import-curseforge-pack.ps1 -PackZip 'C:\Downloads\Craft+To+Exile+2-0.4.0.zip'
 
-.EXAMPLE
-    # Non-interactive (CI-style):
-    $env:CURSEFORGE_API_KEY = '...'
-    ./infra/azure/scripts/import-curseforge-pack.ps1 -PackZip ./pack.zip -YesAllPrompts
-
 .NOTES
-    `packwiz` CLI must be on PATH. Install with:
+    Requires the packwiz CLI on PATH:
         go install github.com/packwiz/packwiz@latest
-    (Go 1.21+ required; the resulting binary lands in `%GOPATH%\bin`,
-     which is usually already on PATH after a default Go install.)
-
-    Prebuilt binaries are also published as GitHub Actions artifacts:
-        https://nightly.link/packwiz/packwiz/workflows/go/main
-    These are the same binaries PR 4's daily update workflow uses.
+    Prebuilt binaries: https://nightly.link/packwiz/packwiz/workflows/go/main
 #>
 
 [CmdletBinding()]
@@ -107,10 +58,7 @@ function Resolve-AbsolutePath {
     return [System.IO.Path]::GetFullPath((Resolve-Path -LiteralPath $Path).Path)
 }
 
-# The three server-only overlay mods, in the exact form `packwiz` should
-# re-add them after the import wipes everything. Update these URLs in
-# this script when bumping the overlay versions; keep them in lockstep
-# with the .pw.toml content under packwiz/mods/.
+# Keep these in lockstep with the .pw.toml content under packwiz/mods/.
 $OverlayMods = @(
     [pscustomobject]@{
         Name      = 'spark'
@@ -130,7 +78,6 @@ $OverlayMods = @(
     }
 )
 
-# ─── Sanity checks ──────────────────────────────────────────────────────────
 $packwiz = Get-Command packwiz -ErrorAction SilentlyContinue
 if (-not $packwiz) {
     Write-Error @'
@@ -161,11 +108,7 @@ $PackwizDir = Resolve-AbsolutePath $PackwizDir
 Write-Information "Working directory: $PackwizDir"
 Write-Information "CurseForge zip   : $PackZip"
 
-# ─── Forward CF API key to packwiz ──────────────────────────────────────────
 if ($CurseForgeApiKey) {
-    # packwiz reads this env var when adding/installing CF mods. Setting it
-    # only for the duration of this script so we don't pollute the parent
-    # shell's environment.
     $env:CURSEFORGE_API_KEY = $CurseForgeApiKey
     Write-Information 'CURSEFORGE_API_KEY set for this process.'
 } else {
@@ -177,11 +120,7 @@ if ($YesAllPrompts) { $yesArgs = @('-y') }
 
 Push-Location $PackwizDir
 try {
-    # ─── 1. Snapshot the existing overlay metadata files ────────────────────
-    # We re-add them by URL/project-id after the import, so we don't strictly
-    # need the snapshot for correctness — but having it on disk under
-    # `.import-staging/` is a useful audit trail (and lets the operator
-    # diff the new files against the old to spot accidental version drift).
+    # Snapshot overlays before import — audit trail + diff target for the operator.
     $stagingDir = Join-Path $PackwizDir '.import-staging'
     if (Test-Path $stagingDir) { Remove-Item -Recurse -Force $stagingDir }
     New-Item -ItemType Directory -Path $stagingDir | Out-Null
@@ -193,8 +132,6 @@ try {
         }
     }
 
-    # ─── 2. Run packwiz curseforge import ───────────────────────────────────
-    # `-r` (reinit) lets it overwrite the existing pack.toml without prompting.
     Write-Information ''
     Write-Information '── packwiz curseforge import ──'
     & packwiz curseforge import @yesArgs $PackZip
@@ -202,7 +139,6 @@ try {
         throw "packwiz curseforge import failed (exit $LASTEXITCODE)."
     }
 
-    # ─── 3. Re-add the three overlay mods ───────────────────────────────────
     Write-Information ''
     Write-Information '── Re-adding overlay mods ──'
     foreach ($mod in $OverlayMods) {
@@ -221,23 +157,15 @@ try {
         }
     }
 
-    # ─── 4. Mark overlay mods side="server" ─────────────────────────────────
-    # packwiz writes side="both" by default. The three overlays are
-    # explicitly server-only — flipping the side prevents PR 2's
-    # publish flow from bundling them into the client zip.
+    # Flip overlays to side="server" so PR 2's publish flow skips them in the client zip.
     foreach ($mod in $OverlayMods) {
         $modFile = Join-Path $PackwizDir "mods\$($mod.Name).pw.toml"
         if (-not (Test-Path -LiteralPath $modFile)) {
             throw "Expected $modFile after re-add, but it's missing."
         }
         $content = Get-Content -Raw -LiteralPath $modFile
-        # Match either `side = "both"` or `side = "client"` (defensive — packwiz
-        # could theoretically pick either default depending on the project
-        # metadata) and rewrite to `side = "server"`. The pattern intentionally
-        # stops at the closing quote — it does NOT consume any trailing
-        # whitespace or the line terminator, which keeps blank lines in the
-        # TOML file intact (a $-anchored variant would eat the CRLF on Windows
-        # since \s includes \r and \n).
+        # Pattern stops at the closing quote so blank lines in the TOML stay intact
+        # ($-anchored \s would eat CRLF on Windows).
         $rewritten = [regex]::Replace(
             $content,
             '(?m)^side[ \t]*=[ \t]*"(both|client)"',
@@ -251,7 +179,7 @@ try {
         }
     }
 
-    # ─── 5. Cross-check Forge version with docker/proxmox/docker-compose.yml ───
+    # Sync forge= from pack.toml into docker/proxmox/docker-compose.yml's FORGE_VERSION.
     $packToml = Join-Path $PackwizDir 'pack.toml'
     $packForgeMatch = (Get-Content -Raw -LiteralPath $packToml) |
         Select-String -Pattern '(?m)^forge\s*=\s*"([^"]+)"'
@@ -280,7 +208,6 @@ try {
         }
     }
 
-    # ─── 6. Refresh the index ───────────────────────────────────────────────
     Write-Information ''
     Write-Information '── packwiz refresh ──'
     & packwiz refresh
@@ -288,12 +215,7 @@ try {
         throw "packwiz refresh failed (exit $LASTEXITCODE)."
     }
 
-    # ─── 7. Clean up the staging dir ───────────────────────────────────────
-    # We snapshot the overlays at the start for safety, but on a successful
-    # run there's no reason to leave the snapshot on disk. The committed
-    # `.packwizignore` keeps `packwiz refresh` from ever indexing this
-    # directory, but belt-and-braces: delete it so a successful run leaves
-    # no trace in the working tree.
+    # Clean up staging — .packwizignore prevents indexing but belt-and-braces.
     if (Test-Path $stagingDir) {
         Remove-Item -Recurse -Force $stagingDir
         Write-Information "Cleaned up $stagingDir"
@@ -303,7 +225,6 @@ finally {
     Pop-Location
 }
 
-# ─── 8. Show what changed ──────────────────────────────────────────────────
 Write-Information ''
 Write-Information '── git status ──'
 & git status --short

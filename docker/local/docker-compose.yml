@@ -1,41 +1,9 @@
 ---
-# Local C2E2 dev stack — full prod-faithful path: Velocity proxy in front of
-# Forge backend. PCF + spark + prometheus-exporter ship through packwiz with
-# side = "server" (same as prod), so this stack exercises the exact mod
-# install path that runs in production.
-#
-#   packwiz-server (nginx)    ── serves packwiz/ over HTTP on the bridge
-#                                network so c2e2 can fetch pack.toml
-#   c2e2           (Forge)    ── boots, runs packwiz-installer against the
-#                                sidecar's pack.toml, downloads ~390 mods on
-#                                first run. NOT published on the host —
-#                                reachable only by velocity over the bridge.
-#                                Exception: :19565 (Prom metrics) IS published
-#                                so you can `curl localhost:19565/metrics`.
-#   velocity       (proxy)    ── published on host :25565. Forwards every login
-#                                to c2e2:25565 over docker DNS with modern
-#                                forwarding; PCF on c2e2 validates the secret.
-#
-# Usage:
-#   cd docker/local
-#   cp .env.example .env                  # then fill in VELOCITY_FORWARDING_SECRET
-#   cp velocity/forwarding.secret.example velocity/forwarding.secret
-#   # both must contain the same string — generate one with:
-#   #   $b = New-Object byte[] 24
-#   #   [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
-#   #   ([Convert]::ToBase64String($b) -replace '[+/=]', '')
-#   docker compose up                     # foreground; first run = 10-20 min
-#   docker compose logs -f c2e2           # tail in another shell
-#   docker compose down                   # stop; keeps the mods volume
-#   docker compose down -v                # wipe the mods volume for a clean re-install
-#
-# Connect a Forge 1.20.1 + 47.4.10 client (e.g. your current Prism instance
-# of the C2E2 modpack) to: localhost:25565   <- that's velocity, not c2e2.
-#
-# Velocity runs ONLINE_MODE=false here (prod runs true) so any client username
-# works without Mojang creds and a direct-localhost test using the same name
-# resolves to the same offline UUID — see comments in velocity/velocity.toml
-# for the rationale.
+# Local C2E2 dev stack — prod-faithful: Velocity proxy → Forge backend, admin
+# overlay (PCF + spark + prom-exporter) installed via packwiz side="server".
+# Connect a Forge 1.20.1 / 47.4.10 client to localhost:25565 (velocity, not c2e2).
+# Setup: cp .env.example .env and cp velocity/forwarding.secret.example
+# velocity/forwarding.secret — both files must contain the same secret.
 
 services:
 
@@ -46,9 +14,8 @@ services:
       - c2e2
     restart: unless-stopped
     volumes:
-      # Serve the LIVE in-repo packwiz/ directory. Edits to packwiz/ +
-      # `packwiz refresh` are picked up on the next `docker compose
-      # restart c2e2` (no rebuild, no git push).
+      # Serves the LIVE in-repo packwiz/ — `packwiz refresh` + compose restart
+      # c2e2 picks up edits with no rebuild or push.
       - ../../packwiz:/usr/share/nginx/html:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/pack.toml"]
@@ -62,12 +29,9 @@ services:
     image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
     tty: true
     stdin_open: true
-    # No 25565 on the host — that belongs to velocity. c2e2 is reachable to
-    # velocity at "c2e2:25565" over the bridge network's DNS.
+    # No 25565 on host — that's velocity's. :19565 is exposed for local
+    # prom-exporter validation (curl localhost:19565/metrics).
     ports:
-      # Prometheus exporter metrics endpoint (mod listens on :19565). Exposed
-      # for parity with prod's MODS overlay validation — `curl localhost:19565`
-      # should return Prometheus-format text after boot.
       - "19565:19565"
     networks:
       - c2e2
@@ -79,14 +43,6 @@ services:
       - c2e2-data:/data
       - ../shared/whitelist.json:/extras/whitelist.json:ro
       - ../shared/ops.json:/extras/ops.json:ro
-    # PATCH_DEFINITIONS = /patches (env below). itzg's image scans that dir
-    # for JSON patches and applies them AFTER APPLY_EXTRA_FILES on every
-    # start. The pcf_patch_def config (defined in the top-level `configs:`
-    # block at the bottom of this file) writes the patch JSON content to
-    # /patches/pcf-forwarding.json. The patch sets $.forwarding.secret in
-    # /data/config/proxy-compatible-forge.toml to ${CFG_VELOCITY_FORWARDING_SECRET},
-    # which c2e2's environment block sources from $VELOCITY_FORWARDING_SECRET
-    # (set in docker/local/.env). Identical wiring to the prod proxmox compose.
     configs:
       - source: pcf_patch_def
         target: /patches/pcf-forwarding.json
@@ -95,51 +51,22 @@ services:
       EULA: "TRUE"
       TYPE: FORGE
       VERSION: "1.20.1"
-      # Keep in sync with the `forge` value in packwiz/pack.toml's
-      # [versions] block. The import script updates pack.toml + the
-      # proxmox compose automatically; this line must be hand-bumped.
+      # Must equal packwiz/pack.toml's [versions].forge.
       FORGE_VERSION: "47.4.10"
-      # Points at the sidecar's nginx — serves the LIVE in-repo packwiz/
-      # dir, so uncommitted .pw.toml / `packwiz refresh` results are
-      # live-testable.
       PACKWIZ_URL: "http://c2e2-packwiz-server/pack.toml"
-      # Admin overlay (PCF + spark + prometheus-exporter) is in packwiz with
-      # side = "server" — packwiz-installer's --side server picks them up here
-      # while Prism clients with --side client skip them. Their configs still
-      # flow through APPLY_EXTRA_FILES + PATCH_DEFINITIONS below (operator
-      # concern; secrets stay out of the manifest).
-      # Fetch both admin-overlay TOMLs from main HEAD on first run
-      # (--skip-existing default — re-runs don't clobber local edits).
-      # Pulls from the same canonical source the prod compose uses, so
-      # local-vs-prod config drift is impossible.
-      #   1) PCF TOML — ships with secret = ""; PATCH_DEFINITIONS below
-      #      rewrites it on every start.
-      #   2) prometheus-exporter TOML — versioned baseline.
       APPLY_EXTRA_FILES: |-
         config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
         world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
-      # See the configs: block on this service + the pcf_patch_def at the
-      # bottom of this file for what /patches contains.
       PATCH_DEFINITIONS: /patches
-      # ${VELOCITY_FORWARDING_SECRET} comes from docker/local/.env (gitignored).
-      # Must equal the contents of docker/local/velocity/forwarding.secret
-      # (which is bind-mounted into the velocity container).
+      # Sourced from docker/local/.env; must equal docker/local/velocity/forwarding.secret.
       CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
       MEMORY: ""
       JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
-      # Backend always offline — the proxy is the auth gateway in prod, and
-      # for local that's velocity (with its own online-mode = false override
-      # so we don't need Mojang creds).
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
-      # Required by C2E2 — Mine and Slash Dungeons triggers world commands via
-      # command blocks. Without this, players see a chat warning on every login
-      # and dungeon mechanics break.
+      # C2E2's Mine and Slash Dungeons fires world commands via command blocks.
       ENABLE_COMMAND_BLOCK: "TRUE"
       MOTD: "Craft to Exile 2 (local)"
-      # Local dev: whitelist entirely off. Any username can join (ONLINE_MODE
-      # is FALSE so any username is accepted at auth too). Ops file still
-      # mounted so admin commands work if you log in as one of them.
       WHITELIST: ""
       ENFORCE_WHITELIST: "FALSE"
       OPS_FILE: /extras/ops.json
@@ -148,43 +75,28 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      # First boot: packwiz install (~5 min @ ~3-4 GB) + Forge load
-      # (~5 min for the C2E2 mod set). 15 min covers a cold disk.
+      # First boot: packwiz install (~5 min, ~3-4 GB) + Forge load (~5 min).
       start_period: 900s
 
-  # Velocity proxy — mirrors docker/azure/docker-compose.yml's velocity
-  # service (same image, same plugins, same forwarding flow). Differences:
-  # no Tailscale (talks to c2e2 via docker DNS over the bridge), and
-  # online-mode = false in velocity.toml so we don't need Mojang creds.
   velocity:
     container_name: velocity
     image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
     networks:
       - c2e2
     depends_on:
-      # Velocity will accept connections before c2e2 is healthy and the
-      # client will see "server still starting" until c2e2 finishes loading.
-      # That's fine — it matches prod behavior during restart windows.
       c2e2:
         condition: service_started
     restart: unless-stopped
-    # Host:container — clients connect to localhost:25565 → velocity:25577.
-    # Same scheme as prod (Azure publishes 25565 on the host → velocity:25577).
     ports:
       - "25565:25577"
     volumes:
-      # velocity.toml is checked in; forwarding.secret is gitignored — both
-      # come from docker/local/velocity/.
       - ./velocity/velocity.toml:/server/velocity.toml
       - ./velocity/forwarding.secret:/server/forwarding.secret
     environment:
       TYPE: VELOCITY
-      # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17
-      # (3.4+ requires Java 21). Pinned to match prod.
+      # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17.
       VELOCITY_VERSION: "3.3.0-SNAPSHOT"
-      # Ambassador is REQUIRED for Forge 1.13-1.20.1 behind Velocity.
-      # spark + bungeecord-prometheus-exporter are dropped for local
-      # (no metrics scrape, profiling not needed for "does it work" test).
+      # Ambassador required for Forge 1.13-1.20.1 behind Velocity.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar"
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
@@ -200,17 +112,8 @@ networks:
   c2e2:
     driver: bridge
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Top-level configs: identical pattern to docker/proxmox/docker-compose.yml.
-# The PCF TOML template shipped via APPLY_EXTRA_FILES has secret = ""; this
-# JSON patch rewrites $.forwarding.secret with the env-injected value on
-# every start. Dollar signs MUST be doubled here ($$set, $$.foo, $${VAR}) so
-# Docker Compose passes them through as single $ in the rendered config file
-# — otherwise compose tries to interpolate them at compose-up time and they
-# resolve to empty strings (logged as a "variable is not set" warning).
-# mc-image-helper's patch-files command does the actual ${ENV} substitution
-# at container start, using c2e2's CFG_VELOCITY_FORWARDING_SECRET env var.
-# ─────────────────────────────────────────────────────────────────────────────
+# `$$` is Compose's escape for a literal `$` — mc-image-helper's patch-files
+# does the actual ${ENV} substitution at container start.
 configs:
   pcf_patch_def:
     content: |
@@ -225,4 +128,3 @@ configs:
           }
         ]
       }
-
