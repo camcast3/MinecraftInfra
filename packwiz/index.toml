@@ -31621,18 +31621,18 @@ hash = "663b19690bd7529fda3419484a694320360abfcfed6429973255ddb6b34e3303"
 metafile = true
 
 [[files]]
-file = "resourcepacks/create-style-for-refined-storage.pw.toml"
-hash = "c2cce4cb133ffea4896e08a9e9a8731eec8ba0af2b9091136b6f0b38238e0fb3"
+file = "resourcepacks/aures-create-style-for-refined-storage.pw.toml"
+hash = "1fce8d4f424f524c0be58eb5670253fcc2bb3a5cae3d617d4a5c36ce1f95ceb3"
 metafile = true
 
 [[files]]
 file = "resourcepacks/doggy-talents-next-16x16-texture-pack.pw.toml"
-hash = "b24efb1835a11f97aec5e26967fe61ed651ea0b782690fde7dd44f120917b178"
+hash = "1dc4b8860acffa90d0b914b01c98ae2c56c8456e263eaec6c783d44e90f8cd3b"
 metafile = true
 
 [[files]]
 file = "resourcepacks/norfares-currency-textures.pw.toml"
-hash = "ab5e10cdf3fcfc9658659aa0c09acde593ee78ef80fa417366f91858149efa64"
+hash = "63c7066944c4c7d1d0e692b1ff159f3d2565be5724085b194aa6ec6196c05b8c"
 metafile = true
 
 [[files]]
