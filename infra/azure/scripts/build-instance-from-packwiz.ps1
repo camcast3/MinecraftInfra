@@ -14,10 +14,17 @@
       1. Sanity-check packwiz/pack.toml exists, java is on PATH.
       2. Read Forge + Minecraft versions from packwiz/pack.toml's [versions]
          block so the generated mmc-pack.json mirrors what the server runs.
-      3. Cache packwiz-installer-bootstrap.jar at infra/azure/scripts/cache/.
-         The JAR version is pinned to $BootstrapVersion below and bumped
-         manually (admin tracks packwiz/packwiz-installer-bootstrap
-         releases when PR 4's daily packwiz workflow surfaces drift).
+      3. Cache packwiz-installer-bootstrap.jar AND packwiz-installer.jar
+         at infra/azure/scripts/cache/. Both JAR versions are pinned to
+         $BootstrapVersion / $InstallerVersion below and bumped manually
+         (admin tracks packwiz/packwiz-installer-bootstrap and
+         packwiz/packwiz-installer releases when PR 4's daily packwiz
+         workflow surfaces drift). The installer JAR is cached separately
+         from the staging instance because step 4 wipes the staging dir
+         every run — without a stable cache the bootstrap would re-fetch
+         the installer release metadata from api.github.com on every run
+         (unauthenticated 60 req/hr rate limit, trivial to exhaust during
+         testing). See step 5 for how the cache is wired in.
       4. Recreate the staging instance dir from scratch under <RepoRoot>/build/
          (cleaning any prior run) with:
            - `instance.cfg`   minimal Prism instance metadata; the
@@ -26,14 +33,22 @@
            - `mmc-pack.json`  component list matching the loader + MC
              versions read from pack.toml.
            - `.minecraft/`    empty; packwiz-installer fills it next.
-      5. Invoke `java -jar packwiz-installer-bootstrap.jar -g -s client <pack-url>`
-         inside `.minecraft/`. `-s client` skips `side = "server"` overlay
-         JARs (PCF, spark, prom-exporter) that have no business in a
-         player's instance. The URL points at the live committed manifest
-         on disk, NOT a SHA-pinned raw.githubusercontent.com URL — at
-         build time we want HEAD of the local working tree, because the
-         publish script's commit-and-bump step is what turns HEAD into the
-         pinned production SHA later.
+      5. Invoke `java -jar packwiz-installer-bootstrap.jar
+              --bootstrap-no-update
+              --bootstrap-main-jar <cached-installer-jar>
+              -g -s client <pack-url>`
+         inside `.minecraft/`. The two `--bootstrap-*` flags tell the
+         bootstrap to skip its self-update check and load our pre-cached
+         installer JAR directly — no api.github.com calls. `-g` disables
+         the bootstrap's own Swing progress monitor (packwiz-installer
+         still shows its own GUI for per-mod download progress). `-s
+         client` skips `side = "server"` overlay JARs (PCF, spark,
+         prom-exporter) that have no business in a player's instance.
+         The URL points at the live committed manifest on disk, NOT a
+         SHA-pinned raw.githubusercontent.com URL — at build time we want
+         HEAD of the local working tree, because the publish script's
+         commit-and-bump step is what turns HEAD into the pinned
+         production SHA later.
       6. Emit the staging instance path on stdout so callers can pipe it
          into publish-prism-pack.ps1's -InstancePath argument.
 
@@ -59,13 +74,24 @@
     deliberately when PR 4's daily workflow flags drift (manual — admin
     edits the default here and re-runs build-instance-from-packwiz.ps1).
 
+.PARAMETER InstallerVersion
+    GitHub release tag of packwiz/packwiz-installer to download. Same
+    rationale as $BootstrapVersion — pinning keeps builds reproducible
+    AND keeps the bootstrap from hitting api.github.com to discover the
+    "latest" tag on every clean-staging run.
+
 .PARAMETER BootstrapJar
     Override path to a local packwiz-installer-bootstrap.jar. Skips the
     download step. Useful for offline / air-gapped admin runs.
 
+.PARAMETER InstallerJar
+    Override path to a local packwiz-installer.jar. Skips the download
+    step. Useful for offline / air-gapped admin runs.
+
 .PARAMETER CacheDir
-    Directory used to cache packwiz-installer-bootstrap.jar across runs.
-    Defaults to infra/azure/scripts/cache/ (under .gitignore).
+    Directory used to cache packwiz-installer-bootstrap.jar AND
+    packwiz-installer.jar across runs. Defaults to
+    infra/azure/scripts/cache/ (under .gitignore).
 
 .EXAMPLE
     # Standard flow — materialize the staging instance, then pass the path
@@ -82,8 +108,10 @@
       - Java 17+ on PATH (`java -version`). itzg's image uses Temurin 17;
         the player onboarding install Temurin 17 via winget. Matching here
         keeps materialization behavior identical to runtime.
-      - Network access to GitHub (release download) and CurseForge / Modrinth
-        (per-mod downloads). Admin should have CURSEFORGE_API_KEY set in
+      - First run: network access to github.com/releases/download (CDN,
+        not rate-limited) to fetch the two pinned JARs. Subsequent runs
+        only need network access to CurseForge / Modrinth CDNs for the
+        per-mod downloads. Admin should have CURSEFORGE_API_KEY set in
         the environment to avoid CF rate limits on the ~390-mod install.
 #>
 
@@ -93,7 +121,9 @@ param(
     [string] $StagingRoot,
     [string] $PackwizDir,
     [string] $BootstrapVersion = 'v0.0.3',
+    [string] $InstallerVersion = 'v0.5.14',
     [string] $BootstrapJar,
+    [string] $InstallerJar,
     [string] $CacheDir
 )
 
@@ -160,7 +190,15 @@ $minecraftVersion = $mcMatch.Groups[1].Value
 $forgeVersion    = $forgeMatch.Groups[1].Value
 Write-Information "Manifest versions: Minecraft $minecraftVersion / Forge $forgeVersion"
 
-# ─── Bootstrap JAR (cached, version-pinned) ────────────────────────────────
+# ─── Bootstrap + Installer JARs (cached, version-pinned) ───────────────────
+# Both JARs are cached so step 5 can run with --bootstrap-no-update +
+# --bootstrap-main-jar pointing at the cached installer. This avoids
+# api.github.com calls on every run, which the bootstrap would otherwise
+# make (unauthenticated, 60 req/hr — exhausted by a few test iterations).
+if (-not (Test-Path -LiteralPath $CacheDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
+}
+
 if ($BootstrapJar) {
     if (-not (Test-Path -LiteralPath $BootstrapJar)) {
         throw "BootstrapJar override not found: $BootstrapJar"
@@ -168,9 +206,6 @@ if ($BootstrapJar) {
     $BootstrapJar = Resolve-AbsolutePath $BootstrapJar
     Write-Information "Using bootstrap jar override: $BootstrapJar"
 } else {
-    if (-not (Test-Path -LiteralPath $CacheDir -PathType Container)) {
-        New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
-    }
     # Pin the cached filename to the version so a manual bump doesn't pick up
     # a stale jar from a previous run. Cleanup of old versions is left to the
     # admin — they're a few MB each.
@@ -181,6 +216,23 @@ if ($BootstrapJar) {
         Invoke-WebRequest -Uri $url -OutFile $BootstrapJar -UseBasicParsing
     } else {
         Write-Information "Reusing cached bootstrap jar at $BootstrapJar"
+    }
+}
+
+if ($InstallerJar) {
+    if (-not (Test-Path -LiteralPath $InstallerJar)) {
+        throw "InstallerJar override not found: $InstallerJar"
+    }
+    $InstallerJar = Resolve-AbsolutePath $InstallerJar
+    Write-Information "Using installer jar override: $InstallerJar"
+} else {
+    $InstallerJar = Join-Path $CacheDir "packwiz-installer-$InstallerVersion.jar"
+    if (-not (Test-Path -LiteralPath $InstallerJar)) {
+        $url = "https://github.com/packwiz/packwiz-installer/releases/download/$InstallerVersion/packwiz-installer.jar"
+        Write-Information "Downloading packwiz-installer $InstallerVersion from $url"
+        Invoke-WebRequest -Uri $url -OutFile $InstallerJar -UseBasicParsing
+    } else {
+        Write-Information "Reusing cached installer jar at $InstallerJar"
     }
 }
 
@@ -291,7 +343,10 @@ Write-Information ''
 Write-Information '── packwiz-installer-bootstrap (--side client) ──'
 Push-Location $dotMinecraft
 try {
-    & java -jar $BootstrapJar -g -s client $packTomlUri
+    & java -jar $BootstrapJar `
+        --bootstrap-no-update `
+        --bootstrap-main-jar $InstallerJar `
+        -g -s client $packTomlUri
     if ($LASTEXITCODE -ne 0) {
         throw "packwiz-installer-bootstrap failed (exit $LASTEXITCODE). See output above for the offending mod or URL."
     }
