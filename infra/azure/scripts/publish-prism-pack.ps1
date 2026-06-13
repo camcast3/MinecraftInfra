@@ -76,7 +76,15 @@
 .PARAMETER PrismInstancesDir
     Path to Prism's instances directory. Used as the legacy fallback only
     when neither -InstancePath nor the staging directory exists.
-    Defaults to %APPDATA%\PrismLauncher\instances.
+    Defaults to the OS-canonical Prism Launcher instances path:
+      Windows: %APPDATA%\PrismLauncher\instances
+      Linux:   $HOME/.local/share/PrismLauncher/instances
+      macOS:   $HOME/Library/Application Support/PrismLauncher/instances
+    The Linux/macOS defaults exist so this script doesn't blow up with a
+    misleading "instance not found at \PrismLauncher\..." on a Linux CI
+    runner if the staging instance is somehow absent; the CI flow always
+    materializes the staging instance via build-instance-from-packwiz.ps1
+    first, so the fallback path is never the primary code path.
 
 .PARAMETER UpdateScriptPath
     Path to the player-side `update.ps1` to bundle into the zip at
@@ -119,7 +127,11 @@ param(
     [string]$InstancePath,
     [string]$StorageAccount = "stmcminecraftprod",
     [string]$Container = "minecraft-modpack",
-    [string]$PrismInstancesDir = "$env:APPDATA\PrismLauncher\instances",
+    [string]$PrismInstancesDir = $(
+        if ($IsLinux)   { Join-Path $env:HOME '.local/share/PrismLauncher/instances' }
+        elseif ($IsMacOS) { Join-Path $env:HOME 'Library/Application Support/PrismLauncher/instances' }
+        else            { "$env:APPDATA\PrismLauncher\instances" }
+    ),
     [string]$UpdateScriptPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
