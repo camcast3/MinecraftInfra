@@ -16,7 +16,8 @@
          block so the generated mmc-pack.json mirrors what the server runs.
       3. Cache packwiz-installer-bootstrap.jar at infra/azure/scripts/cache/.
          The JAR version is pinned to $BootstrapVersion below and bumped
-         manually per the project's "Renovate excludes JAR lifecycle" rule.
+         manually (admin tracks packwiz/packwiz-installer-bootstrap
+         releases when PR 4's daily packwiz workflow surfaces drift).
       4. Recreate the staging instance dir from scratch under <RepoRoot>/build/
          (cleaning any prior run) with:
            - `instance.cfg`   minimal Prism instance metadata; the
@@ -55,8 +56,8 @@
 .PARAMETER BootstrapVersion
     GitHub release tag of packwiz/packwiz-installer-bootstrap to download.
     Pinned to keep the build reproducible across machines; bump this
-    deliberately when PR 4's daily workflow flags drift. Per project rule,
-    Renovate is excluded from JAR lifecycle, so bumps are manual.
+    deliberately when PR 4's daily workflow flags drift (manual — admin
+    edits the default here and re-runs build-instance-from-packwiz.ps1).
 
 .PARAMETER BootstrapJar
     Override path to a local packwiz-installer-bootstrap.jar. Skips the
