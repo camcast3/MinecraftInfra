@@ -109,6 +109,29 @@
     (which is how PR #121 ended up merge-conflicted). With `-Force`, the local
     branch is reset to `origin/main` and pushed with `--force-with-lease`.
 
+.PARAMETER SkipDriftCheck
+    Test-publish escape hatch — bypass the origin/main drift check AND the
+    server-side coupling steps (compose-rewrite + PR creation + auto-merge).
+    Required for E2E-validating the client install flow BEFORE merging the
+    packwiz/ changes to origin/main, where the drift check would otherwise
+    correctly refuse (the SHA pin in docker-compose.yml resolves against
+    origin/main, so unmerged local packwiz/ commits would cause the bundled
+    client zip and the server's packwiz fetch to point at different mod sets).
+
+    With -SkipDriftCheck:
+      - -Version MUST start with "test-" (case-insensitive) — refuses
+        otherwise to prevent accidental misuse on a real publish.
+      - The drift check is skipped (loud warning printed).
+      - The working-tree-clean check is skipped (you may legitimately have
+        in-flight packwiz/ edits during E2E testing).
+      - The PR-creation step is skipped entirely (no docker-compose.yml
+        mutation, no `git push`, no `gh pr create`, no `gh pr merge --auto`).
+      - The manifest is uploaded to `latest-test.json` instead of
+        `latest.json` — production setup.ps1 keeps reading the real
+        manifest. To install a test publish, set the env var:
+          $env:NEGATIVEZONE_MANIFEST_URL = 'https://<account>.blob.core.windows.net/<container>/latest-test.json'
+        before running setup.ps1's irm-pipe-iex one-liner.
+
 .EXAMPLE
     ./publish-prism-pack.ps1 -Version 1.0.0
 
@@ -118,6 +141,12 @@
 .EXAMPLE
     # Re-publish v1.0.0 after a botched first attempt
     ./publish-prism-pack.ps1 -Version 1.0.0 -Force
+
+.EXAMPLE
+    # E2E-test the client install flow before merging packwiz/ changes.
+    # Writes the zip + a separate latest-test.json; does not touch the
+    # production latest.json or the docker-compose.yml SHA pin.
+    ./publish-prism-pack.ps1 -Version test-1 -SkipDriftCheck
 #>
 
 [CmdletBinding()]
@@ -135,7 +164,8 @@ param(
     [string]$UpdateScriptPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
-    [switch]$Force
+    [switch]$Force,
+    [switch]$SkipDriftCheck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -149,6 +179,38 @@ function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
 # Prism's lookup.
 if ($IconKey -notmatch '^[A-Za-z0-9._-]+$') {
     throw "IconKey must match ^[A-Za-z0-9._-]+$ (got: '$IconKey')."
+}
+
+# ─── Test-publish mode validation ───────────────────────────────────────────
+# -SkipDriftCheck is the test-publish escape hatch. It MUST be paired with a
+# version that starts with "test-" (case-insensitive) so it can never be
+# accidentally used to ship a real version to players. The PR-creation step
+# is also skipped (see below), and the manifest writes to latest-test.json
+# instead of latest.json — production setup.ps1 keeps reading the real one.
+if ($SkipDriftCheck) {
+    if ($Version -notmatch '^(?i)test-') {
+        throw @"
+-SkipDriftCheck requires -Version to start with 'test-' (case-insensitive).
+Got: '$Version'.
+This guardrail prevents the test-publish escape hatch from ever being used
+on a real publish — the test version naming convention is the only thing
+keeping the test-only manifest (latest-test.json) and the real manifest
+(latest.json) from colliding.
+Example: -Version test-1   -SkipDriftCheck
+"@
+    }
+    Write-Host ""
+    Write-Host "==============================================================" -ForegroundColor Yellow
+    Write-Host " TEST-PUBLISH MODE (-SkipDriftCheck)" -ForegroundColor Yellow
+    Write-Host "==============================================================" -ForegroundColor Yellow
+    Write-Host " - Drift check vs origin/main: SKIPPED" -ForegroundColor Yellow
+    Write-Host " - Working-tree-clean check:   SKIPPED" -ForegroundColor Yellow
+    Write-Host " - docker-compose.yml rewrite: SKIPPED (no server-side mutation)" -ForegroundColor Yellow
+    Write-Host " - git push + PR + auto-merge: SKIPPED" -ForegroundColor Yellow
+    Write-Host " - Manifest will be uploaded to 'latest-test.json' (NOT latest.json)" -ForegroundColor Yellow
+    Write-Host " - Production setup.ps1 will keep reading latest.json untouched" -ForegroundColor Yellow
+    Write-Host "==============================================================" -ForegroundColor Yellow
+    Write-Host ""
 }
 
 # ─── Preflight ──────────────────────────────────────────────────────────────
@@ -191,6 +253,8 @@ if (-not $repoRoot) {
 # to the blob upload or PR-open steps.
 if ($env:CI -eq 'true') {
     Write-Step "CI mode detected (`$env:CI='true'`); skipping local drift checks."
+} elseif ($SkipDriftCheck) {
+    Write-Step "Test-publish mode (-SkipDriftCheck); skipping local drift checks."
 } else {
     Write-Step "Local mode; checking packwiz/ for drift vs origin/main..."
 
@@ -294,39 +358,47 @@ $publishBranch = "modpack/v$Version"
 
 Push-Location $repoRoot
 try {
-    $dirty = (git status --porcelain) -join "`n"
-    if ($dirty) {
-        throw "Working tree at '$repoRoot' is not clean. Commit or stash these changes before publishing:`n$dirty"
+    if ($SkipDriftCheck) {
+        Write-Step "Test-publish mode; skipping working-tree-clean check (in-flight edits OK)."
+    } else {
+        $dirty = (git status --porcelain) -join "`n"
+        if ($dirty) {
+            throw "Working tree at '$repoRoot' is not clean. Commit or stash these changes before publishing:`n$dirty"
+        }
     }
 
     Write-Step "Fetching origin (refs + prune)"
     git fetch origin --prune
 
-    $remoteRef = (git for-each-ref --format='%(refname)' "refs/remotes/origin/$publishBranch" | Out-String).Trim()
     $expectedRemoteSha = ''
-    if ($remoteRef) {
-        # Capture the exact SHA we observed at preflight time so we can pass an
-        # explicit lease to `git push --force-with-lease=<ref>:<sha>` later. The
-        # default lease form (no `:<sha>`) trusts the local remote-tracking ref,
-        # which is unsafe here because there's a multi-minute window (zip + blob
-        # upload + git/PR) during which a background tool (VS Code, GCM) could
-        # auto-fetch and silently advance the tracking ref.
-        $expectedRemoteSha = (git rev-parse $remoteRef | Out-String).Trim()
-        if (-not $Force) {
-            $existingPrUrl = ''
-            try {
-                $existingPrUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
-            } catch {
-                # gh may fail (auth, rate limit) — don't block the user from seeing the real error.
-            }
-            $hint = if ($existingPrUrl) { "Existing open PR: $existingPrUrl" } else { "(No open PR found for this branch.)" }
-            throw @"
+    if ($SkipDriftCheck) {
+        Write-Step "Test-publish mode; skipping origin/$publishBranch existence check (no PR will be opened)."
+    } else {
+        $remoteRef = (git for-each-ref --format='%(refname)' "refs/remotes/origin/$publishBranch" | Out-String).Trim()
+        if ($remoteRef) {
+            # Capture the exact SHA we observed at preflight time so we can pass an
+            # explicit lease to `git push --force-with-lease=<ref>:<sha>` later. The
+            # default lease form (no `:<sha>`) trusts the local remote-tracking ref,
+            # which is unsafe here because there's a multi-minute window (zip + blob
+            # upload + git/PR) during which a background tool (VS Code, GCM) could
+            # auto-fetch and silently advance the tracking ref.
+            $expectedRemoteSha = (git rev-parse $remoteRef | Out-String).Trim()
+            if (-not $Force) {
+                $existingPrUrl = ''
+                try {
+                    $existingPrUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
+                } catch {
+                    # gh may fail (auth, rate limit) — don't block the user from seeing the real error.
+                }
+                $hint = if ($existingPrUrl) { "Existing open PR: $existingPrUrl" } else { "(No open PR found for this branch.)" }
+                throw @"
 Remote branch 'origin/$publishBranch' already exists.
 $hint
 Pick a different -Version, or re-run with -Force to overwrite it (force-push + reuse the PR).
 "@
+            }
+            Write-Host "    [warn] origin/$publishBranch already exists at $expectedRemoteSha; -Force will overwrite it" -ForegroundColor Yellow
         }
-        Write-Host "    [warn] origin/$publishBranch already exists at $expectedRemoteSha; -Force will overwrite it" -ForegroundColor Yellow
     }
 } finally {
     Pop-Location
@@ -335,6 +407,11 @@ Pick a different -Version, or re-run with -Force to overwrite it (force-push + r
 # Blob preflight: the versioned zip lives at an immutable URL (Cache-Control
 # headers tell CDNs it never changes), so overwriting one with different bytes
 # is a player-visible correctness hazard. Refuse without -Force.
+#
+# Test-publish mode (-SkipDriftCheck) loosens this so iterative test runs at
+# the same -Version (e.g. -Version test-1 over and over) don't need -Force.
+# Safe: test blobs are only consumed by boxes that have set the
+# NEGATIVEZONE_MANIFEST_URL override, never by real players.
 Write-Step "Checking for existing blob 'c2e2-v$Version.zip'"
 $blobExistsJson = (az storage blob exists `
     --account-name $StorageAccount `
@@ -344,10 +421,13 @@ $blobExistsJson = (az storage blob exists `
     --output json | Out-String).Trim()
 $blobAlreadyExists = ($blobExistsJson | ConvertFrom-Json).exists
 if ($blobAlreadyExists) {
-    if (-not $Force) {
+    if ($SkipDriftCheck) {
+        Write-Host "    [info] Test blob 'c2e2-v$Version.zip' already exists; will overwrite (test-publish mode)" -ForegroundColor Yellow
+    } elseif (-not $Force) {
         throw "Blob 'c2e2-v$Version.zip' already exists in '$StorageAccount/$Container'. Pick a new -Version or re-run with -Force to overwrite."
+    } else {
+        Write-Host "    [warn] Blob 'c2e2-v$Version.zip' already exists; -Force will overwrite it" -ForegroundColor Yellow
     }
-    Write-Host "    [warn] Blob 'c2e2-v$Version.zip' already exists; -Force will overwrite it" -ForegroundColor Yellow
 }
 
 # ─── Export ────────────────────────────────────────────────────────────────
@@ -542,10 +622,12 @@ $sha = (Get-FileHash $tempZip -Algorithm SHA256).Hash.ToLower()
 Write-Ok "sha256 = $sha"
 
 # ─── Upload ────────────────────────────────────────────────────────────────
-# --overwrite is gated by -Force: the blob preflight already refused if the
-# blob exists without -Force, so this is defense-in-depth against a concurrent
-# publisher creating the blob between preflight and upload.
-$overwriteFlag = if ($Force) { 'true' } else { 'false' }
+# --overwrite is gated by -Force OR -SkipDriftCheck: the blob preflight
+# already refused if the blob exists without -Force, so this is defense-in-depth
+# against a concurrent publisher creating the blob between preflight and upload.
+# Test-publish mode always overwrites so iterative runs at the same test
+# version don't need -Force.
+$overwriteFlag = if ($Force -or $SkipDriftCheck) { 'true' } else { 'false' }
 Write-Step "Uploading to $StorageAccount/$Container/$blobName (overwrite=$overwriteFlag)"
 az storage blob upload `
     --account-name $StorageAccount `
@@ -579,30 +661,39 @@ $manifestPath = Join-Path $env:TEMP 'latest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
 # ─── Update modpack.yml + .env + open PR ───────────────────────────────────
-Write-Step "Creating branch '$publishBranch' from origin/main"
-Push-Location $repoRoot
-try {
-    # ALWAYS branch from fresh origin/main — never from local HEAD. The old
-    # `if (currentBranch -eq 'main') { git checkout -b ... }` was the root
-    # cause of PR #121's conflict: re-running the script from a leftover
-    # publish branch silently stacked the new commit on stale history.
-    git checkout -B $publishBranch "origin/main"
+# Skipped in test-publish mode — the SHA pin in docker-compose.yml would
+# resolve against origin/main, which by definition doesn't have the local
+# packwiz/ changes the test publish is validating. Writing it would either
+# fail loudly (if packwiz/ on origin/main has different content) or worse,
+# silently couple the test publish to a wrong server snapshot. Cleaner to
+# skip the whole step.
+if ($SkipDriftCheck) {
+    Write-Step "Test-publish mode; skipping modpack.yml + docker-compose.yml rewrite + PR creation."
+} else {
+    Write-Step "Creating branch '$publishBranch' from origin/main"
+    Push-Location $repoRoot
+    try {
+        # ALWAYS branch from fresh origin/main — never from local HEAD. The old
+        # `if (currentBranch -eq 'main') { git checkout -b ... }` was the root
+        # cause of PR #121's conflict: re-running the script from a leftover
+        # publish branch silently stacked the new commit on stale history.
+        git checkout -B $publishBranch "origin/main"
 
-    # Capture the SHA we just checked out — this is the packwiz/ snapshot
-    # the staging instance was materialized from (build-instance-from-packwiz
-    # reads the working tree, and the working-tree-clean preflight above
-    # ensured local packwiz/ matches origin/main). Pinning .env's
-    # PACKWIZ_COMMIT_SHA to this value is what locks the server side to
-    # exactly the manifest the client zip ships.
-    $packwizSha = (git rev-parse HEAD | Out-String).Trim()
-    if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
-        throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
-    }
+        # Capture the SHA we just checked out — this is the packwiz/ snapshot
+        # the staging instance was materialized from (build-instance-from-packwiz
+        # reads the working tree, and the working-tree-clean preflight above
+        # ensured local packwiz/ matches origin/main). Pinning .env's
+        # PACKWIZ_COMMIT_SHA to this value is what locks the server side to
+        # exactly the manifest the client zip ships.
+        $packwizSha = (git rev-parse HEAD | Out-String).Trim()
+        if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
+            throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
+        }
 
-    # Write modpack.yml AFTER the branch reset so the new content survives.
-    $modpackYml = Join-Path $repoRoot 'modpack.yml'
-    $publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-    $yamlContent = @"
+        # Write modpack.yml AFTER the branch reset so the new content survives.
+        $modpackYml = Join-Path $repoRoot 'modpack.yml'
+        $publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        $yamlContent = @"
 # Central modpack version record — updated by publish-prism-pack.ps1
 # This provides a committed, auditable record of the currently published pack.
 version: "$Version"
@@ -612,76 +703,76 @@ url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
 instance: $InstanceName
 publishedAt: "$publishedAt"
 "@
-    Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
+        Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
 
-    # Atomic SHA + version bump for the C2E2 server: by rewriting the two
-    # tracked literal values in docker/proxmox/docker-compose.yml in the same
-    # commit as modpack.yml, Portainer GitOps's next 5-min poll will redeploy
-    # the server with the new PACK_VERSION (visible in MOTD) and the new
-    # PACKWIZ_COMMIT_SHA (pinning the server's mod set to the same snapshot
-    # that's in the client zip just uploaded). Players' next Prism launch
-    # fetches the new client zip via PreLaunchCommand, so server + client
-    # move together — no kicked-by-mod-mismatch window.
-    #
-    # We rewrite the compose YAML directly (not a .env file) because
-    # Portainer CE's GitOps mode polls the compose file and triggers
-    # redeploy on content change; Portainer ignores .env files in git
-    # (per project convention, all UI-managed env vars live in Portainer's
-    # stack environment UI). Inline literals = single source of truth.
-    $composeFile = Join-Path $repoRoot 'docker/proxmox/docker-compose.yml'
-    if (-not (Test-Path -LiteralPath $composeFile)) {
-        throw "Expected $composeFile to exist. Cannot bump PACK_VERSION / PACKWIZ_COMMIT_SHA."
-    }
-    $composeContent = Get-Content -Raw -LiteralPath $composeFile -Encoding UTF8
+        # Atomic SHA + version bump for the C2E2 server: by rewriting the two
+        # tracked literal values in docker/proxmox/docker-compose.yml in the same
+        # commit as modpack.yml, Portainer GitOps's next 5-min poll will redeploy
+        # the server with the new PACK_VERSION (visible in MOTD) and the new
+        # PACKWIZ_COMMIT_SHA (pinning the server's mod set to the same snapshot
+        # that's in the client zip just uploaded). Players' next Prism launch
+        # fetches the new client zip via PreLaunchCommand, so server + client
+        # move together — no kicked-by-mod-mismatch window.
+        #
+        # We rewrite the compose YAML directly (not a .env file) because
+        # Portainer CE's GitOps mode polls the compose file and triggers
+        # redeploy on content change; Portainer ignores .env files in git
+        # (per project convention, all UI-managed env vars live in Portainer's
+        # stack environment UI). Inline literals = single source of truth.
+        $composeFile = Join-Path $repoRoot 'docker/proxmox/docker-compose.yml'
+        if (-not (Test-Path -LiteralPath $composeFile)) {
+            throw "Expected $composeFile to exist. Cannot bump PACK_VERSION / PACKWIZ_COMMIT_SHA."
+        }
+        $composeContent = Get-Content -Raw -LiteralPath $composeFile -Encoding UTF8
 
-    # Pin the packwiz manifest URL to the SHA we just captured. The pattern
-    # is anchored on the github.com path so we don't accidentally rewrite
-    # any unrelated URL that happens to look like a sha. Fail loudly if
-    # the line isn't found in the expected shape — a silently-no-op
-    # publish would let server and client drift.
-    $urlRegex = '(?m)^(\s*PACKWIZ_URL:\s*"https://raw\.githubusercontent\.com/camcast3/MinecraftInfra/)([^/"]+)(/packwiz/pack\.toml")\s*$'
-    $urlMatches = [regex]::Matches($composeContent, $urlRegex)
-    if ($urlMatches.Count -ne 1) {
-        throw ("Expected exactly 1 PACKWIZ_URL line in $composeFile (matched {0}). " +
-               "Has the line been manually edited?") -f $urlMatches.Count
-    }
-    $composeContent = [regex]::Replace($composeContent, $urlRegex, "`${1}$packwizSha`${3}")
+        # Pin the packwiz manifest URL to the SHA we just captured. The pattern
+        # is anchored on the github.com path so we don't accidentally rewrite
+        # any unrelated URL that happens to look like a sha. Fail loudly if
+        # the line isn't found in the expected shape — a silently-no-op
+        # publish would let server and client drift.
+        $urlRegex = '(?m)^(\s*PACKWIZ_URL:\s*"https://raw\.githubusercontent\.com/camcast3/MinecraftInfra/)([^/"]+)(/packwiz/pack\.toml")\s*$'
+        $urlMatches = [regex]::Matches($composeContent, $urlRegex)
+        if ($urlMatches.Count -ne 1) {
+            throw ("Expected exactly 1 PACKWIZ_URL line in $composeFile (matched {0}). " +
+                   "Has the line been manually edited?") -f $urlMatches.Count
+        }
+        $composeContent = [regex]::Replace($composeContent, $urlRegex, "`${1}$packwizSha`${3}")
 
-    # Pin the MOTD version. Same one-match guard.
-    $motdRegex = '(?m)^(\s*MOTD:\s*"Craft to Exile 2 v)([^"]+)(")\s*$'
-    $motdMatches = [regex]::Matches($composeContent, $motdRegex)
-    if ($motdMatches.Count -ne 1) {
-        throw ("Expected exactly 1 MOTD line in $composeFile (matched {0}). " +
-               "Has the line been manually edited?") -f $motdMatches.Count
-    }
-    $composeContent = [regex]::Replace($composeContent, $motdRegex, "`${1}$Version`${3}")
+        # Pin the MOTD version. Same one-match guard.
+        $motdRegex = '(?m)^(\s*MOTD:\s*"Craft to Exile 2 v)([^"]+)(")\s*$'
+        $motdMatches = [regex]::Matches($composeContent, $motdRegex)
+        if ($motdMatches.Count -ne 1) {
+            throw ("Expected exactly 1 MOTD line in $composeFile (matched {0}). " +
+                   "Has the line been manually edited?") -f $motdMatches.Count
+        }
+        $composeContent = [regex]::Replace($composeContent, $motdRegex, "`${1}$Version`${3}")
 
-    # Write back with UTF-8 no-BOM, original line endings preserved (Get-Content
-    # -Raw keeps the existing `r`n vs `n; Set-Content -NoNewline writes the
-    # buffer verbatim).
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
-    Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
+        # Write back with UTF-8 no-BOM, original line endings preserved (Get-Content
+        # -Raw keeps the existing `r`n vs `n; Set-Content -NoNewline writes the
+        # buffer verbatim).
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
+        Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
 
-    git add modpack.yml 'docker/proxmox/docker-compose.yml'
-    git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
+        git add modpack.yml 'docker/proxmox/docker-compose.yml'
+        git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
-    Write-Step "Pushing $publishBranch to origin"
-    if ($Force -and $expectedRemoteSha) {
-        # Explicit lease tied to the SHA we observed at preflight time. Refuses
-        # if anything (concurrent publisher OR background auto-fetch) moved the
-        # branch since then. Safer than the default lease form, which only
-        # checks the local remote-tracking ref.
-        git push "--force-with-lease=refs/heads/${publishBranch}:${expectedRemoteSha}" -u origin HEAD
-    } else {
-        # Branch didn't exist at preflight time. A plain push will fail loudly
-        # if a concurrent publisher created the branch in the meantime — git
-        # refuses to create a branch that already exists on the remote.
-        git push -u origin HEAD
-    }
+        Write-Step "Pushing $publishBranch to origin"
+        if ($Force -and $expectedRemoteSha) {
+            # Explicit lease tied to the SHA we observed at preflight time. Refuses
+            # if anything (concurrent publisher OR background auto-fetch) moved the
+            # branch since then. Safer than the default lease form, which only
+            # checks the local remote-tracking ref.
+            git push "--force-with-lease=refs/heads/${publishBranch}:${expectedRemoteSha}" -u origin HEAD
+        } else {
+            # Branch didn't exist at preflight time. A plain push will fail loudly
+            # if a concurrent publisher created the branch in the meantime — git
+            # refuses to create a branch that already exists on the remote.
+            git push -u origin HEAD
+        }
 
-    Write-Step "Opening pull request"
-    $prBody = @"
+        Write-Step "Opening pull request"
+        $prBody = @"
 Automated modpack publish.
 
 - **Version:** $Version
@@ -697,33 +788,34 @@ This PR atomically bumps:
   C2E2 within ~5 min of merge, pulling the same packwiz snapshot that's bundled
   in the client zip above. Server + client move in lockstep.
 "@
-    $prUrl = $null
-    try {
-        $prUrl = (gh pr create `
-            --title "chore(modpack): publish v$Version" `
-            --body $prBody `
-            --base main `
-            --head $publishBranch | Out-String).Trim()
-    } catch {
-        # Most likely cause: PR already exists for this head (re-publish via -Force).
-        # Reuse the existing PR's URL instead of failing.
-        $prUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
-        if (-not $prUrl) { throw }
-        Write-Host "    [info] PR already exists for $publishBranch, reusing it" -ForegroundColor Yellow
-    }
-    Write-Ok "PR: $prUrl"
+        $prUrl = $null
+        try {
+            $prUrl = (gh pr create `
+                --title "chore(modpack): publish v$Version" `
+                --body $prBody `
+                --base main `
+                --head $publishBranch | Out-String).Trim()
+        } catch {
+            # Most likely cause: PR already exists for this head (re-publish via -Force).
+            # Reuse the existing PR's URL instead of failing.
+            $prUrl = (gh pr list --head $publishBranch --base main --state open --json url --jq '.[0].url' | Out-String).Trim()
+            if (-not $prUrl) { throw }
+            Write-Host "    [info] PR already exists for $publishBranch, reusing it" -ForegroundColor Yellow
+        }
+        Write-Ok "PR: $prUrl"
 
-    # Enable auto-merge so the PR squash-merges as soon as required checks pass.
-    # Shrinks the window where a second publish could race and collide.
-    # Non-fatal: if the repo doesn't have auto-merge enabled, just warn and move on.
-    try {
-        gh pr merge $prUrl --auto --squash --delete-branch | Out-Null
-        Write-Ok "Auto-merge enabled (squash + delete branch)"
-    } catch {
-        Write-Host "    [warn] Could not enable auto-merge (is it enabled on the repo?). Merge the PR manually." -ForegroundColor Yellow
+        # Enable auto-merge so the PR squash-merges as soon as required checks pass.
+        # Shrinks the window where a second publish could race and collide.
+        # Non-fatal: if the repo doesn't have auto-merge enabled, just warn and move on.
+        try {
+            gh pr merge $prUrl --auto --squash --delete-branch | Out-Null
+            Write-Ok "Auto-merge enabled (squash + delete branch)"
+        } catch {
+            Write-Host "    [warn] Could not enable auto-merge (is it enabled on the repo?). Merge the PR manually." -ForegroundColor Yellow
+        }
+    } finally {
+        Pop-Location
     }
-} finally {
-    Pop-Location
 }
 
 # ─── Publish latest.json (LAST — only after the audit-trail PR exists) ─────
@@ -732,11 +824,16 @@ This PR atomically bumps:
 # version). Only after the git push + PR succeed do we flip latest.json to
 # advertise the new version. This guarantees that players never see a version
 # without a corresponding committed modpack.yml.
-Write-Step "Uploading latest.json"
+#
+# Test-publish mode writes to latest-test.json instead so production setup.ps1
+# (which reads latest.json) is untouched. Set $env:NEGATIVEZONE_MANIFEST_URL
+# on a test box to point setup.ps1 at the test manifest.
+$manifestBlobName = if ($SkipDriftCheck) { 'latest-test.json' } else { 'latest.json' }
+Write-Step "Uploading $manifestBlobName"
 az storage blob upload `
     --account-name $StorageAccount `
     --container-name $Container `
-    --name 'latest.json' `
+    --name $manifestBlobName `
     --file $manifestPath `
     --auth-mode login `
     --overwrite true `
@@ -749,7 +846,17 @@ Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
 Remove-Item $manifestPath -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "Published successfully." -ForegroundColor Green
-Write-Host "  Manifest: https://$StorageAccount.blob.core.windows.net/$Container/latest.json"
-Write-Host "  Zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+if ($SkipDriftCheck) {
+    Write-Host "Test-publish complete (production latest.json untouched)." -ForegroundColor Green
+    Write-Host "  Test manifest: https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName"
+    Write-Host "  Test zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+    Write-Host ""
+    Write-Host "To install this test publish, set the manifest URL override before running setup.ps1:" -ForegroundColor Cyan
+    Write-Host "  `$env:NEGATIVEZONE_MANIFEST_URL = 'https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName'" -ForegroundColor Cyan
+    Write-Host "  irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex" -ForegroundColor Cyan
+} else {
+    Write-Host "Published successfully." -ForegroundColor Green
+    Write-Host "  Manifest: https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName"
+    Write-Host "  Zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+}
 Write-Host ""

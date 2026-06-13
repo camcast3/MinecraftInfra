@@ -37,7 +37,18 @@ $ErrorActionPreference = 'Stop'
 # (Expand-Archive, Get-FileHash, BITS) raise terminating errors via -EA Stop
 # at each callsite below.
 
-$ManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+$DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+# Test-publish override: when set, the bundled-into-zip update.ps1 honors
+# the same NEGATIVEZONE_MANIFEST_URL env var as setup.ps1. The Prism
+# PreLaunchCommand fires update.ps1 in the user's session, so the env var
+# only needs to be set in that session for the test-pack auto-update to
+# stay on the test channel. Loud warning is logged when the override is in
+# use, so a half-set test session is visible in the update.log.
+$ManifestUrl = if ($env:NEGATIVEZONE_MANIFEST_URL) {
+    $env:NEGATIVEZONE_MANIFEST_URL
+} else {
+    $DefaultManifestUrl
+}
 
 # Files + directories the swap MUST preserve from the player's current
 # install. Mirrors publish-prism-pack.ps1's $excludePatterns — anything
@@ -191,6 +202,13 @@ try {
         ''
     }
     Write-Log 'INFO' ("Installed version: '{0}'" -f $installedVersion)
+
+    # Loud log line when the test manifest override is in use so half-set
+    # test sessions are obvious in update.log (which the admin reads when
+    # debugging an auto-update issue).
+    if ($ManifestUrl -ne $DefaultManifestUrl) {
+        Write-Log 'WARN' ("Using OVERRIDE manifest URL (test publish mode): {0}" -f $ManifestUrl)
+    }
 
     # Fetch manifest. Fail-open on any network error so offline play works.
     $manifest = $null

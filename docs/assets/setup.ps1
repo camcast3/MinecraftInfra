@@ -14,13 +14,31 @@
 #   4. Looks up your UUID via the Mojang API and copies it to your clipboard
 #   5. Downloads the pre-built Craft to Exile 2 instance from Azure Blob
 #      and installs it into Prism (no CurseForge wait — ~2 min vs ~15 min)
+#
+# Test-publish override (admin-only):
+#   To install a sacrificial test publish instead of the real one, set
+#   $env:NEGATIVEZONE_MANIFEST_URL before running this script. Example:
+#     $env:NEGATIVEZONE_MANIFEST_URL = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest-test.json'
+#     irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
+#   The script prints a loud warning when the override is in use. Unset the
+#   variable (Remove-Item Env:\NEGATIVEZONE_MANIFEST_URL) to return to prod.
 
 $ErrorActionPreference = 'Stop'
 
 # Manifest URL for the pre-built Prism instance. Public-read Azure blob,
 # anonymous fetch. The manifest is the single source of truth for the
 # current modpack version + zip URL + sha256.
-$ModpackManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+#
+# Test-publish override: set $env:NEGATIVEZONE_MANIFEST_URL before running
+# this script (or before the `irm ... | iex` one-liner) to point at a
+# test manifest (e.g. .../latest-test.json) instead of production. Used
+# by admins to E2E-validate a test publish without touching real players.
+$DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+$ModpackManifestUrl = if ($env:NEGATIVEZONE_MANIFEST_URL) {
+    $env:NEGATIVEZONE_MANIFEST_URL
+} else {
+    $DefaultManifestUrl
+}
 
 function Write-Step($msg) {
     Write-Host ""
@@ -164,6 +182,11 @@ if ($prismInstalled) {
 $prismInstancesDir = Join-Path $env:APPDATA 'PrismLauncher\instances'
 
 Write-Step "Fetching modpack manifest"
+if ($ModpackManifestUrl -ne $DefaultManifestUrl) {
+    Write-Warn "Using OVERRIDE manifest URL (test publish mode):"
+    Write-Warn "  $ModpackManifestUrl"
+    Write-Warn "Unset `$env:NEGATIVEZONE_MANIFEST_URL to switch back to production."
+}
 try {
     $manifest = Invoke-RestMethod -Uri $ModpackManifestUrl -ErrorAction Stop
     Write-Ok "Latest version: v$($manifest.version) ($($manifest.instance))"
