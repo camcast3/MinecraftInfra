@@ -1,0 +1,67 @@
+---
+name: Protect latest release pointer
+
+# Keeps the GitHub "Latest" release pinned to the newest `setup-v*` release.
+#
+# Why: the player install one-liner in docs/player-onboarding.md uses
+# `releases/latest/download/setup.ps1`. Publishing any non-setup release
+# (e.g. `c2e2-blobs-vX.Y.Z`) defaults to marking it "Latest", which breaks
+# that URL because non-setup releases don't carry the script. This workflow
+# self-heals by re-promoting the newest setup release after any release is
+# published.
+#
+# Only fires on `published` (not `edited`) to avoid an infinite loop when
+# this workflow itself PATCHes a release.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: protect-latest-release
+  cancel-in-progress: false
+
+jobs:
+  protect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-pin latest to newest setup-v* release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          newest_setup_tag=$(gh release list --repo "$REPO" --limit 100 \
+            --json tagName,publishedAt \
+            --jq '[.[] | select(.tagName | startswith("setup-v"))]
+                  | sort_by(.publishedAt) | reverse | .[0].tagName')
+
+          if [[ -z "$newest_setup_tag" || "$newest_setup_tag" == "null" ]]; then
+            echo "::warning::No setup-v* releases found; nothing to promote."
+            exit 0
+          fi
+
+          echo "Newest setup release: $newest_setup_tag"
+
+          current_latest=$(gh api "/repos/$REPO/releases/latest" \
+            --jq '.tag_name' 2>/dev/null || echo "")
+          echo "Currently latest:     ${current_latest:-<none>}"
+
+          if [[ "$current_latest" == "$newest_setup_tag" ]]; then
+            echo "Latest already points to newest setup release. No-op."
+            exit 0
+          fi
+
+          newest_setup_id=$(gh api \
+            "/repos/$REPO/releases/tags/$newest_setup_tag" --jq '.id')
+
+          # PATCH with make_latest=true demotes whatever release was latest.
+          gh api -X PATCH "/repos/$REPO/releases/$newest_setup_id" \
+            -F make_latest=true >/dev/null
+
+          echo "Promoted $newest_setup_tag to latest (was: ${current_latest:-<none>})."
