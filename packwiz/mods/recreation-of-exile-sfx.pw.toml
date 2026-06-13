@@ -1,5 +1,5 @@
 name = "Recreation of Exile - SFX"
-filename = "RoE_SFX-FILL_IN_VERSION.jar"
+filename = "RoE_SFX-0.0.3.jar"
 side = "both"
 
 # Re-hosted via GitHub Release because CurseForge returns
@@ -11,9 +11,10 @@ side = "both"
 #      manually (browser-only, completes the license click-through).
 #   2. Verify the redistribution clause in the mod's license file is
 #      compatible with attaching the JAR to a public GitHub Release.
-#      The other RoE sibling mods we ship (RoE Weapons etc.) are open
-#      to redistribution; SFX needs separate license check before publish.
-#      RECORD THE OUTCOME IN THE PR 2 DESCRIPTION.
+#      The CF project description for this mod includes an explicit
+#      "You can use this in your modpack" permission (verified for
+#      v0.0.3 by PR 2). Re-confirm on each upstream bump in case the
+#      author updates their terms — record the outcome in the PR.
 #   3. Upload the JAR to the `c2e2-blobs-v<PACK_VERSION>` release.
 #   4. Update `filename` to match the JAR you uploaded.
 #   5. Replace the FILL_IN placeholders below with the real download URL
@@ -22,14 +23,14 @@ side = "both"
 #      daily workflow can still notice upstream version bumps.
 #   7. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
 [download]
-url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-vFILL_IN/RoE_SFX-FILL_IN_VERSION.jar"
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/RoE_SFX-0.0.3.jar"
 hash-format = "sha256"
-hash = "0000000000000000000000000000000000000000000000000000000000000000"
+hash = "a7682cdd5810249e47da228ba40c3ca6f44d29c93a7fea48dff7edef7bfa29f0"
 mode = "url"
 
 # See ftb-placeholders.pw.toml for the rationale on keeping
 # [update.curseforge] alongside `mode = "url"`.
 [update]
 [update.curseforge]
-file-id = 0
-project-id = 0
+file-id = 6240763
+project-id = 1207903

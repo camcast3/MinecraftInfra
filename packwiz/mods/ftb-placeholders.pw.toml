@@ -1,5 +1,5 @@
 name = "FTB Placeholders"
-filename = "ftb-placeholders-forge-1900.1.5-build.43.jar"
+filename = "FTB_PlaceHolders-1.0.6a.jar"
 side = "both"
 
 # Re-hosted via GitHub Release because CurseForge returns
@@ -18,9 +18,9 @@ side = "both"
 #      daily workflow can still notice upstream version bumps for this entry.
 #   6. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
 [download]
-url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-vFILL_IN/ftb-placeholders-forge-1900.1.5-build.43.jar"
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/FTB_PlaceHolders-1.0.6a.jar"
 hash-format = "sha256"
-hash = "0000000000000000000000000000000000000000000000000000000000000000"
+hash = "2db971488a693b3781539c36aae3d8772c42cb431cffc080eb01f5dd14fac621"
 mode = "url"
 
 # Keep the [update.curseforge] block alongside `mode = "url"` so PR 4's
@@ -30,5 +30,5 @@ mode = "url"
 # "preferred path" spike outcome documented in packwiz/README.md.
 [update]
 [update.curseforge]
-file-id = 0
-project-id = 0
+file-id = 6321756
+project-id = 1187311
