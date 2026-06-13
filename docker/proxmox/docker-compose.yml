@@ -166,8 +166,8 @@ services:
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: NAS
       RCLONE_DEST_DIR: ${NAS_BACKUP_PATH}
-      PRUNE_BACKUPS_DAYS: "60"
-      # 4/day × 60d × ~349 MB ≈ ~82 GB on the NAS.
+      PRUNE_BACKUPS_DAYS: "31"
+      # 4/day × 31d × ~349 MB ≈ ~43 GB on the NAS.
       CRON_SCHEDULE: "15 */6 * * *"
       RCLONE_CONFIG_NAS_TYPE: smb
       RCLONE_CONFIG_NAS_HOST: ${NAS_HOST}
@@ -185,8 +185,8 @@ services:
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
       RCLONE_DEST_DIR: minecraft-backups/c2e2
-      PRUNE_BACKUPS_DAYS: "365"
-      # 1/day × 365d × ~349 MB ≈ ~125 GB @ Cold GRS ≈ ~$2.50/mo.
+      PRUNE_BACKUPS_DAYS: "60"
+      # 1/day × 60d × ~349 MB ≈ ~20 GB @ Cold GRS ≈ ~$0.40/mo.
       CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
       RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
