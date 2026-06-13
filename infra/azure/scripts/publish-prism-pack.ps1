@@ -102,6 +102,7 @@ param(
     ),
     [string]$UpdateScriptPath,
     [string]$BackupScriptPath,
+    [string]$UserPrefsPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
     [switch]$Force,
@@ -279,6 +280,28 @@ if (-not (Test-Path -LiteralPath $BackupScriptPath)) {
     throw "backup.ps1 not found at: $BackupScriptPath`nPass -BackupScriptPath to override."
 }
 $BackupScriptPath = (Resolve-Path -LiteralPath $BackupScriptPath).Path
+
+# ─── user-prefs manifest resolution ────────────────────────────────────────
+# packwiz/.user-prefs.txt is the curated list of pack-shipped files that
+# players typically tune (mod graphics, shaders, map style, etc.). We
+# transform it into a JSON blob bundled at <InstanceName>/.negativezone/
+# preserve-list.json so update.ps1 can restore them across the atomic
+# .minecraft swap and backup.ps1 can widen snapshot scope to match.
+#
+# Optional: if the manifest is missing, the publish still succeeds and
+# the client falls back to its hardcoded $PreserveRelative (player-state
+# dirs only — saves, XaeroWaypoints, etc.). This keeps the publish flow
+# unblocked while the manifest is being curated.
+if (-not $UserPrefsPath) {
+    $UserPrefsPath = Join-Path $repoRoot 'packwiz/.user-prefs.txt'
+}
+if (Test-Path -LiteralPath $UserPrefsPath) {
+    $UserPrefsPath = (Resolve-Path -LiteralPath $UserPrefsPath).Path
+} else {
+    Write-Host "    [warn] user-prefs manifest not found at: $UserPrefsPath" -ForegroundColor Yellow
+    Write-Host "    [warn] Published zip will rely on client-side hardcoded preserve list only." -ForegroundColor Yellow
+    $UserPrefsPath = $null
+}
 
 # ─── Git preflight ─────────────────────────────────────────────────────────
 # Fast-fail on the two states that produced PR #121's conflict:
@@ -533,6 +556,37 @@ try {
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
         $zip, $BackupScriptPath, $backupEntry, 'Optimal') | Out-Null
     Write-Ok "Bundled backup.ps1 -> $backupEntry"
+
+    # Bundle the curated user-prefs manifest as JSON at
+    # <InstanceName>/.negativezone/preserve-list.json so update.ps1 (post-
+    # swap) and backup.ps1 (snapshot scope) know which pack-shipped files
+    # the player typically tunes. The source-of-truth is packwiz/.user-prefs.txt
+    # (plain-text, # comments, one path per line); we transform to JSON here
+    # so the client has a single-format payload that's trivial to parse with
+    # ConvertFrom-Json. Schema version is pinned so future format bumps can
+    # be detected by the client.
+    if ($UserPrefsPath) {
+        $preserveLines = Get-Content -LiteralPath $UserPrefsPath -Encoding UTF8 |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ -and $_ -notmatch '^\s*#' }
+        $preserveJson = ConvertTo-Json @{
+            version  = 1
+            preserve = @($preserveLines)
+        } -Depth 4 -Compress
+        $preserveTempPath = [System.IO.Path]::GetTempFileName()
+        try {
+            # -NoNewline avoids a trailing newline that some strict JSON
+            # parsers reject (PowerShell's ConvertFrom-Json is tolerant
+            # but other consumers like jq aren't).
+            Set-Content -LiteralPath $preserveTempPath -Value $preserveJson -Encoding UTF8 -NoNewline
+            $preserveEntry = "$InstanceName/.negativezone/preserve-list.json"
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $zip, $preserveTempPath, $preserveEntry, 'Optimal') | Out-Null
+            Write-Ok ("Bundled preserve-list.json ({0} entries) -> $preserveEntry" -f $preserveLines.Count)
+        } finally {
+            Remove-Item -LiteralPath $preserveTempPath -Force -ErrorAction SilentlyContinue
+        }
+    }
 } finally {
     $zip.Dispose()
 }

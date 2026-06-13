@@ -12,6 +12,12 @@
 #
 # PS 5.1 compatible — Windows ships PS 5.1 by default, so no PS 7-only syntax.
 # Trusts $env:INST_DIR (Prism injects this via CustomCommands plumbing).
+#
+# Runtime preserve set is the union of $PreserveRelative (hardcoded
+# player-state dirs) and a pack-author manifest bundled at
+# <InstanceName>/.negativezone/preserve-list.json. Lets the pack author
+# preserve mod-config files (Embeddium, Oculus, Xaero, etc.) on update
+# without code changes here.
 
 [CmdletBinding()]
 param(
@@ -92,6 +98,64 @@ function Write-Log {
         # Best-effort: nothing useful to do if even the log write fails.
     }
     Write-Host "[negativezone-update] $Message"
+}
+
+# ─── Preserve-list resolution ──────────────────────────────────────────────
+# The published zip ships a manifest at <InstanceName>/.negativezone/
+# preserve-list.json listing pack-shipped files that the user typically
+# tunes (Embeddium graphics, Oculus shaders, Xaero map prefs, etc.). The
+# runtime restore set is the union of:
+#   1. $PreserveRelative (hardcoded above) — player-state dirs and vanilla
+#      files like saves/, options.txt, XaeroWaypoints/, shaderpacks/. These
+#      aren't pack-shipped and live entirely in launcher logic.
+#   2. The pack-author manifest — pack-shipped files the player tunes.
+# Read order: prefer the just-extracted zip's manifest ($extractedManifest,
+# passed by the caller), fall back to the live in-instance copy from a
+# prior update, fall back to hardcoded-only on missing/malformed. Always
+# fail-open so a bad manifest never blocks a launch.
+function Get-RuntimePreserveSet {
+    param(
+        [string[]]$Hardcoded,
+        [string]$ExtractedManifestPath,
+        [string]$LiveManifestPath
+    )
+
+    $packAuthor = @()
+    $sourceUsed = $null
+    foreach ($candidate in @($ExtractedManifestPath, $LiveManifestPath)) {
+        if ([string]::IsNullOrEmpty($candidate)) { continue }
+        if (-not (Test-Path -LiteralPath $candidate)) { continue }
+        try {
+            $obj = Get-Content -LiteralPath $candidate -Raw -Encoding UTF8 |
+                ConvertFrom-Json -ErrorAction Stop
+            if ($obj.preserve) {
+                $packAuthor = @($obj.preserve | Where-Object { $_ })
+                $sourceUsed = $candidate
+                break
+            }
+        } catch {
+            Write-Log 'WARN' ("preserve-list.json malformed at '{0}': {1}" -f $candidate, $_.Exception.Message)
+        }
+    }
+    if ($sourceUsed) {
+        Write-Log 'INFO' ("Pack-author preserve list: {0} entries from {1}" -f $packAuthor.Count, $sourceUsed)
+    } else {
+        Write-Log 'INFO' 'No pack-author preserve list found; using hardcoded list only.'
+    }
+
+    # Union, de-duplicate, preserve order. Hardcoded first so player-state
+    # dirs are restored before per-file mod configs (matters only if a
+    # path collision ever occurred, which it shouldn't).
+    $seen = @{}
+    $result = New-Object System.Collections.Generic.List[string]
+    foreach ($path in @($Hardcoded) + @($packAuthor)) {
+        $trimmed = ($path -as [string]).Trim()
+        if ($trimmed -and -not $seen.ContainsKey($trimmed)) {
+            $seen[$trimmed] = $true
+            [void]$result.Add($trimmed)
+        }
+    }
+    return ,$result.ToArray()
 }
 
 # Prism's double-click-to-launch can spawn PreLaunchCommand twice in quick
@@ -331,12 +395,24 @@ try {
     try {
         Move-Item -LiteralPath $srcMinecraft -Destination $dotMinecraft -Force
 
+        # Compute the runtime preserve set: hardcoded player-state dirs +
+        # the pack-author manifest bundled in the just-extracted zip at
+        # <InstanceName>/.negativezone/preserve-list.json. Prefer the
+        # extracted manifest (current with this pack version); fall back
+        # to whatever was last copied to the live $nzDir.
+        $extractedManifest = Join-Path $srcInstance '.negativezone\preserve-list.json'
+        $liveManifest      = Join-Path $nzDir 'preserve-list.json'
+        $runtimePreserve = Get-RuntimePreserveSet `
+            -Hardcoded $PreserveRelative `
+            -ExtractedManifestPath $extractedManifest `
+            -LiveManifestPath $liveManifest
+
         # Restore user state via move (not copy): rename-style moves on the
         # same volume are O(1) regardless of saves/ size (can be many GB).
         # Copy would double disk usage + IO with no extra safety since the
         # backup is wiped at the end anyway.
         if ($backupMinecraft -and (Test-Path -LiteralPath $backupMinecraft)) {
-            foreach ($rel in $PreserveRelative) {
+            foreach ($rel in $runtimePreserve) {
                 $src = Join-Path $backupMinecraft $rel
                 $dst = Join-Path $dotMinecraft $rel
                 if (Test-Path -LiteralPath $src) {
@@ -346,6 +422,18 @@ try {
                         Write-Log 'WARN' ("Failed to restore '{0}': {1} (continuing — your data is still in {2})" -f $rel, $_.Exception.Message, $backupMinecraft)
                     }
                 }
+            }
+        }
+
+        # Sync the pack-author manifest into the live $nzDir so backup.ps1
+        # (which doesn't see the extracted zip) can use the same list for
+        # its snapshot scope. Best-effort — done after the restore so a
+        # failed restore doesn't poison the manifest.
+        if (Test-Path -LiteralPath $extractedManifest) {
+            try {
+                Copy-Item -LiteralPath $extractedManifest -Destination $liveManifest -Force
+            } catch {
+                Write-Log 'WARN' ("Could not sync preserve-list.json into {0}: {1}" -f $nzDir, $_.Exception.Message)
             }
         }
 

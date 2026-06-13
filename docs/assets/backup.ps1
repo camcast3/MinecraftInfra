@@ -141,6 +141,37 @@ if ($env:NEGATIVEZONE_BACKUP_INCLUDE_SAVES -eq '1') {
     $DirectoryItems += 'saves'
 }
 
+# ─── Extend file scope from pack-author manifest ────────────────────────────
+# update.ps1 syncs <InstanceDir>/.negativezone/preserve-list.json on each
+# pack update (sourced from packwiz/.user-prefs.txt at publish time). It
+# lists pack-shipped files that players typically tune (Embeddium graphics,
+# Oculus shaders, Xaero map style, etc.). Because the update.ps1 swap now
+# *preserves* these files across updates, our snapshot is the only thing
+# protecting them from accidental deletion. Append them to $FileItems so
+# every snapshot includes them.
+$preserveManifest = Join-Path $nzDir 'preserve-list.json'
+if (Test-Path -LiteralPath $preserveManifest) {
+    try {
+        $obj = Get-Content -LiteralPath $preserveManifest -Raw -Encoding UTF8 |
+            ConvertFrom-Json -ErrorAction Stop
+        if ($obj.preserve) {
+            $added = 0
+            foreach ($rel in @($obj.preserve)) {
+                $trimmed = ($rel -as [string]).Trim()
+                if ($trimmed -and ($FileItems -notcontains $trimmed)) {
+                    $FileItems += $trimmed
+                    $added++
+                }
+            }
+            if ($added -gt 0) {
+                Write-Log 'INFO' ("Added {0} pack-author file(s) to snapshot scope from {1}" -f $added, $preserveManifest)
+            }
+        }
+    } catch {
+        Write-Log 'WARN' ("preserve-list.json malformed; snapshot scope unchanged: {0}" -f $_.Exception.Message)
+    }
+}
+
 # ─── Skip if recent ─────────────────────────────────────────────────────────
 # intervalDays=0 effectively means "back up on every exit" — useful for
 # testing the script itself. -Force from update.ps1 also bypasses this so

@@ -223,12 +223,21 @@ When you click **Launch** in Prism, a small script runs first that:
 2. If you're already up to date, the game launches normally — no delay.
 3. If a new version is available, the script downloads it, verifies the
    SHA-256 hash, and atomically swaps in the new mods, configs, and
-   resource packs. Your **worlds (`saves/`), screenshots, and personal
-   options stay intact.**
+   resource packs. Your **worlds (`saves/`), screenshots, personal
+   options, and in-game settings you've tuned** (graphics quality,
+   shader choice, map style, recipe-viewer prefs, hotkeys, HUD layout,
+   etc.) stay intact.
 4. The game then launches the freshly updated instance.
 
 A typical update takes **30–60 seconds** before the game starts, depending
 on your internet speed and how much the modpack changed.
+
+> **Resetting a tuned setting back to pack defaults:** Just delete the
+> relevant config file from `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.minecraft\config\`
+> (e.g. `embeddium-options.json`, `oculus.properties`) — the next pack
+> update will reseed the pack-recommended baseline. The pack ships
+> opinionated defaults for graphics, shaders, and UI on first install;
+> from there it's yours to tweak.
 
 ### Failure behavior
 
@@ -296,6 +305,13 @@ much you've explored):
 - `options.txt`, `optionsof.txt`, `optionsshaders.txt`, `servers.dat`,
   `usercache.json`, `usernamecache.json`
 - `config\jei\` and `config\emi\` (recipe bookmarks)
+- Plus the **pack-author user-prefs manifest** — every mod-config file
+  the pack treats as user-tunable (Embeddium graphics, Oculus shaders,
+  Xaero map style, HUD layout, sound prefs, etc.). The current list
+  lives at `packwiz/.user-prefs.txt` in the repo and is bundled into
+  each pack release as `<instance>\.negativezone\preserve-list.json`.
+  Update.ps1 protects these from being wiped by pack updates; the
+  periodic snapshot protects them from accidental deletion.
 
 Notably **not** included by default: `.minecraft\saves\` — most players
 connect to the multiplayer server so client saves are empty. If you play
