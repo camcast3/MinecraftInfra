@@ -48,6 +48,14 @@
 .PARAMETER UpdateScriptPath
     update.ps1 to bundle into the zip. Default: docs/assets/update.ps1.
 
+.PARAMETER BackupScriptPath
+    Path to the player-side `backup.ps1` to bundle into the zip at
+    <InstanceName>/.negativezone/backup.ps1. Defaults to
+    docs/assets/backup.ps1 from the repo root. Wired into instance.cfg's
+    PostExitCommand by the sanitizer so periodic snapshots of player state
+    (Xaero map cache, shaderpacks, options, etc.) happen after every game
+    session — see backup.ps1 for the cadence (default 3 days) and scope.
+
 .PARAMETER IconPath
     Instance icon. Default cte2-icon.png next to this script. Bundled at
     icons/<IconKey>.<ext>.
@@ -93,6 +101,7 @@ param(
         else            { "$env:APPDATA\PrismLauncher\instances" }
     ),
     [string]$UpdateScriptPath,
+    [string]$BackupScriptPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
     [switch]$Force,
@@ -262,6 +271,15 @@ if (-not (Test-Path -LiteralPath $UpdateScriptPath)) {
 }
 $UpdateScriptPath = (Resolve-Path -LiteralPath $UpdateScriptPath).Path
 
+# ─── backup.ps1 resolution ──────────────────────────────────────────────────
+if (-not $BackupScriptPath) {
+    $BackupScriptPath = Join-Path $repoRoot 'docs/assets/backup.ps1'
+}
+if (-not (Test-Path -LiteralPath $BackupScriptPath)) {
+    throw "backup.ps1 not found at: $BackupScriptPath`nPass -BackupScriptPath to override."
+}
+$BackupScriptPath = (Resolve-Path -LiteralPath $BackupScriptPath).Path
+
 # ─── Git preflight ─────────────────────────────────────────────────────────
 # Fast-fail on the two states that produced PR #121's conflict:
 #   1. Dirty working tree → would mix unrelated edits into the auto-PR.
@@ -360,6 +378,13 @@ $excludePatterns = @(
     '*/usercache.json'
     '*/usernamecache.json'
     '*/.lck'
+    # Skip the whole .negativezone/ subtree. The canonical update.ps1 +
+    # backup.ps1 are added via CreateEntryFromFile below; this exclude
+    # prevents (a) snapshot dirs at .negativezone/backups/<ts>/ from leaking
+    # into a published zip if -InstancePath points at an admin's local
+    # Prism instance, and (b) duplicate zip entries that would otherwise
+    # collide with the explicit bundle of update.ps1 / backup.ps1.
+    '*/.negativezone/*'
 )
 
 # Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
@@ -400,12 +425,15 @@ function Get-SanitizedInstanceCfg(
     # QProcess::splitCommand which respects quoted segments containing spaces
     # (e.g. C:\Users\Jane Doe\...).
     $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
+    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\backup.ps1"'
 
     # 8192 MB matches C2E2's recommended ceiling (players on 8 GB systems
     # should lower to 4096 after install). name= carries the version suffix
     # so Prism's instance grid shows it (update.ps1 patches on swap).
     # OverrideCommands + PreLaunchCommand wire the auto-update hook
-    # (fail-open on network, fail-closed on SHA mismatch).
+    # (fail-open on network, fail-closed on SHA mismatch). PostExitCommand
+    # wires the periodic-backup hook (always fail-open; cadence-skips in ~100ms
+    # when no snapshot is due).
     $overrides = [ordered]@{
         'AutomaticJava'         = 'true'
         'OverrideJavaLocation'  = 'false'
@@ -416,6 +444,7 @@ function Get-SanitizedInstanceCfg(
         'name'                  = "$instanceName v$version"
         'OverrideCommands'      = 'true'
         'PreLaunchCommand'      = $preLaunchCommand
+        'PostExitCommand'       = $postExitCommand
     }
 
     $out = New-Object System.Collections.Generic.List[string]
@@ -495,6 +524,15 @@ try {
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
         $zip, $UpdateScriptPath, $updateEntry, 'Optimal') | Out-Null
     Write-Ok "Bundled update.ps1 -> $updateEntry"
+
+    # Same pattern for backup.ps1, invoked by PostExitCommand. Bundling it
+    # alongside update.ps1 keeps the install-time and update-time bits
+    # version-locked together — a player can't end up with a fresh backup.ps1
+    # against an older update.ps1 or vice versa.
+    $backupEntry = "$InstanceName/.negativezone/backup.ps1"
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+        $zip, $BackupScriptPath, $backupEntry, 'Optimal') | Out-Null
+    Write-Ok "Bundled backup.ps1 -> $backupEntry"
 } finally {
     $zip.Dispose()
 }

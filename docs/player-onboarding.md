@@ -10,12 +10,14 @@ nav_order: 2
 Two paths to get connected: a **one-line automated setup** (recommended) or
 **manual step-by-step** if you'd rather see what's happening.
 
-> **Already playing?** A new auto-update launch hook is now part of the
-> Craft to Exile 2 instance. **Re-run the setup one-liner once** (see
-> [Path A](#path-a--automated-setup-recommended)) to enable zero-action
-> modpack updates on your installed instance. After that, future modpack
+> **Already playing?** A new auto-update launch hook and periodic backup
+> hook are now part of the Craft to Exile 2 instance. **Re-run the setup
+> one-liner once** (see [Path A](#path-a--automated-setup-recommended)) to
+> enable zero-action modpack updates and periodic snapshots of your
+> personal state on your installed instance. After that, future modpack
 > publishes apply automatically on the next Prism launch — no manual
-> action required. See [Modpack updates](#modpack-updates) for how it works.
+> action required. See [Modpack updates](#modpack-updates) and
+> [Periodic backups](#periodic-backups) for how they work.
 
 <details markdown="1" open>
 <summary>Table of contents</summary>
@@ -251,7 +253,86 @@ mods locally and don't want them overwritten), uncheck **Custom commands**
 in Prism: select the instance → **Edit** → **Settings** → **Custom commands**
 tab → uncheck **Custom commands**. Note that **the server will kick you if
 your mod set doesn't match** — this escape hatch is for offline / dev work
-only.
+only. Unchecking **Custom commands** also disables the periodic backup
+hook described below, so re-enable it once you're done testing.
+
+---
+
+## Periodic backups
+
+Alongside auto-update, every game session ends by snapshotting a curated
+set of your personal client state. This catches accidents that auto-update
+preserves don't handle: world corruption from a mod crash, deletions you
+made by mistake, modpack updates that wipe a directory we didn't think to
+preserve, etc.
+
+### How it works
+
+When the game closes, Prism runs a small script (`backup.ps1`) that:
+
+1. Checks the timestamp of your newest snapshot. If it's less than
+   **3 days old**, the script exits immediately (~100 ms — no perceptible
+   delay before Prism shows the instance as stopped).
+2. If a snapshot is due, it copies a curated allow-list into
+   `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\<timestamp>\`
+   using `robocopy` (fast — multi-GB Xaero map caches take ~10–20 s).
+3. Prunes to the **3 newest** snapshots so disk usage stays bounded.
+
+Each snapshot is a self-contained tree mirroring the original layout under
+`.minecraft\`, so restore is just **copy back**.
+
+The auto-update step also forces one snapshot **right before every modpack
+update**, so update day always has a fresh restore point even if your last
+periodic snapshot was 2 days ago.
+
+### What's snapshotted
+
+By default (lean profile, ~100 MB – 2 GB per snapshot depending on how
+much you've explored):
+
+- `XaeroWaypoints\` — every server waypoint you've placed
+- `XaeroWorldMap\` — explored map cache (the dominant size term)
+- `screenshots\`, `shaderpacks\`, `resourcepacks\`
+- `options.txt`, `optionsof.txt`, `optionsshaders.txt`, `servers.dat`,
+  `usercache.json`, `usernamecache.json`
+- `config\jei\` and `config\emi\` (recipe bookmarks)
+
+Notably **not** included by default: `.minecraft\saves\` — most players
+connect to the multiplayer server so client saves are empty. If you play
+single-player worlds in this instance too, opt in with the env var below.
+
+### Tuning or disabling
+
+Open PowerShell and set any of these in your user environment (they
+persist across reboots):
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `NEGATIVEZONE_BACKUP_DAYS` | Days between snapshots (set `0` for every exit) | `3` |
+| `NEGATIVEZONE_BACKUP_RETAIN` | How many snapshots to keep | `3` |
+| `NEGATIVEZONE_BACKUP_INCLUDE_SAVES` | Set to `1` to also snapshot single-player worlds (adds GBs) | unset |
+| `NEGATIVEZONE_BACKUP_DISABLE` | Set to `1` to disable backups entirely | unset |
+
+Example — keep 5 weekly snapshots that include SP worlds:
+
+```powershell
+[Environment]::SetEnvironmentVariable('NEGATIVEZONE_BACKUP_DAYS',          '7', 'User')
+[Environment]::SetEnvironmentVariable('NEGATIVEZONE_BACKUP_RETAIN',        '5', 'User')
+[Environment]::SetEnvironmentVariable('NEGATIVEZONE_BACKUP_INCLUDE_SAVES', '1', 'User')
+```
+
+Settings take effect the next time Prism launches.
+
+### Restoring from a backup
+
+1. Close Prism.
+2. Open `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\`
+   in File Explorer.
+3. Pick the snapshot you want (folders are named `yyyyMMdd-HHmmss`).
+4. Copy the files/directories you want to restore back into
+   `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.minecraft\`,
+   replacing the current ones.
+5. Re-open Prism and launch.
 
 ---
 
@@ -271,6 +352,8 @@ only.
 | Java still says version 8 after install | Restart your PC — Windows sometimes doesn't pick up the new PATH until reboot. |
 | Prism shows `PreLaunchCommand failed` / instance won't launch | The auto-update step failed and refused to start the game. Open `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\update.log` for the actual error. Most common cause is a corrupted download — re-launch and the next attempt usually succeeds. As a one-time escape hatch you can uncheck **Custom commands** in the instance's **Edit → Settings → Custom commands** tab to launch without the update step, but the server may kick you if your mods are out of date. |
 | Custom mods or config tweaks reverted after launch | The auto-update step replaces anything that isn't in the official manifest. This is **expected** — the server kicks players with mismatched mods anyway. To test custom mods locally without them being overwritten, uncheck **Custom commands** in the instance's **Edit → Settings → Custom commands** tab (you won't be able to connect to the live server while it's unchecked). |
+| Prism takes a long time to show "Stopped" after quitting the game | A backup snapshot is in progress (runs at most every 3 days; takes ~10–60 s depending on how much explored map data you have). Check `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backup.log` to confirm. If you want to disable backups, set `NEGATIVEZONE_BACKUP_DISABLE=1` in your user environment (see [Periodic backups](#periodic-backups)). |
+| Lost a waypoint / world / setting after a recent modpack update | Restore from a snapshot in `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\` — see [Restoring from a backup](#restoring-from-a-backup) for the runbook. The auto-update step takes a snapshot just before every update, so there should be a fresh one. |
 
 Still stuck? DM the admin with the exact error (screenshot is best), your Minecraft
 username, and what step you got stuck on.

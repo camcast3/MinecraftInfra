@@ -46,7 +46,18 @@ $PreserveRelative = @(
     'servers.dat',
     'usercache.json',
     'usernamecache.json',
-    'realms_persistence.json'
+    'realms_persistence.json',
+    # Xaero's mini/world map cache + waypoints — multi-GB on heavy explorers
+    # and represents real player time investment. Without these in the
+    # preserve list, every modpack update wipes the player's navigation
+    # history and explored-area cache.
+    'XaeroWaypoints',
+    'XaeroWorldMap',
+    # Player-installed shader/resource packs ride alongside the pack-shipped
+    # ones; wiping them on update would force re-installation of personal
+    # cosmetic choices that have nothing to do with the modpack itself.
+    'shaderpacks',
+    'resourcepacks'
 )
 
 # Fail-open (exit 0) on missing/invalid INST_DIR — captured in Prism's launch log.
@@ -265,6 +276,39 @@ try {
             Write-Log 'ERROR' 'Please close Prism and re-run setup.ps1, then relaunch.'
             $exitCode = 1
             return
+        }
+    }
+
+    # ─── Pre-swap safety snapshot ──────────────────────────────────────────
+    # Invoke backup.ps1 with -Force so update day always has a fresh restore
+    # point (independent of the periodic 3-day cadence). Spawned as a child
+    # process so its exit() doesn't terminate this script; we wait so the
+    # snapshot completes before .minecraft is renamed aside.
+    # Failures here are logged but non-fatal — auto-update's own rollback
+    # is the primary safety net; this is belt-and-suspenders for cases
+    # where the new mod set breaks user state in ways we don't anticipate.
+    $backupScript = Join-Path $nzDir 'backup.ps1'
+    if (Test-Path -LiteralPath $backupScript) {
+        Write-Log 'INFO' 'Running pre-swap safety backup (backup.ps1 -Force)'
+        try {
+            $bpStdout = [System.IO.Path]::GetTempFileName()
+            $bpStderr = [System.IO.Path]::GetTempFileName()
+            $bpArgs = @(
+                '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                '-File', $backupScript,
+                '-InstanceDir', $InstanceDir,
+                '-Force'
+            )
+            $bp = Start-Process -FilePath 'powershell.exe' -ArgumentList $bpArgs -Wait -PassThru -NoNewWindow `
+                -RedirectStandardOutput $bpStdout -RedirectStandardError $bpStderr
+            if ($bp.ExitCode -ne 0) {
+                Write-Log 'WARN' ("Pre-swap backup exited with code {0}; continuing with update." -f $bp.ExitCode)
+            }
+        } catch {
+            Write-Log 'WARN' ("Could not run pre-swap backup: {0}; continuing with update." -f $_.Exception.Message)
+        } finally {
+            if ($bpStdout) { Remove-Item -LiteralPath $bpStdout -Force -ErrorAction SilentlyContinue }
+            if ($bpStderr) { Remove-Item -LiteralPath $bpStderr -Force -ErrorAction SilentlyContinue }
         }
     }
 

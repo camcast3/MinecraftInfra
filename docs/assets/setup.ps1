@@ -33,37 +33,58 @@ function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow
 # when the player is already on the current modpack version.
 $UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
 
+# Pulled from main so re-running setup picks up the latest update.ps1 even
+# when the player is already on the current modpack version.
+$UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
+
+# Same backfill rationale as update.ps1 — re-running setup once is how pre-PR 2
+# players pick up the periodic snapshot hook on an already-installed instance.
+$BackupScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/backup.ps1'
+
 # Single-quoted so PS doesn't expand `$INST_DIR` — Prism does substitution
 # at launch time. Outer double quotes are part of the string Prism parses
 # (QProcess::splitCommand respects quoted segments containing spaces).
 $PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
 
-# Idempotently wires OverrideCommands=true + PreLaunchCommand into the given
-# instance.cfg and downloads update.ps1 into <instanceDir>\.negativezone\.
+# Same quoting rules as PreLaunchCommand. backup.ps1 fast-paths on the cadence
+# check so the typical post-exit delay is ~100ms.
+$PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\backup.ps1"'
+
+# Idempotently wires OverrideCommands=true + the given command line into the
+# instance.cfg and downloads the named script into <instanceDir>\.negativezone\.
 # Separate from the zip-bundled wiring so already-installed players who skip
-# the re-install (because they're on the current version) still pick up the
-# launch hook by re-running the setup one-liner.
-function Set-PrismPreLaunchHook($instanceDir) {
-    $cfgPath = Join-Path $instanceDir 'instance.cfg'
+# the re-install (because they're on the current version) still pick up both
+# hooks by re-running the setup one-liner.
+function Set-PrismCommandHook {
+    param(
+        [Parameter(Mandatory)] [string]$InstanceDir,
+        [Parameter(Mandatory)] [ValidateSet('PreLaunchCommand', 'PostExitCommand')] [string]$CommandKey,
+        [Parameter(Mandatory)] [string]$CommandValue,
+        [Parameter(Mandatory)] [string]$ScriptFilename,
+        [Parameter(Mandatory)] [string]$ScriptUrl,
+        [Parameter(Mandatory)] [string]$FriendlyName
+    )
+
+    $cfgPath = Join-Path $InstanceDir 'instance.cfg'
     if (-not (Test-Path -LiteralPath $cfgPath)) {
-        Write-Warn "instance.cfg not found at $cfgPath — skipping PreLaunchCommand backfill"
+        Write-Warn "instance.cfg not found at $cfgPath — skipping $CommandKey backfill"
         return
     }
 
-    # Download update.ps1 before writing the hook so a missing script doesn't
-    # fail-closed every launch and block the game.
-    $negDir = Join-Path $instanceDir '.negativezone'
-    $updateScriptPath = Join-Path $negDir 'update.ps1'
-    if (-not (Test-Path -LiteralPath $updateScriptPath)) {
+    # Download the hook script before writing the cfg line so a missing script
+    # doesn't fail every launch (PreLaunch) or every exit (PostExit).
+    $negDir = Join-Path $InstanceDir '.negativezone'
+    $scriptPath = Join-Path $negDir $ScriptFilename
+    if (-not (Test-Path -LiteralPath $scriptPath)) {
         if (-not (Test-Path $negDir)) {
             New-Item -ItemType Directory -Path $negDir -Force | Out-Null
         }
         try {
-            Invoke-WebRequest -Uri $UpdateScriptUrl -OutFile $updateScriptPath -UseBasicParsing -ErrorAction Stop
-            Write-Ok "Downloaded update.ps1 to $updateScriptPath"
+            Invoke-WebRequest -Uri $ScriptUrl -OutFile $scriptPath -UseBasicParsing -ErrorAction Stop
+            Write-Ok "Downloaded $ScriptFilename to $scriptPath"
         } catch {
-            Write-Warn "Could not download update.ps1 from $UpdateScriptUrl — auto-update will NOT be enabled."
-            Write-Warn "  Re-run this setup script once you have internet access to enable auto-update."
+            Write-Warn "Could not download $ScriptFilename from $ScriptUrl — $FriendlyName will NOT be enabled."
+            Write-Warn "  Re-run this setup script once you have internet access to enable it."
             return
         }
     }
@@ -71,16 +92,16 @@ function Set-PrismPreLaunchHook($instanceDir) {
     $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
     $updated = New-Object System.Collections.Generic.List[string]
     $sawOverrideCommands = $false
-    $sawPreLaunchCommand = $false
+    $sawCommandKey = $false
     $changed = $false
     foreach ($cfgLine in $cfgLines) {
         if ($cfgLine -match '^OverrideCommands=') {
             $sawOverrideCommands = $true
             if ($cfgLine -ne 'OverrideCommands=true') { $changed = $true }
             $updated.Add('OverrideCommands=true')
-        } elseif ($cfgLine -match '^PreLaunchCommand=') {
-            $sawPreLaunchCommand = $true
-            $desired = "PreLaunchCommand=$PreLaunchCommand"
+        } elseif ($cfgLine -match "^$CommandKey=") {
+            $sawCommandKey = $true
+            $desired = "$CommandKey=$CommandValue"
             if ($cfgLine -ne $desired) { $changed = $true }
             $updated.Add($desired)
         } else {
@@ -90,14 +111,14 @@ function Set-PrismPreLaunchHook($instanceDir) {
     if (-not $sawOverrideCommands) {
         $updated.Add('OverrideCommands=true'); $changed = $true
     }
-    if (-not $sawPreLaunchCommand) {
-        $updated.Add("PreLaunchCommand=$PreLaunchCommand"); $changed = $true
+    if (-not $sawCommandKey) {
+        $updated.Add("$CommandKey=$CommandValue"); $changed = $true
     }
     if ($changed) {
         Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
-        Write-Ok "PreLaunchCommand wired up (auto-update enabled on next launch)"
+        Write-Ok "$CommandKey wired up ($FriendlyName enabled)"
     } else {
-        Write-Ok "PreLaunchCommand already in place"
+        Write-Ok "$CommandKey already in place"
     }
 }
 
@@ -285,12 +306,21 @@ if ($manifest) {
         }
     }
 
-    # Re-assert PreLaunchCommand wiring every run — including when re-install
-    # was skipped (version matched). Lets players who pre-date the auto-update
-    # launch hook stitch it in by re-running the setup one-liner.
+    # Re-assert both command hooks every run — including when re-install was
+    # skipped (version matched). Lets players who pre-date the auto-update /
+    # backup hooks stitch them in by re-running the setup one-liner.
     if (Test-Path -LiteralPath $instanceTarget) {
         Write-Step "Verifying auto-update launch hook"
-        Set-PrismPreLaunchHook -instanceDir $instanceTarget
+        Set-PrismCommandHook -InstanceDir $instanceTarget `
+            -CommandKey 'PreLaunchCommand' -CommandValue $PreLaunchCommand `
+            -ScriptFilename 'update.ps1'   -ScriptUrl $UpdateScriptUrl `
+            -FriendlyName 'auto-update enabled on next launch'
+
+        Write-Step "Verifying periodic backup hook"
+        Set-PrismCommandHook -InstanceDir $instanceTarget `
+            -CommandKey 'PostExitCommand' -CommandValue $PostExitCommand `
+            -ScriptFilename 'backup.ps1'  -ScriptUrl $BackupScriptUrl `
+            -FriendlyName 'periodic snapshots enabled (every 3 days by default)'
     }
 }
 
