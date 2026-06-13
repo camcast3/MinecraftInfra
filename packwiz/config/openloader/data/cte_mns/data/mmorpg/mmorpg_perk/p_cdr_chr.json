@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/passives/p_cdr_chr.png",
+  "id": "p_cdr_chr",
+  "is_entry": false,
+  "max_lvls": 8,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "cdr",
+      "v1": 1.0
+    }
+  ]
+}

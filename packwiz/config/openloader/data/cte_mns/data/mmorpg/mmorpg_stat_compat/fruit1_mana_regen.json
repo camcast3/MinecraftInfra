@@ -1,0 +1,13 @@
+{
+  "id": "fruit1_mana_regen",
+  "attribute_id": "mine_and_meals:fruit1_mana_regen",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "mana_regen",
+  "conversion": 1.0,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "PERCENT"
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Fishing",
+    "icon": "aquaculture:iron_fishing_rod",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "While fishing, you will find &eTiered Fish&r (&7Spritual&r, &aCelestial&r. &9Emyprean&r, &dAngelic&r, &6Divine&r, and &5Godly&r), which drop by chance depending on your level. For example, &7Spiritual&r Fish drop while your Fishing level is between 1-20, &aCelestial&r while your level is between 21-40, etc. The fish can then be used in other Professions."
+},{            "type": "patchouli:text",
+            "text": ""
+}
+    ]
+}

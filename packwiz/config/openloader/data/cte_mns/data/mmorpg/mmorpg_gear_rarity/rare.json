@@ -1,0 +1,70 @@
+{
+  "type": "NORMAL",
+  "affix_rarity_weight": 1000,
+  "announce_in_chat": false,
+  "base_stat_percents": {
+    "max": 100,
+    "min": 30
+  },
+  "can_have_runewords": false,
+  "drops_uber_frags": false,
+  "favor_loot_multi": 1.05,
+  "favor_needed": 500,
+  "favor_per_hour": 250,
+  "guid": "rare",
+  "higher_rar": "epic",
+  "is_unique_item": false,
+  "item_model_data_num": 3,
+  "item_tier": 2,
+  "item_tier_power": 1.3,
+  "item_value_multi": 1.3,
+  "lootable_gear_tier": "MID",
+  "map_lives": 3,
+  "map_resist_req": -50,
+  "map_tiers": {
+    "max": 40,
+    "min": 21
+  },
+  "map_xp_multi": 1.22,
+  "max_gems": 10,
+  "max_runes": 1,
+  "min_affixes": 3,
+  "min_lvl": 0,
+  "min_map_rarity_to_drop": "common",
+  "omens": {
+    "affixes": {
+      "max": 2,
+      "min": 1
+    },
+    "normal": {
+      "max": 2,
+      "min": 1
+    },
+    "runed": {
+      "max": 2,
+      "min": 1
+    },
+    "specific_slots": {
+      "max": 1,
+      "min": 1
+    },
+    "stat_multi": 0.8,
+    "unique": {
+      "max": 2,
+      "min": 1
+    }
+  },
+  "pot": {
+    "total": 125
+  },
+  "sockets": {
+    "max": 1,
+    "min": 0
+  },
+  "stat_percents": {
+    "max": 51,
+    "min": 35
+  },
+  "text_format": "AQUA",
+  "weight": 81
+}

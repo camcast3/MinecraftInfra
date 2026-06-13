@@ -1,0 +1,70 @@
+{
+  "type": "beneficial",
+  "id": "alpha",
+  "max_stacks": 3,
+  "mc_stats": [],
+  "one_of_a_kind_id": "",
+  "spell": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.25,
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:witch",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 8.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.25,
+                "motion": "None",
+                "particle_count": 1000.0,
+                "particle_type": "minecraft:witch",
+                "radius": 10.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": []
+  },
+  "spell_tags": {
+    "tags": []
+  },
+  "stacks_affect_stats": true,
+  "stats": [],
+  "tags": {
+    "tags": [
+    "positive"
+    ]
+  }
+}

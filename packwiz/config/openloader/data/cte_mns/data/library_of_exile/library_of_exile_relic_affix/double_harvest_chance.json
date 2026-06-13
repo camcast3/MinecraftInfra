@@ -1,0 +1,12 @@
+{
+  "id": "double_harvest_chance",
+  "mods": [
+    {
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "double_harvest_chance"
+    }
+  ],
+  "relic_type": "the_harvest",
+  "weight": 1000
+}

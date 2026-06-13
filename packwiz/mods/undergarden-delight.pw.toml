@@ -1,0 +1,13 @@
+name = "[NoCube's] Undergarden Delight (A Farmer's Delight Add-on)"
+filename = "undergardendelight-1.1.2-forge-1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/6214/766/undergardendelight-1.1.2-forge-1.20.1.jar"
+hash-format = "sha1"
+hash = "2daeeeedb2251ef8202d68b586072e8262d4bee7"
+
+[update]
+[update.curseforge]
+file-id = 6214766
+project-id = 960662

@@ -1,0 +1,57 @@
+{
+  "base_gear": "axe",
+  "guid": "ungabathas",
+  "flavor_text": "",
+  "force_item_id": "born_in_chaos_v1:great_reaper_axe",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "proc_hop_on_basic_attack"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "proc_frost_nova_on_movement_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "plus_phys_to_water"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 8.0,
+      "stat": "all_water_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": -30.0,
+      "min": -40.0,
+      "stat": "attack_speed"
+    }
+  ],
+  "weight": 1000
+}

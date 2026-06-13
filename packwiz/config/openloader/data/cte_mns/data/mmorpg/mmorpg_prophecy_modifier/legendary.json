@@ -1,0 +1,9 @@
+{
+  "cost_multi": 4.0,
+  "data": "legendary",
+  "id": "legendary",
+  "lvl_req": 0,
+  "modifier_type": "GEAR_RARITY",
+  "tier_req": 20,
+  "weight": 250000
+}

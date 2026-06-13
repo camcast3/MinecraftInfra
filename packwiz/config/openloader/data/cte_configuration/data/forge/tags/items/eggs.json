@@ -1,0 +1,11 @@
+{
+    "replace": false,
+    "values": [
+        "alexsmobs:terrapin_egg",
+        "alexsmobs:crocodile_egg",
+        "alexsmobs:caiman_egg",
+        "alexsmobs:platypus_egg",
+        "alexsmobs:emu_egg",
+        "friendsandfoes:crab_egg"
+    ]
+}

@@ -1,0 +1,13 @@
+name = "Monster Plus"
+filename = "MonsterPlus-Forge1.20.1-v1.1.6.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "f07ee0e3cd22978b2fe3be20c7dfb9d1c8bbb9bb"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 4612195
+project-id = 676418

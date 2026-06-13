@@ -1,0 +1,50 @@
+{
+  "author": "Jarky2203/Blubberbert2209",
+  "data": {
+    "curved_hallways": [
+    "curved_1",
+	"curved_2",
+  "curved_3"
+    ],
+    "ends": [
+    "end_1",
+    "end_2",
+    "end_3",
+    "end_4",
+    "end_5",
+    "end_6"
+    ],
+    "entrances": [
+    "entrance_1"
+    ],
+    "folder": "pirate_lair",
+    "four_ways": [
+    "4w_1",
+    "4w_2",
+    "4w_3"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+		    "map"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "straight_1",
+	"straight_2",
+  "straight_3",
+  "straight_4"
+    ],
+    "triple_hallway": [
+    "triple_1",
+	"triple_2",
+    "triple_3"
+    ]
+  },
+  "id": "pirate_lair",
+  "weight": 1000
+}

@@ -1,0 +1,12 @@
+{
+  "id": "pack_size",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "pack_size"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

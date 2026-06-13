@@ -1,0 +1,20 @@
+{
+    "entries": [
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "aquaculturedelight:small_turtle_meat"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 60,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 40
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "beachparty:coconut_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:sweetberry_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:cocoa_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:pumpkin_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:melon_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:honey_cocktail",
+      "required": false
+    },
+    {
+      "id": "beachparty:sweetberry_milkshake",
+      "required": false
+    },
+    {
+      "id": "beachparty:coconut_milkshake",
+      "required": false
+    },
+    {
+      "id": "beachparty:chocolate_milkshake",
+      "required": false
+    },
+    {
+      "id": "beachparty:refreshing_drink",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:melon_popsicle",
+      "required": false
+    },
+    {
+      "id": "delightful:cantaloupe_popsicle",
+      "required": false
+    }
+  ]
+}

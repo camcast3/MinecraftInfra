@@ -1,0 +1,45 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "born_in_chaos_v1:stimulating_decoction",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:intoxicating_decoction",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:bloody_mary",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:dread_nog",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:beer",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:vodka",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:mead",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:rice_wine",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:saccharine_rum",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:purulent_tea",
+      "required": false
+    }
+  ]
+}

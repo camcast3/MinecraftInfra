@@ -1,0 +1,29 @@
+{
+  "type": "suffix",
+  "eye_aura_req": "",
+  "guid": "of_decay",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "scythe",
+          "dagger"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 3.0,
+      "stat": "ailment_damage"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,30 +1,103 @@
 ---
-# Local test stack: Velocity proxy + Forge 1.20.1 lobby
-# Mirrors the Azure stack for local validation of modern forwarding.
-#
-# Usage:
-#   cd docker/local
-#   docker compose up
-#
-# Connect with a Minecraft 1.20.1 client to localhost:25565 (offline-mode).
+# Local C2E2 dev stack — prod-faithful: Velocity proxy → Forge backend, admin
+# overlay (PCF + spark + prom-exporter) installed via packwiz side="server".
+# Connect a Forge 1.20.1 / 47.4.10 client to localhost:25565 (velocity, not c2e2).
+# Setup: cp .env.example .env and cp velocity/forwarding.secret.example
+# velocity/forwarding.secret — both files must contain the same secret.
 
 services:
 
-  velocity:
-    container_name: velocity-local
-    image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
-    ports:
-      - "25565:25577"
+  packwiz-server:
+    container_name: c2e2-packwiz-server
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     networks:
-      - minecraft
+      - c2e2
     restart: unless-stopped
     volumes:
-      - ./velocity:/server
+      # Serves the LIVE in-repo packwiz/ — `packwiz refresh` + compose restart
+      # c2e2 picks up edits with no rebuild or push.
+      - ../../packwiz:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/pack.toml"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  c2e2:
+    container_name: c2e2
+    image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
+    tty: true
+    stdin_open: true
+    # No 25565 on host — that's velocity's. :19565 is exposed for local
+    # prom-exporter validation (curl localhost:19565/metrics).
+    ports:
+      - "19565:19565"
+    networks:
+      - c2e2
+    depends_on:
+      packwiz-server:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - c2e2-data:/data
+      - ../shared/whitelist.json:/extras/whitelist.json:ro
+      - ../shared/ops.json:/extras/ops.json:ro
+    configs:
+      - source: pcf_patch_def
+        target: /patches/pcf-forwarding.json
+        mode: 0444
+    environment:
+      EULA: "TRUE"
+      TYPE: FORGE
+      VERSION: "1.20.1"
+      # Must equal packwiz/pack.toml's [versions].forge.
+      FORGE_VERSION: "47.4.10"
+      PACKWIZ_URL: "http://c2e2-packwiz-server/pack.toml"
+      APPLY_EXTRA_FILES: |-
+        config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
+        world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
+      PATCH_DEFINITIONS: /patches
+      # Sourced from docker/local/.env; must equal docker/local/velocity/forwarding.secret.
+      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
+      MEMORY: ""
+      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
+      ONLINE_MODE: "FALSE"
+      ENABLE_ROLLING_LOGS: "true"
+      # C2E2's Mine and Slash Dungeons fires world commands via command blocks.
+      ENABLE_COMMAND_BLOCK: "TRUE"
+      MOTD: "Craft to Exile 2 (local)"
+      WHITELIST: ""
+      ENFORCE_WHITELIST: "FALSE"
+      OPS_FILE: /extras/ops.json
+    healthcheck:
+      test: ["CMD", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # First boot: packwiz install (~5 min, ~3-4 GB) + Forge load (~5 min).
+      start_period: 900s
+
+  velocity:
+    container_name: velocity
+    image: itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19
+    networks:
+      - c2e2
+    depends_on:
+      c2e2:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "25565:25577"
+    volumes:
+      - ./velocity/velocity.toml:/server/velocity.toml
+      - ./velocity/forwarding.secret:/server/forwarding.secret
     environment:
       TYPE: VELOCITY
+      # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17.
       VELOCITY_VERSION: "3.3.0-SNAPSHOT"
+      # Ambassador required for Forge 1.13-1.20.1 behind Velocity.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar"
-      VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
       interval: 30s
@@ -32,54 +105,26 @@ services:
       retries: 3
       start_period: 30s
 
-  lobby:
-    container_name: lobby-local
-    image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
-    tty: true
-    stdin_open: true
-    networks:
-      - minecraft
-    depends_on:
-      velocity:
-        condition: service_healthy
-    restart: unless-stopped
-    volumes:
-      - lobby-data:/data
-      - ../shared/whitelist.json:/extras/whitelist.json:ro
-      - ../shared/ops.json:/extras/ops.json:ro
-      - ../shared/config/proxy-compatible-forge.toml:/config/proxy-compatible-forge.toml:ro
-      - ../shared/patches:/patches:ro
-    environment:
-      EULA: "TRUE"
-      TYPE: FORGE
-      VERSION: "1.20.1"
-      MEMORY: ""
-      JVM_XX_OPTS: "-XX:MaxRAMPercentage=75"
-      ONLINE_MODE: "FALSE"
-      ENABLE_ROLLING_LOGS: "true"
-      MODE: adventure
-      MAX_PLAYERS: 6
-      WHITELIST_FILE: /extras/whitelist.json
-      OPS_FILE: /extras/ops.json
-      ENFORCE_WHITELIST: "FALSE"
-      MODS: "https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar"
-      # PATCH_DEFINITIONS injects the forwarding secret into the PCF TOML config.
-      # REPLACE_ENV_VARIABLES does NOT process .toml files — PATCH_DEFINITIONS does.
-      PATCH_DEFINITIONS: /patches
-      CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
-      ENABLE_RCON: "true"
-      RCON_PORT: "25575"
-      RCON_PASSWORD: ${RCON_PASSWORD}
-    healthcheck:
-      test: ["CMD", "mc-health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 300s
-
 volumes:
-  lobby-data:
+  c2e2-data:
 
 networks:
-  minecraft:
+  c2e2:
     driver: bridge
+
+# `$$` is Compose's escape for a literal `$` — mc-image-helper's patch-files
+# does the actual ${ENV} substitution at container start.
+configs:
+  pcf_patch_def:
+    content: |
+      {
+        "file": "/data/config/proxy-compatible-forge.toml",
+        "ops": [
+          {
+            "$$set": {
+              "path": "$$.forwarding.secret",
+              "value": "$${CFG_VELOCITY_FORWARDING_SECRET}"
+            }
+          }
+        ]
+      }

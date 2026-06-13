@@ -1,0 +1,13 @@
+{
+  "id": "tea2_critical",
+  "attribute_id": "mine_and_meals:tea2_critical",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "critical_hit",
+  "conversion": 1.0,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "PERCENT"
+}

@@ -1,0 +1,215 @@
+{
+  "attached": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 3.0,
+                "particle_type": "minecraft:cloud",
+                "radius": 0.1
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "minecraft:soul",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_hit_flesh",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "cursed_arrow_barrage"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "target",
+              "map": {}
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "minecraft:crit",
+                "radius": 0.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:bow_fire_bow",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "gravity": true,
+              "item": "minecraft:air",
+              "life_ticks": 80.0,
+              "expire_on_en_hit": false,
+              "proj_count": 7.0,
+              "proj_en": "mmorpg:spell_arrow",
+              "proj_speed": 3.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "spell_arrow"
+  },
+  "cast_finish_animation": {
+    "id": "single_arrow_shot"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "RANGED",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "dex",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "weapon_skill",
+      "projectile",
+      "damage",
+	  "ranged",
+	  "physical",
+		"cursed"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "cursed_arrow_barrage",
+  "loc_name": "Cursed Arrow Barrage",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "faster_projectiles"
+    }
+  ],
+  "weight": 1000
+}

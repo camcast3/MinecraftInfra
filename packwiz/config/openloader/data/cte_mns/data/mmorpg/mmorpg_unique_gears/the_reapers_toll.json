@@ -1,0 +1,45 @@
+{
+  "base_gear": "scythe",
+  "guid": "the_reapers_toll",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 55.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 33.0,
+      "min": 33.0,
+      "stat": "proc_slice"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 3.0,
+      "stat": "armor_penetration"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 4.0,
+      "stat": "lifesteal"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,13 @@
+name = "CTE2 Custom Uniques"
+filename = "CTE2ModpackArmors-1.0.3.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "e03f5855fb4a5d9e10d3a243ecd51fe2d9d6cdd5"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 4977726
+project-id = 953261

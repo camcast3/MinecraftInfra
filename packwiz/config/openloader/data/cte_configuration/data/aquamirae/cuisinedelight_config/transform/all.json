@@ -1,0 +1,9 @@
+{
+  "fluidTransform": {},
+  "itemTransform": {
+    "aquamirae:spinefish": {
+      "next": "aquamirae:cooked_spinefish",
+      "stage": "COOKED"
+    }
+  }
+}

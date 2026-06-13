@@ -1,0 +1,45 @@
+{
+  "base_gear": "gauntlet",
+  "guid": "hollow_palm",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:gauntlet_7",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 55.0,
+      "min": 40.0,
+      "stat": "total_damage_per_perc_of_dexterity"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "armor_penetration_per_perc_of_dexterity"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "dexterity"
+    },
+    {
+      "type": "MORE",
+      "max": -50.0,
+      "min": -60.0,
+      "stat": "critical_hit"
+    }
+  ],
+  "weight": 1000
+}

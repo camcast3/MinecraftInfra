@@ -1,0 +1,57 @@
+{
+  "base_gear": "cloth_helmet",
+  "guid": "biggins_bonnet",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "total_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "energy"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "elemental_resist"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,54 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+    "w_c_0",
+    "w_c_1",
+    "w_c_2",
+    "w_c_3"
+    ],
+    "ends": [
+    "w_e_0",
+    "w_e_1",
+    "w_e_2",
+    "w_e_3",
+	"w_e_4",
+	"w_e_5"
+    ],
+    "entrances": [
+    "w_e_0",
+    "w_entr_0"
+    ],
+    "folder": "watcher",
+    "four_ways": [
+    "w_4w_0",
+    "w_4w_1",
+    "w_4w_2"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+		    "map",
+            "forest",
+			"fire"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "w_s_0",
+    "w_s_1",
+    "w_s_2",
+    "w_s_3"
+    ],
+    "triple_hallway": [
+    "w_3w_0",
+    "w_3w_1",
+    "w_3w_2"
+    ]
+  },
+  "id": "watcher",
+  "weight": 1000
+}

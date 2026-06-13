@@ -1,0 +1,39 @@
+{
+  "base_gear": "chainmail_chest",
+  "guid": "cornelias_protector",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "PERCENT",
+      "max": -40.0,
+      "min": -40.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "power_charge_on_crit"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 8.0,
+      "stat": "dmg_per_power_charge"
+    }
+  ],
+  "weight": 1000
+}

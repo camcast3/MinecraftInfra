@@ -1,0 +1,11 @@
+{
+  "disable_salvaging": true,
+  "gear_type": "elytra",
+  "id": "elytra",
+  "max_lvl": 100,
+  "min_lvl": 50,
+  "possible_rar": [
+    "unique"
+  ],
+  "uniq_id": "elytra"
+}

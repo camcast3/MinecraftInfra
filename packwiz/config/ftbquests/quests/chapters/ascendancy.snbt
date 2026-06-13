@@ -1,0 +1,193 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "ascendancy"
+	group: "1E3C4B5FFAE48A39"
+	icon: "blue_skies:soul_fragment"
+	id: "341A901B4933D0AC"
+	order_index: 8
+	quest_links: [ ]
+	quests: [
+		{
+			dependencies: ["4B57F45BE30AA5F2"]
+			description: [
+				"Complete the &eAct II&r quest mentioned in the task to automatically earn the Ascendancy Point(s)!"
+				""
+				"{ \"text\": \"Defenders of the Nether II\", \"color\": \"yellow\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"4B57F45BE30AA5F2\" } } "
+				""
+				"&eThese Ascendancy Points are shared amongst your characters (see Character menu in the Hub).&r"
+				""
+				"&cIf quests are reset via \"Main Campaign Quest Reset\" in Rewards (unlocked in Act IV), these quests will remain completed.&r"
+			]
+			id: "17F9635AF7CDEA18"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash points give @p ASCENDANCY 3"
+				elevate_perms: true
+				icon: "ftb_ph:ascend"
+				id: "3FE6B8CF6B61EE20"
+				silent: true
+				title: "3 Ascendancy Points"
+				type: "command"
+			}]
+			subtitle: "Novice Ascendancy"
+			tasks: [{
+				disable_toast: true
+				icon: "minecraft:book"
+				id: "1A4E5F840A029C7F"
+				stat: "minecraft:walk_one_cm"
+				title: "Complete: Defenders of the Nether II"
+				type: "stat"
+				value: 1
+			}]
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: [
+				"17F9635AF7CDEA18"
+				"46DB9530C236A4AD"
+			]
+			description: [
+				"Complete the &eAct III&r quest mentioned in the task to automatically earn the Ascendancy Point(s)!"
+				""
+				"{ \"text\": \"Slippery Swimmer\", \"color\": \"yellow\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"46DB9530C236A4AD\" } } "
+				""
+				"&eThese Ascendancy Points are shared amongst your characters (see Character menu in the Hub).&r"
+				""
+				"&cIf quests are reset via \"Main Campaign Quest Reset\" in Rewards (unlocked in Act IV), these quests will remain completed.&r"
+			]
+			id: "7E712A56BE4C40B7"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash points give @p ASCENDANCY 2"
+				elevate_perms: true
+				icon: "ftb_ph:ascend"
+				id: "52EC28D99FEEDDD8"
+				silent: true
+				title: "2 Ascendancy Points"
+				type: "command"
+			}]
+			subtitle: "Cruel Ascendancy"
+			tasks: [{
+				disable_toast: true
+				icon: {
+					Count: 1
+					id: "minecraft:written_book"
+					tag: {
+						author: "Unknown"
+						generation: 3
+						pages: [
+							"{\"text\":\"Entry #12\n\nLast afternoon, Captain Cornelia went to the seabed in search of any additional resources. There are rumors among the crew that the real subject of her expedition is something else.\"}"
+							"{\"text\":\"More than a day has passed since the captain's dive. She was wearing the only diving suit we had, so we couldn't help her in any way. Worst of all, she had the master key with her. As our hopes of rescue dwindle, the threat of rebellion grows.\"}"
+						]
+						resolved: 1b
+						title: "Pillagers Ship Logbook"
+					}
+				}
+				id: "5042FB25C4207F1B"
+				stat: "minecraft:walk_one_cm"
+				title: "Complete: Slippery Swimmer"
+				type: "stat"
+				value: 1
+			}]
+			x: 1.5d
+			y: 0.0d
+		}
+		{
+			dependencies: [
+				"7E712A56BE4C40B7"
+				"69FD852AE0306BD2"
+			]
+			description: [
+				"Complete the &eAct V&r quest mentioned in the task to automatically earn the Ascendancy Point(s)!"
+				""
+				"{ \"text\": \"They Knew You Were Coming\", \"color\": \"yellow\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"69FD852AE0306BD2\" } } "
+				""
+				"&eThese Ascendancy Points are shared amongst your characters (see Character menu in the Hub).&r"
+				""
+				"&cIf quests are reset via \"Main Campaign Quest Reset\" in Rewards (unlocked in Act IV), these quests will remain completed.&r"
+			]
+			id: "05F71CA8CB6A9B71"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash points give @p ASCENDANCY 2"
+				elevate_perms: true
+				icon: "ftb_ph:ascend"
+				id: "34D7610A95635B7B"
+				silent: true
+				title: "2 Ascendancy Points"
+				type: "command"
+			}]
+			subtitle: "Merciless Ascendancy"
+			tasks: [{
+				disable_toast: true
+				icon: {
+					Count: 1
+					id: "minecraft:enchanted_book"
+					tag: {
+						StoredEnchantments: [{
+							id: "minecraft:protection"
+							lvl: 4s
+						}]
+					}
+				}
+				id: "59D4B5D606051069"
+				stat: "minecraft:walk_one_cm"
+				title: "Complete: They Knew You Were Coming"
+				type: "stat"
+				value: 1
+			}]
+			x: 3.0d
+			y: 0.0d
+		}
+		{
+			dependencies: [
+				"07EBFDA1B8808DAF"
+				"005E75571665043C"
+				"56B2B51011037E61"
+				"6B2C722AC00A07C0"
+				"05F71CA8CB6A9B71"
+			]
+			description: [
+				"Complete the &e4 Epilogue Quests&r mentioned below to automatically earn the Ascendancy Point(s)!"
+				""
+				"{ \"text\": \"The Frozen Tower\", \"color\": \"aqua\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"07EBFDA1B8808DAF\" } } "
+				""
+				"{ \"text\": \"The Ardent Depths\", \"color\": \"red\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"005E75571665043C\" } } "
+				""
+				"{ \"text\": \"The Sprawling Vinelands\", \"color\": \"green\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"56B2B51011037E61\" } } "
+				""
+				"{ \"text\": \"The Galvanic Stronghold\", \"color\": \"dark_purple\", \"underlined\": \"true\", \"clickEvent\": { \"action\": \"change_page\", \"value\": \"6B2C722AC00A07C0\" } } "
+				""
+				"&eThese Ascendancy Points are shared amongst your characters (see Character menu in the Hub).&r"
+				""
+				"&cIf quests are reset via \"Main Campaign Quest Reset\" in Rewards (unlocked in Act IV), these quests will remain completed.&r"
+			]
+			id: "087DA043F088CC11"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash points give @p ASCENDANCY 2"
+				elevate_perms: true
+				icon: "ftb_ph:ascend"
+				id: "54F6B95B27F25CA8"
+				silent: true
+				title: "2 Ascendancy Points"
+				type: "command"
+			}]
+			subtitle: "Ascendant"
+			tasks: [{
+				disable_toast: true
+				icon: "handcrafted:stackable_book"
+				id: "1BE3C1B048BD304B"
+				stat: "minecraft:walk_one_cm"
+				title: "Complete: Epilogue Elemental Bosses"
+				type: "stat"
+				value: 1
+			}]
+			x: 4.5d
+			y: 0.0d
+		}
+	]
+	title: "Ascendancy"
+}

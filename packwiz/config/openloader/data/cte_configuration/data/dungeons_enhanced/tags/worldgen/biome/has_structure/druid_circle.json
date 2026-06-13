@@ -1,0 +1,12 @@
+{
+  "remove": [
+    "#dungeons_enhanced:no_structures/overworld/surface"
+  ],
+  "values": [
+    "minecraft:meadow",
+    "minecraft:cherry_grove",
+    "#forge:is_plains",
+    "#blue_skies:everdawn",
+    "#blue_skies:everbright"
+  ]
+}

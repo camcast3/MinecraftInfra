@@ -1,0 +1,31 @@
+{
+  "exp": 125,
+  "id": "seafood_uncommon_exp1",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/1",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/1",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:tropical_fish",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_copper",
+      "num": 5
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:seafood/uncommon_exp",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 1
+}

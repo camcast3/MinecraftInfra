@@ -1,0 +1,22 @@
+{
+    "name": "Farming",
+    "icon": "minecraft:iron_hoe",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(2br)Farming and harvesting produce will grant you Farming experience. However, you will only earn the full amount of experience from plants relative to your Farming level:$(2br)&cThat doesn't mean you won't receive any experience from items outside your level range, just less.&r"
+},{            "type": "patchouli:text",
+            "text": "&eLv. 1-20&r (&7Tier 0&r): Wheat, Beetroot, Carrot, Potatoes
+&eLv. 21-40&r (&aTier 1&r): Melon, Pumpkin, Flax, Cabbage, Tomato, Onion, Cocoa Beans
+&eLv. 41-60&r (&9Tier 2&r): Corn, Gysahl Green, Nether Wart, Rice, Gloomgourd
+&eLv. 61-80&r (&dTier 3&r): Pine Fruit, Winter Leaves
+&eLv. 81-100&r (&6Tier 4&r): Scalefruit, Fiery Beans
+&eLv. 100&r (&5Tier 5&r): Cryoroot, Solnut"
+},{            "type": "patchouli:text",
+            "text": "While harvesting, you will find &eTiered Produce&r (&7Spritual&r, &aCelestial&r. &9Emyprean&r, &dAngelic&r, &6Divine&r, and &5Godly&r), which drop by chance depending on your level and the level range of the plant you are harvesting. These can then be used in other Professions."
+},{            "type": "patchouli:text",
+            "text": ""}
+    ]
+}

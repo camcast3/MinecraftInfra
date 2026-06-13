@@ -1,0 +1,86 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/yun",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ven",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/wir",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/oru",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/xer",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/eno",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/har",
+          "weight": 11
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/toq",
+          "weight": 11
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/fey",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ano",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/dos",
+          "weight": 17
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/cen",
+          "weight": 17
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/nos",
+          "weight": 17
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ita",
+          "weight": 17
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/mos",
+          "weight": 17
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_arch_rune"
+}

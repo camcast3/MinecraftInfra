@@ -1,0 +1,50 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "prison",
+      "trap_puzzle0",
+      "hidden_button0"
+    ],
+    "ends": [
+      "boss_and_skellies",
+      "boss",
+      "trap_prison0",
+      "tnt_pyramid"
+    ],
+    "entrances": [
+      "basic"
+    ],
+    "folder": "sandstone",
+    "four_ways": [
+      "treasure0",
+      "trap",
+      "simple1"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"fire"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "treasure_lava_pyramid",
+      "puzzle0",
+      "simple0",
+      "simple_magma0"
+    ],
+    "triple_hallway": [
+      "dorm0",
+      "cactus",
+      "simple_maze0",
+      "parkour_puzzle_magma"
+    ]
+  },
+  "id": "sandstone",
+  "weight": 1000
+}

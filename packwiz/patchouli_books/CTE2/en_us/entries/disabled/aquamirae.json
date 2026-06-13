@@ -1,0 +1,17 @@
+{
+    "name": "Aquamirae",
+    "icon": "aquamirae:rune_of_the_storm",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list5",
+			"heading":"Disabled",
+  "item1": "aquamirae:maze_rose",
+  "item2": "aquamirae:poisoned_blade",
+  "item3": "aquamirae:poisoned_chakra",
+  "item4": "aquamirae:terrible_sword",
+  "item5": "aquamirae:abyssal_heaume"
+		}
+    ]
+}

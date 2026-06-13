@@ -1,0 +1,57 @@
+{
+  "base_gear": "greatsword",
+  "guid": "starforge",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 20,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 80.0,
+      "min": 70.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "phys_to_lightning"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "electrify_proc_chance"
+    },
+    {
+      "type": "MORE",
+      "max": -50.0,
+      "min": -50.0,
+      "stat": "all_elemental_damage"
+    }
+  ],
+  "weight": 1000
+}

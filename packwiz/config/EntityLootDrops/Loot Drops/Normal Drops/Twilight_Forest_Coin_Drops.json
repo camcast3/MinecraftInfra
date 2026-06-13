@@ -1,0 +1,27 @@
+[
+
+	{
+        "itemId": "lightmanscurrency:coin_iron",
+        "dropChance": 80.0,
+        "minAmount": 5,
+        "maxAmount": 12,
+        "requiredDimension": "twilightforest:twilight_forest",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_gold",
+        "dropChance": 35.0,
+        "minAmount": 1,
+        "maxAmount": 5,
+        "requiredDimension": "twilightforest:twilight_forest",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_emerald",
+        "dropChance": 10.0,
+        "minAmount": 1,
+        "maxAmount": 4,
+        "requiredDimension": "twilightforest:twilight_forest",
+		"requirePlayerKill": true
+    }
+]

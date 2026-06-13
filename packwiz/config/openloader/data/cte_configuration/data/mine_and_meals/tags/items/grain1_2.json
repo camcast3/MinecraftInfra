@@ -1,0 +1,169 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:rice_bowl",
+      "required": false
+    },
+    {
+      "id": "doggytalents:onigiri",
+      "required": false
+    },
+    {
+      "id": "doggytalents:salmon_sushi",
+      "required": false
+    },
+    {
+      "id": "doggytalents:rice_bowl",
+      "required": false
+    },
+    {
+      "id": "doggytalents:natto_rice",
+      "required": false
+    },
+    {
+      "id": "doggytalents:gyudon",
+      "required": false
+    },
+    {
+      "id": "doggytalents:oyakodon",
+      "required": false
+    },
+    {
+      "id": "doggytalents:hot_dog",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:fugu_roll",
+      "required": false
+    },
+    {
+      "id": "twilightforest:maze_wafer",
+      "required": false
+    },
+    {
+      "id": "corn_delight:grilled_corn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:boiled_corn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:popcorn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:caramel_popcorn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:creamed_corn",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_soup",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread",
+      "required": false
+    },
+    {
+      "id": "corn_delight:tortilla",
+      "required": false
+    },
+    {
+      "id": "corn_delight:taco",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crawling_sandwich",
+      "required": false
+    },
+    {
+      "id": "endersdelight:ender_paella",
+      "required": false
+    },
+    {
+      "id": "endersdelight:stuffed_shulker_bowl",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:transforming_easter_cake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:surf_and_turf",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:bisque",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:seafood_gumbo",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_chowder",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:unusual_fish_soup",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:halaszle",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_and_chips",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fried_perch_roll",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_and_chips",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fried_perch_roll",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:scarlet_pierogi",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_rose_hip_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_dandelion_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:coffee_cake_slice",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:rose_hip_pie_slice",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:halazle",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:raw_fish_fillet_roll",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:unusual_fish_soup",
+      "required": false
+    }
+  ]
+}

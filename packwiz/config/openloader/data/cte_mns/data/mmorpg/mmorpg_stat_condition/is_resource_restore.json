@@ -1,0 +1,9 @@
+{
+  "id": "is_resource_restore",
+  "ifs": [
+    "resource_type_is_mana",
+    "resource_type_is_blood",
+    "resource_type_is_energy"
+  ],
+  "ser": "either_is_true"
+}

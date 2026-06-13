@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "total_damage",
+    "adder_stat": "learn_chain_lightning",
+    "base": 0.0,
+    "ele": "Nature",
+    "id": "dmg_per_chain_lightning_lvl",
+    "max": 1.0E8,
+    "min": 0.0,
+    "per_amount": 1,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "more_x_per_y"
+}

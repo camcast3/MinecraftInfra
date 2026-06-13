@@ -1,0 +1,16 @@
+{
+    "name": "Gear Improvement",
+    "icon": "mmorpg:currency/harvest_essence_4",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 6A8C03172A7F61C3)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rThroughout your journey, you will find yourself looking for more powerful gear. Gear power can be assessed in 3 main ways:1. The &elevel&r of the gear, which determines the power of the gear's stats. Gear level is typically determined by the level of the mob that is killed.2. The &erarity&r of the gear, which determines how many and how high the stat can roll, and how many sockets it can have."},
+{            "type": "patchouli:text",
+            "text": "Throughout your journey, you will find yourself looking for more powerful gear. Gear power can be assessed in 3 main ways:There are 7 droppable rarities: &7Common&r, &aUncommon&r, &9Rare&r, &dEpic&r, &4Legendary&r, &5Mythic&r, and &cUnique&r. Unique gear is special because the stats rolled on them are predetermined. They are powerful and can sometimes enable special styles of play.3. The &equality&r of the gear, which further improves the power slightly."
+		},{            "type": "patchouli:text",
+            "text": "Some of these attributes can be changed via Mine and Slash &ecurrencies&r, such as the Orb of Infinity which can increase a gear's level. Additionally, some currencies can be crafted through the Mine and Slash profession system to further enhance your gear."
+		}
+    ]
+}

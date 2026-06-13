@@ -1,0 +1,25 @@
+{
+  "always_do_item_mods": [
+    {
+      "id": "implicit_number_reroll",
+      "weight": 1
+    }
+  ],
+  "id": "implicit_number_reroll",
+  "item_id": "mmorpg:currency/implicit_number_reroll",
+  "item_type_requirement": [
+    "is_gear"
+  ],
+  "pick_one_item_mod": [],
+  "potential": {
+    "needs_potential": true,
+    "potential_cost": 10
+  },
+  "rar": "legendary",
+  "req": [
+    "is_not_corrupted",
+    "is_not_mirrored",
+    "has_implicit"
+  ],
+  "weight": 250
+}

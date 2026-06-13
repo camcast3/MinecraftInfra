@@ -1,0 +1,32 @@
+{
+  "type": "beneficial",
+  "id": "salvation_effect",
+  "max_stacks": 1,
+  "mc_stats": [],
+  "one_of_a_kind_id": "aura_effect",
+  "spell_tags": {
+    "tags": []
+  },
+  "stacks_affect_stats": true,
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 20.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "chaos_resist"
+    }
+  ],
+  "tags": {
+    "tags": [
+    "positive",
+    "aura",
+    "defensive"
+    ]
+  }
+}

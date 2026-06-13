@@ -1,0 +1,76 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 4.5,
+      "min": 2.25,
+      "stat": "armor"
+    },
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 3.75,
+      "stat": "magic_shield"
+    }
+  ],
+  "gear_slot": "boots",
+  "guid": "chainmail_boots",
+  "possible_items": [
+    {
+      "item_id": "cte_essentials:plate_0_boots",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "cte_essentials:plate_1_boots",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "cte_essentials:plate_2_boots",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "cte_essentials:plate_3_boots",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "cte_essentials:plate_4_boots",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "cte_essentials:plate_5_boots",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "strength": 0.25,
+      "intelligence": 0.25
+    }
+  },
+  "style": "STR",
+  "tags": {
+    "tags": [
+      "armor_family",
+      "strength",
+      "boots",
+      "armor_stat",
+      "armor_stat_half",
+      "magic_shield_stat",
+      "magic_shield_stat_half",
+	  "plate_boots",
+      "intelligence",
+	  "cloth_boots",
+	  "dual_stat",
+	  "chainmail"
+    ]
+  },
+  "weapon_type": "none",
+  "weight": 1000
+}

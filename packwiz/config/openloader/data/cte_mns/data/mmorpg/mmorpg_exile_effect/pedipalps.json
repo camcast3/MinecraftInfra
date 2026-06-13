@@ -1,0 +1,167 @@
+{
+    "type": "beneficial",
+    "id": "pedipalps",
+    "max_stacks": 2,
+    "mc_stats": [],
+    "one_of_a_kind_id": "",
+    "spell": {
+        "entity_components": {
+            "default_entity_name": [
+                {
+                    "acts": [
+                        {
+                            "type": "particles_in_radius",
+                            "map": {
+                                "height": 1.0,
+                                "motion": "OutwardMotion",
+                                "motion_multiplier": 0.05,
+                                "particle_count": 5.0,
+                                "particle_type": "minecraft:squid_ink",
+                                "radius": 2.5,
+                                "shape": "CIRCLE_2D",
+                                "y_rand": 0.2
+                            }
+                        }
+                    ],
+                    "en_preds": [],
+                    "ifs": [
+                        {
+                            "type": "x_ticks_condition",
+                            "map": {
+                                "tick_rate": 2.0
+                            }
+                        }
+                    ],
+                    "targets": []
+                },
+                {
+                    "acts": [
+                        {
+                            "type": "damage",
+                            "map": {
+                                "disable_knockback": true,
+                                "element": "Physical",
+                                "value_calculation": "pedipalp_consume"
+                            }
+                        },
+                        {
+                            "type": "exile_effect",
+                            "map": {
+                                "count": 1.0,
+                                "exile_potion_id": "pedipalps",
+                                "potion_action": "REMOVE_STACKS",
+                                "potion_dur": 20.0
+                            }
+                        }
+                    ],
+                    "en_preds": [],
+                    "ifs": [
+                        {
+                            "type": "x_ticks_condition",
+                            "map": {
+                                "tick_rate": 10.0
+                            }
+                        }
+                    ],
+                    "targets": [
+                        {
+                            "type": "aoe",
+                            "map": {
+                                "en_predicate": "enemies",
+                                "radius": 20.0,
+                                "selection_type": "RADIUS"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "acts": [
+                        {
+                            "type": "particles_in_radius",
+                            "map": {
+                                "height": 0.5,
+                                "motion": "OutwardMotion",
+                                "motion_multiplier": 0.05,
+                                "particle_count": 5.0,
+                                "particle_type": "minecraft:squid_ink",
+                                "radius": 2.5,
+                                "shape": "CIRCLE_2D_EDGE",
+                                "y_rand": 0.2
+                            }
+                        }
+                    ],
+                    "en_preds": [],
+                    "ifs": [
+                        {
+                            "type": "x_ticks_condition",
+                            "map": {
+                                "tick_rate": 10.0
+                            }
+                        }
+                    ],
+                    "targets": []
+                },
+                {
+                    "acts": [
+                        {
+                            "type": "sound",
+                            "map": {
+                                "pitch": 1.5,
+                                "sound": "minecraft:entity.spider.step",
+                                "volume": 1.0
+                            }
+                        }
+                    ],
+                    "en_preds": [],
+                    "ifs": [
+                        {
+                            "type": "x_ticks_condition",
+                            "map": {
+                                "tick_rate": 10.0
+                            }
+                        }
+                    ],
+                    "targets": []
+                }
+            ]
+        },
+        "on_cast": [
+            {
+                "acts": [
+                  {
+                    "type": "projectile",
+                    "map": {
+                      "chain_count": 3.0,
+                      "entity_name": "default_entity_name",
+                      "gravity": false,
+                      "hits_allies": false,
+                      "item": "minecraft:nether_star",
+                      "life_ticks": 20.0,
+                      "proj_count": 1.0,
+                      "proj_en": "mmorpg:spell_projectile",
+                      "proj_speed": 1.0
+                    }
+                  }
+                ],
+                "en_preds": [],
+                "ifs": [
+                  {
+                    "type": "on_spell_cast",
+                    "map": {}
+                  }
+                ],
+                "targets": []
+              }
+        ]
+    },
+    "spell_tags": {
+        "tags": []
+    },
+    "stacks_affect_stats": false,
+    "stats": [],
+    "tags": {
+        "tags": [
+            "positive"
+        ]
+    }
+}

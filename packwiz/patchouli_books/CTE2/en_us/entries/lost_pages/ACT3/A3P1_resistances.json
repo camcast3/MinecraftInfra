@@ -1,0 +1,15 @@
+{
+    "name": "Resistances",
+    "icon": "mmorpg:projectile/lightning",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":13,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 45EA60D4FE6CFFAC)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rResistances play an important role in keeping yourself alive. There are 3 Elements: &cFire&r, &bCold&r, and &eLightning&r. There are also &7Physical&r and &5Chaos&r damage types. &6Elemental Damage&r becomes prominent from this point on, with most mobs having some form of Elemental Damage (whether innately, or from affixes).
+"},
+{            "type": "patchouli:text",
+            "text": "It is &evital&r that you maintain your &6Elemental Resistances&r! &5Chaos Resistance&r is also pivotal, albeit more elusive to obtain.As you become stronger, the mobs also become stronger. &l&cEvery 25 levels, your resists permanently drop by 25%!&r&r$(br)&eLv. 1-24:&r &b+25% Ele/Chaos Resistance&r$(br)&eLv. 25-49:&r +0% Ele/Chaos Resistance$(br)&eLv. 50-74:&r &c-25% Ele/Chaos Resistance&r$(br)&eLv. 75+:&r &c-50% Ele/Chaos Resistance&r"
+		}
+    ]
+}

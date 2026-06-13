@@ -1,0 +1,16 @@
+{
+    "name": "Mounts",
+    "icon": "blue_skies:camel_saddle",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":18,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 5145DB1D393B6681)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eIn the Everbright and Everdawn dimensions, you will find &enew tameables and new potential mounts&r.
+
+It might be fun to find a &eReindeer&r, &eCamel&r, or even a &eCosmic Fox&r."},
+{            "type": "patchouli:text",
+            "text": ""
+		}
+    ]
+}

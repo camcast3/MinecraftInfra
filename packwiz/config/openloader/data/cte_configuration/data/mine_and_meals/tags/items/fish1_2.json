@@ -1,0 +1,125 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:sea_casserole",
+      "required": false
+    },
+    {
+      "id": "aquamirae:cooked_spinefish",
+      "required": false
+    },
+    {
+      "id": "aquamirae:esca",
+      "required": false
+    },
+    {
+      "id": "doggytalents:miso_soup",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cooked_guardian_tail",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cooked_elder_guardian_slice",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:fugu_roll",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:elder_guardian_roll",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cabbage_wrapped_elder_guardian",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:honey_fried_kelp",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:squid_rings",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:baked_tentacle_on_a_stick",
+      "required": false
+    },
+    {
+      "id": "undergarden:cooked_gwibling",
+      "required": false
+    },
+    {
+      "id": "undergarden:inky_stew",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:cooked_gwibling_fillet",
+      "required": false
+    },
+    {
+      "id": "endersdelight:ender_paella",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_squid_tentacles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_squid_tentacles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_glow_squid_tentacles",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:fish_stick",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:crab_legs",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_tropical_fish",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_pufferfish_slice",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_tropical_fish_slice",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:jar_of_pickles",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_fish",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:bass_stew",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_chorba",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_and_chips",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:kippers",
+      "required": false
+    }
+  ]
+}

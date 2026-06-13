@@ -1,0 +1,93 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:cured_chorus_fruit",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cabbage_wrapped_elder_guardian",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cooked_stuffed_cod",
+      "required": false
+    },
+    {
+      "id": "undergarden:slop_bowl",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_fried_rice",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:blood_tomato_soup",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:mogsteak",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gronglet_with_roasted_veggies",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:allium_oddion_soup",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie_slice",
+      "required": false
+    },
+    {
+      "id": "endersdelight:veil_of_flames_risotto",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_bake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:squid_kebob",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:frog_leg_kebob",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:kelp_shake",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:bisque",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_fried_rice",
+      "required": false
+    },
+    {
+      "id": "minecraft:beetroot_soup",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:crispy_nori_kelp",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:unusual_fish_soup",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:roasted_mutton_chops",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:pasta_with_mutton_chop",
+      "required": false
+    }
+  ]
+}

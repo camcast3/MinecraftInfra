@@ -1,0 +1,20 @@
+[
+  {
+    "mob": "born_in_chaos_v1:nightmare_stalker",
+    "persecond": 0.01,
+    "conditions": {
+      "dimension": "blue_skies:everbright",
+      "mindist": 24,
+      "maxdist": 72
+    }
+  },
+  {
+    "mob": "born_in_chaos_v1:lifestealer",
+    "persecond": 0.01,
+    "conditions": {
+      "dimension": "blue_skies:everdawn",
+      "mindist": 24,
+      "maxdist": 72
+    }
+  }
+]

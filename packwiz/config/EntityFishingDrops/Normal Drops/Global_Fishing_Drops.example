@@ -1,0 +1,162 @@
+[
+  {
+    "command": "effect give {player} minecraft:luck 30 0",
+    "commandChance": 10.0,
+    "commandCooldown": 300,
+    "comment": "10% chance to give luck effect on any fishing catch"
+  },
+  {
+    "itemId": "minecraft:experience_bottle",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw {player} {\"text\":\"Bonus XP bottle!\",\"color\":\"green\"}",
+    "dropCommandChance": 100.0,
+    "comment": "5% chance for XP bottle on any fishing catch"
+  },
+  {
+    "catchId": "minecraft:cod",
+    "itemId": "minecraft:gold_nugget",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "dropCommand": "tellraw {player} {\"text\":\"Gold found in cod!\",\"color\":\"gold\"}",
+    "dropCommandChance": 100.0,
+    "comment": "25% chance for gold when catching cod"
+  },
+  {
+    "catchId": "minecraft:salmon",
+    "itemId": "minecraft:iron_nugget",
+    "dropChance": 15.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "command": "effect give {player} minecraft:regeneration 10 0",
+    "commandChance": 100.0,
+    "commandCooldown": 60,
+    "dropCommand": "tellraw {player} {\"text\":\"Iron from salmon!\",\"color\":\"gray\"}",
+    "dropCommandChance": 100.0,
+    "comment": "Always gives regen on any catch, 15% iron when catching salmon"
+  },
+  {
+    "catchId": "minecraft:salmon",
+    "itemId": "minecraft:diamond",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "nbtData": "{display:{Name:\u0027{\"text\":\"Lucky Diamond\",\"color\":\"aqua\"}\u0027}}",
+    "dropCommand": "tellraw @a {\"text\":\"{player} found a Lucky Diamond!\",\"color\":\"aqua\"}",
+    "dropCommandChance": 100.0,
+    "requiredWeather": "rain",
+    "requiredTimeOfDay": "night",
+    "comment": "Rare diamond only during rain at night"
+  },
+  {
+    "itemId": "minecraft:prismarine_shard",
+    "dropChance": 20.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "dropCommand": "tellraw {player} {\"text\":\"Ocean treasure!\",\"color\":\"blue\"}",
+    "dropCommandChance": 100.0,
+    "requiredBiomes": [
+      "minecraft:ocean",
+      "minecraft:deep_ocean",
+      "minecraft:warm_ocean"
+    ],
+    "comment": "20% chance for prismarine shards in ocean biomes"
+  },
+  {
+    "itemId": "minecraft:magma_cream",
+    "dropChance": 30.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw {player} {\"text\":\"Nether fishing bonus!\",\"color\":\"red\"}",
+    "dropCommandChance": 100.0,
+    "requiredDimensions": [
+      "minecraft:nether"
+    ],
+    "comment": "30% chance for magma cream when fishing in Nether"
+  },
+  {
+    "catchId": "minecraft:tropical_fish",
+    "itemId": "minecraft:emerald",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "extraDropChance": 50.0,
+    "extraAmountMin": 1,
+    "extraAmountMax": 2,
+    "comment": "10% emerald from tropical fish, 50% chance for 1-2 bonus emeralds"
+  },
+  {
+    "command": "give {player} minecraft:trident 1",
+    "commandChance": 1.0,
+    "commandCooldown": 1800,
+    "requiredWeather": "thunder",
+    "comment": "1% chance for trident during thunderstorms (30min cooldown)"
+  },
+  {
+    "itemId": "minecraft:phantom_membrane",
+    "dropChance": 8.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw {player} {\"text\":\"Night fishing bonus!\",\"color\":\"dark_purple\"}",
+    "dropCommandChance": 100.0,
+    "requiredTimeOfDay": "night",
+    "comment": "8% chance for phantom membrane during night fishing"
+  },
+  {
+    "catchId": "minecraft:pufferfish",
+    "itemId": "minecraft:enchanted_book",
+    "dropChance": 3.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "nbtData": "{StoredEnchantments:[{id:\"minecraft:luck_of_the_sea\",lvl:3}]}",
+    "dropCommand": "tellraw {player} {\"text\":\"Lucky enchanted book!\",\"color\":\"purple\"}",
+    "dropCommandChance": 100.0,
+    "comment": "3% chance for Luck of the Sea III book from pufferfish"
+  },
+  {
+    "catchId": "minecraft:cod",
+    "itemId": "minecraft:nautilus_shell",
+    "dropChance": 12.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw {player} {\"text\":\"Perfect conditions shell!\",\"color\":\"yellow\"}",
+    "dropCommandChance": 100.0,
+    "requiredBiomes": [
+      "minecraft:ocean",
+      "minecraft:deep_ocean"
+    ],
+    "requiredWeather": "rain",
+    "requiredTimeOfDay": "day",
+    "comment": "12% nautilus shell - ocean biome + rain + daytime + cod"
+  },
+  {
+    "catchId": "minecraft:cod",
+    "itemId": "thermal:silver_ingot",
+    "dropChance": 15.0,
+    "minAmount": 1,
+    "maxAmount": 2,
+    "comment": "Works with any modded items - 15% silver ingot from cod"
+  },
+  {
+    "command": "tellraw @a {\"text\":\"{player} caught something at {x}, {y}, {z} in {biome}!\",\"color\":\"green\"}",
+    "commandChance": 5.0,
+    "commandCooldown": 120,
+    "comment": "5% chance to announce catch with coordinates and biome"
+  },
+  {
+    "itemId": "minecraft:netherite_scrap",
+    "dropChance": 0.5,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw @a {\"text\":\"{player} found ancient debris while fishing!\",\"color\":\"dark_purple\"}",
+    "dropCommandChance": 100.0,
+    "comment": "Ultra rare 0.5% chance for netherite scrap"
+  },
+  {
+    "itemId": "minecraft:emerald",
+    "dropChance": 2.0,
+    "comment": "Simple 2% emerald drop"
+  }
+]

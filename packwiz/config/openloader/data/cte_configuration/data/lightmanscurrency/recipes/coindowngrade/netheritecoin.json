@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "lightmanscurrency:coin_netherite"
+    }
+  ],
+  "result": {
+    "count": 10,
+    "item": "lightmanscurrency:coin_diamond"
+  }
+}

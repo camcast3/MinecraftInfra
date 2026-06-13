@@ -1,0 +1,51 @@
+{
+  "base_gear": "shield",
+  "guid": "a_fathers_love",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 20,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "block_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "proc_gong_strike_on_block"
+    },
+    {
+      "type": "PERCENT",
+      "max": 18.0,
+      "min": 14.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "threat_generated"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 12.0,
+      "stat": "magic_find"
+    }
+  ],
+  "weight": 1000
+}

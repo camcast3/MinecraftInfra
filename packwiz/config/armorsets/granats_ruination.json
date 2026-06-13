@@ -1,0 +1,31 @@
+{
+  "armorSetName": "Granat's Ruination",
+  "performanceMode": true,
+  "head": {
+    "itemKey": "cte2modpackarmors:endless_blood_armor_helmet",
+    "mustBeEmpty": false
+  },
+  "chest": {
+    "itemKey": "cte2modpackarmors:endless_blood_armor_chestplate",
+    "mustBeEmpty": false
+  },
+  "fullSetBonuses": [
+    {
+      "type": "attribute",
+      "name": "kubejs:total_damage_per_perc_of_health",
+      "value": 1,
+      "modifierUUID": "9f763774-bf60-4f70-ab49-2dab3523d991",
+      "description": "Gain 1% of your Health as Weapon Damage",
+      "attributeOperation": 0,
+      "interactionType": "self",
+      "interactionDuration": 300,
+      "hideBonusDescription": false,
+      "onlyImmuneToNewEffects": false
+    }
+  ],
+  "hideGeneratedTooltip": true,
+  "customTooltips": [
+    "Set Bonus: ",
+    "+Gain 1% of your Health as Weapon Damage (Full)"
+  ]
+}

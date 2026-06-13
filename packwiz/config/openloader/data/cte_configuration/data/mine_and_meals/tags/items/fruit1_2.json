@@ -1,0 +1,45 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:gronglunch",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:mogsteak",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:cooked_yucca_fruit",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:baobab_fruit",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:green_apple_pie",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:blueberry_pie",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crispy_skewer",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:green_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:yellow_tea",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:sopa_de_macaco",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_puncture",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "puncture",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

@@ -1,0 +1,35 @@
+{
+  "type": "enchant",
+  "eye_aura_req": "",
+  "guid": "ench_helmet_accuracy_lightning_pen_flat",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "enchantment",
+          "helmet"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 3,
+      "min": 1,
+      "stat": "lightning_penetration"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.5,
+      "min": 0.5,
+      "stat": "accuracy"
+    }
+  ],
+  "weight": 1000
+}

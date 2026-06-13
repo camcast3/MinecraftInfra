@@ -1,0 +1,39 @@
+{
+  "base_gear": "ring",
+  "guid": "stone_of_jordan",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 100,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_all_spells"
+    },
+    {
+      "type": "MORE",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "total_damage"
+    },
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 16.0,
+      "stat": "mana"
+    },
+    {
+      "type": "PERCENT",
+      "max": 20.0,
+      "min": 16.0,
+      "stat": "energy"
+    }
+  ],
+  "weight": 250
+}

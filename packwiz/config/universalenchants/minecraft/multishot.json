@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "items": [
+    "$minecraft:crossbow",
+    "supplementaries:slingshot",
+    "$minecraft:bow",
+	"roe_weapons:bow_0",
+	"roe_weapons:bow_1",
+	"roe_weapons:bow_2",
+	"roe_weapons:bow_3",
+	"roe_weapons:bow_4",
+	"roe_weapons:bow_5",
+	"roe_weapons:bow_6",
+	"roe_weapons:bow_7",
+	"roe_weapons:cursed_bow",
+	"roe_weapons:featherdraw"
+  ],
+  "incompatible": [
+    "supplementaries:stasis"
+  ]
+}

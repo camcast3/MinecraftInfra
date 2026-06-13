@@ -1,0 +1,31 @@
+{
+    "name": "More Map Content",
+    "icon": "dungeon_realm:dungeon_map",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 28759D610FF8B6BE)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eWithin Mine and Slash Maps, there are additional events that can occur.
+
+&eAncient Obelisk&r: chests have a chance to spawn special wave-based Maps that can be used on &eObelisks&r! 
+
+&eProphecy Event&r: find altars in Maps that can apply curses to yourself. "},
+{            "type": "patchouli:text",
+            "text": "The more curses you have on yourself, the more &eProphecy Coins&r you can earn from killing mobs. Use these Coins to purchase rewards in Maps via the Hub! Note that &6Legendary&r and &5Mythic&r rewards only appear starting in Tier 20 and 40 maps, respectively. $(br)
+&eHarvest Event&r: find portals in Maps that will bring you to a new Harvest room. Kill mobs in these rooms to earn &eChaotic Gems&r, which are used to craft special currencies!
+
+"
+		},{            "type": "patchouli:text",
+            "text": "&eRelics&r: find Relics from killing Bosses that can be slotted into the &eMap Device&r to juice up your Maps! Interact with the Map Device using a Relic Key to slot Relics in!
+
+&n&cUber Bosses&r&r
+
+Additionally, &cBosses&r in &6Legendary&r and &5Mythic&r Maps have a chance to drop &eUber Fragments&r. When combined, they turn into &eDungeon Map Uber Upgrades&r. You can use these on Maps to face &eUber Bosses&r - very powerful creatures "
+		},{            "type": "patchouli:text",
+            "text": "that drop lots of loot. They can even drop special &eUnique Jewels&r!
+
+The pool of Uber Bosses consist of old bosses you faced during the campaign, and some new ones!"
+		}
+    ]
+}

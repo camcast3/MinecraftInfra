@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:glitterdish",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveiled_curry",
+      "required": false
+    },
+    {
+      "id": "botania:mana_bottle",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:scrambled_egg_and_tomato",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_platter",
+      "required": false
+    }
+  ]
+}

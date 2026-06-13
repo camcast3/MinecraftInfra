@@ -1,0 +1,2377 @@
+{
+  "attached": {
+    "entity_components": {
+      "stack_remover": [
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "alpha",
+                "potion_action": "REMOVE_STACKS",
+                "potion_dur": 120.0
+              }
+            },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "beta",
+                "potion_action": "REMOVE_STACKS",
+                "potion_dur": 120.0
+              }
+            },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "gamma",
+                "potion_action": "REMOVE_STACKS",
+                "potion_dur": 240.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "block": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 10.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 5.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.2
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.5,
+                "sound": "roe_sfx:spell_lightning_hit",
+                "volume": 0.8
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "disable_knockback": true,
+                "element": "Nature",
+                "value_calculation": "pulsar_singularity_trap_half"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 20.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 5.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        }
+      ],
+      "default_entity_name_none": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_none",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_none"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_alpha": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_alpha",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_beta": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_beta",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_beta"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_alpha_beta": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_alpha_beta",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_beta"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_none_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_none_gamma",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_none_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_alpha_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_alpha_gamma",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_beta_gamma",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_beta_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name_alpha_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:trap",
+                "entity_name": "trap_alpha_beta_gamma",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 600.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur",
+                "is_false": true
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_beta_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "saboteur"
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_none": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_alpha": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Cold",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_beta": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "stun",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 40.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_alpha_beta": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "block",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 60.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_none_gamma": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "pulsar_singularity_trap",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "non_ai_enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_alpha_gamma": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Cold",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "pulsar_singularity_trap",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "non_ai_enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "stun",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 60.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "pulsar_singularity_trap",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "non_ai_enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "expire_alpha_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Nature",
+                "disable_knockback": true,
+                "value_calculation": "pulsar_singularity_trap"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "block",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 60.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 30.0,
+                "particle_type": "minecraft:electric_spark",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "pulsar_singularity_trap",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "non_ai_enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.0,
+                "sound": "roe_sfx:spell_zap",
+                "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_none": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_none"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_alpha": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_beta": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_beta"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_alpha_beta": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_beta"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_none_gamma": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_none_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_alpha_gamma": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_beta_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "trap_alpha_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "aquamirae:electric",
+                "radius": 1.0
+              }
+            },
+            {
+              "type": "expire",
+              "map": {}
+            },
+            {
+              "type": "specific_action",
+              "map": {
+                "specific_action": "expire_alpha_beta_gamma"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "is_en_in_radius",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.75,
+                "selection_type": "RADIUS"
+              }
+            },
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_throw",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_none",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_alpha",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_beta",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_alpha_beta",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_none_gamma",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_alpha_gamma",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_beta_gamma",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name_alpha_beta_gamma",
+              "gravity": true,
+              "item": "minecraft:gold_ingot",
+              "life_ticks": 100.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "stack_remover",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "cast_throwable"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "pulsar_singularity_trap",
+    "charge_regen": 100,
+    "charges": 3,
+    "cooldown_ticks": 10,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 12.0,
+      "min": 9.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "damage",
+        "area",
+        "trap",
+        "magic",
+        "lightning",
+        "cold",
+        "burst",
+        "cast_speed_to_cooldown"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "pulsar_singularity_trap",
+  "loc_name": "Pulsar Singularity Trap",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 30,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "freeze_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 32.0,
+      "min": 2.0,
+      "stat": "inc_aoe"
+    }
+  ],
+  "weight": 1000
+}

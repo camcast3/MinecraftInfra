@@ -1,0 +1,12 @@
+[
+  {
+    "catchId": "minecraft:salmon",
+    "itemId": "minecraft:diamond",
+    "dropChance": 15.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "dropCommand": "tellraw {player} {\"text\":\"Halloween diamond from salmon!\",\"color\":\"aqua\"}",
+    "dropCommandChance": 100.0,
+    "comment": "Halloween event - 15% chance for diamond when catching salmon"
+  }
+]

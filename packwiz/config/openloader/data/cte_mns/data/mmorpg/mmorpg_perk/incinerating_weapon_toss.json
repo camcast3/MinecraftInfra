@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/icons/incinerating_weapon_toss.png",
+  "id": "incinerating_weapon_toss",
+  "is_entry": false,
+  "max_lvls": 16,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "learn_incinerating_weapon_toss",
+      "v1": 1.0
+    }
+  ]
+}

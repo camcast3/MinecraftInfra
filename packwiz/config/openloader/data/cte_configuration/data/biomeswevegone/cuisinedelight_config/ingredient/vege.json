@@ -1,0 +1,130 @@
+{
+    "entries": [
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:shelf_fungi"
+            },
+            "max_time": 360,
+            "min_time": 90,
+            "nutrition": 4,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0.2,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:green_apple"
+            },
+            "max_time": 80,
+            "min_time": 0,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:yucca_fruit"
+            },
+            "max_time": 80,
+            "min_time": 0,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:oddion_bulb"
+            },
+            "max_time": 360,
+            "min_time": 0,
+            "nutrition": 5,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:oddion_bulb"
+            },
+            "max_time": 360,
+            "min_time": 0,
+            "nutrition": 5,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:white_puffball_cap"
+            },
+            "max_time": 380,
+            "min_time": 120,
+            "nutrition": 5,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0.2,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:baobab_fruit"
+            },
+            "max_time": 80,
+            "min_time": 0,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:prickly_pear_cactus"
+            },
+            "max_time": 100,
+            "min_time": 40,
+            "nutrition": 6,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 40
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "biomeswevegone:aloe_vera"
+            },
+            "max_time": 100,
+            "min_time": 40,
+            "nutrition": 8,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 40
+        }        
+    ]
+}

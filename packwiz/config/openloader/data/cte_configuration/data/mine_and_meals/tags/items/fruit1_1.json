@@ -1,0 +1,144 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:sea_casserole",
+      "required": false
+    },
+    {
+      "id": "moresnifferflowers:dawnberry",
+      "required": false
+    },
+    {
+      "id": "moresnifferflowers:gloomberry",
+      "required": false
+    },
+    {
+      "id": "outer_end:mint_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "outer_end:rose_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "outer_end:cobalt_crystalline_berries",
+      "required": false
+    },
+    {
+      "id": "outer_end:azure_berries",
+      "required": false
+    },
+    {
+      "id": "undergarden:blisterberry",
+      "required": false
+    },
+    {
+      "id": "undergarden:blisterberry",
+      "required": false
+    },
+    {
+      "id": "undergarden:droopvine_item",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:baobab_fruit",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:yucca_fruit",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:green_apple",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:blueberries",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:aloe_vera_juice",
+      "required": false
+    },
+    {
+      "id": "blue_skies:brewberry",
+      "required": false
+    },
+    {
+      "id": "blue_skies:pink_brewberry",
+      "required": false
+    },
+    {
+      "id": "blue_skies:black_brewberry",
+      "required": false
+    },
+    {
+      "id": "blue_skies:pine_fruit",
+      "required": false
+    },
+    {
+      "id": "blue_skies:scalefruit",
+      "required": false
+    },
+    {
+      "id": "blue_skies:crescent_fruit",
+      "required": false
+    },
+    {
+      "id": "blue_skies:comet_berries",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread_stuffing",
+      "required": false
+    },
+    {
+      "id": "endersdelight:twisted_cereal",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:beer",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:vodka",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:mead",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:rice_wine",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:saccharine_rum",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:sweet_berry_jam",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:glow_berry_marmalade",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:apple_jelly",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:black_tea",
+      "required": false
+    },
+    {
+      "id": "deeperdarker:bloom_berries"
+    },
+    {
+      "id": "alexsmobs:banana",
+      "required": false
+    }
+  ]
+}

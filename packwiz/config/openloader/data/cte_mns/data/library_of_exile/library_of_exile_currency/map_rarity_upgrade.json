@@ -1,0 +1,23 @@
+{
+  "always_do_item_mods": [
+    {
+      "id": "map_rarity_upgrade",
+      "weight": 1
+    }
+  ],
+  "id": "map_rarity_upgrade",
+  "item_id": "mmorpg:currency/map_rarity_upgrade",
+  "item_type_requirement": [
+    "is_map"
+  ],
+  "pick_one_item_mod": [],
+  "potential": {
+    "needs_potential": true,
+    "potential_cost": 0
+  },
+  "rar": "epic",
+  "req": [
+	"map_has_higher_rar"
+  ],
+  "weight": 250
+}

@@ -1,0 +1,17 @@
+{
+    "name": "Gear Soul Extractors",
+    "icon": "mmorpg:soul_extractor/epic",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":12,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 60D44B70BB06539B)&c$(l)---> Open Quest Page <--- $(/c)$(br)&r&eGear Soul Extractors&r can be used on gear. You will get the 'stats' of the gear back as a soul, destroying the base item in the process. You can then use the soul on another piece of gear!
+
+Conversely, &eGear Soul Cleaners&r are used to get rid of the stats of the gear while keeping the base item."},
+{            "type": "patchouli:spotlight",
+  "item": "mmorpg:soul_cleaner,mmorpg:soul_extractor/uncommon,mmorpg:currency/extract_gem,mmorpg:currency/extract_rune",
+            "text": "&eGem Extractors&r are used to remove &eGems&r from your socketed gear. There is no penalty for doing so, but the extractor will be consumed. There is also a &eRune Extractor&r, but using that will cost &e1 Gear Potential&r."
+		}
+    ]
+}

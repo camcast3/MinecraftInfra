@@ -1,0 +1,49 @@
+{
+  "id": "turbulence",
+  "runes": [
+    "nos",
+    "end",
+    "toq"
+  ],
+  "slots": [
+    "chest"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "proc_cyclone_when_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_cyclone"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "physical_spell_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 6.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "lightning_resist"
+    }
+  ]
+}

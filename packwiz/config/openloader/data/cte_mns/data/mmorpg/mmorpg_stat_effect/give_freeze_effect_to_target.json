@@ -1,0 +1,7 @@
+{
+  "effect": "freeze_effect",
+  "give_to": "Target",
+  "id": "give_freeze_effect_to_target",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

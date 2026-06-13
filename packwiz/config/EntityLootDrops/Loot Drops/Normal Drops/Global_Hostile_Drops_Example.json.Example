@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": "minecraft:diamond",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requiredAdvancement": "minecraft:story/mine_diamond",
+    "requiredEffect": "minecraft:luck",
+    "requiredEquipment": "minecraft:bow",
+    "requiredWeather": "clear",
+    "requiredTime": "night",
+    "requiredDimension": "minecraft:overworld",
+    "requiredBiome": "minecraft:desert",
+    "command": "tellraw @a {\"text\":\"A mob was killed in the desert at night!\",\"color\":\"yellow\"}",
+    "commandChance": 25.0,
+    "dropCommand": "tellraw @a {\"text\":\"Rare diamond drop!\",\"color\":\"aqua\"}",
+    "dropCommandChance": 100.0,
+    "_comment": "Comprehensive example showing ALL available options",
+    "requirePlayerKill": true,
+    "allowDefaultDrops": true,
+    "allowModIDs": [],
+    "extraDropChance": 10.0,
+    "extraAmountMin": 1,
+    "extraAmountMax": 2
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "base_gear": "necklace",
+  "guid": "harmony_of_dusk_and_dawn",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "energy"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "dmg_reduction_day"
+    },
+    {
+      "type": "MORE",
+      "max": 16.0,
+      "min": 12.0,
+      "stat": "all_chaos_damage_night"
+    },
+    {
+      "type": "FLAT",
+      "max": 14.0,
+      "min": 14.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

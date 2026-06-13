@@ -1,0 +1,25 @@
+{
+    "name": "Master Backpack",
+    "icon": "mmorpg:master_bag",
+    "category": "patchouli:storage",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:spotlight",
+			"title":"Master Backpack",
+  "item": "mmorpg:master_bag",
+  "text": "
+This &eMaster Backpack&r will specifically &bpick up and hold items&r from &eMine and Slash&r and assist you with organizing your loot. Also equippable in its own dedicated &eCurios&r slot and accessible with a dedicated keybind (check controls).
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "This backpack acts like a sort of enderchest - so crafting more bags wont yield you more space but also means the contents cannot be lost in the event you lose the bag.
+
+Dont forget to check all the tabs inside the bag for each of the 5 categories.
+
+If you are still struggling with the sheer quantity of loot, you could also consider using the &eauto-salvage feature&r found in the Hub.
+"
+}
+    ]
+}

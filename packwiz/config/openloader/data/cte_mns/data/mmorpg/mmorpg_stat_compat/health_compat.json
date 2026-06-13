@@ -1,0 +1,13 @@
+{
+  "attribute_id": "minecraft:generic.max_health",
+  "conversion": 0.5,
+  "enchant_id": "",
+  "id": "health_compat",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "magic_shield",
+  "mod_type": "PERCENT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

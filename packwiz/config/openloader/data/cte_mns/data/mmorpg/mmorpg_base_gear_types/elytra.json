@@ -1,0 +1,24 @@
+{
+  "base_stats": [],
+  "gear_slot": "elytra",
+  "guid": "elytra",
+  "possible_items": [
+    {
+      "item_id": "minecraft:elytra",
+      "min_rar": "common",
+      "weight": 1
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {}
+  },
+  "style": "STR",
+  "tags": {
+    "tags": [
+      "elytra"
+    ]
+  },
+  "weapon_type": "none",
+  "weight": 0
+}

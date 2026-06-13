@@ -1,0 +1,16 @@
+{
+  "data": {
+    "attribute_id": "stardew_fishing:treasure_chance_bonus",
+    "base": 0.0,
+    "cut_by_hundred": true,
+    "ele": "Physical",
+    "id": "fishing_bar_size",
+    "max": 1.0E8,
+    "min": -1000.0,
+    "operation": "MULTIPLY_TOTAL",
+    "perc": true,
+    "scale": "NONE",
+    "uuid": "e50dbabd-6a90-40ed-a3e4-278eebb9a4fa"
+  },
+  "ser": "vanilla_attribute_stat_ser"
+}

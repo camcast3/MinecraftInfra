@@ -1,0 +1,13 @@
+{
+  "attribute_id": "kubejs:health_per_perc_of_intelligence",
+  "conversion": 1.0,
+  "enchant_id": "",
+  "id": "kube_health_per_perc_of_intelligence",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "health_per_perc_of_intelligence",
+  "mod_type": "FLAT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

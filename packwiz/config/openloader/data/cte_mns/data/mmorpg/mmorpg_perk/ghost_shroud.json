@@ -1,0 +1,21 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/ghost_shroud.png",
+  "id": "ghost_shroud",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "ghost_shroud_on_dodge",
+      "v1": 1.0
+    },
+    {
+      "type": "MORE",
+      "scale_to_lvl": false,
+      "stat": "magic_shield_regen",
+      "v1": -20.0
+    }
+  ]
+}

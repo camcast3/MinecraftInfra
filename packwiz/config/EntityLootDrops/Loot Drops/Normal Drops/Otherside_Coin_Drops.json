@@ -1,0 +1,27 @@
+[
+
+	{
+        "itemId": "lightmanscurrency:coin_iron",
+        "dropChance": 80.0,
+        "minAmount": 3,
+        "maxAmount": 9,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_gold",
+        "dropChance": 30.0,
+        "minAmount": 1,
+        "maxAmount": 4,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_emerald",
+        "dropChance": 8.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "deeperdarker:otherside",
+		"requirePlayerKill": true
+    }
+]

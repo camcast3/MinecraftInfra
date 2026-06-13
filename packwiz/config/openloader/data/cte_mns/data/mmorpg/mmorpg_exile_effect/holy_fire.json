@@ -1,0 +1,159 @@
+{
+  "type": "beneficial",
+  "id": "holy_fire",
+  "max_stacks": 1,
+  "mc_stats": [],
+  "one_of_a_kind_id": "aura",
+  "spell": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+				"height": 0.25,
+                "motion": "None",
+                "particle_count": 50.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5,
+                "particle_type": "minecraft:flame",
+                "radius": 4.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Fire",
+                "value_calculation": "holy_fire"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 3.0,
+                "selection_type": "RADIUS"
+              }
+            }
+		  ]
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+				"allow_self_damage": true,
+                "element": "Fire",
+                "value_calculation": "holy_fire_self"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+		  ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 2.0,
+                "sound": "mmorpg:burn",
+                "volume": 0.75
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": []
+  },
+  "spell_tags": {
+    "tags": [
+    "holy_fire",
+    "self_damage"
+	]
+  },
+  "stacks_affect_stats": true,
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "remove_holy_fire_when_very_low"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "energy_regen"
+    },
+    {
+      "type": "MORE",
+      "max": -20.0,
+      "min": -20.0,
+      "stat": "blood_regen"
+    }
+  ],
+  "tags": {
+    "tags": [
+    "aura"
+    ]
+  }
+}

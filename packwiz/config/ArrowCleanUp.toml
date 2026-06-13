@@ -1,0 +1,8 @@
+#Time in seconds before stuck arrows are cleaned up (default: 10)
+#Range: 1 ~ 300
+cleanupTime = 10
+#Enable automatic arrow cleanup (default: true)
+enableCleanup = true
+#Only clean up arrows shot from items with the Infinity enchantment (works with bows, crossbows, and modded items) (default: true)
+onlyInfinityArrows = true
+

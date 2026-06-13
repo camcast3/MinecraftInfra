@@ -1,0 +1,36 @@
+{
+  "author": "mahjerion",
+  "data": {
+    "curved_hallways": [
+    "simple"
+    ],
+    "ends": [
+    "boss"
+    ],
+    "entrances": [
+    "simple"
+    ],
+    "folder": "moo",
+    "four_ways": [
+    "simple"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "moo"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "simple"
+    ],
+    "triple_hallway": [
+    "simple"
+    ]
+  },
+  "id": "moo",
+  "weight": 100
+}

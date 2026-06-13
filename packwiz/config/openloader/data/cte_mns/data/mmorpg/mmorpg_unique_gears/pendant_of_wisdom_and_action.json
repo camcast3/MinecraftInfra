@@ -1,0 +1,45 @@
+{
+  "base_gear": "necklace",
+  "guid": "pendant_of_wisdom_and_action",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 40,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "attack_damage_per_intelligence"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "attack_speed_per_perc_of_dexterity"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "intelligence"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "dexterity"
+    },
+    {
+      "type": "FLAT",
+      "max": -5.0,
+      "min": -5.0,
+      "stat": "elemental_resist"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,10 @@
+{
+    "replace": false,
+    "values": [
+        "biomeswevegone:blueberries",
+        "outer_end:azure_berries",
+        "deeperdarker:bloom_berries",
+        "blue_skies:comet_berries",
+        "twilightforest:torchberries"
+    ]
+}

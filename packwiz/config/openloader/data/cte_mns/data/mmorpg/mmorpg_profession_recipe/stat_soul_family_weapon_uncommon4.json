@@ -1,0 +1,35 @@
+{
+  "exp": 150,
+  "id": "stat_soul_family_weapon_uncommon4",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/mining/4",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/1",
+      "num": 10
+    },
+    {
+      "type": "ITEM",
+      "id": "blue_skies:horizonite_ingot",
+      "num": 2
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:stick",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_copper",
+      "num": 5    }
+  ],
+  "set_tier_nbt": true,
+  "profession": "gear_crafting",
+  "result": "mmorpg:stat_soul/family/weapon/uncommon",
+  "result_num": 1,
+  "tier": 4
+}

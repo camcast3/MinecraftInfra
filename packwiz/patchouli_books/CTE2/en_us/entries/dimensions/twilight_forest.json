@@ -1,0 +1,43 @@
+{
+    "name": "Twilight Forest",
+    "icon": "twilightforest:twilight_portal_miniature_structure",
+    "category": "patchouli:dimensions",
+	"sortnum":5,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r  &n&lTwilight Forest&r
+&n&6&lArea Level:&r&r  &n90 - 100 &r&r
+&n&6&lEnraged Area Level:&r &nn/a&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nEpilogue;&r
+&n&6&lDimension gateways:&r  &nAct V Gateway;
+&n&6&lDimension Bosses:&r &nNaga; Twilight Lich; Minoshroom, Hydra, Alpha Yeti, Snow Queen, Knight Phantom, Ur-Ghast &r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": " Dimension that seems friendly at first glance. Unfortunately, the beautiful flora of this dimension hides all kinds of prime evils waiting to strike in their natural habitat.$(br) Aside from the basic dangers of being attacked by extremely powerful entities, you should be aware of the harsh environmental conditions made by those entities. You should progress step by step following advancements to lift some of those effects like dungeon protection or acid rain, etc. "
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting in The Forest",
+  "item": "minecraft:diamond,minecraft:grass_block,minecraft:poppy",
+  "text": "The epilogue of your adventure is slightly different from other dimensions. To get into the Twilight Forest you need to build a portal &n&l&6in the Otherside dimension&r &nfrom 8 grass or dirt blocks with a 2x2 hole in the middle, filled with water, and the grass/dirt blocks covered with flowers or saplings. After the portal is built - drop a diamond in the water to activate it" 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"Twilight Forest Portal",
+			"text": "Press on the eye icon to visualize. $(br) Portal MUST be done in &n&l&6OTHERSIDE&r dimension",
+            "multiblock": {
+    "pattern": [
+        [ " SS ","S  S","S  S"," SS "],
+[ " OO ","OWWO","OWWO","0OO "]
+    ],
+    "mapping": {
+        "O": "minecraft:grass_block",
+		"S": "#twilightforest:portal/decoration",
+		"W": "minecraft:water"
+    }
+}
+		}
+    ]
+}

@@ -1,0 +1,37 @@
+{
+  "type": "prefix",
+  "eye_aura_req": "",
+  "guid": "item_both_dodge",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [
+          "dodge_stat_half",
+		  "dual_stat"
+        ],
+        "included": [
+          "dodge_stat"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 6.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.5,
+      "min": 0.3,
+      "stat": "gear_defense"
+    }
+  ],
+  "weight": 1000
+}

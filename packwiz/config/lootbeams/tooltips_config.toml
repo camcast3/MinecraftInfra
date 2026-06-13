@@ -1,0 +1,17 @@
+# Don't change this! Version used to track needed updates.
+version = 0
+tooltips_enable_status = "NAME_AND_RARITY_IN_NAMETAG"
+
+[nameTagSection]
+render_name_tag_on_look = true
+name_tag_need_crouch = false
+add_text_border = true
+render_stack_count = true
+name_tag_look_sensitivity = 0.018
+name_tag_text_alpha = 1.0
+name_tag_background_alpha = 0.5
+name_tag_scale = 1.0
+name_tag_y_offset = 0.75
+
+[tooltipsSection]
+render_tooltips_on_crouch = true

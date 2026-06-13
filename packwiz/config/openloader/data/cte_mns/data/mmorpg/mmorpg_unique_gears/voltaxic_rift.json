@@ -1,0 +1,63 @@
+{
+  "base_gear": "bow",
+  "guid": "voltaxic_rift",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 60,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "proc_poison_ball_on_charged_bolt"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "plus_lvl_ranged_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "plus_phys_to_lightning"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "plus_phys_to_chaos"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "poison_chance"
+    }
+  ],
+  "weight": 500
+}

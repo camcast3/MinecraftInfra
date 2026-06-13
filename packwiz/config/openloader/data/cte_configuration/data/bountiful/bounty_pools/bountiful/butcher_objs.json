@@ -1,0 +1,233 @@
+
+{
+	"content": {
+
+		"butcher_obj_chicken": {
+			"type": "item",
+			"content": "minecraft:chicken",
+			"amount": {
+				"min": 2,
+				"max": 16
+			},
+			"unitWorth": 70
+		},
+
+		"butcher_obj_egg": {
+			"type": "item",
+			"content": "minecraft:egg",
+			"amount": {
+				"min": 4,
+				"max": 32
+			},
+			"unitWorth": 25
+		},
+
+		"butcher_obj_porkchop": {
+			"type": "item",
+			"content": "minecraft:porkchop",
+			"amount": {
+				"min": 2,
+				"max": 16
+			},
+			"unitWorth": 100
+		},
+
+		"butcher_obj_rabbit": {
+			"type": "item",
+			"content": "minecraft:rabbit",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 200
+		},
+
+		"butcher_obj_coal": {
+			"type": "item",
+			"content": "minecraft:coal",
+			"amount": {
+				"min": 6,
+				"max": 48
+			},
+			"unitWorth": 40
+		},
+
+		"butcher_obj_smoker": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "minecraft:smoker",
+			"amount": {
+				"min": 1,
+				"max": 4
+			},
+			"unitWorth": 300
+		},
+
+		"butcher_obj_mutton": {
+			"type": "item",
+			"content": "minecraft:mutton",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 125
+		},
+
+		"butcher_obj_beef": {
+			"type": "item",
+			"content": "minecraft:beef",
+			"amount": {
+				"min": 2,
+				"max": 24
+			},
+			"unitWorth": 75
+		},
+
+		"butcher_obj_dried_kelp_block": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "minecraft:dried_kelp_block",
+			"amount": {
+				"min": 2,
+				"max": 24
+			},
+			"unitWorth": 100
+		},
+
+		"butcher_obj_sweet_berries": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "minecraft:sweet_berries",
+			"amount": {
+				"min": 2,
+				"max": 24
+			},
+			"unitWorth": 100
+		},
+
+		"butcher_obj_crab": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "crabbersdelight:crab",
+			"amount": {
+				"min": 1,
+				"max": 3
+			},
+			"unitWorth": 150
+		},
+
+		"butcher_obj_kangaroo_meat": {
+			"type": "item",
+			"rarity": "RARE",
+			"content": "alexsmobs:kangaroo_meat",
+			"amount": {
+				"min": 1,
+				"max": 3
+			},
+			"unitWorth": 500
+		},
+
+        "butcher_obj_iron_knife": {
+            "type": "item",
+            "content": "farmersdelight:iron_knife",
+            "amount": {
+                "min": 1,
+                "max": 1
+            },
+            "unitWorth": 500,
+            "nbt": "{Damage:0}"
+        },
+
+        "butcher_obj_diamond_knife": {
+            "type": "item",
+			"rarity": "RARE",
+            "content": "farmersdelight:diamond_knife",
+            "amount": {
+                "min": 1,
+                "max": 1
+            },
+            "unitWorth": 2000,
+            "nbt": "{Damage:0}"
+        },
+
+        "butcher_obj_cutting_board": {
+            "type": "item",
+			"rarity": "UNCOMMON",
+            "content": "farmersdelight:cutting_board",
+            "amount": {
+                "min": 1,
+                "max": 3
+            },
+            "unitWorth": 350
+        },
+
+        "butcher_obj_hoglin_loin": {
+            "type": "item",
+			"rarity": "UNCOMMON",
+            "content": "nethersdelight:hoglin_loin",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 200
+        },
+
+        "butcher_obj_dweller_meat": {
+            "type": "item",
+			"rarity": "RARE",
+            "content": "undergardendelight:dweller_meat_slice",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 250
+        },
+
+        "butcher_obj_raw_gloomper_leg": {
+            "type": "item",
+			"rarity": "RARE",
+            "content": "undergarden:raw_gloomper_leg",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 250
+        },
+
+        "butcher_obj_carabeef": {
+            "type": "item",
+			"rarity": "EPIC",
+            "content": "blue_skies:carabeef",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 400
+        },
+
+        "butcher_obj_venison": {
+            "type": "item",
+			"rarity": "EPIC",
+            "content": "blue_skies:venison",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 400
+        },
+
+        "butcher_obj_stalker_meat": {
+            "type": "item",
+			"rarity": "LEGENDARY",
+            "content": "outer_end:stalker_meat",
+            "amount": {
+                "min": 2,
+                "max": 16
+            },
+            "unitWorth": 1000
+        }
+
+	}
+
+
+}

@@ -1,0 +1,31 @@
+{
+  "exp": 250,
+  "id": "food_epic_magic1",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/1",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/3",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "farmersdelight:cooked_cod_slice",
+      "num": 4
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_iron",
+      "num": 5
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/epic_magic",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 1
+}

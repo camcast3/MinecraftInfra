@@ -1,0 +1,121 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:poseidons_breakfast",
+      "required": false
+    },
+    {
+      "id": "doggytalents:natto",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:stuffed_cod",
+      "required": false
+    },
+    {
+      "id": "undergarden:veiled_stew",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:roasted_underbean_on_a_stick",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gronglunch",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:glitterdish",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:cooked_oddion_bulb",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:blooming_oddion",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_soup",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread_stuffing",
+      "required": false
+    },
+    {
+      "id": "corn_delight:taco",
+      "required": false
+    },
+    {
+      "id": "corn_delight:nachos_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:ender_paella",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_stew",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveil_stew",
+      "required": false
+    },
+    {
+      "id": "endersdelight:amberveiled_curry",
+      "required": false
+    },
+    {
+      "id": "endersdelight:stuffed_shulker_bowl",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gloomgourd_pie_slice",
+      "required": false
+    },
+    {
+      "id": "chococraft:pickled_gysahl_cooked",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_skewer",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:stuffed_nautilus_shell",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_chowder",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:bass_stew",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:steak_and_potatoes",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:bone_broth",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:quiche_slice",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:rose_hip_pie_slice",
+      "required": false
+    },
+    {
+      "id": "projectvibrantjourneys:nettle_soup",
+      "required": false
+    }
+  ]
+}

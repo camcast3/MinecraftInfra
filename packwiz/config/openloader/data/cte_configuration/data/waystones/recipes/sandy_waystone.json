@@ -1,0 +1,22 @@
+{
+  "result": {
+    "item": "waystones:sandy_waystone"
+  },
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " O ",
+    "OWO",
+    "OTO"
+  ],
+  "key": {
+    "W": {
+      "item": "waystones:warp_stone"
+    },
+    "O": {
+      "item": "minecraft:stone_bricks"
+    },
+    "T": {
+      "item": "mmorpg:stone/2"
+    }
+  }
+}

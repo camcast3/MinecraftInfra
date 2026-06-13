@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_frost_nova",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "frost_nova"
+  }
+}

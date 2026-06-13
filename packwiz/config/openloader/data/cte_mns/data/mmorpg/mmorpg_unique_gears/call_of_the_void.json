@@ -1,0 +1,51 @@
+{
+  "base_gear": "plate_helmet",
+  "guid": "call_of_the_void",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 50,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 20.0,
+      "stat": "proc_healing_aura_on_hit_vll"
+    },
+    {
+      "type": "MORE",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "dmg_when_low_hp"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "health_regen"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "health_leech_cap"
+    }
+  ],
+  "weight": 1000
+}

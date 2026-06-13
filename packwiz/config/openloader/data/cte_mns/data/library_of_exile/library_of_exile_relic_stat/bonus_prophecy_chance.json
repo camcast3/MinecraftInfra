@@ -1,0 +1,13 @@
+{
+  "base": 0.0,
+  "data": {
+    "type": "ADDITION",
+    "extra": 1,
+    "map_content_id": "prophecy"
+  },
+  "id": "bonus_prophecy_chance",
+  "is_percent": true,
+  "max": 100.0,
+  "min": 0.0,
+  "serializer": "extra_content"
+}

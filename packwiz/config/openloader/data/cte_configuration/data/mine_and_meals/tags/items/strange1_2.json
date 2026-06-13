@@ -1,0 +1,109 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:miso_soup",
+      "required": false
+    },
+    {
+      "id": "doggytalents:natto_rice",
+      "required": false
+    },
+    {
+      "id": "outer_end:cooked_stalker_meat",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:fugu_roll",
+      "required": false
+    },
+    {
+      "id": "undergarden:gloomgourd_pie",
+      "required": false
+    },
+    {
+      "id": "undergarden:gloomper_leg",
+      "required": false
+    },
+    {
+      "id": "undergarden:bloody_stew",
+      "required": false
+    },
+    {
+      "id": "undergarden:inky_stew",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:blood_tomato_soup",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:baked_gwibling_and_vegetables",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:allium_oddion_soup",
+      "required": false
+    },
+    {
+      "id": "endersdelight:uncanny_cookies",
+      "required": false
+    },
+    {
+      "id": "endersdelight:strange_eclair",
+      "required": false
+    },
+    {
+      "id": "endersdelight:endermite_stew",
+      "required": false
+    },
+    {
+      "id": "endersdelight:pearl_pasta",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_stew",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie_slice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:transforming_easter_cake",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:bloody_gadfly_eye",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:sea_terror_eye",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:spiritual_gingerbread",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:poor_fisher_chowder",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:coffee_cake_slice",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:cooked_gloomper_cuts",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:corpse_maggot",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_mushroom",
+      "required": false
+    }
+  ]
+}

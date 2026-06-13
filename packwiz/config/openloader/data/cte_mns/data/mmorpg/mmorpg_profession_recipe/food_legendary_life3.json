@@ -1,0 +1,31 @@
+{
+  "exp": 350,
+  "id": "food_legendary_life3",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/3",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "blue_skies:cooked_venison",
+      "num": 2
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/4",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_gold",
+      "num": 1
+	}
+  ],
+  "set_tier_nbt": true,
+  "profession": "cooking",
+  "result": "mmorpg:food/legendary_life",
+  "result_num": 1,
+  "tier": 3
+}

@@ -1,0 +1,62 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 4.0,
+      "stat": "weapon_damage"
+    }
+  ],
+  "gear_slot": "crossbow",
+  "guid": "crossbow",
+  "possible_items": [
+    {
+      "item_id": "roe_weapons:crossbow_0",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "roe_weapons:crossbow_1",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "roe_weapons:crossbow_2",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "roe_weapons:crossbow_3",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "roe_weapons:crossbow_4",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "roe_weapons:crossbow_5",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "dexterity": 0.4
+    }
+  },
+  "style": "DEX",
+  "tags": {
+    "tags": [
+      "dexterity",
+      "ranger_casting_weapon",
+      "crossbow",
+      "ranged_weapon",
+      "weapon_family"
+    ]
+  },
+  "weapon_type": "crossbow",
+  "weight": 1000
+}

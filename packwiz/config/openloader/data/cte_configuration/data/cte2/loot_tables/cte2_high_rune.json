@@ -1,0 +1,90 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/yun",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ven",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/wir",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/oru",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/xer",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/eno",
+          "weight": 12
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/har",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/toq",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/fey",
+          "weight": 16
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ano",
+          "weight": 16
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/dos",
+          "weight": 18
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/cen",
+          "weight": 18
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/nos",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ita",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/mos",
+          "weight": 20
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 1755
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_high_rune"
+}

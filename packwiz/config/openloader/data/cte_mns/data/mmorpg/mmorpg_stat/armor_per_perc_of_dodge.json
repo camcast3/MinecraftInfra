@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "armor",
+    "adder_stat": "dodge",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 50,
+    "id": "armor_per_perc_of_dodge",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

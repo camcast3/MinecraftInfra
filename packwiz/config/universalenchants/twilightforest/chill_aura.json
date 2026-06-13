@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "items": [
+    "$minecraft:armor",
+    "mutantmonsters:mutant_skeleton_skull"
+  ],
+  "incompatible": [
+    "twilightforest:fire_react",
+    "minecraft:thorns"
+  ]
+}

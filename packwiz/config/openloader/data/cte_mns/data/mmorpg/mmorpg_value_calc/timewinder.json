@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 4.5,
+    "min": 1.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 100.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 1.75,
+      "min": 1.225
+    },
+    "stat": "health"
+  },
+  "id": "timewinder",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 1.75,
+        "min": 1.225
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

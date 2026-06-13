@@ -1,0 +1,21 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/talent_icons/asc/battlemage/1.png",
+  "id": "battlemage_class_1",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "mana_per_perc_of_health",
+      "v1": 30.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "mana_regen",
+      "v1": 6.0
+    }
+  ]
+}

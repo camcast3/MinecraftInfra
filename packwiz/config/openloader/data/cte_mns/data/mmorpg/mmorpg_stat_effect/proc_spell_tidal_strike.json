@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_tidal_strike",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "tidal_strike",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

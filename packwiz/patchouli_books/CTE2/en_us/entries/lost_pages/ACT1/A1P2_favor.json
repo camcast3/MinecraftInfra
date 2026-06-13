@@ -1,0 +1,16 @@
+{
+    "name": "Favor",
+    "icon": "mmorpg:skill_gems/skill/int",
+    "category":"patchouli:A1lost_pages",
+	"sortnum":1,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 0B7C635945E7F3AA)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rFavor is a system that rewards players for living. Every minute, you generate a small amount of Favor. &eFavor soft-caps at 1000&r. However, you can go beyond this Favor limit by opening chests.At 250+ Favor, you will have a 2% bonus to loot drops. As you go up in Favor, your bonus to loot drops will increase.At the &ecap of 2500&r 
+"},
+		{
+            "type": "patchouli:text",
+            "text": "you have a 25% increase to loot and experience! Note that there are level requirements for certain rarities to start appearing:$(br)&dEpic&r: 10+$(br)&4Legendary&r: 25+$(br)&5Mythic&r: 50+$(br)Be careful though, &cdying will cause you to lose 500 Favor!&r"
+		}
+    ]
+}

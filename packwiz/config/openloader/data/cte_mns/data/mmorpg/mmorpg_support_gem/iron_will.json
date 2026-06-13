@@ -1,0 +1,22 @@
+{
+  "id": "iron_will",
+  "manaMulti": 1.1,
+  "min_lvl": 30,
+  "one_of_a_kind": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "int_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "int_dmg_per_5_strength"
+    }
+  ],
+  "style": "INT",
+  "weight": 1000
+}

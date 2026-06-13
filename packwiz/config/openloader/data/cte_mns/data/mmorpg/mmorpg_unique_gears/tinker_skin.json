@@ -1,0 +1,57 @@
+{
+  "base_gear": "vest_chest",
+  "guid": "tinker_skin",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 40,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "plus_lvl_trap_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "charge_recovery_rate"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 15.0,
+      "stat": "frenzy_charge_on_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 8.0,
+      "stat": "health_on_hit_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 4.0,
+      "stat": "magic_shield_on_hit_hit"
+    }
+  ],
+  "weight": 1000
+}

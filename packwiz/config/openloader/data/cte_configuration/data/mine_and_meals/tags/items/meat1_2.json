@@ -1,0 +1,189 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:tofu",
+      "required": false
+    },
+    {
+      "id": "doggytalents:aburaage",
+      "required": false
+    },
+    {
+      "id": "doggytalents:miso_soup",
+      "required": false
+    },
+    {
+      "id": "doggytalents:oyakodon",
+      "required": false
+    },
+    {
+      "id": "outer_end:cooked_stalker_meat",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:cooked_stuffed_cod",
+      "required": false
+    },
+    {
+      "id": "undergarden:gloomper_leg",
+      "required": false
+    },
+    {
+      "id": "undergarden:bloody_stew",
+      "required": false
+    },
+    {
+      "id": "undergarden:indigo_stew",
+      "required": false
+    },
+    {
+      "id": "undergarden:veiled_stew",
+      "required": false
+    },
+    {
+      "id": "undergarden:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "undergarden:meat_with_vegetables",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gronglunch",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gronglet_with_roasted_veggies",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:cooked_white_puffball_cap",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_carabeef",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_venison",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_monitor_tail",
+      "required": false
+    },
+    {
+      "id": "twilightforest:cooked_venison",
+      "required": false
+    },
+    {
+      "id": "twilightforest:cooked_meef",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_soup",
+      "required": false
+    },
+    {
+      "id": "corn_delight:corn_dog",
+      "required": false
+    },
+    {
+      "id": "corn_delight:taco",
+      "required": false
+    },
+    {
+      "id": "corn_delight:nachos_bowl",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crawling_sandwich",
+      "required": false
+    },
+    {
+      "id": "endersdelight:endermite_stew",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "chococraft:chocobo_drumstick_cooked",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_frog_leg",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_skewer",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:crab_legs",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_flesh",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:bass_stew",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:cooked_small_turtle_meat",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:bone_broth",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_shrimp",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_clam_meat",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:vegetable_omelet",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:pizza_slice",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:quiche_slice",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:tea_curry",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:fried_maggot",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_monster_flesh",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:cooked_gloomper_cuts",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:cooked_dweller_meat_slice",
+      "required": false
+    },
+    {
+      "id": "alexsmobs:sopa_de_macaco",
+      "required": false
+    }
+  ]
+}

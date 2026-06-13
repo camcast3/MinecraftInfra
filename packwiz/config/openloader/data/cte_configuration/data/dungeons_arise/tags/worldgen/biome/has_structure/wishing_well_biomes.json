@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:plains",
+    "minecraft:meadow",
+    "minecraft:sunflower_plains",
+    "#undergarden:is_undergarden",
+    "#deeperdarker:has_structure/is_deeperdarker"
+  ]
+}

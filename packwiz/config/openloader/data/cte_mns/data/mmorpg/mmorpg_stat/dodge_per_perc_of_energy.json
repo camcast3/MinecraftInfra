@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "dodge",
+    "adder_stat": "energy",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 25,
+    "id": "dodge_per_perc_of_energy",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

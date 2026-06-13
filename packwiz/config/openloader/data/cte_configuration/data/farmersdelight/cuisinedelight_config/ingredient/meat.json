@@ -1,0 +1,23 @@
+{
+  "entries": [
+    {
+      "type": "SEAFOOD",
+      "effects": [],
+      "ingredient": [
+        {
+          "item": "farmersdelight:cod_slice"
+        },
+        {
+          "item": "farmersdelight:salmon_slice"
+        }
+      ],
+      "max_time": 100,
+      "min_time": 40,
+      "nutrition": 6,
+      "overcook_penalty": 0.5,
+      "raw_penalty": 0.5,
+      "size": 1,
+      "stir_time": 40
+    }
+  ]
+}

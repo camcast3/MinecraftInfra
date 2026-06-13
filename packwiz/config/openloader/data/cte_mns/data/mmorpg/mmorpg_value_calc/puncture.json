@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 4.5,
+    "min": 1.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.64,
+      "min": 1.848
+    },
+    "stat": "health"
+  },
+  "id": "puncture",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.64,
+        "min": 1.848
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

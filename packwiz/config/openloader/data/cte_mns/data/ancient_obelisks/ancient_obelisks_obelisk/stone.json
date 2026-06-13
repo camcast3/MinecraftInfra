@@ -1,0 +1,21 @@
+{
+  "id": "stone",
+  "mob_list_tag_check": {
+    "checks": [
+      {
+        "check": "HAS_ANY",
+        "tags": [
+          "obelisk"
+        ]
+      }
+    ]
+  },
+  "structure_data": {
+    "rooms_folder": "ancient_obelisks:obelisk/stone",
+    "size": 1,
+    "teleport_offset_x": 0,
+    "teleport_offset_y": 0,
+    "teleport_offset_z": 0
+  },
+  "weight": 1000
+}

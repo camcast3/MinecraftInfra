@@ -1,0 +1,69 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "farm_and_charm:strawberry_tea",
+      "required": false
+    },
+    {
+      "id": "farm_and_charm:strawberry_tea_cup",
+      "required": false
+    },
+    {
+      "id": "farm_and_charm:nettle_tea",
+      "required": false
+    },
+    {
+      "id": "farm_and_charm:nettle_tea_cup",
+      "required": false
+    },
+    {
+      "id": "farm_and_charm:ribwort_tea",
+      "required": false
+    },
+    {
+      "id": "farm_and_charm:ribwort_tea_cup",
+      "required": false
+    },
+    {
+      "id": "delightful:matcha_milkshake",
+      "required": false
+    },
+    {
+      "id": "delightful:matcha_ice_cream",
+      "required": false
+    },
+    {
+      "id": "delightful:azalea_tea",
+      "required": false
+    },
+    {
+      "id": "delightful:lavender_tea",
+      "required": false
+    },
+    {
+      "id": "delightful:prickly_pear_tea",
+      "required": false
+    },
+    {
+      "id": "delightful:ender_nectar",
+      "required": false
+    },
+    {
+      "id": "delightful:matcha_latte",
+      "required": false
+    },
+    {
+      "id": "delightful:berry_matcha_latte",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_gamblers_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_hot_cocoa",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "always_do_item_mods": [
+    {
+      "id": "uber_upgrade",
+      "weight": 1
+    }
+  ],
+  "id": "uber_upgrade",
+  "item_id": "dungeon_realm:uber_upgrade",
+  "item_type_requirement": [
+    "is_map"
+  ],
+  "pick_one_item_mod": [],
+  "potential": {
+    "needs_potential": true,
+    "potential_cost": 0
+  },
+  "rar": "rare",
+  "req": [
+	"map_is_mythic",
+	"is_not_uber"
+  ],
+  "weight": 0
+}

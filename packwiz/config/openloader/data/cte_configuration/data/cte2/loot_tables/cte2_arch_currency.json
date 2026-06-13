@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:currency/orb_of_quality",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:currency/socket_adder",
+          "weight": 3
+        },{
+          "type": "minecraft:item",
+          "name": "mmorpg:currency/affix_tier_up_down",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:currency/upgrade_common_affix",
+          "weight": 10
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_arch_currency"
+}

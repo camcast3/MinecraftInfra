@@ -1,0 +1,122 @@
+{
+    "entries": [
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:crab"
+                }
+            ],
+            "max_time": 320,
+            "min_time": 240,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.7,
+            "size": 3,
+            "stir_time": 80
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:clawster"
+                }
+            ],
+            "max_time": 360,
+            "min_time": 280,
+            "nutrition": 8,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.7,
+            "size": 4,
+            "stir_time": 80
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:shrimp"
+                }
+            ],
+            "max_time": 200,
+            "min_time": 160,
+            "nutrition": 4,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.7,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:raw_clam_meat"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 80,
+            "nutrition": 4,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.7,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:raw_frog_leg"
+                }
+            ],
+            "max_time": 140,
+            "min_time": 80,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:raw_squid_tentacles"
+                },
+                {
+                    "item": "crabbersdelight:raw_glow_squid_tentacles"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 60,
+            "nutrition": 12,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 2,
+            "stir_time": 40
+        },
+                {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "crabbersdelight:tropical_fish_slice"
+                },
+                {
+                    "item": "crabbersdelight:pufferfish_slice"
+                }
+            ],
+            "max_time": 100,
+            "min_time": 40,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 40
+        }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "heavenly_tear",
+  "runes": [
+    "toq",
+	"dos",
+	"yun",
+	"wir"
+  ],
+  "slots": [
+    "necklace"
+  ],
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "plus_lvl_all_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "increase_healing"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "spell_damage_per_perc_of_increase_healing"
+    }
+  ]
+}

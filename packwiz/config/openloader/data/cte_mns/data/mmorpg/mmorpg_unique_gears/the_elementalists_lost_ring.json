@@ -1,0 +1,39 @@
+{
+  "base_gear": "ring",
+  "guid": "the_elementalists_lost_ring",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 0.5,
+      "min": 0.25,
+      "stat": "elemental_attack_damage_per_perc_of_str"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "strength"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "magic_find"
+    }
+  ],
+  "weight": 1000
+}

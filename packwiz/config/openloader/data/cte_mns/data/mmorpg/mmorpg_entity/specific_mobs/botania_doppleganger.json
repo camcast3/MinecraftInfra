@@ -1,0 +1,34 @@
+{
+  "dmg_multi": 1.0,
+  "exp_multi": 1.5,
+  "hp_multi": 1.0,
+  "identifier": "botania:doppleganger",
+  "loot_multi": 1.5,
+  "max_lvl": 1000000,
+  "min_lvl": 45,
+  "set_health_damage_override": false,
+  "set_rar": "rare",
+  "stat_multi": 1.0,
+  "stats": {
+    "stats": [
+      {
+        "type": "percent",
+        "scale_to_lvl": false,
+        "v1": 30.0,
+        "stat": "dodge"
+      },
+      {
+        "type": "percent",
+        "scale_to_lvl": false,
+        "v1": 30.0,
+        "stat": "spell_dodge"
+      },
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 100.0,
+        "stat": "elemental_resist"
+      }
+	]
+  }
+}

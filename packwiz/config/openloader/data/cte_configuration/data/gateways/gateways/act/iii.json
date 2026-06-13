@@ -1,0 +1,90 @@
+{
+	"size": "small",
+	"color": "#0000ff",
+	"waves": [{
+			"entities": [
+				{
+					"entity": "undergarden:forgotten",
+					"count": 6
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "mowziesmobs:umvuthana",
+					"count": 1
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_crane",
+					"count": 1
+				},
+				{
+					"entity": "mowziesmobs:umvuthana_raptor",
+					"count": 1
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "undergarden:rotwalker",
+					"count": 4
+				},
+				{
+					"entity": "undergarden:rotbeast",
+					"count": 1
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "aquamirae:eel",
+					"count": 1
+				},
+				{
+					"entity": "aquamirae:tortured_soul",
+					"count": 3
+				},
+				{
+					"entity": "aquamirae:maw",
+					"count": 1
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 1800,
+			"setup_time": 60
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 3,
+            "desc": "rewards.gateways.loot_table.drops"
+        },
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_und",
+            "rolls": 1,
+            "desc": "rewards.gateways.loot_table.und"
+        }
+    ],
+    "failures": [
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

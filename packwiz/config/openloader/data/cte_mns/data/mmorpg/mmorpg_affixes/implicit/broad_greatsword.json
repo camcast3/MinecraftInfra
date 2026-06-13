@@ -1,0 +1,29 @@
+{
+  "type": "implicit",
+  "eye_aura_req": "",
+  "guid": "broad_greatsword",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "sword",
+          "two_handed"
+        ],
+        "req_type": "HAS_ALL"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 6.25,
+      "min": 3.125,
+      "stat": "accuracy"
+    }
+  ],
+  "weight": 1000
+}

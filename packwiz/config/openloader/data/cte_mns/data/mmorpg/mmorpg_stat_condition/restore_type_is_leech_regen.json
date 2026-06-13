@@ -1,0 +1,8 @@
+{
+  "id": "restore_type_is_leech_regen",
+  "ifs": [
+    "restore_type_is_leech",
+    "restore_type_is_regen"
+  ],
+  "ser": "either_is_true"
+}

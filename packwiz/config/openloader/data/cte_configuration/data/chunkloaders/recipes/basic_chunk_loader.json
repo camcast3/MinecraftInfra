@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "mmorpg:material/mining/1"
+    },
+    "B": {
+      "tag": "forge:obsidian"
+    },
+    "C": {
+      "item": "mmorpg:stone/0"
+    }
+  },
+  "result": {
+    "item": "chunkloaders:basic_chunk_loader"
+  }
+}

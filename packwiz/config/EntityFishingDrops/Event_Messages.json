@@ -1,0 +1,16 @@
+{
+  "enable": {
+    "Easter": "§6[Events] §d[EASTER] Easter event has been enabled!",
+    "Christmas": "§6[Events] §a[CHRISTMAS] Christmas event has been enabled!",
+    "Winter": "§6[Events] §b[WINTER] Winter event has been enabled!",
+    "Summer": "§6[Events] §e[SUMMER] Summer event has been enabled!",
+    "Halloween": "§6[Events] §c[HALLOWEEN] Halloween event has been enabled!"
+  },
+  "disable": {
+    "Easter": "§6[Events] §7[EASTER] Easter event has been disabled!",
+    "Christmas": "§6[Events] §7[CHRISTMAS] Christmas event has been disabled!",
+    "Winter": "§6[Events] §7[WINTER] Winter event has been disabled!",
+    "Summer": "§6[Events] §7[SUMMER] Summer event has been disabled!",
+    "Halloween": "§6[Events] §7[HALLOWEEN] Halloween event has been disabled!"
+  }
+}

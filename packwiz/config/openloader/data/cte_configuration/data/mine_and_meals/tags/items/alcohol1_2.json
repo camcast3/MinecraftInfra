@@ -1,0 +1,25 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:sake",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:red_rum",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:strongroot_ale",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:withering_dross",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_purulent_tea",
+      "required": false
+    }
+  ]
+}

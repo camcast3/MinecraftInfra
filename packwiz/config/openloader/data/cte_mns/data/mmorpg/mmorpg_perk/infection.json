@@ -1,0 +1,22 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/infection.png",
+  "id": "infection",
+  "is_entry": false,
+  "max_lvls": 1,
+  "one_kind": "blood_mage",
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "infection_to_target_on_hit",
+      "v1": 50.0
+    },
+    {
+      "type": "MORE",
+      "scale_to_lvl": false,
+      "stat": "ailment_damage",
+      "v1": 15.0
+    }
+  ]
+}

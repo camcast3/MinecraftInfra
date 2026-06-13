@@ -1,0 +1,19 @@
+{
+    "name": "Cooking",
+    "icon": "minecraft:cake",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "You can cook foods which will provide hunger and saturation, but also provide stat boosts. When cooking, there are a few ingredients:  1. &eTiered Meat/Produce/Fish&r - earned from Bounty Hunting, Farming, and Fishing they are based on the item level you want to craft. The level ranges are the same as what you'd find in the gathering Professions. The type of food you use depends on what food you cook:
+"
+},{            "type": "patchouli:text",
+            "text": "&cMeat&r: Health/Magic Shield Regen
+&2Produce&r: Mana/Energy Regen
+&bFish&r: EXP/Loot    2. &c1&r &eStone (Rarity)&r - the Stones determine the rarity of the gear you will craft. You can get these Stones while salvaging.
+3. &eOther Food Item&r - generally used as an additional ingredient that can also determine what food you're cooking. Refer to &cJEI&r for recipes!  4. &eMoney&r
+&lYou can always check the &cJEI&r &lto see what items are needed for &eCooking&r&l.&r"
+}
+    ]
+}

@@ -1,0 +1,12 @@
+[{
+  "_comment": "5% Chance to summon Mother of the Deep Sea",
+  "entityId": "aquamirae:anglerfish",
+  "itemId": "",
+  "dropChance": 0.0,
+  "minAmount": 1,
+  "maxAmount": 3,
+  "command": "open_gateway {entity_x} {entity_y} {entity_z} gateways:the_deep_sea",
+  "commandChance": 4.5,
+	"commandCoolDown": 300,
+  "requirePlayerKill": true
+}]

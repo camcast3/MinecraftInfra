@@ -1,0 +1,282 @@
+{
+  "husbandry": [
+    {
+      "itemId": "mmorpg:material/meat/0",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 2,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 1,
+      "displayName": "Spiritual Raw Meat"
+    },
+    {
+      "itemId": "mmorpg:material/meat/1",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 20,
+      "displayName": "Celestial Raw Meat"
+    },
+    {
+      "itemId": "mmorpg:material/meat/2",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 32,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 40,
+      "displayName": "Empyrean Raw Meat"
+    },
+    {
+      "itemId": "mmorpg:material/meat/3",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 60,
+      "displayName": "Angelic Raw Meat"
+    },
+    {
+      "itemId": "mmorpg:material/meat/4",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 80,
+      "displayName": "Divine Raw Meat"
+    },
+    {
+      "itemId": "mmorpg:material/meat/5",
+      "quantity": 8,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 16,
+      "requiredProfession": "husbandry",
+      "requiredLevel": 100,
+      "displayName": "Godly Raw Meat"
+    }
+  ],
+  "mining": [
+    {
+      "itemId": "mmorpg:material/mining/0",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 2,
+      "requiredProfession": "mining",
+      "requiredLevel": 1,
+      "displayName": "Spiritual Ore"
+    },
+    {
+      "itemId": "mmorpg:material/mining/1",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "mining",
+      "requiredLevel": 20,
+      "displayName": "Celestial Ore"
+    },
+    {
+      "itemId": "mmorpg:material/mining/2",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 32,
+      "requiredProfession": "mining",
+      "requiredLevel": 40,
+      "displayName": "Empyrean Ore"
+    },
+    {
+      "itemId": "mmorpg:material/mining/3",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "mining",
+      "requiredLevel": 60,
+      "displayName": "Angelic Ore"
+    },
+    {
+      "itemId": "mmorpg:material/mining/4",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 4,
+      "requiredProfession": "mining",
+      "requiredLevel": 80,
+      "displayName": "Divine Ore"
+    },
+    {
+      "itemId": "mmorpg:material/mining/5",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 16,
+      "requiredProfession": "mining",
+      "requiredLevel": 100,
+      "displayName": "Godly Ore"
+    }
+  ],
+  "farming": [
+    {
+      "itemId": "mmorpg:material/farming/0",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 2,
+      "requiredProfession": "farming",
+      "requiredLevel": 1,
+      "displayName": "Spiritual Produce"
+    },
+    {
+      "itemId": "mmorpg:material/farming/1",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "farming",
+      "requiredLevel": 20,
+      "displayName": "Celestial Produce"
+    },
+    {
+      "itemId": "mmorpg:material/farming/2",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 32,
+      "requiredProfession": "farming",
+      "requiredLevel": 40,
+      "displayName": "Empyrean Produce"
+    },
+    {
+      "itemId": "mmorpg:material/farming/3",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "farming",
+      "requiredLevel": 60,
+      "displayName": "Angelic Produce"
+    },
+    {
+      "itemId": "mmorpg:material/farming/4",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 4,
+      "requiredProfession": "farming",
+      "requiredLevel": 80,
+      "displayName": "Divine Produce"
+    },
+    {
+      "itemId": "mmorpg:material/farming/5",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 16,
+      "requiredProfession": "farming",
+      "requiredLevel": 100,
+      "displayName": "Godly Produce"
+    }
+  ],
+  "fishing": [
+    {
+      "itemId": "mmorpg:material/fishing/0",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 2,
+      "requiredProfession": "fishing",
+      "requiredLevel": 1,
+      "displayName": "Spiritual Raw Fish"
+    },
+    {
+      "itemId": "mmorpg:material/fishing/1",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "fishing",
+      "requiredLevel": 20,
+      "displayName": "Celestial Raw Fish"
+    },
+    {
+      "itemId": "mmorpg:material/fishing/2",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 32,
+      "requiredProfession": "fishing",
+      "requiredLevel": 40,
+      "displayName": "Empyrean Raw Fish"
+    },
+    {
+      "itemId": "mmorpg:material/fishing/3",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "fishing",
+      "requiredLevel": 60,
+      "displayName": "Angelic Raw Fish"
+    },
+    {
+      "itemId": "mmorpg:material/fishing/4",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 4,
+      "requiredProfession": "fishing",
+      "requiredLevel": 80,
+      "displayName": "Divine Raw Fish"
+    },
+    {
+      "itemId": "mmorpg:material/fishing/5",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 16,
+      "requiredProfession": "fishing",
+      "requiredLevel": 100,
+      "displayName": "Godly Raw Fish"
+    }
+  ],
+  "salvaging": [
+    {
+      "itemId": "mmorpg:stone/0",
+      "quantity": 21,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 1,
+      "displayName": "Common Stone"
+    },
+    {
+      "itemId": "mmorpg:stone/1",
+      "quantity": 20,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 8,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 20,
+      "displayName": "Uncommon Stone"
+    },
+    {
+      "itemId": "mmorpg:stone/2",
+      "quantity": 9,
+      "currencyItemId": "mns_extras:bounty_slip",
+      "currencyQuantity": 32,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 40,
+      "displayName": "Rare Stone"
+    },
+    {
+      "itemId": "mmorpg:stone/3",
+      "quantity": 4,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 1,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 60,
+      "displayName": "Epic Stone"
+    },
+    {
+      "itemId": "mmorpg:stone/4",
+      "quantity": 1,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 2,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 80,
+      "displayName": "Legendary Stone"
+    },
+    {
+      "itemId": "mmorpg:stone/5",
+      "quantity": 1,
+      "currencyItemId": "mns_extras:empowered_bounty_slip",
+      "currencyQuantity": 16,
+      "requiredProfession": "salvaging",
+      "requiredLevel": 100,
+      "displayName": "Mythic Stone"
+    }
+  ]
+}

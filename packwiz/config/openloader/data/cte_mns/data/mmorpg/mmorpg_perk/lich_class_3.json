@@ -1,0 +1,21 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/talent_icons/asc/lich/3.png",
+  "id": "lich_class_3",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "ms_regen_per_perc_of_health_regen",
+      "v1": 100.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "magic_shield_regen",
+      "v1": 14.0
+    }
+  ]
+}

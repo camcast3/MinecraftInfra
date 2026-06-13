@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:archaeology",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+{
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_generic_archaeology",
+          "weight": 1
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_beb22eab_arch"
+}

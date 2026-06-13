@@ -1,0 +1,10 @@
+{
+  "dash_timer": 100.0,
+  "dash_distance": 2.0,
+  "shuriken_timer": 60.0,
+  "shuriken_damage": 0.0,
+  "shuriken_knockback": 2.0,
+  "shuriken_pierce": 0.0,
+  "speed_amplifier": 0.25,
+  "life_steal_power": 0.5
+}

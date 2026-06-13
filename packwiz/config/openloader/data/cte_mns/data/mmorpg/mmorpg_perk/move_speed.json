@@ -1,0 +1,21 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/stat_icons/misc/move_speed.png",
+  "id": "move_speed",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "move_speed",
+      "v1": 2.0
+    },
+    {
+      "type": "PERCENT",
+      "scale_to_lvl": false,
+      "stat": "dodge",
+      "v1": 2.0
+    }
+  ]
+}

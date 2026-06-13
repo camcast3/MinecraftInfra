@@ -1,0 +1,29 @@
+{
+  "id": "uber2",
+  "possible_bosses": [
+    "minecraft:wither",
+    "stalwart_dungeons:awful_ghast",
+    "stalwart_dungeons:nether_keeper",
+    "blue_skies:starlit_crusher",
+    "blue_skies:arachnarch",
+	"aquamirae:captain_cornelia",
+	"twilightforest:lich",
+	"twilightforest:minoshroom",
+	"twilightforest:snow_queen",
+	"mowziesmobs:frostmaw",
+	"mowziesmobs:umvuthi",
+	"mowziesmobs:sculptor",
+	"born_in_chaos_v1:lifestealer_true_form",
+	"born_in_chaos_v1:nightmare_stalker",
+	"remnant_bosses:ossukage",
+	"infinitygolem:infinity_golem"
+  ],
+  "structure_data": {
+    "rooms_folder": "dungeon_realm:uber/abyss",
+    "size": 3,
+    "teleport_offset_x": 48,
+    "teleport_offset_y": -4,
+    "teleport_offset_z": 16
+  },
+  "weight": 1000
+}

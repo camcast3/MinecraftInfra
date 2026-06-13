@@ -1,0 +1,57 @@
+{
+  "base_gear": "chainmail_helmet",
+  "guid": "crown_of_heresy",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 40,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 80.0,
+      "min": 70.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 3.0,
+      "stat": "learn_holy_fire"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "ms_regen_per_perc_of_health_regen"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "magic_shield_per_sec"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "cursed_by_wounds"
+    },
+    {
+      "type": "PERCENT",
+      "max": -30.0,
+      "min": -40.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": -20.0,
+      "min": -40.0,
+      "stat": "fire_resist"
+    }
+  ],
+  "weight": 1000
+}

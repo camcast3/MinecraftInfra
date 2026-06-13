@@ -1,0 +1,35 @@
+{
+  "affected": "Mobs",
+  "id": "lightning_atk",
+  "map_resist": "Nature",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 30.0,
+      "stat": "phys_to_lightning"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "all_lightning_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 15.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "electrify_proc_chance"
+    }
+  ],
+  "weight": 1000
+}

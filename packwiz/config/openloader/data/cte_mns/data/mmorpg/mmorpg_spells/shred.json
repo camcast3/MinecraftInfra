@@ -1,0 +1,453 @@
+{
+  "attached": {
+    "entity_components": {},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_shred",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "sword_sweep_particles",
+            "map": {}
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "height": 0.5,
+              "motion": "None",
+              "particle_count": 50.0,
+              "particle_type": "minecraft:crit",
+              "radius": 2.8,
+              "shape": "CIRCLE_2D_EDGE",
+              "y_rand": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "height": 0.5,
+              "motion": "None",
+              "particle_count": 25.0,
+              "particle_type": "minecraft:enchanted_hit",
+              "radius": 2.0,
+              "shape": "CIRCLE_2D_EDGE",
+              "y_rand": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "height": 0.5,
+              "motion": "None",
+              "particle_count": 25.0,
+              "particle_type": "minecraft:crit",
+              "radius": 1.0,
+              "shape": "CIRCLE_2D_EDGE",
+              "y_rand": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "height": 0.5,
+              "motion": "None",
+              "particle_count": 50.0,
+              "particle_type": "minecraft:enchanted_hit",
+              "radius": 1.0,
+              "shape": "CIRCLE_2D_EDGE",
+              "y_rand": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "shred",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": 200.0
+            }
+          }
+        ],
+        "en_preds": [
+          ],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "fighter_stance"
+              }
+            }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 3.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "shred_fighter"
+            }
+          }
+        ],
+        "en_preds": [
+           ],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "fighter_stance"
+              }
+            }
+        ],
+        "per_entity_hit": [
+          {
+            "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.5,
+                  "motion": "None",
+                  "particle_count": 15.0,
+                  "particle_type": "minecraft:enchanted_hit",
+                  "radius": 0.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 1.0
+                }
+              }
+            ],
+            "en_preds": [],
+            "ifs": [],
+            "targets": []
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 3.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 2.0,
+              "exile_potion_id": "shred",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": 200.0
+            }
+          }
+        ],
+        "en_preds": [
+           ],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance"
+              }
+            }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 3.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "shred"
+            }
+          }
+        ],
+        "en_preds": [
+           ],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance"
+              }
+            }
+        ],
+        "per_entity_hit": [
+          {
+            "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.5,
+                  "motion": "None",
+                  "particle_count": 15.0,
+                  "particle_type": "minecraft:enchanted_hit",
+                  "radius": 0.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 1.0
+                }
+              }
+            ],
+            "en_preds": [],
+            "ifs": [],
+            "targets": []
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 3.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "shred"
+            }
+          }
+        ],
+        "en_preds": [
+           ],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "defender_stance",
+                "is_false": true
+              }
+            },
+            {
+              "type": "caster_has_mns_effect",
+              "map": {
+                "exile_potion_id": "fighter_stance",
+                "is_false": true
+              }
+            }
+        ],
+        "per_entity_hit": [
+          {
+            "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.5,
+                  "motion": "None",
+                  "particle_count": 15.0,
+                  "particle_type": "minecraft:enchanted_hit",
+                  "radius": 0.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 1.0
+                }
+              }
+            ],
+            "en_preds": [],
+            "ifs": [],
+            "targets": []
+          }
+        ],
+        "targets": [
+          {
+            "type": "aoe",
+            "map": {
+              "en_predicate": "enemies",
+              "radius": 3.0,
+              "selection_type": "RADIUS"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "sword_spin"
+  },
+  "cast_finish_animation": {
+    "id": "cast_finish"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 10,
+    "castingWeapon": "MELEE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 10.0,
+      "min": 7.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "str",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "weapon_skill",
+      "area",
+      "damage",
+	  "melee",
+	  "physical"
+      ]
+    },
+    "times_to_cast": 3,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "shred",
+  "loc_name": "Shred",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 2.0,
+      "stat": "armor_penetration"
+    }
+  ],
+  "weight": 1000
+}

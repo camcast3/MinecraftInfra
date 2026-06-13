@@ -1,0 +1,27 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/marauder.png",
+  "id": "marauder",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "MORE",
+      "scale_to_lvl": false,
+      "stat": "str_dmg",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "attack_speed",
+      "v1": -35.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "move_speed",
+      "v1": -35.0
+    }
+  ]
+}

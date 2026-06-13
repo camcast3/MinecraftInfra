@@ -1,0 +1,15 @@
+{
+  "type": "STAT",
+  "icon": "mmorpg:textures/gui/spells/icons/energy_recover.png",
+  "id": "energy_recover",
+  "is_entry": false,
+  "max_lvls": 4,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "learn_energy_recover",
+      "v1": 1.0
+    }
+  ]
+}

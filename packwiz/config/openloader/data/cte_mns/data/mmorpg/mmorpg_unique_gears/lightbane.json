@@ -1,0 +1,45 @@
+{
+  "base_gear": "chainmail_pants",
+  "guid": "lightbane",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "phys_to_chaos"
+    },
+    {
+      "type": "FLAT",
+      "max": 35.0,
+      "min": 25.0,
+      "stat": "proc_poison_cloud_on_block"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "all_chaos_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "chaos_resist"
+    }
+  ],
+  "weight": 1000
+}

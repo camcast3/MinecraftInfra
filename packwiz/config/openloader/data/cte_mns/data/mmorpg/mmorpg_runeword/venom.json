@@ -1,0 +1,53 @@
+{
+  "id": "venom",
+  "runes": [
+    "fey",
+    "daw",
+    "ano"
+  ],
+  "slots": [
+    "sword",
+    "bow",
+    "crossbow",
+    "staff",
+	"dagger",
+	"hammer",
+	"spear",
+	"axe",
+	"gauntlet",
+	"scythe",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 40.0,
+      "stat": "plus_phys_to_chaos"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "poison_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "energy_on_hit_hit"
+    }
+  ]
+}

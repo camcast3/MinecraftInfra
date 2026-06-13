@@ -1,0 +1,74 @@
+{
+    "entries": [
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "born_in_chaos_v1:monster_flesh"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 140,
+            "nutrition": 8,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "born_in_chaos_v1:bloody_gadfly_eye"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 80,
+            "nutrition": 3,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "born_in_chaos_v1:rotten_fish"
+                }
+            ],
+            "max_time": 200,
+            "min_time": 140,
+            "nutrition": 7,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 60
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [
+                {
+                    "effect": "minecraft:water_breathing",
+                    "level": 0,
+                    "time": 1600
+                }
+            ],
+            "ingredient": [
+                {
+                    "item": "born_in_chaos_v1:sea_terror_eye"
+                }
+            ],
+            "max_time": 160,
+            "min_time": 120,
+            "nutrition": 3,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 40
+        }
+    ]
+}

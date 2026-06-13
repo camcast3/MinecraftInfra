@@ -1,0 +1,13 @@
+name = "Floral Enchantment"
+filename = "Floral Enchantment-1.20.1-1.4.3.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "1240842bdc7f4e8a27a75f662c8b66f6ae7f535d"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 4624775
+project-id = 511569

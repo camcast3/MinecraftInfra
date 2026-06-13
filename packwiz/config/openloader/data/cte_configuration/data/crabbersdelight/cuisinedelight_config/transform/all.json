@@ -1,0 +1,37 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "crabbersdelight:raw_squid_tentacles": {
+            "next": "crabbersdelight:cooked_squid_tentacles",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:raw_glow_squid_tentacles": {
+            "next": "crabbersdelight:cooked_glow_squid_tentacles",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:crab": {
+            "next": "crabbersdelight:cooked_crab",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:clawster": {
+            "next": "crabbersdelight:cooked_clawster",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:shrimp": {
+            "next": "crabbersdelight:cooked_shrimp",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:raw_clam_meat": {
+            "next": "crabbersdelight:cooked_clam_meat",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:tropical_fish_slice": {
+            "next": "crabbersdelight:cooked_tropical_fish_slice",
+            "stage": "COOKED"
+        },
+        "crabbersdelight:pufferfish_slice": {
+            "next": "crabbersdelight:cooked_pufferfish_slice",
+            "stage": "COOKED"
+        }
+    }
+}

@@ -1,0 +1,51 @@
+{
+  "base_gear": "chainmail_helmet",
+  "guid": "mindspiral",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "all_water_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "all_lightning_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 10.0,
+      "stat": "mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "magic_shield_per_perc_of_mana"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 5.0,
+      "stat": "mana_shield"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "mana_leech_cap"
+    }
+  ],
+  "weight": 1000
+}

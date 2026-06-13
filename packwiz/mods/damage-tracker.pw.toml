@@ -1,0 +1,13 @@
+name = "Mine and Slash Damage Tracker"
+filename = "damagetracker-1.2.0.jar"
+side = "client"
+
+[download]
+hash-format = "sha1"
+hash = "af79f8748924d4e5a639796f2983a61a0cfafbc0"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7187116
+project-id = 1378742

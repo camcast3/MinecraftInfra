@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "A",
+    "B"
+  ],
+  "key": {  
+	"A": {
+      "item": "minecraft:lever"
+    }, 
+	"B": {
+      "item": "mmorpg:stone/2"
+    }
+  },
+  "result": {
+    "item": "dungeon_realm:relic_key"
+  }
+}

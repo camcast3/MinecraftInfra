@@ -1,0 +1,13 @@
+name = "Sit & Chill"
+filename = "SitChill 1.0.3.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/5133/720/SitChill%201.0.3.jar"
+hash-format = "sha1"
+hash = "7671f5e659699f596614a929f1ec7822938186e0"
+
+[update]
+[update.curseforge]
+file-id = 5133720
+project-id = 959546

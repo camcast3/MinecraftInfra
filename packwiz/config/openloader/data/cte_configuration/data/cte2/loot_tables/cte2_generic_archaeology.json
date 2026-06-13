@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 100,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_archaeology_trash",
+          "weight": 420
+        },
+{
+          "type": "minecraft:loot_table",
+          "name": "cte2:cte2_archaeology_treasure",
+          "weight": 250
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_generic_arch"
+}

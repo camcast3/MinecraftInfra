@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ESE",
+    "SUS",
+    "EEE"
+  ],
+  "key": {
+    "E": {
+      "item": "refinedstorage:quartz_enriched_iron"
+    },
+    "S": {
+      "item": "botania:pixie_dust"
+    },
+    "U": {
+      "item": "refinedstorage:upgrade"
+    }
+  },
+  "result": {
+    "item": "refinedstorage:speed_upgrade"
+  }
+}

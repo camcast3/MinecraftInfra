@@ -1,0 +1,104 @@
+{
+    "entries": [
+        {
+            "type": "MEAT",
+            "effects": [
+                {
+                    "effect": "deeperdarker:sculk_affinity",
+                    "level": 0,
+                    "time": 3600
+                },
+                {
+                    "effect": "minecraft:darkness",
+                    "level": 0,
+                    "time": 600
+                },
+                {
+                    "effect": "minecraft:resistance",
+                    "level": 1,
+                    "time": 3600
+                },
+                {
+                    "effect": "minecraft:health_boost",
+                    "level": 1,
+                    "time": 3600
+                }
+            ],
+            "ingredient": {
+                "item": "deeperdarker:heart_of_the_deep"
+            },
+            "max_time": 480,
+            "min_time": 400,
+            "nutrition": 16,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 4,
+            "stir_time": 80
+        },
+        {
+            "type": "MEAT",
+            "effects": [
+                {
+                    "effect": "deeperdarker:sculk_affinity",
+                    "level": 0,
+                    "time": 3000
+                },
+                {
+                    "effect": "minecraft:darkness",
+                    "level": 0,
+                    "time": 600
+                }
+            ],
+            "ingredient": {
+                "item": "deeperdarker:warden_carapace"
+            },
+            "max_time": 400,
+            "min_time": 320,
+            "nutrition": 10,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 80
+        },
+        {
+            "type": "NONE",
+            "effects": [
+                {
+                    "effect": "deeperdarker:sculk_affinity",
+                    "level": 0,
+                    "time": 1800
+                }
+            ],
+            "ingredient": {
+                "item": "deeperdarker:soul_dust"
+            },
+            "max_time": 240,
+            "min_time": 0,
+            "nutrition": 1,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0,
+            "size": 0,
+            "stir_time": 80
+        },
+        {
+            "type": "VEG",
+            "effects": [
+                {
+                    "effect": "minecraft:glowing",
+                    "level": 0,
+                    "time": 100
+                }
+            ],
+            "ingredient": {
+                "item": "deeperdarker:bloom_berries"
+            },
+            "max_time": 100,
+            "min_time": 0,
+            "nutrition": 5,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 40
+        }
+    ]
+}

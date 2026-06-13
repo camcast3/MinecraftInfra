@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "vinery:bottle_mojang_wine",
+      "required": false
+    },
+    {
+      "id": "vinery:jellie_wine",
+      "required": false
+    }
+  ]
+}

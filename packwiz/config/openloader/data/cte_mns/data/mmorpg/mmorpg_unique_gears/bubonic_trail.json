@@ -1,0 +1,39 @@
+{
+  "base_gear": "vest_boots",
+  "guid": "bubonic_trail",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 80,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 1.0,
+      "stat": "jewel_socket"
+    },
+    {
+      "type": "PERCENT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 17.0,
+      "min": 17.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 500
+}

@@ -1,0 +1,12 @@
+{
+  "id": "extra_map_boss_chance",
+  "mods": [
+    {
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "extra_map_boss_chance"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

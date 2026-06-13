@@ -1,0 +1,13 @@
+name = "Doggy Talents Next 16x16 texture pack"
+filename = "Doggy16x16.V6.1.20-1.20.1.zip"
+side = "client"
+
+[download]
+hash-format = "sha1"
+hash = "9d5742674e7b07c12d11a8f5defee325c1850c6b"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6803653
+project-id = 1123750

@@ -1,0 +1,111 @@
+{
+    "entries": [
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "undergarden:droopvine_item"
+            },
+            "max_time": 80,
+            "min_time": 0,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergarden:blisterberry"
+                }
+            ],
+            "max_time": 80,
+            "min_time": 0,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 3,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergarden:underbeans"
+                }
+            ],
+            "max_time": 360,
+            "min_time": 180,
+            "nutrition": 8,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "undergarden:glitterkelp"
+            },
+            "max_time": 180,
+            "min_time": 40,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.5,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergarden:mogmoss"
+                },
+                {
+                    "item": "undergarden:blue_mogmoss"
+                }
+            ],
+            "max_time": 200,
+            "min_time": 120,
+            "nutrition": 5,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "undergarden:ditchbulb"
+            },
+            "max_time": 180,
+            "min_time": 80,
+            "nutrition": 6,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 2,
+            "stir_time": 40
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": {
+                "item": "undergarden:ditchbulb_paste"
+            },
+            "max_time": 140,
+            "min_time": 60,
+            "nutrition": 4,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.3,
+            "size": 1,
+            "stir_time": 40
+        }
+    ]
+}

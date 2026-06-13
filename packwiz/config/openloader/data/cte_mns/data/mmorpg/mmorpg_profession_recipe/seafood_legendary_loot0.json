@@ -1,0 +1,31 @@
+{
+  "exp": 350,
+  "id": "seafood_legendary_loot0",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/0",
+      "num": 5
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:pufferfish",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/4",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_gold",
+      "num": 1
+	}
+  ],
+  "set_tier_nbt": true,
+  "profession": "cooking",
+  "result": "mmorpg:seafood/legendary_loot",
+  "result_num": 1,
+  "tier": 0
+}

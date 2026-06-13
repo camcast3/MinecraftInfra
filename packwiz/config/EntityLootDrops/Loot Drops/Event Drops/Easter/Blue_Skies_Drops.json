@@ -1,0 +1,65 @@
+[
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_copper",
+        "dropChance": 30.0,
+        "minAmount": 1,
+        "maxAmount": 9,
+        "requiredDimension": "blue_skies:everbright"
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_iron",
+        "dropChance": 25.0,
+        "minAmount": 1,
+        "maxAmount": 6,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_gold",
+        "dropChance": 15.0,
+        "minAmount": 1,
+        "maxAmount": 5,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_emerald",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "blue_skies:everbright",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_copper",
+        "dropChance": 30.0,
+        "minAmount": 1,
+        "maxAmount": 9,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_iron",
+        "dropChance": 25.0,
+        "minAmount": 1,
+        "maxAmount": 6,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_gold",
+        "dropChance": 15.0,
+        "minAmount": 1,
+        "maxAmount": 5,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_emerald",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "blue_skies:everdawn",
+		"requirePlayerKill": true
+    }
+]

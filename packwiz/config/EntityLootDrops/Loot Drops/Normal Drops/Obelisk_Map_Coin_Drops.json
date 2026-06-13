@@ -1,0 +1,32 @@
+[
+  {
+    "itemId": "lightmanscurrency:coin_copper",
+    "dropChance": 50.0,
+    "minAmount": 2,
+    "maxAmount": 6,
+    "requiredDimension": "ancient_obelisks:obelisk",
+	"requirePlayerKill": true,
+	"allowDefaultDrops": false,
+    "allowModIDs": [
+        "mmorpg",
+        "dungeon_realm",
+        "ancient_obelisks",
+        "the_harvest"
+    ]
+  },
+  {
+    "itemId": "lightmanscurrency:coin_iron",
+    "dropChance": 20.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "ancient_obelisks:obelisk",
+	"requirePlayerKill": true,
+	"allowDefaultDrops": false,
+    "allowModIDs": [
+        "mmorpg",
+        "dungeon_realm",
+        "ancient_obelisks",
+        "the_harvest"
+    ]
+  }
+]

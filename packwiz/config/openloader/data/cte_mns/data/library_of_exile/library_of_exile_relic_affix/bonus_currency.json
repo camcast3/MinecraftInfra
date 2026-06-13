@@ -1,0 +1,12 @@
+{
+  "id": "bonus_currency",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_currency"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

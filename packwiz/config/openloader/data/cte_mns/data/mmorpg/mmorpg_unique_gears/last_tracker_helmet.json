@@ -1,0 +1,45 @@
+{
+  "base_gear": "leather_helmet",
+  "guid": "last_tracker_armor_helmet",
+  "flavor_text": "",
+  "force_item_id": "cte2modpackarmors:last_tracker_armor_helmet",
+  "league": "",
+  "min_drop_lvl": 90,
+  "min_tier": 60,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "weapon_skill_spell_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "critical_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "energy_regen"
+    }
+  ],
+  "weight": 500
+}

@@ -1,0 +1,75 @@
+{
+  "type": "beneficial",
+  "id": "frost_nova_heal",
+  "max_stacks": 1,
+  "mc_stats": [],
+  "one_of_a_kind_id": "",
+  "spell": {
+    "entity_components": {
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "restore_health",
+              "map": {
+                "value_calculation": "frost_nova_heal"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 20.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "target",
+              "map": {}
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 2.0,
+                "particle_type": "aquamirae:ghost",
+                "radius": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": []
+  },
+  "spell_tags": {
+    "tags": [
+	"rejuvenation"
+	]
+  },
+  "stacks_affect_stats": true,
+  "stats": [],
+  "tags": {
+    "tags": [
+    "positive",
+    "heal_over_time"
+    ]
+  }
+}

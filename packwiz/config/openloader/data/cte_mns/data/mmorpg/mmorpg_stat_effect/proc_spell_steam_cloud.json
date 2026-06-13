@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_steam_cloud",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "steam_cloud",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    {"id":"farmersdelight:hot_cocoa",          "required":false },
+    {"id":"delightful:matcha_gummy", "required":false },
+    {
+      "id": "farmersrespite:long_green_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_yellow_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_dandelion_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_rose_hip_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_purulent_tea",
+      "required": false
+    }
+  ]
+}

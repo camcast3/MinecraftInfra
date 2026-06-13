@@ -1,0 +1,12 @@
+{
+  "id": "mob_spawns",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "mobs_spawned"
+    }
+  ],
+  "relic_type": "the_harvest",
+  "weight": 1000
+}

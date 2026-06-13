@@ -1,0 +1,6 @@
+{
+  "effect": "stun",
+  "id": "is_target_under_stun",
+  "ser": "is_under_exile_effect",
+  "side": "Target"
+}

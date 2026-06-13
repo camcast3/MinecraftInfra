@@ -1,0 +1,39 @@
+{
+  "armorSetName": "Oath of Mahj",
+  "performanceMode": true,
+  "head": {
+    "itemKey": "cte2modpackarmors:oath_of_mahj_armor_helmet",
+    "mustBeEmpty": false
+  },
+  "chest": {
+    "itemKey": "cte2modpackarmors:oath_of_mahj_armor_chestplate",
+    "mustBeEmpty": false
+  },
+  "legs": {
+    "itemKey": "cte2modpackarmors:oath_of_mahj_armor_leggings",
+    "mustBeEmpty": false
+  },
+  "boots": {
+    "itemKey": "cte2modpackarmors:oath_of_mahj_armor_boots",
+    "mustBeEmpty": false
+  },
+  "fullSetBonuses": [
+    {
+      "type": "attribute",
+      "name": "kubejs:plus_lvl_all_spells",
+      "value": 3,
+      "modifierUUID": "700ae4df-19b9-4db9-9c4d-0e3e10fc69a9",
+      "description": "3 To All Skills",
+      "attributeOperation": 0,
+      "interactionType": "self",
+      "interactionDuration": 300,
+      "hideBonusDescription": false,
+      "onlyImmuneToNewEffects": false
+    }
+  ],
+  "hideGeneratedTooltip": true,
+  "customTooltips": [
+    "Set Bonus: ",
+    "+3 To All Skills (Full)"
+  ]
+}

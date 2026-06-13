@@ -1,0 +1,62 @@
+{
+    "name": "Sophisticated Backpacks",
+    "icon": "sophisticatedbackpacks:backpack",
+    "category": "patchouli:storage",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:spotlight",
+			"title":"Sophisticated Backpacks",
+  "item": "sophisticatedbackpacks:backpack,sophisticatedbackpacks:iron_backpack,sophisticatedbackpacks:gold_backpack,sophisticatedbackpacks:diamond_backpack,sophisticatedbackpacks:netherite_backpack",
+  "text": "&eSophisticated Backpacks&r allows you to do everything with a backpack you'd want. There are tons of upgrades from auto feeding, crafting and smelting in your bag, and carrying fluids and experience in fluid form. Check JEI for the full list of upgrades.
+
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "Each tier of backpack allows for more upgrade slots and  more inventory space.
+
+&eBackpack: &r27 slots, 1 upgrade slot
+&eIron Backpack:&r 54 slots, 2 upgrade slots
+&eGold Backpack:&r 81 slots, 3 upgrade slots
+&eDiamond Backpack:&r 108 slots, 5 upgrade slots
+&eNetherite Backpack:&r 120 slots, 7 upgrade slots"
+},{
+            "type": "patchouli:spotlight",
+			"title":"Stack Upgrades",
+  "item": "sophisticatedbackpacks:stack_upgrade_starter_tier,sophisticatedbackpacks:stack_upgrade_tier_1,sophisticatedbackpacks:stack_upgrade_tier_2,sophisticatedbackpacks:stack_upgrade_tier_3,sophisticatedbackpacks:stack_upgrade_tier_4,sophisticatedbackpacks:stack_upgrade_omega_tier",
+  "text": "&eStack Upgrades&r are immensely important. Stack upgrades can stack upon each other if more than one is inside a bag.
+
+
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "
+For example:
+&e1 Tier 4 Stack Upgrade&r: 1024
+
+&e2 Tier 4 Stack Upgrades:&r 16,384
+
+&e3 Tier 4 Stack Upgrades:&r 262,144
+
+In order to prevent a black hole from forming, you are limited to 3 stack upgrades per backpack."
+},{
+            "type": "patchouli:spotlight",
+			"title":"Advanced Upgrades",
+  "item": "sophisticatedbackpacks:advanced_pickup_upgrade,sophisticatedbackpacks:advanced_feeding_upgrade,sophisticatedbackpacks:advanced_void_upgrade",
+  "text": "&eAdvanced Upgrades&r allow for &efiner filtering&r and control over the behavior of the upgrade in the bag, such as the advanced pickup upgrade allows for picking up items on a whitelist, disallowing items on a blacklist, or picking up matching items that are already in the bag.
+" 
+		},{
+            "type": "patchouli:text",
+			"title":" ",
+  "text": "
+  
+  
+  
+  Check &eJEI&r for the full list of upgrades.
+" 
+		}
+		
+    ]
+}

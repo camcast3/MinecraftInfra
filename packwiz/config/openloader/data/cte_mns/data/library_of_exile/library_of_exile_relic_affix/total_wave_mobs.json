@@ -1,0 +1,12 @@
+{
+  "id": "total_wave_mobs",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "total_wave_mobs"
+    }
+  ],
+  "relic_type": "ancient_obelisks",
+  "weight": 1000
+}

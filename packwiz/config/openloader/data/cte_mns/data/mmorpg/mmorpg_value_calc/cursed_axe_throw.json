@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 8.0,
+    "min": 8.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.2,
+      "min": 2.2
+    },
+    "stat": "health"
+  },
+  "id": "cursed_axe_throw",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.2,
+        "min": 2.2
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+name = "Redcap's Currency Retexture"
+filename = "Redcap_LC_Retexture7.5.zip"
+side = "client"
+
+[download]
+hash-format = "sha1"
+hash = "2762e6a605f4cbcf6f7b1d7385c785f2dd5c5423"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5918840
+project-id = 865628

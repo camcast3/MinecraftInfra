@@ -1,0 +1,27 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/talent_icons/asc/champion/2.png",
+  "id": "champion_class_2",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "health_restore_effect_on_self_ll",
+      "v1": 8.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "health_restore_effect_on_self_vll",
+      "v1": 12.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "proc_blood_explosion_on_crit",
+      "v1": 25.0
+    }
+  ]
+}

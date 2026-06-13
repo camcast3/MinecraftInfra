@@ -1,0 +1,53 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+    "end_ch1",
+    "end_ch2",
+    "end_ch3",
+    "end_ch4"
+    ],
+    "ends": [
+    "end_e1",
+    "end_e2",
+    "end_e3",
+    "end_e4"
+    ],
+    "entrances": [
+    "end_enter"
+    ],
+    "folder": "end",
+    "four_ways": [
+    "end_fw1",
+    "end_fw2",
+    "end_fw3",
+    "end_fw4"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+            "otherworldly"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+    "end_sh1",
+    "end_sh2",
+    "end_sh3",
+    "end_sh4"
+    ],
+    "triple_hallway": [
+    "end_th1",
+    "end_th2",
+    "end_th4",
+    "end_th4",
+    "end_th5"
+    ]
+  },
+  "id": "end",
+  "weight": 1000
+}

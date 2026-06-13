@@ -1,0 +1,47 @@
+{
+  "id": "green",
+  "mobs": [
+    {
+      "mob_id": "minecraft:slime",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:creeper",
+      "weight": 300
+    },
+    {
+      "mob_id": "minecraft:phantom",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:zombie",
+      "weight": 1000
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_bruiser",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_clown",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_fisherman",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_lumberjack",
+      "weight": 50	
+    },
+    {
+      "mob_id": "twilightforest:blockchain_goblin",
+      "weight": 125	
+    }
+  ],
+  "tags": {
+    "tags": [
+      "has_flying_mobs"
+    ]
+  },
+  "weight": 1000
+}

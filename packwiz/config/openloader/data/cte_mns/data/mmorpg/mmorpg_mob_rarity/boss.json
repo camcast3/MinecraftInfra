@@ -1,0 +1,19 @@
+{
+  "affixes": 1,
+  "dmg_multi": 1.9,
+  "exp_multi": 10.5,
+  "extra_hp_multi": 4.0,
+  "force_custom_hp": 200,
+  "id": "boss",
+  "is_elite": false,
+  "is_special": true,
+  "loot_multi": 10.5,
+  "max_slow_from_chill": 25,
+  "min_lvl": 1,
+  "name": "Boss",
+  "spells": [
+  ],
+  "stat_multi": 3.5,
+  "text_format": "RED",
+  "weight": 0
+}

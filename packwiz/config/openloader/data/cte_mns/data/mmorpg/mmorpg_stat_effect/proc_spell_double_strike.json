@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_double_strike",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "double_strike",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

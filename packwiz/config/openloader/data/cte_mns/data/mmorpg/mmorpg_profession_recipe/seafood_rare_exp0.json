@@ -1,0 +1,31 @@
+{
+  "exp": 175,
+  "id": "seafood_rare_exp0",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/fishing/0",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:tropical_fish",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/2",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_iron",
+      "num": 1
+	}
+  ],
+  "set_tier_nbt": true,
+  "profession": "cooking",
+  "result": "mmorpg:seafood/rare_exp",
+  "result_num": 1,
+  "tier": 0
+}

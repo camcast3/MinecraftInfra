@@ -1,0 +1,12 @@
+[
+  {
+	"_comment": "Summer Event Drops",
+    "itemId": "simplehats:hatscraps_summer",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "command": "particle minecraft:flame {entity_x} {entity_y} {entity_z} 1 1 1 0.1 50",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  }
+]

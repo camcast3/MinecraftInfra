@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "supplementariesdelight:lumisene_shake",
+      "required": false
+    },
+    {
+      "id": "supplementariesdelight:lumisene_stew",
+      "required": false
+    },
+    {
+      "id": "mexicans_delight:chipsandsalsa",
+      "required": false
+    },
+    {
+      "id": "culturaldelights:fried_eggplant_pasta",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "moo",
+  "possible_bosses": [
+	"twilightforest:minoshroom"
+  ],
+  "structure": {
+    "rooms_folder": "dungeon_realm:map_boss/moo",
+    "size": 1,
+    "teleport_offset_x": 0,
+    "teleport_offset_y": 0,
+    "teleport_offset_z": 0
+  },
+  "size": 2,
+  "weight": 0
+}

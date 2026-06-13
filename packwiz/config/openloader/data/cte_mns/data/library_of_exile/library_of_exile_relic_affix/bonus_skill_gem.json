@@ -1,0 +1,12 @@
+{
+  "id": "bonus_skill_gem",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_skill_gem"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

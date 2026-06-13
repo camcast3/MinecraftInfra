@@ -1,0 +1,10 @@
+[{
+  "entityId": "alexsmobs:void_worm",
+  "itemId": "mmorpg:runes/end",
+  "dropChance": 5.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"End Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": true
+}]

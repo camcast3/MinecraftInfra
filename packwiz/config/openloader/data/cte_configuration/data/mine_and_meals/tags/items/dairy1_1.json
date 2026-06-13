@@ -1,0 +1,61 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:soy_milk",
+      "required": false
+    },
+    {
+      "id": "doggytalents:egg_sandwich",
+      "required": false
+    },
+    {
+      "id": "corn_delight:creamy_corn_drink",
+      "required": false
+    },
+    {
+      "id": "corn_delight:cornbread_batter",
+      "required": false
+    },
+    {
+      "id": "endersdelight:steak_fries",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:creepy_cookies_with_milk",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_chowder",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:beer",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:vodka",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:mead",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:rice_wine",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:saccharine_rum",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:flaxen_cheese_wedge",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:scarlet_cheese_wedge",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "attribute_id": "minecraft:generic.attack_damage",
+  "conversion": 0.5,
+  "enchant_id": "",
+  "id": "attack_damage_compat",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "total_damage",
+  "mod_type": "FLAT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

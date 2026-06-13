@@ -1,0 +1,45 @@
+{
+  "base_gear": "brigandine_chest",
+  "guid": "lightning_coil",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 80,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "all_lightning_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 8.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": -60.0,
+      "min": -60.0,
+      "stat": "lightning_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 40.0,
+      "stat": "phys_taken_as_lightning"
+    }
+  ],
+  "weight": 500
+}

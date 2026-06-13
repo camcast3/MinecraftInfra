@@ -1,0 +1,13 @@
+name = "Flan (Forge, NeoForge)"
+filename = "flan-1.20.1-1.10.10-forge.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "e196674d0f5b2739365704dff0fc82352d03b990"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5993979
+project-id = 493246

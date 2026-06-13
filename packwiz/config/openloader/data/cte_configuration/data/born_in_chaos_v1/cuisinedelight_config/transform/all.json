@@ -1,0 +1,17 @@
+{
+  "fluidTransform": {},
+  "itemTransform": {
+    "born_in_chaos_v1:corpse_maggot": {
+      "next": "born_in_chaos_v1:fried_maggot",
+      "stage": "COOKED"
+    },
+    "born_in_chaos_v1:monster_flesh": {
+      "next": "born_in_chaos_v1:smoked_monster_flesh",
+      "stage": "COOKED"
+    },
+    "born_in_chaos_v1:rotten_fish": {
+      "next": "born_in_chaos_v1:smoked_fish",
+      "stage": "COOKED"
+    }
+  }
+}

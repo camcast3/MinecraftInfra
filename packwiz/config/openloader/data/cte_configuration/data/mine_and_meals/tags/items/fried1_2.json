@@ -1,0 +1,109 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:aburaage",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:honey_fried_kelp",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:squid_rings",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:ham_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:mixed_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_with_seafood",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_with_vegetables",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_with_vegetables",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:mixed_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:suspicious_mix",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_platter",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:vegetable_platter",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_mushroom",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:fried_meat_and_melon",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:scrambled_egg_and_tomato",
+      "required": false
+    },
+    {
+      "id": "endersdelight:steak_fries",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fish_and_chips",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:pizza_slice",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "exp": 475,
+  "id": "food_mythic_magic5",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/5",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/5",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "crabbersdelight:cooked_crab",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_emerald",
+      "num": 1
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/mythic_magic",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 5
+}

@@ -1,87 +1,19 @@
 ---
-# Proxmox stack: Craft to Exile 2 + TailScale sidecar + tiered 3-2-1 backups
-# Managed by Portainer CE with GitOps polling (auto-redeploy on git changes).
-#
-# Portainer CE GitOps note: relative bind mounts (e.g. ../shared/...) DO NOT work
-# in CE — that's a Portainer Business feature ("Enable relative path volumes").
-# Shared files (whitelist, ops, PCF config) are pulled into this stack via:
-#   - WHITELIST_FILE / OPS_FILE: raw GitHub URLs (itzg native HTTP fetch)
-#   - APPLY_EXTRA_FILES: raw GitHub URL for the PCF TOML template (first run only)
-#   - top-level `configs:` with inline content for the PCF patch JSON
-# Canonical source for all of these still lives in docker/shared/ in this repo.
-# The Azure stack continues to bind-mount docker/shared/ directly (no Portainer there).
-#
-# TailScale runs as a sidecar. C2E2, the three mc-backup containers, the restarter,
-# and every monitoring sidecar share its network namespace via
-# network_mode: service:tailscale.
-#   - C2E2's port 25565 is reachable only at the TailScale IP (100.x.x.x)
-#   - Each mc-backup reaches RCON at localhost:25575 (same network namespace)
-#
-# Backup architecture (classic 3-2-1, per-destination retention):
-#   backup-local  → /data/minecraft/local-backups/ (tar)            14d @ 2h
-#   backup-nas    → NAS:${NAS_BACKUP_PATH}/        (rclone, SMB)    60d @ 6h
-#   backup-azure  → AZBLOB:minecraft-backups/c2e2/ (rclone, GRS,    365d @ 24h
-#                                                   Cold tier)
-# Schedules use CRON_SCHEDULE on absolute Pacific-Time wall clock (TZ env var
-# below) so save-off windows never collide and never drift.
-#
-# All ${VAR} values must be set in Portainer's stack environment variable UI.
-# Never hardcode secret values here and never use a .env file with Portainer.
-#
-# Variables to configure in Portainer UI:
-#   TS_AUTHKEY                  - TailScale auth key (REUSABLE + preauthorized,
-#                                 non-ephemeral). Reusable because Portainer
-#                                 keeps this env var set across every stack
-#                                 redeploy; containerboot only consumes the key
-#                                 when /var/lib/tailscale state is empty (so it
-#                                 normally isn't touched after first registration),
-#                                 but if the state dir is ever wiped or the
-#                                 container recreated without state, the value
-#                                 must still be valid for the node to come back.
-#                                 NOT ephemeral — this is a long-running backend
-#                                 server; the tailnet entry should persist when
-#                                 the container is restarted/offline. The Azure
-#                                 lobby uses a SINGLE-USE key on a different
-#                                 injection path; see docker/azure/refresh-env.sh.
-#   TS_HOSTNAME                 - Node name in the tailnet (e.g. mc-proxmox)
-#   CF_API_KEY                  - CurseForge API key (https://console.curseforge.com/)
-#   VELOCITY_FORWARDING_SECRET  - Must match the Azure Velocity proxy config.
-#                                 Rotation is COORDINATED with the Azure KV
-#                                 secret of the same name; see the runbook in
-#                                 docker/azure/refresh-env.sh's header.
-#   RCON_PASSWORD               - RCON password (shared by C2E2, restarter, all 3 backups)
-#   STORAGE_ACCOUNT             - Azure Storage account name (no suffix)
-#   AZURE_TENANT_ID             - Service principal tenant ID (for backup-azure)
-#   AZURE_CLIENT_ID             - Service principal client ID (for backup-azure)
-#   AZURE_CLIENT_SECRET         - Service principal client secret (for backup-azure)
-#   NAS_HOST                    - IP or DNS name of the on-prem NAS (SMB share host)
-#   NAS_USER                    - NAS account scoped to the backup share only
-#   NAS_PASS_OBSCURED           - Output of `rclone obscure '<plaintext-password>'`
-#                                 (rclone's SMB backend rejects unobscured passwords)
-#   NAS_BACKUP_PATH             - <share-name>/<subdir>, must be writable by NAS_USER
-#   NAS_DOMAIN (optional)       - Set only if the NAS uses a non-default workgroup
-#
-# MC 1.20.1 requires Java 17 — all server images MUST use java17 variants.
-#
-# All services set TZ: America/Los_Angeles so cron, log timestamps, and the
-# restarter announce times all use Pacific Time. The image's tzdata package
-# does the conversion; no /etc/timezone bind mount needed.
-#
-# Bind mounts live under /data/minecraft/ — pre-create these on the host:
-#   mkdir -p /data/minecraft/{tailscale,c2e2,promtail,local-backups}
+# Proxmox stack: C2E2 (Forge + packwiz) behind TailScale, with tiered 3-2-1 backups.
+# Managed by Portainer CE GitOps. Secrets come from Portainer's env-var UI; never
+# hardcoded here. Build metadata (PACKWIZ_URL SHA, MOTD version) is inlined and
+# rewritten in place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
+# MC 1.20.1 ⇒ all server images MUST stay on java17 variants.
+# Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups}
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
     - no-new-privileges:true
   restart: unless-stopped
 
-# Shared spec for the three mc-backup services. Per-service blocks below only
-# override container_name, environment (merged via x-backup-env-common), and —
-# for backup-local only — volumes (to add the /backups bind mount).
 x-backup-common: &backup-common
   <<: *common-keys-apps
   image: itzg/mc-backup:2026.6.0@sha256:e2be1f80347809cd233c8f8909b1e1a6025baa327864f84464f3e5057a0dcb90
-  # Shares TailScale's network namespace — RCON reachable at localhost:25575.
   network_mode: "service:tailscale"
   depends_on:
     craft-to-exile-2:
@@ -94,10 +26,6 @@ x-backup-common: &backup-common
   volumes:
     - /data/minecraft/c2e2:/data:ro
 
-# Env merged into each backup service's environment: block via `<<: *backup-env-common`.
-# Per-service env adds BACKUP_METHOD + destination + CRON_SCHEDULE + PRUNE_BACKUPS_DAYS.
-# BACKUP_INTERVAL / INITIAL_DELAY / BACKUP_ON_STARTUP intentionally omitted —
-# overridden by CRON_SCHEDULE on each leg.
 x-backup-env-common: &backup-env-common
   RCON_HOST: localhost
   RCON_PORT: "25575"
@@ -107,7 +35,6 @@ x-backup-env-common: &backup-env-common
 
 services:
 
-  ############################# NETWORK SIDECAR
   tailscale:
     <<: *common-keys-apps
     image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
@@ -136,14 +63,10 @@ services:
       retries: 3
       start_period: 30s
 
-  ############################# MINECRAFT SERVER
   craft-to-exile-2:
     <<: *common-keys-apps
-    # MC 1.20.1 requires Java 17 — NEVER change this to a java21 image variant
     image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
     container_name: mc-c2e2
-    # Shares TailScale's network namespace — port 25565 only accessible
-    # via the TailScale IP (100.x.x.x), not on the VM's local interface
     network_mode: "service:tailscale"
     tty: true
     stdin_open: true
@@ -164,96 +87,46 @@ services:
     environment:
       EULA: "TRUE"
       TZ: America/Los_Angeles
-      TYPE: AUTO_CURSEFORGE
+      TYPE: FORGE
       VERSION: "1.20.1"
-      CF_SLUG: craft-to-exile-2
-      CF_API_KEY: ${CF_API_KEY}
-      # Client-only mods that crash the dedicated server — excluded from CurseForge auto-install
-      CF_EXCLUDE_MODS: chat-plus,minemenu
-      # Mods the AUTO_CURSEFORGE installer skips as client-only, but Forge's
-      # handshake still requires them to be present on the server for players to connect.
-      CF_FORCE_INCLUDE_MODS: recreation-of-exile-sfx,ftb-placeholders
+      # Must equal packwiz/pack.toml's [versions].forge. The import script
+      # bumps both atomically; manual edits must touch both.
+      FORGE_VERSION: "47.4.10"
+      # SHA segment rewritten in place by publish-prism-pack.ps1; "main" is the
+      # bootstrap default in effect before the first publish.
+      PACKWIZ_URL: "https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/packwiz/pack.toml"
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
-      # Server-list MOTD shown to clients via Velocity's ping-passthrough = "ALL".
-      # Plain text — itzg writes this verbatim into server.properties on every start.
-      # Keep in sync with the Velocity fallback motd in docker/azure/velocity/velocity.toml.tmpl.
-      MOTD: "Craft to Exile 2"
-      # Fixed 31G heap stays just under the ~32G compressed-oops cliff —
-      # going larger forces 64-bit object pointers and is a net regression.
-      # Container ceiling is 40G to leave headroom for off-heap (Netty, direct buffers, metaspace).
+      # C2E2's Mine and Slash Dungeons fires world commands via command blocks.
+      ENABLE_COMMAND_BLOCK: "TRUE"
+      # Version segment rewritten in place by publish-prism-pack.ps1.
+      MOTD: "Craft to Exile 2 v0.3.0"
+      # 31G stays just under the ~32G compressed-oops cliff; 40G container
+      # ceiling leaves headroom for off-heap (Netty, direct buffers, metaspace).
       MEMORY: "31G"
-      # Whitelist/ops fetched from the public GitHub repo on every container start.
-      # Portainer CE GitOps can't bind-mount files from the repo into the container
-      # (relative-path volumes is a BE-only feature), so we use itzg's native URL support.
-      # EXISTING_*=SYNCHRONIZE makes git the authoritative source: on every container
-      # start mc-image-helper syncs the on-disk whitelist.json / ops.json with the URL
-      # (entries added AND removed to match). Workflow is: edit docker/shared/*.json →
-      # PR → merge to main → Portainer GitOps redeploys → live on next container start.
-      # Trade-off: in-game `/whitelist add` and `/op` are reverted on the next restart
-      # (restarter cycles every 6h), so always commit the change to docker/shared/ too.
+      # Portainer CE GitOps can't bind-mount repo files (BE-only feature), so
+      # whitelist/ops come from raw GitHub URLs. SYNCHRONIZE makes git
+      # authoritative — in-game /whitelist add and /op are reverted on restart.
       WHITELIST_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/whitelist.json
       OPS_FILE: https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/ops.json
       EXISTING_WHITELIST_FILE: SYNCHRONIZE
       EXISTING_OPS_FILE: SYNCHRONIZE
       ENFORCE_WHITELIST: "TRUE"
-      # Proxy-Compatible-Forge — enables Velocity modern forwarding on Forge backends.
-      # Server-side only; clients connect with unmodified CurseForge C2E2 pack.
-      # PCF registers no new content — safe for MODS overlay (no Forge channel handshake issues).
-      #
-      # spark — JVM profiler/perf-diagnostics mod (https://spark.lucko.me/). Complements
-      # the Prometheus monitoring below: mc-monitor (SLP) + cpburnz exporter (in-JVM) +
-      # cAdvisor surface "what's wrong" (TPS dips, CPU spikes); /spark profiler,
-      # /spark health, /spark heapdump answer "why" by sampling the JVM and uploading
-      # shareable reports to spark.lucko.me.
-      # Server-side only; ops use it via the in-game /spark command (ops.json grants access).
-      # No metrics endpoint — no Prometheus scrape, no port, completely independent of the sidecars.
-      #
-      # minecraft-prometheus-exporter (cpburnz) — white-box server metrics from inside
-      # the C2E2 JVM: TPS (mc_server_tick_seconds), per-dimension tick histograms,
-      # chunks loaded, entity counts by dim/type, plus JVM heap/GC/threads. This is the
-      # Forge equivalent of Velocity's bungeecord-prometheus-exporter on the Azure side
-      # — server-side only, no client install required (same model as spark). The mod
-      # listens on :19565; because c2e2 shares the tailscale netns, Prometheus scrapes
-      # it at <proxmox-tailnet-ip>:19565. Baseline config is shipped from this repo via
-      # APPLY_EXTRA_FILES below — see docker/shared/config/prometheus_exporter-server.toml
-      # for the values and how to change them.
-      #
-      # Important: the mod binds :19565 inside `onServerStarted` (see PrometheusExporterMod.java
-      # in cpburnz/minecraft-prometheus-exporter), not at JVM/mod-load time. So the
-      # port returns "connection refused" during the entire `start_period` (300s) plus
-      # modpack/world load — typically 3-8 minutes on C2E2 — and again during every
-      # planned restart triggered by the `restarter` service every 6 hours. To avoid
-      # flapping Prometheus alerts during normal restarts, pair the `up{job=...19565}`
-      # alert with the mc-monitor SLP probe on :8081 (e.g. fire only when the SLP
-      # exporter also reports c2e2 down for N consecutive minutes).
-      MODS: |-
-        https://github.com/adde0109/Proxy-Compatible-Forge/releases/download/v1.2.6/proxy-compatible-forge-1.2.6.jar
-        https://cdn.modrinth.com/data/l6YH9Als/versions/4FXHDE9F/spark-1.10.53-forge.jar
-        https://github.com/cpburnz/minecraft-prometheus-exporter/releases/download/1.20.1-forge-1.2.1/Prometheus-Exporter-1.20.1-forge-1.2.1.jar
-      # Extra config files fetched from the repo on first run only (--skip-existing
-      # semantics — mc-image-helper mcopy parses this as newline-delimited entries,
-      # each entry "<dest-relative-to-/data><<source-url>"; filename = URL basename).
-      # Both files persist on the host volume after first run; to push a change in
-      # either TOML, delete the file from /data/minecraft/c2e2/ on the Proxmox VM
-      # and let Portainer GitOps redeploy.
-      #   1) PCF TOML template — runs BEFORE PATCH_DEFINITIONS, which then re-injects
-      #      the forwarding secret on every start (see configs: block below).
-      #   2) cpburnz prometheus-exporter TOML — versioned baseline so the config is
-      #      explicit in git instead of auto-generated on first start.
+      # Admin overlay (PCF + spark + prom-exporter) ships via packwiz with
+      # side = "server"; configs come from docker/shared/config/ here. The mod
+      # binds :19565 in onServerStarted, so prom scrapes will fail during boot
+      # and restart windows — pair the alert with the mc-monitor SLP probe.
       APPLY_EXTRA_FILES: |-
         config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml
         world/serverconfig<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/prometheus_exporter-server.toml
-      # PATCH_DEFINITIONS re-injects the forwarding secret on every start. The patch JSON
-      # is provided via the top-level configs: block below (inline, no host bind mount).
+      # Re-injects the Velocity forwarding secret on every start; patch JSON
+      # lives in the top-level configs: block at the bottom of this file.
       PATCH_DEFINITIONS: /patches
       CFG_VELOCITY_FORWARDING_SECRET: ${VELOCITY_FORWARDING_SECRET}
       # High-latency player tuning (2 AUS players, ~200ms RTT)
       NETWORK_COMPRESSION_THRESHOLD: "512"
       PLAYER_IDLE_TIMEOUT: "0"
       MAX_TICK_TIME: "90000"
-      # Biggest TPS lever at ~20 concurrent players on a modded pack.
-      # view=7 chunks rendered, simulation=5 chunks ticked (mobs, redstone, crops).
       VIEW_DISTANCE: "7"
       SIMULATION_DISTANCE: "5"
       ENABLE_RCON: "true"
@@ -266,18 +139,14 @@ services:
       retries: 5
       start_period: 300s
 
-  ############################# MAINTENANCE
-  # Three independent mc-backup services — one per 3-2-1 destination, each with
-  # its own retention via native PRUNE_BACKUPS_DAYS. CRON_SCHEDULE is on
-  # absolute Pacific-Time wall clock (15+ min between any two fires) so the
-  # rcon save-off / save-all / save-on windows never collide and never drift.
-  # See header comment for the destination/retention/schedule summary table.
+  # 3-2-1 backups: per-destination retention via PRUNE_BACKUPS_DAYS.
+  # CRON_SCHEDULE staggered by ≥15 min so save-off windows never collide.
 
   backup-local:
     <<: *backup-common
     container_name: mc-c2e2-backup-local
-    # Volumes must be redeclared in full — YAML merge replaces sequences rather
-    # than concatenating, so x-backup-common's c2e2 mount is re-listed here.
+    # YAML merge replaces sequences (doesn't concatenate), so the c2e2 ro mount
+    # from x-backup-common is re-listed here alongside the /backups mount.
     volumes:
       - /data/minecraft/c2e2:/data:ro
       - /data/minecraft/local-backups:/backups
@@ -286,7 +155,7 @@ services:
       BACKUP_METHOD: tar
       DEST_DIR: /backups
       PRUNE_BACKUPS_DAYS: "14"
-      # Every 2 h on the hour (PT). 12/day × 14d × ~349 MB ≈ ~57 GB on the VM.
+      # 12/day × 14d × ~349 MB ≈ ~57 GB on the VM.
       CRON_SCHEDULE: "0 */2 * * *"
 
   backup-nas:
@@ -297,20 +166,16 @@ services:
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: NAS
       RCLONE_DEST_DIR: ${NAS_BACKUP_PATH}
-      PRUNE_BACKUPS_DAYS: "60"
-      # Every 6 h at :15 (PT) — offset 15 min from the local leg's hourly fires.
-      # 4/day × 60d × ~349 MB ≈ ~82 GB on the NAS.
+      PRUNE_BACKUPS_DAYS: "31"
+      # 4/day × 31d × ~349 MB ≈ ~43 GB on the NAS.
       CRON_SCHEDULE: "15 */6 * * *"
-      # NAS rclone remote (SMB backend, speaks SMB natively from userspace —
-      # no cifs-utils or kernel mount needed on the host).
       RCLONE_CONFIG_NAS_TYPE: smb
       RCLONE_CONFIG_NAS_HOST: ${NAS_HOST}
       RCLONE_CONFIG_NAS_USER: ${NAS_USER}
-      # rclone's SMB backend rejects unobscured passwords — value must be the
-      # output of `rclone obscure '<plaintext>'`.
+      # rclone's SMB backend rejects unobscured passwords; value must be
+      # the output of `rclone obscure '<plaintext>'`.
       RCLONE_CONFIG_NAS_PASS: ${NAS_PASS_OBSCURED}
-      # Optional: only set if the NAS uses a non-default Windows workgroup/domain.
-      # RCLONE_CONFIG_NAS_DOMAIN: ${NAS_DOMAIN}
+      # RCLONE_CONFIG_NAS_DOMAIN: ${NAS_DOMAIN}  # only if non-default workgroup
 
   backup-azure:
     <<: *backup-common
@@ -319,32 +184,24 @@ services:
       <<: *backup-env-common
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
-      # Path on the remote: <blob-container>/<subdirectory>.
       RCLONE_DEST_DIR: minecraft-backups/c2e2
-      PRUNE_BACKUPS_DAYS: "365"
-      # Daily at 04:30 PT — low player traffic. 1/day × 365d × ~349 MB ≈ ~125 GB
-      # at Cold GRS ≈ ~$2.50/mo.
+      PRUNE_BACKUPS_DAYS: "60"
+      # 1/day × 60d × ~349 MB ≈ ~20 GB @ Cold GRS ≈ ~$0.40/mo.
       CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
       RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
       RCLONE_CONFIG_AZBLOB_TENANT: ${AZURE_TENANT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_ID: ${AZURE_CLIENT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
-      # Upload blobs at Cold tier (cheaper $/GB, 90-day minimum retention which
-      # is well under our 365-day prune). Per-blob — does not change the account
-      # default tier (which stays Hot for the public modpack container).
       RCLONE_CONFIG_AZBLOB_ACCESS_TIER: Cold
-      # The Proxmox SP has Blob Data Contributor only on the minecraft-backups
-      # container, not at account scope — skip rclone's container-existence
-      # preflight HEAD which would otherwise 403.
+      # SP scope is the minecraft-backups container only, not the account —
+      # skip rclone's preflight HEAD which would otherwise 403.
       RCLONE_CONFIG_AZBLOB_NO_CHECK_CONTAINER: "true"
 
   restarter:
     <<: *common-keys-apps
-    # Reuses the minecraft-server image — rcon-cli is already installed in it.
-    # Every 6 hours: warns players at 1 hr, 30 min, 5 min, 1 min, 10 sec, then sends 'stop'.
-    # Docker's restart: unless-stopped policy brings C2E2 back up automatically.
-    # depends_on service_healthy ensures the 6h timer only starts once C2E2 is ready.
+    # Reuses the MC image — rcon-cli already installed. Every 6h: warn at
+    # 1h/30m/5m/1m/10s, then `stop`; restart: unless-stopped brings it back.
     image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
     container_name: mc-restarter
     network_mode: "service:tailscale"
@@ -378,28 +235,15 @@ services:
           rcon "stop" || rcon "stop" || rcon "stop"
         done
 
-  ############################# MONITORING SIDECARS
-  # All 4 share the tailscale network namespace so their metrics endpoints
-  # are reachable only at the Proxmox tailscale IP (100.x.x.x). No ports:
-  # directive is allowed when network_mode: service:tailscale is set —
-  # the ports listed in comments below are accessed via that tailnet IP.
-  # The c2e2 container itself also lives in this netns, so the cpburnz
-  # Prometheus exporter mod (loaded in MODS above) is reachable on the
-  # same tailnet IP at :19565 alongside these sidecars.
-  #
-  # Known limitation: node-exporter and cadvisor run inside the tailscale
-  # network namespace, so they miss some host network interface metrics
-  # (CPU, memory, disk, container metrics still work). Documented trade-off.
+  # All monitoring sidecars share the tailscale netns — endpoints reachable
+  # only at <proxmox-tailnet-ip>:<port>. ports: is forbidden under
+  # network_mode: service:tailscale. node-exporter/cadvisor miss some host
+  # network metrics as a result; documented trade-off.
 
-  # Black-box liveness/availability prober — opens a TCP socket to c2e2's game port
-  # and uses Server List Ping to export player count, version, latency, MOTD on :8081.
-  # Complements the cpburnz mod's in-JVM white-box metrics (TPS, heap, entities) on
-  # :19565 — together they answer "is the front door open?" + "is the JVM healthy?".
   mc-monitor-exporter:
     <<: *common-keys-apps
     image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
     container_name: mc-monitor-exporter
-    # Shares tailscale netns — c2e2 is reachable at localhost:25565 here.
     network_mode: "service:tailscale"
     depends_on:
       tailscale:
@@ -439,10 +283,6 @@ services:
       - "--path.rootfs=/host"
       - "--web.listen-address=:9100"
 
-  # cAdvisor — per-container CPU/mem/net/disk metrics on :8080 (reachable via
-  # the Proxmox tailscale IP). Same tuning as the Azure stack: bumped CPU and
-  # relaxed --housekeeping_interval to keep /metrics scrapes from timing out
-  # under the container CPU limit (google/cadvisor#2622).
   cadvisor:
     <<: *common-keys-apps
     image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
@@ -455,8 +295,8 @@ services:
     deploy:
       resources:
         limits:
-          # 0.25 CPU + default 1s housekeeping → /metrics scrapes time out.
-          # 0.5 CPU leaves enough headroom for both the stats loop and the scrape.
+          # 0.25 CPU + default 1s housekeeping → /metrics scrapes time out
+          # (google/cadvisor#2622). 0.5 CPU + 10s housekeeping is comfortable.
           cpus: '0.5'
           memory: 256M
     volumes:
@@ -464,21 +304,15 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      # /dev/disk + /dev/kmsg are in the upstream google/cadvisor README's
-      # canonical `docker run` example. Without them cadvisor can hang reading
-      # kernel OOM messages and miss disk device detection on cgroup v2 hosts.
+      # /dev/disk + /dev/kmsg per upstream cadvisor canonical example —
+      # without them cadvisor can hang on cgroup v2 hosts reading OOM events.
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg
     environment:
       TZ: America/Los_Angeles
     command:
-      # --docker_only=true skips raw/systemd cgroup hierarchies (host slices,
-      # user sessions). We only care about Docker container metrics — node-exporter
-      # already covers host-level numbers.
       - --docker_only=true
-      # 1s default is too aggressive for a CPU-limited container; 10s is plenty
-      # for this stack and matches Prometheus's typical scrape interval.
       - --housekeeping_interval=10s
 
   promtail:
@@ -497,8 +331,7 @@ services:
     volumes:
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      # Persist read-positions across redeploys so promtail doesn't re-ship
-      # historical logs every time Portainer GitOps recreates the container.
+      # Persist read-positions so promtail doesn't re-ship logs on every redeploy.
       - /data/minecraft/promtail:/var/lib/promtail
     configs:
       - source: promtail_config
@@ -508,19 +341,10 @@ services:
       TZ: America/Los_Angeles
     command: ["-config.file=/etc/promtail/config.yaml"]
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Top-level configs: block. All inline because Portainer CE GitOps does NOT
-# support relative-path volumes (BE-only feature). Each entry materializes as
-# a file inside the target container at deploy time, no host bind mount needed.
-#
-# Escaping (PCF patch only): Compose interpolates ${VAR} and $VAR from its env
-# at deploy time. We want literal ${CFG_VELOCITY_FORWARDING_SECRET} preserved
-# in the patch JSON so mc-image-helper substitutes it at container startup from
-# the container env. Compose's escape for a literal "$" is "$$" — hence $$set,
-# $$., $${...}.
-# ─────────────────────────────────────────────────────────────────────────────
+# Inline configs (Portainer CE GitOps doesn't support relative-path volumes).
+# PCF patch: `$$` is Compose's escape for a literal `$` — mc-image-helper's
+# patch-files command does the actual ${ENV} substitution at container start.
 configs:
-  # PCF patch JSON → /patches/pcf-forwarding.json inside the c2e2 container.
   pcf_patch_def:
     content: |
       {
@@ -535,11 +359,6 @@ configs:
         ]
       }
 
-  # Promtail config → /etc/promtail/config.yaml inside the promtail container.
-  # Positions persist via the /data/minecraft/promtail bind mount on the
-  # promtail service so log read-offsets survive container recreation.
-  # grpc_listen_port: 0 disables promtail's gRPC listener (we only push to Loki;
-  # no need to expose another port in the tailscale netns).
   promtail_config:
     content: |
       server:

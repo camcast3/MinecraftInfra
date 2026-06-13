@@ -1,0 +1,40 @@
+{
+    "name": "Dimension Runes",
+    "icon": "mmorpg:runes/net",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":6,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 2C9B55C8C05E20E2)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rIn Craft to Exile 2, you can find &eDimension-specific Runes&r that can be used to slot into your gear, or craft powerful Runewords.$(br)There are &e7 of these Runes&r in total, and they can only be obtained from Dimension Bosses such as the Invoker or End Dragon. 
+"},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/owd",
+  "text": "&eOwd Rune&r $(2br) Hermit Abysswalker (&b5%&r),$(br) Invoker (&b10%&r),$(br) Frostmaw (&b15%&r),$(br) Grim Reaper (&b10%&r)$(br)"
+},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/net",
+  "text": "&&eNet Rune&r $(2br) Warped Mosco (&b10%&r),$(br) Wildfire (&b5%&r),$(br) Mother Lava Squid (&b5%&r),$(br) Wither (&b10%&r),$(br) Awful Ghast (&b15%&r),$(br) Nether Keeper (&b15%&r)"
+},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/und",
+  "text": "&eUnd Rune&r $(2br) Ferrous Wroughtnaut (&b10%&r),$(br) Umvuthi (&b10%&r),$(br) Tongbi, the Sculptor (&b10%&r),$(br) Forgotten Guardian (&b10%&r),$(br) Eel (&b15%&r),$(br) Mother of the Maze (&b50%&r),$(br) Ghost of Captain Cornelia (&b10%&r)$(br)"
+},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/bri",
+  "text": "&eBri Rune&r $(2br) Summoner (&b10%&r),$(br) Starlit Crusher (&b25%&r)$(br)"
+},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/daw",
+  "text": "&eDaw Rune&r $(2br) Alchemist (&b10%&r),$(br) Arachnarch (&b25%&r)$(br)"
+},{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/end",
+  "text": "&eEnd Rune&r $(2br) Ender Dragon (&b7.5%&r),$(br) Void Worm (&b5%&r),$(br)Shelterer (&b15%&r)"
+  },{
+  "type": "patchouli:spotlight",
+  "item": "tag:mmorpg:runes,mmorpg:runes/sid",
+  "text": "&eSid Rune&r $(2br) Warden (&b10%&r), Night Lich (&b15%&r),$(br) Nether Gauntlet (&b15%&r),$(br) Void Blossom (&b15%&r),$(br) Obsidilith (&b15%&r)$(br)"
+}
+    ]
+}

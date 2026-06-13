@@ -1,0 +1,15 @@
+{
+  "remove": [
+    "#dungeons_enhanced:no_structures/overworld/underground"
+  ],
+  "values": [
+    "#minecraft:is_overworld",
+	"#blue_skies:everdawn",
+	"#blue_skies:everbright",
+	"#undergarden:is_undergarden",
+	"deeperdarker:blooming_caverns",
+	"deeperdarker:deeplands",
+	"deeperdarker:echoing_forest",
+	"deeperdarker:overcast_columns"
+  ]
+}

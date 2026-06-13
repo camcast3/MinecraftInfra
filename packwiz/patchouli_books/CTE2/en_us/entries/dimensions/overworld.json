@@ -1,0 +1,22 @@
+{
+    "name": "Overworld",
+    "icon": "minecraft:grass_block",
+    "category": "patchouli:dimensions",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lOverworld&r
+&n&6&lArea Level:&r&r    &n1 - 15 &r&r
+&n&6&lEnraged Area Level:&r &n50 - 70&r
+&n&6&lExceptions:&r  &nIce Maze lvl 35+&r
+&n&6&lQuests covered:&r  &nPrologue; Act I; part of Act III
+&n&6&lDimension gateways:&r  &nAct I Gateway; Gateway of the Deep Sea&r
+&n&6&lDimension Bosses:&r   &nHermit Abysswalker; Invoker; Frostmaw; Grim Reaper; Eel; Mother of the Maze; Ghost of Captain Cornelia&r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": " The start of your legendary adventure!$(br) &l&nThe Overworld&r is ripe with structures and loot to be found. Caps at level 15 with some higher level exceptions such as the Ice Maze (lvl 35 minimum).$(br) &l&nThe Overworld&r &nis intended to be your home dimension&r and is the only one you can claim in with Flan. A relatively safe dimension allowing you to set up your home base."
+		}
+    ]
+}

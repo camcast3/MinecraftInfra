@@ -1,0 +1,94 @@
+{
+  "id": "chronomancer",
+  "lvl_reqs": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "perks": {
+    "cold_snap": {
+      "x": 3,
+      "y": 0
+    },
+    "zap": {
+      "x": 1,
+      "y": 1
+    },
+    "timewinder": {
+      "x": 3,
+      "y": 1
+    },
+    "phase_dive": {
+      "x": 3,
+      "y": 2
+    },
+    "pulsar_singularity_trap": {
+      "x": 1,
+      "y": 3
+    },
+    "parallel_convergence": {
+      "x": 1,
+      "y": 4
+    },
+    "chronobreak": {
+      "x": 3,
+      "y": 5
+    },
+    "time_dilation": {
+      "x": 5,
+      "y": 2
+    },
+    "conduction": {
+      "x": 5,
+      "y": 3
+    },
+    "fusion": {
+      "x": 5,
+      "y": 4
+    },
+    "turbo": {
+      "x": 5,
+      "y": 5
+    },
+    "corporeal_respite": {
+      "x": 5,
+      "y": 6
+    },
+    "p_move_speed_chr": {
+      "x": 8,
+      "y": 1
+    },
+    "p_mana_regen_chr": {
+      "x": 9,
+      "y": 1
+    },
+    "p_cold_lightning_resist_chr": {
+      "x": 8,
+      "y": 2
+    },
+    "p_cdr_chr": {
+      "x": 8,
+      "y": 3
+    },
+    "p_faster_projectiles_chr": {
+      "x": 8,
+      "y": 4
+    },
+    "p_positive_eff_dur_u_cast_chr": {
+      "x": 9,
+      "y": 4
+    },
+    "p_mana_chr": {
+      "x": 8,
+      "y": 5
+    },
+    "p_dmg_reduction_chance_chr": {
+      "x": 8,
+      "y": 6
+    }
+  }
+}

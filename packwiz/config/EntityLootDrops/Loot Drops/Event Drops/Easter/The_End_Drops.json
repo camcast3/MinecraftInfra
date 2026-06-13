@@ -1,0 +1,35 @@
+[
+
+	{
+        "itemId": "lightmanscurrency:coin_chocolate_chocolate_iron",
+        "dropChance": 30.0,
+        "minAmount": 3,
+        "maxAmount": 9,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_chocolate_gold",
+        "dropChance": 20.0,
+        "minAmount": 2,
+        "maxAmount": 8,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_chocolate_emerald",
+        "dropChance": 10.0,
+        "minAmount": 1,
+        "maxAmount": 5,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    },
+    {
+        "itemId": "lightmanscurrency:coin_chocolate_chocolate_diamond",
+        "dropChance": 5.0,
+        "minAmount": 1,
+        "maxAmount": 3,
+        "requiredDimension": "minecraft:the_end",
+		"requirePlayerKill": true
+    }
+]

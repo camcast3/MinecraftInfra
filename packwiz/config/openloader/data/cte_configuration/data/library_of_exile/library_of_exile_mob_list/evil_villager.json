@@ -1,0 +1,45 @@
+{
+  "id": "evil_villager",
+  "mobs": [
+    {
+      "mob_id": "minecraft:zombie_villager",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:pillager",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:evoker",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:vindicator",
+      "weight": 125
+    },
+    {
+      "mob_id": "illagerinvasion:basher",
+      "weight": 125
+    },
+    {
+      "mob_id": "illagerinvasion:marauder",
+      "weight": 125
+    },
+    {
+      "mob_id": "illagerinvasion:provoker",
+      "weight": 125
+    },
+    {
+      "mob_id": "illagerinvasion:archivist",
+      "weight": 125
+    },
+    {
+      "mob_id": "illagerinvasion:inquisitor",
+      "weight": 50
+    }
+  ],
+  "tags": {
+    "tags": []
+  },
+  "weight": 1000
+}

@@ -1,0 +1,34 @@
+{
+  "type": "suffix",
+  "eye_aura_req": "",
+  "guid": "of_death",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "scythe"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "scythe_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 1.0,
+      "stat": "inc_leech"
+    }
+  ],
+  "weight": 1000
+}

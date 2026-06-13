@@ -1,0 +1,45 @@
+{
+  "base_gear": "vest_chest",
+  "guid": "carcass_jack",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 80,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 65.0,
+      "min": 55.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 9.0,
+      "min": 7.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 12.0,
+      "min": 9.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "area_dmg"
+    }
+  ],
+  "weight": 500
+}

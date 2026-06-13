@@ -1,0 +1,1044 @@
+{
+	default_hide_dependency_lines: false
+	default_quest_shape: ""
+	filename: "homestead"
+	group: "5F2CCE8075FCC994"
+	icon: "handcrafted:bamboo_fancy_bed"
+	id: "08A3CE628804D7D6"
+	order_index: 3
+	quest_links: [ ]
+	quests: [
+		{
+			description: [
+				"Each &eWind Chime&r produces different ambient sounds respective to their material. They also scare away Phantoms within a 25-block radius."
+				""
+				"The &eGlass Wind Bell&r can have dyes applied to it to make a custom design. Wash off the design by right clicking a water source block."
+				""
+				"You can &etie/untie&r a Wind Chime by crouching + right-clicking a Wind Chime block with an empty hand to stop the phantom scaring effect."
+			]
+			id: "0E7863B918B4B195"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "05957DDC02A24CC9"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Chimes"
+			tasks: [{
+				id: "3355405161F752F4"
+				item: "chimes:glass_bells"
+				type: "item"
+			}]
+			title: "The Wind Blows"
+			x: 4.5d
+			y: -4.5d
+		}
+		{
+			description: ["&eNight Lights &radds decorative light sources that can be toggled on and off."]
+			id: "31C042465B27EC87"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "28E649D855379875"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Night Lights"
+			tasks: [
+				{
+					id: "77BD1CD948CBC5A5"
+					item: "nightlights:hanging_lights_default"
+					type: "item"
+				}
+				{
+					id: "1A360D0080ACEB31"
+					item: "nightlights:fairy_lights_default"
+					type: "item"
+				}
+			]
+			title: "Lighting With Style"
+			x: -4.5d
+			y: -6.0d
+		}
+		{
+			description: ["&eSupplementaries&r and &eSupplementaries Squared&r adds numerous &edecoration and functional&r blocks that are relatively easy to craft and use."]
+			id: "74E14D9A9F4799D4"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "12CDA68D5F398808"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Supplementaries"
+			tasks: [
+				{
+					id: "3D5A39806227B36B"
+					item: "supplementaries:flag_white"
+					type: "item"
+				}
+				{
+					id: "2417CC783542CB88"
+					item: "supplementaries:candle_holder"
+					type: "item"
+				}
+				{
+					id: "46B341261AC67D12"
+					item: "supplementaries:item_shelf"
+					type: "item"
+				}
+				{
+					id: "2552629E3C335847"
+					item: "supplementaries:wind_vane"
+					type: "item"
+				}
+				{
+					id: "0F14FADDFB78FF74"
+					item: "supplementaries:sconce"
+					type: "item"
+				}
+			]
+			title: "Interior Designer"
+			x: -3.0d
+			y: -6.0d
+		}
+		{
+			description: [
+				"&eHandcrafted&r adds furniture such as &efancy beds, counters, and chairs&r. These are customizable using &esheets&r and &epillows&r of different colors."
+				""
+				"The &eHammer&r allows you to change the look of blocks into different forms, such as changing a stair's type without having to place and re-place it."
+			]
+			id: "6A465BF497661001"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "45138A03C0BDB5AC"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Handcrafted"
+			tasks: [
+				{
+					id: "7C737EF24A0DD366"
+					item: "handcrafted:white_cushion"
+					type: "item"
+				}
+				{
+					id: "31FE8C4D49C42EA5"
+					item: "handcrafted:white_sheet"
+					type: "item"
+				}
+				{
+					id: "4A94BB46A7D9D52C"
+					item: "handcrafted:hammer"
+					type: "item"
+				}
+			]
+			title: "Specialized Furniture"
+			x: -3.0d
+			y: -4.5d
+		}
+		{
+			description: [
+				"&eMacaw's Doors &radds numerous door variations and themes to craft."
+				""
+				"&eMacaw's Bridges&r adds bridges and bridge variants."
+				""
+				"&eMacaw's Lights and Lamps&r adds numerous types of lamps and light sources."
+			]
+			id: "3C9F2AB674921503"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "3F7E8E123A70AC50"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Macaw's Decorations"
+			tasks: [
+				{
+					id: "6B06D8650053E266"
+					item: "mcwdoors:oak_barn_door"
+					type: "item"
+				}
+				{
+					id: "3BEA773995483823"
+					item: "mcwbridges:pliers"
+					type: "item"
+				}
+				{
+					id: "3C698BB503A1FAEC"
+					item: "mcwlights:lava_lamp"
+					type: "item"
+				}
+			]
+			title: "Enhanced Construction"
+			x: -4.5d
+			y: -4.5d
+		}
+		{
+			description: ["&eFloral Enchantment&r adds flower bushes with which you can obtain the &evines&r of each flower. Flower vines are obtained from &ebushes.&r You can get &emossy cobblestone&r from each flower to decorate. It also adds some other floral themed &egear&r and decorations."]
+			id: "32823645E2FE4F43"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "4BD548221E47022A"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Floral Enchantment"
+			tasks: [{
+				id: "4F4158D32907A7C0"
+				item: "floralench:floral_basket"
+				type: "item"
+			}]
+			title: "Gardener+"
+			x: 3.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["5E71DC1D9E7A83BB"]
+			description: [
+				"Chipped adds workbenches that allow you to craft variations of blocks. &eChipped is compatible with FramedBlocks!&r"
+				""
+				"The &eAlchemy Bench&r allows you to craft variations of obsidian, glowstone, sea lanterns, and soul sand."
+				""
+				"The &eBotanist's Workbench&r allows you to craft variations of plant based blocks."
+				""
+				"The &eCarpenter's Table&r allows you to craft variations of planks and torches."
+				""
+				"The &eGlassblower&r allows you to craft variations of glass blocks and panes."
+				""
+				"The &eLoom&r allows you to craft variations of wool blocks and carpet."
+				""
+				"The &eMason's Table&r allows you to craft variations of stone-like blocks."
+				""
+				"The &eTinkering Table&r allows you to craft variations of redstone lamps, torches and lanterns."
+			]
+			id: "3A66909746F7E06D"
+			rewards: [
+				{
+					id: "349B4A117F7BD340"
+					item: "simplehats:tinkerhat"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 250"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "7BF0D4BE713CE528"
+					silent: true
+					title: "250 Experience x Lv."
+					type: "command"
+				}
+			]
+			size: 1.25d
+			subtitle: "Chipped"
+			tasks: [
+				{
+					id: "4D48B532F654158B"
+					item: "chipped:alchemy_bench"
+					type: "item"
+				}
+				{
+					id: "5FD900BDF5AFACED"
+					item: "chipped:botanist_workbench"
+					type: "item"
+				}
+				{
+					id: "01B19695667C65A6"
+					item: "chipped:carpenters_table"
+					type: "item"
+				}
+				{
+					id: "7B6D1A3CA7E94CF5"
+					item: "chipped:glassblower"
+					type: "item"
+				}
+				{
+					id: "1B8FF702B10E8DA9"
+					item: "chipped:loom_table"
+					type: "item"
+				}
+				{
+					id: "7E39A28EC72BC4C8"
+					item: "chipped:mason_table"
+					type: "item"
+				}
+				{
+					id: "50DE9684F0DB3A91"
+					item: "chipped:tinkering_table"
+					type: "item"
+				}
+			]
+			title: "Chipped With Options"
+			x: 6.0d
+			y: -4.5d
+		}
+		{
+			description: [
+				"&eMCA: Reborn&r brings an immersive experience to players. Some of features are listed below:"
+				""
+				"- No more squid-people, they are now human and interactable!"
+				"- There are many interaction options with villagers such as gifting, chatting, and much more!"
+				"- You can build relationships by interacting with villagers, each having their own personality and moods."
+				"- Once you have enough hearts, you can marry them!"
+				"- After marriage, you can have children who can do chores such as farming, cutting trees, and more!"
+				"- Your children will eventually grow up and live their own lives."
+				"- You can marry other players in a LAN or SMP server."
+				"- Help to extend a village and increase your rank, eventually becoming a king!"
+			]
+			id: "5DEC625AAF61ADAE"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "3BE249E997A6481F"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Minecraft Comes Alive!"
+			tasks: [{
+				id: "7DF2002BF8966859"
+				item: "mca:book_romance"
+				type: "item"
+			}]
+			x: 0.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["5DEC625AAF61ADAE"]
+			description: ["Ever dreamed of becoming a king? You can manage your village and make it prosper! Read the book for more information."]
+			id: "57B5209F6744960D"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "5238432C6F96151E"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "1B52B998DACA2A94"
+				item: "mca:book_blueprint"
+				type: "item"
+			}]
+			x: -1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5DEC625AAF61ADAE"]
+			description: [
+				"In MCA, you can choose your appearance by initiating your &eDestiny.&r"
+				""
+				"Your &eDestiny&r will let you customize your characters appearance - &cbut note you can only do this ONCE per world!&r"
+				""
+				"Command: /mca destiny"
+				""
+				"&b&oNote that crafting the potions require some skill in the Alchemy Profession.&r&r"
+			]
+			id: "405A63031F2B3DD4"
+			rewards: [
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 100"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "38CE3E0A09909566"
+					silent: true
+					title: "100 Experience x Lv."
+					type: "command"
+				}
+				{
+					command: "/mca destiny"
+					elevate_perms: true
+					icon: "mca:villager_editor"
+					id: "52498BF9583E22B2"
+					silent: true
+					title: "&eLaunch Character Destiny Customizer&r &c(ONE TIME USE)&r"
+					type: "command"
+				}
+			]
+			subtitle: "Destiny"
+			tasks: [
+				{
+					id: "18B7CA6CFEC6E3A0"
+					item: "mca:potion_of_feminity"
+					type: "item"
+				}
+				{
+					id: "3D44930F8FDA61E0"
+					item: "mca:potion_of_masculinity"
+					type: "item"
+				}
+			]
+			title: "Grooming"
+			x: 0.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5DEC625AAF61ADAE"]
+			description: ["&eRose Gold&r is used to craft relationship-specific items. Read the book to find out!"]
+			id: "6B0990886F0D079E"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "4923C57810A678C4"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Relationships"
+			tasks: [{
+				id: "5E26B808ED87038B"
+				item: "mca:book_rose_gold"
+				type: "item"
+			}]
+			x: 1.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["6B0990886F0D079E"]
+			description: ["Learn how to manage your family with this new edition!"]
+			id: "17AF31897E44E881"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "1A9495733A04F89B"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Relationships"
+			tasks: [{
+				id: "73C366ABDCFD9554"
+				item: "mca:book_family"
+				type: "item"
+			}]
+			x: 1.5d
+			y: -3.0d
+		}
+		{
+			dependencies: ["6B0990886F0D079E"]
+			description: ["You can craft &eRose Gold&r using &eRaw Gold&r and &eRaw Copper&r."]
+			id: "5610D44E742948CC"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "269A6DF9AC9FD22D"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Relationships"
+			tasks: [{
+				id: "156DCFFEED6DD7D6"
+				item: "mca:rose_gold_dust"
+				type: "item"
+			}]
+			title: "Expensive Materials"
+			x: 3.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["5DEC625AAF61ADAE"]
+			id: "7581AE7038A4357A"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "1D4D510D6BD7D1BF"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Relationships"
+			tasks: [{
+				id: "7E892780F9050184"
+				item: "mca:bouquet"
+				type: "item"
+			}]
+			title: "A Gift"
+			x: 1.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["57B5209F6744960D"]
+			description: ["You can view the village history with this book!"]
+			id: "3366932C88556127"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "7E70154BB9F7355A"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "2D10ACB81E6A6877"
+				item: "mca:civil_registry"
+				type: "item"
+			}]
+			x: -1.5d
+			y: -3.0d
+		}
+		{
+			dependencies: ["57B5209F6744960D"]
+			description: ["Use the &eBlueprint&r in a village to manage it."]
+			id: "6E074D0EF3EC5B70"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "1A10F71B3BA1F601"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "0C15C2D4DB69840D"
+				item: "mca:blueprint"
+				type: "item"
+			}]
+			title: "A Blueprint For Progress"
+			x: -3.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["57B5209F6744960D"]
+			description: ["In rare cases, villagers can become infected - resulting in possible death. Read up on the ailments and how to cure them to prevent this from happening!"]
+			id: "6AEF98877F6AF6CA"
+			rewards: [
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 100"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "24CC02F15B2D516B"
+					silent: true
+					title: "100 Experience x Lv."
+					type: "command"
+				}
+				{
+					id: "037FB8A8F0CBF9EB"
+					item: "simplehats:doctorhat"
+					type: "item"
+				}
+			]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "1A7691EF79F81ED9"
+				item: "mca:book_infection"
+				type: "item"
+			}]
+			x: 0.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["6AEF98877F6AF6CA"]
+			description: ["Sometimes our villagers will die (wether by accident or on purpose...). But with MCA, it's possible to bring them back to life! This tome illustrates how you can do that. But be prepared as it requires you to fight death itself."]
+			id: "009437C8BB7D9892"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "77C26525CBA1DE0C"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "07B0F92FC4E41DE3"
+				item: "mca:book_death"
+				type: "item"
+			}]
+			x: 0.0d
+			y: -4.5d
+		}
+		{
+			dependencies: ["5610D44E742948CC"]
+			description: [
+				"In MCA, you can marry villagers, or even other players. To marry a villager, you must first propose to them. Hopefully, your relationship status is in good standing and they accept!"
+				""
+				"To marry players, you can use the '/mca propose' command."
+			]
+			id: "03DAE0F3497FF661"
+			rewards: [
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 250"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "0B8FCD61D3E2F9DE"
+					silent: true
+					title: "250 Experience x Lv."
+					type: "command"
+				}
+				{
+					id: "0230537D62321FCF"
+					item: "simplehats:milady_doll"
+					type: "item"
+				}
+			]
+			subtitle: "Relationships"
+			tasks: [{
+				id: "2FE89D39632D7B42"
+				item: "mca:engagement_ring_rg"
+				type: "item"
+			}]
+			x: 4.5d
+			y: -3.0d
+		}
+		{
+			dependencies: ["009437C8BB7D9892"]
+			description: [
+				"Defeat the &eGrim Reaper&r to bring back your fallen villagers!"
+				""
+				"To summon the &eGrim Reaper&r you must build a \"&eAltar&r\""
+				"an &eAltar&r consists of 3 &bObsidian&r columns that are at lest &e2 blocks high&r."
+				"in the &eCentre&r of the columns you must place a \"&aEmerald Block&r\"."
+				"&eLight&r the &eTop&r of all 3 columns with flint and steel,"
+				"Then finally light the &aEmerald Block&r to summon the &eGrim Reaper&r"
+				""
+				"{image:cte2:textures/mca_grimreaper.png width:160 height:140 align:center}"
+				""
+				"&eGrim Reaper&r &4can only be summoned at &eNight&r&r"
+				""
+				""
+				"&cThe Grim Reaper spawns at minimum level of 30.&r"
+				""
+				"The Grim Reaper Has:"
+				"&b+1% Lifesteal&r"
+				"&a10% Chance of Dropping Owd Rune&r"
+			]
+			id: "564F958C07802B5B"
+			rewards: [
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 500"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "6D63A4B38E0C681C"
+					silent: true
+					title: "500 Experience x Lv."
+					type: "command"
+				}
+				{
+					id: "1B2624ED552C3789"
+					item: "simplehats:bigbrain"
+					type: "item"
+				}
+			]
+			shape: "diamond"
+			size: 1.5d
+			subtitle: "Village Management"
+			tasks: [{
+				entity: "mca:grim_reaper"
+				icon: {
+					Count: 1
+					id: "mca:scythe"
+					tag: {
+						Damage: 0
+					}
+				}
+				id: "3C838778447C9753"
+				type: "kill"
+				value: 1L
+			}]
+			title: "Give and Take"
+			x: 0.0d
+			y: -6.0d
+		}
+		{
+			dependencies: ["564F958C07802B5B"]
+			description: ["You can use the &eStaff of Life&r to bring dead villagers back to life!"]
+			id: "171F2819791E3C2F"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 250"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "33C5158A421806ED"
+				silent: true
+				title: "250 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Village Management"
+			tasks: [{
+				id: "7194C831C004317D"
+				item: {
+					Count: 1
+					id: "mca:staff_of_life"
+					tag: {
+						Damage: 0
+					}
+				}
+				type: "item"
+			}]
+			title: "Resurrection"
+			x: 0.0d
+			y: -7.5d
+		}
+		{
+			description: [
+				"With a Construction Wand you can place multiple blocks at once, extending your build on the side you're facing. If that's not enough: you can upgrade your wand with additional cores, allowing you to place a block behind the block you are facing, or conjure blocks in mid air."
+				""
+				"Every wand comes with a Construction Core. You can make your wand even better by putting aditional cores into it. Put your new core together with your wand in a crafting grid to install it. To switch between cores, hold down OPTKEY (CTRL) and left click empty space with your wand. &cStone wands can't be upgraded.&r"
+				""
+				"&eConstruction Core&r"
+				""
+				"Extend your build on the side facing you. Maximum number of blocks depends on wand tier. Hold down OPTKEY (CTRL) and scroll to change placement restriction (Horizontal, Vertical, North/South, East/West, No lock)."
+			]
+			id: "130759BFC47D58DE"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "1BE7D312966DC021"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Construction Wands"
+			tasks: [{
+				id: "6BD0E93EAF4C4C9E"
+				item: {
+					Count: 1
+					id: "constructionwand:stone_wand"
+					tag: {
+						Damage: 0
+						wand_options: { }
+					}
+				}
+				type: "item"
+			}]
+			x: -4.5d
+			y: 0.0d
+		}
+		{
+			dependencies: ["130759BFC47D58DE"]
+			description: ["There are basic wands made from Stone, Iron and Diamond Wand. Wands from higher tiers are more powerful and last longer."]
+			id: "7DDC60601812FEA6"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "300917AC34F03D82"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Construction Wands"
+			tasks: [{
+				id: "50DEC00FF30F8074"
+				item: {
+					Count: 1
+					id: "constructionwand:iron_wand"
+					tag: {
+						Damage: 0
+						wand_options: { }
+					}
+				}
+				type: "item"
+			}]
+			x: -4.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["7DDC60601812FEA6"]
+			description: [
+				"&eAngel Core&r"
+				""
+				"Place a block on the opposite side of the block (or row of blocks) you are facing. Maximum distance depends on wand tier. Right click empty space to place a block in midair (similar to angel blocks, hence the name). To do that, you'll need to have the block you want to place in your offhand. You can't place a block in midair if you've fallen more than 10 blocks deep (no easy rescue tool from falling into the void)."
+			]
+			id: "13B7B1C35F13C86D"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "1B26FC45F4717F75"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Construction Wands"
+			tasks: [{
+				id: "72C3C6230D81D4E4"
+				item: "constructionwand:core_angel"
+				type: "item"
+			}]
+			x: -3.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["7DDC60601812FEA6"]
+			description: [
+				"&eRestriction&r: if restriction is enabled the wand will only place blocks in one row or column (choose between North/South, East/West on a horizontal plane and Horizontal, Vertical on a vertical plane). If the direction lock is switched off, the wand will extend the entire face of the building it's pointed at. This option has no effect in Angel mode."
+				""
+				"&eDirection&r: if set to \"Player\" the wand places blocks in the same direction as if they were placed by yourself. Target mode places the blocks in the same direction as their supporting block."
+				""
+				"&eReplacement&r: enables/disables the replacement of replaceable blocks (Fluids, snow, tallgrass)."
+				""
+				"&eMatching&r: select which blocks are extended by the wand. If set to \"EXACT\" it will only extend blocks that are exactly the same as the selected block."
+				"\"SIMILAR\" will treat similar blocks equally (e.g. extend dirt and grass blocks)."
+				"\"ANY\" will extend any block on the face of the building you're looking at."
+				""
+				"&eRandom&r: if random mode is enabled, the wand places random blocks from your hotbar."
+			]
+			id: "619A04B3428907F1"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 500"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "2CD67EABBBECB4C4"
+				silent: true
+				title: "500 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "Construction Wands"
+			tasks: [{
+				id: "52E3A18F1E4BE3F5"
+				item: {
+					Count: 1
+					id: "constructionwand:diamond_wand"
+					tag: {
+						Damage: 0
+						wand_options: { }
+					}
+				}
+				type: "item"
+			}]
+			x: -4.5d
+			y: -3.0d
+		}
+		{
+			description: [
+				"&eFramedBlocks&r adds blocks of various shapes that can be made to look like almost any other block in the game. You can do this by first crafting a basic &eFramed Block&r."
+				""
+				"Craft a &eFraming Saw&r, which acts as a Stonecutter but for Framed Blocks. It lets you easily manage what Framed Block shape you want."
+			]
+			id: "03D703094F2DC94A"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "0370DBFA598A59EC"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "FramedBlocks"
+			tasks: [{
+				id: "48E8FEFCED620C0A"
+				item: "framedblocks:framing_saw"
+				type: "item"
+			}]
+			title: "Getting Started with Framed!"
+			x: 6.0d
+			y: 0.0d
+		}
+		{
+			dependencies: ["03D703094F2DC94A"]
+			description: ["Using the &eFraming Saw&r, craft a &eFramed Slope&r."]
+			id: "7D4D72D4B936240C"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "6548E28FCD6DB0A3"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "FramedBlocks"
+			tasks: [{
+				id: "62E342C0A2DED1C9"
+				item: "framedblocks:framed_slope"
+				type: "item"
+			}]
+			x: 6.0d
+			y: -1.5d
+		}
+		{
+			dependencies: ["7D4D72D4B936240C"]
+			description: [
+				"The &eFramed Wrench&r can be used to rotate a Framed Block. On most blocks, the rotation behaviour is dependent on the face that was clicked."
+				""
+				"The &eFramed Hammer&r lets you take blocks out of the frame and set them back to their default state."
+				""
+				"The &eFramed Screwdriver&r can be used to cycle through different states of the camo block."
+				""
+				"The &eFramed Key&r allows locking certain Framed Blocks in their current shape to suppress neighbor updates. This allows placing blocks in configurations that would not be possible with the desired neighbors (placing Framed Stairs in the corner shape without keeping the necessary neighbors to force that shape)."
+				""
+				"There are other FramedBlock tools available, check them out in &eJEI&r!"
+			]
+			id: "5E71DC1D9E7A83BB"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "337D19FEE194795C"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "FramedBlocks"
+			tasks: [
+				{
+					id: "2CD93E35DB4888B6"
+					item: "framedblocks:framed_wrench"
+					type: "item"
+				}
+				{
+					id: "26B02CB43C3D8E5E"
+					item: "framedblocks:framed_hammer"
+					type: "item"
+				}
+				{
+					id: "346E0C173E6BEB68"
+					item: "framedblocks:framed_screwdriver"
+					type: "item"
+				}
+				{
+					id: "72ECCC291DE1738D"
+					item: "framedblocks:framed_key"
+					type: "item"
+				}
+			]
+			x: 6.0d
+			y: -3.0d
+		}
+		{
+			dependencies: ["7D4D72D4B936240C"]
+			description: ["&eFramed Reinforcements&r allow you to give any Framed Block you insert them into the hardness and properties of &eObsidian&r!"]
+			id: "49ED3E0B2E317DF6"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "7D808B6752D831FC"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "FramedBlocks"
+			tasks: [{
+				id: "63B204F32F396EF5"
+				item: "framedblocks:framed_reinforcement"
+				type: "item"
+			}]
+			x: 4.5d
+			y: -1.5d
+		}
+		{
+			dependencies: ["5DEC625AAF61ADAE"]
+			description: ["If you've encountered an empty village, or just want to populate your village more through the power of coin, you can access a &eTrading Terminal&r to buy villager eggs!"]
+			id: "20AB86BF7E21FD3B"
+			rewards: [
+				{
+					count: 5
+					id: "4159A4D6D2EE46E3"
+					item: "lightmanscurrency:coin_emerald"
+					type: "item"
+				}
+				{
+					auto: "enabled"
+					command: "/mine_and_slash give xp_times_lvl @p 100"
+					elevate_perms: true
+					icon: "ftb_ph:exp"
+					id: "2A2C8679E7193891"
+					silent: true
+					title: "100 Experience x Lv."
+					type: "command"
+				}
+			]
+			subtitle: "Trading Terminal"
+			tasks: [
+				{
+					id: "7590F368349C7E55"
+					item: "mca:male_villager_spawn_egg"
+					type: "item"
+				}
+				{
+					id: "0C9856B277D7C90B"
+					item: "mca:female_villager_spawn_egg"
+					type: "item"
+				}
+			]
+			title: "Ghost Town"
+			x: -1.5d
+			y: 0.0d
+		}
+		{
+			description: ["The &eMega Torch&r is a base builders dream as it prevents all hostile monster spawns in a massive &964 block radius&r! Right click with an empty hand to show its exact area of effect, shift right click to hide it."]
+			id: "25A4EFCBB5F8AC31"
+			rewards: [{
+				auto: "enabled"
+				command: "/mine_and_slash give xp_times_lvl @p 100"
+				elevate_perms: true
+				icon: "ftb_ph:exp"
+				id: "6327B1498874B28B"
+				silent: true
+				title: "100 Experience x Lv."
+				type: "command"
+			}]
+			subtitle: "No more nasty surprises."
+			tasks: [{
+				id: "34E000AEDA4852D2"
+				item: "torchmaster:megatorch"
+				type: "item"
+			}]
+			title: "Light Up The World"
+			x: 3.0d
+			y: -6.0d
+		}
+	]
+	title: "Homestead"
+}

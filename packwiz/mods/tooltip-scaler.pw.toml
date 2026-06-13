@@ -1,0 +1,13 @@
+name = "Tooltip Scaler"
+filename = "tooltipscaler-0.1.2.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "2211a97e3e52906ad9e585a55762cd77b1a63ea9"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 7164893
+project-id = 1374980

@@ -1,0 +1,27 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/talent_icons/asc/champion/1.png",
+  "id": "champion_class_1",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "max_frenzy_charge_charges",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "skill_damage_per_move_speed",
+      "v1": 50.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "move_speed_per_frenzy_charge",
+      "v1": 5.0
+    }
+  ]
+}

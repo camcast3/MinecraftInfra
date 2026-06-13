@@ -1,0 +1,17 @@
+{
+  "affected": "Mobs",
+  "id": "chaos_pene",
+  "map_resist": "Shadow",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "",
+  "req": "",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 10.0,
+      "stat": "chaos_penetration"
+    }
+  ],
+  "weight": 0
+}

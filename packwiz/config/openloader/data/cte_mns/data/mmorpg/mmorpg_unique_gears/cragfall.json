@@ -1,0 +1,39 @@
+{
+  "base_gear": "totem",
+  "guid": "cragfall",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": -25.0,
+      "min": -25.0,
+      "stat": "faster_projectiles"
+    },
+    {
+      "type": "FLAT",
+      "max": 35.0,
+      "min": 30.0,
+      "stat": "projectile_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "chaos_resist"
+    }
+  ],
+  "weight": 1000
+}

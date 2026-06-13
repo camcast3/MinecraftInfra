@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/end",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/sid",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 90
+        }
+      ]
+    }
+  ]
+}

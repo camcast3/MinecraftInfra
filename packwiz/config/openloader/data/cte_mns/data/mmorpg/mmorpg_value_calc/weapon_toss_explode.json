@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 9.0,
+    "min": 2.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+        "max": 3.1,
+        "min": 2.2
+    },
+    "stat": "health"
+  },
+  "id": "weapon_toss_explode",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 3.1,
+        "min": 2.2
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

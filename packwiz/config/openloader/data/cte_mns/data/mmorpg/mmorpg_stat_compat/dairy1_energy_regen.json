@@ -1,0 +1,13 @@
+{
+  "id": "dairy1_energy_regen",
+  "attribute_id": "mine_and_meals:dairy1_energy_regen",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "energy_regen",
+  "conversion": 1.0,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "PERCENT"
+}

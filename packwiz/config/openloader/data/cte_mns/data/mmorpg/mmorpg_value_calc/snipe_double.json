@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 18.0,
+    "min": 4.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 8.25,
+      "min": 5.775
+    },
+    "stat": "health"
+  },
+  "id": "snipe_double",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 8.25,
+        "min": 5.775
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

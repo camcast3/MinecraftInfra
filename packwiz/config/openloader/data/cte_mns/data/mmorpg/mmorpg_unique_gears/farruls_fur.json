@@ -1,0 +1,51 @@
+{
+  "base_gear": "brigandine_chest",
+  "guid": "farruls_fur",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 60,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "proc_flicker_refresh_on_flicker_strike"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "flicker_strike_cdr_per_frenzy_charge"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "gain_frenzy_charges_every_10s"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "water_resist"
+    }
+  ],
+  "weight": 1000
+}

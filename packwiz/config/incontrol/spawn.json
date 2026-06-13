@@ -1,0 +1,21 @@
+[
+  {
+    "dimension": "minecraft:overworld",
+    "mob": ["born_in_chaos_v1:lifestealer", "born_in_chaos_v1:lifestealer_true_form", "born_in_chaos_v1:nightmare_stalker", "born_in_chaos_v1:supreme_bonescaller"],
+    "when": "onjoin",
+    "result": "deny"
+  },
+  {
+    "dimension": "minecraft:overworld",
+    "minheight": 25,
+    "mob": "born_in_chaos_v1:mother_spider",
+    "when": "onjoin",
+    "result": "deny"
+  },
+  {
+    "dimension": "minecraft:the_nether",
+    "mob": "minecraft:snow_golem",
+    "when": "onjoin",
+    "result": "deny"
+  }
+]

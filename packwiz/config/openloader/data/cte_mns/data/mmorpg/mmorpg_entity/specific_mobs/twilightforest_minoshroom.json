@@ -1,0 +1,40 @@
+{
+  "dmg_multi": 1.5,
+  "exp_multi": 1.5,
+  "hp_multi": 1.0,
+  "identifier": "twilightforest:minoshroom",
+  "loot_multi": 1.5,
+  "max_lvl": 1000000,
+  "min_lvl": 55,
+  "set_health_damage_override": false,
+  "set_rar": "rare",
+  "stat_multi": 1.0,
+  "stats": {
+    "stats": [
+      {
+        "type": "flat",
+        "scale_to_lvl": true,
+        "v1": 10.0,
+        "stat": "armor_penetration"
+      },
+      {
+        "type": "percent",
+        "scale_to_lvl": false,
+        "v1": 50.0,
+        "stat": "accuracy"
+      },
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 30.0,
+        "stat": "physical_resist"
+      },
+      {
+        "type": "percent",
+        "scale_to_lvl": false,
+        "v1": 20.0,
+        "stat": "health_regen"
+      }
+	]
+  }
+}

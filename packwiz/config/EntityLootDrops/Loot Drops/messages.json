@@ -1,0 +1,18 @@
+{
+  "enable": {
+    "Winter": "Winter event has been enabled!",
+    "Summer": "Summer event has been enabled!",
+    "Easter": "Easter event has been enabled!",
+    "Halloween": "Halloween event has been enabled!"
+  },
+  "disable": {
+    "Winter": "Winter event has been disabled!",
+    "Summer": "Summer event has been disabled!",
+    "Easter": "Easter event has been disabled!",
+    "Halloween": "Halloween event has been disabled!"
+  },
+  "drop_chance_enable": "Drop chance event has been enabled! (Excluding MnS Drops)",
+  "drop_chance_disable": "Drop chance event has been disabled!",
+  "double_drops_enable": "Double drops event has been enabled! (Excluding MnS Drops)",
+  "double_drops_disable": "Double drops event has been disabled!"
+}

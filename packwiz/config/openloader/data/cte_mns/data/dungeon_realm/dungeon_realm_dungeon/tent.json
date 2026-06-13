@@ -1,0 +1,38 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "4"
+    ],
+    "ends": [
+      "6"
+    ],
+    "entrances": [
+      "0"
+    ],
+    "folder": "tent",
+    "four_ways": [
+      "3"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "1",
+      "trader0"
+    ],
+    "triple_hallway": [
+      "boss1",
+      "2"
+    ]
+  },
+  "id": "tent",
+  "weight": 1000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "strange1_chaos",
+  "attribute_id": "mine_and_meals:strange1_chaos",
+  "enchant_id": "",
+  "scaling": "NONE",
+  "mns_stat_id": "all_chaos_damage",
+  "conversion": 1.0,
+  "minimum_cap": 0,
+  "maximum_cap": 100000,
+  "per_item_min": 0,
+  "per_item_max": 10000,
+  "mod_type": "FLAT"
+}

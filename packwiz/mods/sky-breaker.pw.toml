@@ -1,0 +1,13 @@
+name = "Sky Breaker: Blue Skies Limit Remover"
+filename = "SkyBreaker-1.20.1-1.0.8.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "2d88740e858fa888232c368e7dc652fe81da88b8"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6645990
+project-id = 1109012

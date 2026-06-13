@@ -1,0 +1,12 @@
+{
+  "id": "bonus_obelisk_chance",
+  "mods": [
+    {
+      "max": 45.0,
+      "min": 15.0,
+      "stat": "bonus_obelisk_chance"
+    }
+  ],
+  "relic_type": "ancient_obelisks",
+  "weight": 1000
+}

@@ -1,0 +1,12 @@
+{
+  "id": "bonus_harvest_chance",
+  "mods": [
+    {
+      "max": 45.0,
+      "min": 15.0,
+      "stat": "bonus_harvest_chance"
+    }
+  ],
+  "relic_type": "the_harvest",
+  "weight": 1000
+}

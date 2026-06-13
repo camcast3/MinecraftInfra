@@ -1,0 +1,64 @@
+{
+  "id": "hurricane",
+  "runes": [
+    "dos",
+    "bri",
+    "und",
+    "fey"
+  ],
+  "slots": [
+    "sword",
+	"gauntlet",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "learn_whirlwind"
+    },
+    {
+      "type": "MORE",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "area_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "phys_to_water"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "phys_to_lightning"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "accuracy"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    }
+  ]
+}

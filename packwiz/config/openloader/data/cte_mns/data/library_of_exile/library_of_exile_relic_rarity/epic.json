@@ -1,0 +1,11 @@
+{
+  "affixes": 3,
+  "base_data": {
+    "id": "epic",
+    "text_format": "LIGHT_PURPLE",
+    "tier": 3,
+    "weight": 27
+  },
+  "max_affix_percent": 75,
+  "min_affix_percent": 45
+}

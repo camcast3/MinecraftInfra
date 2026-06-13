@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "item": "minecraft:copper_ingot"
+    },
+    "X": {
+      "item": "minecraft:leather"
+    },
+    "Y": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "N",
+    "X",
+    "Y"
+  ],
+  "result": {
+    "item": "cte_essentials:forcesoultagarmordodgestat"
+  },
+  "show_notification": true
+}

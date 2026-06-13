@@ -1,0 +1,39 @@
+{
+  "base_gear": "bow",
+  "guid": "critical_impossibility",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 30,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 30.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "MORE",
+      "max": -33.0,
+      "min": -33.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 60.0,
+      "stat": "critical_damage"
+    }
+  ],
+  "weight": 1000
+}

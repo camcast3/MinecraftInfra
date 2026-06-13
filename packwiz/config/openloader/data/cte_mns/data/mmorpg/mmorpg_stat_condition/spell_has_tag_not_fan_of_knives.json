@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_fan_of_knives",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "fan_of_knives"
+  }
+}

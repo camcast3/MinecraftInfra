@@ -1,0 +1,9 @@
+{
+  "id": "epic",
+  "loot_table": "library_of_exile:chests/tier_3_dungeon",
+  "mns_loot_multi": 2.5,
+  "perc_to_unlock": 45,
+  "reward_chests": 3,
+  "text_format": "LIGHT_PURPLE",
+  "tier": 3
+}

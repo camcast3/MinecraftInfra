@@ -1,0 +1,36 @@
+{
+  "base": 0.0,
+  "effect": [
+    {
+      "effects": [
+        "give_poison_effect_to_target"
+      ],
+      "events": [
+        "on_damage"
+      ],
+      "ifs": [
+        "is_ailment_poison"
+      ],
+      "order": "final_damage",
+      "side": "Target"
+    }
+  ],
+  "ele": "Shadow",
+  "format": "aqua",
+  "group": "Misc",
+  "gui_group": "NONE",
+  "has_softcap": false,
+  "icon": "★",
+  "id": "poison_effect_when_hit",
+  "is_long": true,
+  "is_perc": false,
+  "max": 1.0,
+  "min": 0.0,
+  "minus_is_good": false,
+  "multiUseType": "MULTIPLY_STAT",
+  "order": 100,
+  "scaling": "NONE",
+  "ser": "data",
+  "show_in_gui": false,
+  "softcap": 0.0
+}

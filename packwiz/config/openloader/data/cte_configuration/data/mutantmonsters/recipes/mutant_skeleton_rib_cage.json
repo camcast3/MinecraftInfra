@@ -1,0 +1,20 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"category": "misc",
+	"pattern": [
+		"R R",
+		"RXR",
+		"R R"
+	],
+	"key": {
+		"R": {
+			"item": "mutantmonsters:mutant_skeleton_rib"
+		},
+		"X": {
+			"item": "mmorpg:material/meat/2"
+		}
+	},
+	"result": {
+		"item": "mutantmonsters:mutant_skeleton_rib_cage"
+	}
+}

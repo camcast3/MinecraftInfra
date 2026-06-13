@@ -1,0 +1,22 @@
+{
+  "id": "focal_point",
+  "manaMulti": 1.2,
+  "min_lvl": 10,
+  "one_of_a_kind": "random_spread",
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": -45.0,
+      "min": -15.0,
+      "stat": "proj_spread_randomness"
+    },
+    {
+      "type": "PERCENT",
+      "max": 18.0,
+      "min": 6.0,
+      "stat": "accuracy"
+    }
+  ],
+  "style": "DEX",
+  "weight": 1000
+}

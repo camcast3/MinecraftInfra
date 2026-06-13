@@ -1,0 +1,33 @@
+{
+  "base": {
+    "max": 2.25,
+    "min": 0.5
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 1.617,
+      "min": 1.1319
+    },
+    "stat": "health"
+  },
+  "id": "chain_lightning",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 1.617,
+        "min": 1.1319
+      },
+      "stat": "weapon_damage"
+    },
+    {
+      "multi": {
+        "max": 0.09,
+        "min": 0.0675
+      },
+      "stat": "mana"
+    }
+  ]
+}

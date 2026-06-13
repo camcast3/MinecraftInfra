@@ -1,0 +1,31 @@
+{
+  "exp": 125,
+  "id": "food_uncommon_mana5",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/farming/5",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/1",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "chococraft:gysahl_green",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_copper",
+      "num": 5
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/uncommon_mana",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 5
+}

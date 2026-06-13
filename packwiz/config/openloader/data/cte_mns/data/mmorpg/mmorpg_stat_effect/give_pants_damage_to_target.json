@@ -1,0 +1,7 @@
+{
+  "effect": "pants_damage",
+  "give_to": "Target",
+  "id": "give_pants_damage_to_target",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

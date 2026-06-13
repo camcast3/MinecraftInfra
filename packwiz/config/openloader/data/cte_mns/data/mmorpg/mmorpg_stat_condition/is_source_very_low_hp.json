@@ -1,0 +1,6 @@
+{
+  "id": "is_source_very_low_hp",
+  "perc": 25,
+  "ser": "is_hp_under",
+  "side": "Source"
+}

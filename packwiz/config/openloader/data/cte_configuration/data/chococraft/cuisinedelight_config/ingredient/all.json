@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "chococraft:gysahl_green"
+                }
+            ],
+            "max_time": 60,
+            "min_time": 0,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.0,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "VEG",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "chococraft:pickled_gysahl_raw"
+                }
+            ],
+            "max_time": 60,
+            "min_time": 0,
+            "nutrition": 5,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "chococraft:chocobo_drumstick_raw"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 180,
+            "nutrition": 7,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 40
+        }
+    ]
+}

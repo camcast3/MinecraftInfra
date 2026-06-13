@@ -1,0 +1,13 @@
+name = "ImmersiveMC"
+filename = "immersivemc-1.5.8-1.20.1-forge.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "3aae476007733ae44621b0dac035397e9526e57d"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6557049
+project-id = 607017

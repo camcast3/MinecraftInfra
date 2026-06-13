@@ -1,0 +1,29 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "farmersdelight:steak_and_potatoes",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_fried_rice",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:roasted_mutton_chops",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:pasta_with_mutton_chop",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_rose_hip_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_dandelion_tea",
+      "required": false
+    }    
+  ]
+}

@@ -1,0 +1,75 @@
+{
+    "name": "Botania",
+    "icon": "botania:spawner_mover",
+    "category": "patchouli:disabled",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:gravity_rod",
+  "item2": "botania:missile_rod",
+  "item3": "botania:lens_damage",
+  "item4": "botania:lens_explosive",
+  "item5": "botania:loonium",
+  "item6": "botania:floating_loonium"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:bellethorn",
+  "item2": "botania:floating_bellethorn",
+  "item3": "botania:bellethorn_chibi",
+  "item4": "botania:floating_bellethorn_chibi",
+  "item5": "botania:hyacidus",
+  "item6": "botania:floating_hyacidus"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:mana_bomb",
+  "item2": "botania:spawner_mover",
+  "item3": "botania:spawner_claw",
+  "item4": "botania:thunder_sword",
+  "item5": "botania:laputa_shard",
+  "item6": "botania:holy_cloak"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:unholy_cloak",
+  "item2": "botania:balance_cloak",
+  "item3": "botania:invisibility_cloak",
+  "item4": "botania:magnet_ring",
+  "item5": "botania:magnet_ring_greater",
+  "item6": "botania:diva_charm"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:lens_weight",
+  "item2": "botania:lens_fire",
+  "item3": "botania:thorn_chakram",
+  "item4": "botania:flare_chakram",
+  "item5": "botania:pixie_ring",
+  "item6": "botania:elementium_helmet"
+		},
+		{
+            "type": "patchouli:vert_item_list",
+			"heading":"Disabled",
+  "item1": "botania:elementium_chestplate",
+  "item2": "botania:elementium_leggings",
+  "item3": "botania:elementium_boots",
+  "item4": "botania:elementium_sword",
+  "item5": "botania:blood_pendant",
+  "item6": "botania:corporea_index"
+		},{
+            "type": "patchouli:vert_item_list4",
+			"heading":"Disabled",
+  "item1": "botania:terra_sword",
+  "item2": "botania:flight_tiara",
+  "item3": "botania:tiny_planet",
+  "item4": "botania:tiny_planet_block"
+		}
+    ]
+}

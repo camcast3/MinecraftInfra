@@ -1,0 +1,96 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:sea_stew",
+      "required": false
+    },
+    {
+      "id": "doggytalents:onigiri",
+      "required": false
+    },
+    {
+      "id": "doggytalents:edamame_unpodded",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:seagrass_salad",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:shimmerpearl",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gloomgourd_slice",
+      "required": false
+    },
+    {
+      "id": "undergarden:scintling_stew",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:oddion_bulb",
+      "required": false
+    },
+    {
+      "id": "blue_skies:winter_leaves",
+      "required": false
+    },
+    {
+      "id": "blue_skies:fiery_beans",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cryo_root",
+      "required": false
+    },    {
+      "id": "blue_skies:solnut",
+      "required": false
+    },
+    {
+      "id": "corn_delight:boiled_corn",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_juice",
+      "required": false
+    },
+    {
+      "id": "endersdelight:steak_fries",
+      "required": false
+    },
+    {
+      "id": "chococraft:gysahl_green",
+      "required": false
+    },
+    {
+      "id": "chococraft:pickled_gysahl_raw",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:holiday_candy",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:poor_fisher_chowder",
+      "required": false
+    },
+    {
+      "id": "aquaculture:algae",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:scarlet_pierogi",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:kimchi",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:blazing_chili",
+      "required": false
+    }
+  ]
+}

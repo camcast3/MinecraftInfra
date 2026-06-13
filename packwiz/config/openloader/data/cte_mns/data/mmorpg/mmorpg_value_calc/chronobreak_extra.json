@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 5.625,
+    "min": 1.25
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 3.4375,
+      "min": 2.40625
+    },
+    "stat": "health"
+  },
+  "id": "chronobreak_extra",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 3.4375,
+        "min": 2.40625
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

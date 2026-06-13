@@ -1,0 +1,35 @@
+{
+  "gem_type": "tourmaline",
+  "identifier": "tourmaline5",
+  "item_id": "mmorpg:gems/tourmaline/5",
+  "min_lvl_multi": 0.5,
+  "on_armor_stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "inc_effect_of_defensive_buff_given",
+      "v1": 11.0
+    }
+  ],
+  "on_jewelry_stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "eff_dur_u_cast",
+      "v1": 16.5
+    }
+  ],
+  "on_weapons_stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "inc_effect_of_negative_buff_given",
+      "v1": 11.0
+    }
+  ],
+  "perc_upgrade_chance": 100,
+  "rar": "legendary",
+  "text_format": "LIGHT_PURPLE",
+  "tier": 5,
+  "weight": 3
+}

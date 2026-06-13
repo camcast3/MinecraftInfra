@@ -1,0 +1,12 @@
+{
+  "height_increment": 0.0,
+  "owners": [
+    "mca:female_villager"
+  ],
+  "allowed_in":{
+	  "cage": {
+		  "allow":false
+	  }
+  },
+  "width_increment": 0.0
+}

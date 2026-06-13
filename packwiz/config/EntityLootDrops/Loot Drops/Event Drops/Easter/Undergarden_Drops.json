@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": "lightmanscurrency:coin_chocolate_copper",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 8,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_chocolate_iron",
+    "dropChance": 15.0,
+    "minAmount": 1,
+    "maxAmount": 6,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_chocolate_gold",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 5,
+    "requiredDimension": "undergarden:undergarden",
+	"requirePlayerKill": true
+  }
+]

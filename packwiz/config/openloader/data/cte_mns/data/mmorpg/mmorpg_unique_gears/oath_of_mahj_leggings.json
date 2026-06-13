@@ -1,0 +1,51 @@
+{
+  "base_gear": "plate_pants",
+  "guid": "oath_of_mahj_leggings",
+  "flavor_text": "",
+  "force_item_id": "cte2modpackarmors:oath_of_mahj_armor_leggings",
+  "league": "",
+  "min_drop_lvl": 70,
+  "min_tier": 80,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "endurance_charge_when_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 40.0,
+      "min": 30.0,
+      "stat": "food_eff_dur_u_cast"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 6.0,
+      "stat": "physical_health_leech"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "elemental_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "cdr"
+    }
+  ],
+  "weight": 1000
+}

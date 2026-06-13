@@ -1,0 +1,57 @@
+{
+  "base_gear": "chainmail_pants",
+  "flavor_text": "",
+  "force_item_id": "",
+  "guid": "fracture_splint",
+  "league": "prophecy",
+  "min_drop_lvl": 70,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "proc_summon_skeleton_army_on_kill"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 5.0,
+      "stat": "health"
+    },
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 5.0,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "chaos_resist"
+    },
+    {
+      "type": "FLAT",
+      "max": -15.0,
+      "min": -20.0,
+      "stat": "summon_duration"
+    },
+    {
+      "type": "FLAT",
+      "max": -5.0,
+      "min": -5.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 1000
+}

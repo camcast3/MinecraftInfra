@@ -1,0 +1,50 @@
+{
+  "id": "overlord",
+  "runes": [
+    "bri",
+    "xer",
+	"ano",
+	"nos"
+  ],
+  "slots": [
+    "helmet"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 55.0,
+      "min": 45.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "max_total_summons"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "summon_undead_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 10.0,
+      "stat": "proc_summon_wisp_when_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "chaos_resist"
+    }
+  ]
+}

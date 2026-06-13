@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_dodge",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "dodge",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

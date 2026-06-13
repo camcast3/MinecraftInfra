@@ -1,0 +1,12 @@
+# packwiz caches downloaded files locally during `packwiz refresh` /
+# `packwiz update`. Don't commit them — the index.toml hashes are the
+# real source of truth, and the cache directory can be re-populated on
+# demand from the URLs in each mod's [download] block.
+.packwiz/
+.cache/
+
+# Staging files written by `infra/azure/scripts/import-curseforge-pack.ps1`
+# while it unpacks a CurseForge zip to feed `packwiz curseforge import`.
+# These are intermediate artifacts; the imported pack.toml/index.toml/mods
+# are what gets committed.
+.import-staging/

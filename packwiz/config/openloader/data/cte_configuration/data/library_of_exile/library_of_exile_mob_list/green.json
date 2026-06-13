@@ -1,0 +1,35 @@
+{
+  "id": "green",
+  "mobs": [
+    {
+      "mob_id": "minecraft:slime",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:creeper",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:phantom",
+      "weight": 125
+    },
+    {
+      "mob_id": "monsterplus:crystal_zombie",
+      "weight": 125
+    },
+    {
+      "mob_id": "monsterplus:abyssologer",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:stray",
+      "weight": 125
+    }
+  ],
+  "tags": {
+    "tags": [
+      "has_flying_mobs"
+    ]
+  },
+  "weight": 1000
+}

@@ -1,0 +1,8 @@
+{
+  "id": "spell_has_tag_not_tidal_strike",
+  "is": false,
+  "ser": "spell_has_tag",
+  "tag": {
+    "id": "tidal_strike"
+  }
+}

@@ -1,0 +1,32 @@
+{
+    "name": "Professions Overview",
+    "icon": "minecraft:light",
+    "category": "patchouli:professions",
+	"sortnum":0,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "Mine and Slash adds its very own Profession system. Professions are split into 3 categories:
+
+&e&lGathering:&r&r
+- &7Mining&r: gather materials while mining.
+- &2Farming&r: gather materials when harvesting produce.
+- &9Fishing&r: gather special fish by chance while fishing.
+- &6Bounty Hunting&r: complete bounties for rewards."
+},{            "type": "patchouli:text",
+            "text": "$(2br)&e&lCrafting:&r&r
+- &eGear Crafting&r: craft gear to be used in combat.
+- &bEnchanting&r: craft scrolls to enhance your gear.
+- &cCooking&r: cook up foods that provide stat, drop, and experience bonuses for a period of time upon consumption.
+- &5Alchemy&r: create powerful brews to enhance your stats for a period of time."
+},{            "type": "patchouli:text",
+            "text": "$(2br)&e&lOther:&r&r
+- &4Salvaging&r: extract resources from gear when salvaged in a Salvaging Station &e(you can also enable auto-salvaging through the Hub)&r.
+
+&c&lNote: Professions cannot be leveled beyond your Mine and Slash level! Experience will be stored and used once you progress.&r&r"
+},{            "type": "patchouli:spotlight",
+"item":"mmorpg:destroy_output_exp",
+"title":"Double EXP",
+            "text": "Insert the &eDisassembler's Learning Method&r into the &ecrafting station&r of your choice to &eimmediately void&r the item you've crafted but gain &edouble Profession experience&r."}
+    ]
+}

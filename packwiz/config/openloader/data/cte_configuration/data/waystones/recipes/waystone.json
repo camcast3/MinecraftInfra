@@ -1,0 +1,14 @@
+{
+  "result": {
+    "item": "waystones:waystone"
+  },
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "waystones:sandy_waystone"
+    },
+    {
+      "item": "supplementaries:soap"
+    }
+  ]
+}

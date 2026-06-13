@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "farmersdelight:honey_glazed_ham",
+      "required": false
+    },
+    {
+      "id": "blue_skies:comet_berry_pie",
+      "required": false
+    },
+    {
+      "id": "bosses_of_mass_destruction:crystal_fruit",
+      "required": false
+    }
+  ]
+}

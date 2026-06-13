@@ -1,0 +1,23 @@
+{
+  "data": {
+    "base": 0.0,
+    "core_stat_data": {
+      "stats": [
+        {
+          "type": "FLAT",
+          "scale_to_lvl": false,
+          "stat": "damage_to_cursed",
+          "v1": 1.0
+        }
+      ]
+    },
+    "effect_id": "soul",
+    "ele": "Physical",
+    "id": "dmg_to_cursed_per_soul_stack",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": false,
+    "scale": "NONE"
+  },
+  "ser": "bonus_stat_per_effect"
+}

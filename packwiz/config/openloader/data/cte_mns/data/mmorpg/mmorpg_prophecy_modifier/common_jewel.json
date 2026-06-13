@@ -1,0 +1,9 @@
+{
+  "cost_multi": 1.0,
+  "data": "common",
+  "id": "common_jewel",
+  "lvl_req": 0,
+  "modifier_type": "JEWEL_RARITY",
+  "tier_req": 0,
+  "weight": 0
+}

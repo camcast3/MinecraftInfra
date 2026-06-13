@@ -1,0 +1,15 @@
+{
+  "chance_drops": [],
+  "exp_sources": {
+    "default_xp": {
+      "exp": 0,
+      "req": [],
+      "tier": 0
+    },
+    "map": {}
+  },
+  "id": "husbandry",
+  "misc_chance": 0.0,
+  "tiered_drops": {},
+  "tool_tag": ""
+}

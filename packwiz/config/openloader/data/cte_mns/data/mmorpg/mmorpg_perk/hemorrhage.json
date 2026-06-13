@@ -1,0 +1,16 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/hemorrhage.png",
+  "id": "hemorrhage",
+  "is_entry": false,
+  "max_lvls": 1,
+  "one_kind": "blood_mage",
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "hemorrhage_to_source_on_crit",
+      "v1": 30.0
+    }
+  ]
+}

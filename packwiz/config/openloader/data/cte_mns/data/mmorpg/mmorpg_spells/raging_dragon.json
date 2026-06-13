@@ -1,0 +1,479 @@
+{
+  "attached": {
+    "entity_components": {
+      "combo_remover": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "combo_extender",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 20.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "default_entity_name": [
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.0,
+                  "motion": "None",
+                  "particle_count": 1.0,
+                  "particle_type": "twilightforest:large_flame",
+                  "radius": 0.1,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 1.0,
+                  "motion": "None",
+                  "particle_count": 1.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 0.1,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.5,
+                  "motion": "None",
+                  "particle_count": 5.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 0.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": 0.0,
+                  "motion": "None",
+                  "particle_count": 10.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 0.9,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": -0.5,
+                  "motion": "None",
+                  "particle_count": 5.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 0.5,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+              {
+                "type": "particles_in_radius",
+                "map": {
+                  "height": -1.0,
+                  "motion": "None",
+                  "particle_count": 2.0,
+                  "particle_type": "minecraft:flame",
+                  "radius": 0.1,
+                  "shape": "CIRCLE_2D_EDGE",
+                  "y_rand": 0.1
+                }
+              }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+				  "pitch": 1.0,
+				  "sound": "roe_sfx:spell_firewall_tick",
+				  "volume": 1.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 10.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Fire",
+                "value_calculation": "raging_dragon"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 2.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        }
+      ]
+	},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "minecraft:block.fire.extinguish",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "caster_command",
+            "map": {
+              "command": "tellraw @p {\"text\":\"Needs Combo Extender!\",\"color\":\"red\"}"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "roe_sfx:spell_raging_dragon",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "combo_remover",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 20.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "sword_sweep_particles",
+            "map": {}
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_extender"
+            }
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {},
+  "cast_finish_animation": {
+    "id": "sword_slash_single"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "MELEE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 30,
+    "ene_cost": {
+      "max": 13.5,
+      "min": 11.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "str",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "weapon_skill",
+        "damage",
+        "melee",
+        "fire",
+		"area",
+		"finisher"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "raging_dragon",
+  "loc_name": "Raging Dragon",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "burn_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 48.0,
+      "min": 3.0,
+      "stat": "burn_damage"
+    }
+  ],
+  "weight": 1000
+}

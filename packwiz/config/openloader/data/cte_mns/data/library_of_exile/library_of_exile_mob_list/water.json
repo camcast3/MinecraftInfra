@@ -1,0 +1,175 @@
+{
+  "id": "water",
+  "mobs": [
+    {
+      "mob_id": "minecraft:blaze",
+      "weight": 25
+    },
+    {
+      "mob_id": "minecraft:zombie",
+      "weight": 750
+    },
+    {
+      "mob_id": "minecraft:skeleton",
+      "weight": 350
+    },
+    {
+      "mob_id": "minecraft:endermite",
+      "weight": 50
+    },
+    {
+      "mob_id": "minecraft:cave_spider",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:spider",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:pillager",
+      "weight": 250
+    },
+    {
+      "mob_id": "minecraft:witch",
+      "weight": 100
+    },
+    {
+      "mob_id": "minecraft:vindicator",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:slime",
+      "weight": 5
+    },
+    {
+      "mob_id": "minecraft:evoker",
+      "weight": 25
+    },
+    {
+      "mob_id": "minecraft:husk",
+      "weight": 500
+    },
+    {
+      "mob_id": "minecraft:stray",
+      "weight": 250
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_skeleton",
+      "weight": 25
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_zombie",
+      "weight": 25
+    },
+    {
+      "mob_id": "twilightforest:blockchain_goblin",
+      "weight": 125	
+    },
+    {
+      "mob_id": "twilightforest:redcap",
+      "weight": 125
+    },
+    {
+      "mob_id": "twilightforest:redcap_sapper",
+      "weight": 125	
+    },
+    {
+      "mob_id": "twilightforest:troll",
+      "weight": 25	
+    },
+    {
+      "mob_id": "twilightforest:minotaur",
+      "weight": 25	
+    },
+    {
+      "mob_id": "aquamirae:tortured_soul",
+      "weight": 250
+    },
+    {
+      "mob_id": "aquamirae:maw",
+      "weight": 125
+    },
+    {
+      "mob_id": "blue_skies:armored_frost_spirit",
+      "weight": 250
+    },
+    {
+      "mob_id": "blue_skies:crynocerous",
+      "weight": 125
+    },
+    {
+      "mob_id": "blue_skies:diophyde_prowler",
+      "weight": 125
+    },
+    {
+      "mob_id": "blue_skies:polargeist",
+      "weight": 125
+    },
+    {
+      "mob_id": "minecraft:stray",
+      "weight": 350
+    },
+    {
+      "mob_id": "minecraft:drowned",
+      "weight": 500
+    },
+    {
+      "mob_id": "riskofrain_mobs:stone_golem_entity",
+      "weight": 25
+    },
+    {
+      "mob_id": "twilightforest:winter_wolf",
+      "weight": 250	
+    },
+    {
+      "mob_id": "twilightforest:snow_guardian",
+      "weight": 25	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:barrel_zombie",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:dread_hound",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:decrepit_skeleton",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:door_knight",
+      "weight": 125
+    },
+    {
+      "mob_id": "born_in_chaos_v1:fallen_chaos_knight",
+      "weight": 25	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:skeleton_thrasher",
+      "weight": 25	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_bruiser",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_clown",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_fisherman",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_lumberjack",
+      "weight": 50	
+    }
+  ],
+  "tags": {
+    "tags": [
+      "water"
+    ]
+  },
+  "weight": 1000
+}

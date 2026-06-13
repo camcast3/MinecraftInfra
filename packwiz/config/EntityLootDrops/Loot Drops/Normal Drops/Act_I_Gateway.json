@@ -1,0 +1,14 @@
+[
+  {
+    "_comment": "Act I Gateway spawn on mob kill",
+    "itemId": "",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "requiredDimension": "minecraft:overworld",
+    "command": "open_gateway {entity_x} {entity_y} {entity_z} gateways:act/i",
+    "commandChance": 1.0,
+    "commandCoolDown": 300,
+    "requirePlayerKill": true
+  }
+]

@@ -1,0 +1,276 @@
+{
+	"content": {
+
+		"metal_obj_coal": {
+			"type": "item",
+			"content": "minecraft:coal",
+			"amount": {
+				"min": 3,
+				"max": 24
+			},
+			"unitWorth": 50
+		},
+
+		"metal_obj_raw_copper": {
+			"type": "item",
+			"content": "minecraft:raw_copper",
+			"amount": {
+				"min": 3,
+				"max": 18
+			},
+			"unitWorth": 100,
+			"forbids": [
+				{
+					"type": "item",
+					"content": "minecraft:copper_ingot"
+				}
+			]
+		},
+
+		"metal_obj_copper_ingot": {
+			"type": "item",
+			"content": "minecraft:copper_ingot",
+			"amount": {
+				"min": 3,
+				"max": 18
+			},
+			"unitWorth": 125
+		},
+
+		"metal_obj_raw_iron": {
+			"type": "item",
+			"content": "minecraft:raw_iron",
+			"amount": {
+				"min": 3,
+				"max": 32
+			},
+			"unitWorth": 125,
+			"forbids": [
+				{
+					"type": "item",
+					"content": "minecraft:iron_ingot"
+				},
+				{
+					"type": "item",
+					"content": "minecraft:iron_helmet"
+				},
+				{
+					"type": "item",
+					"content": "minecraft:iron_chestplate"
+				},
+				{
+					"type": "item",
+					"content": "minecraft:iron_leggings"
+				},
+				{
+					"type": "item",
+					"content": "minecraft:iron_boots"
+				}
+			]
+		},
+
+		"metal_obj_iron_ingot": {
+			"type": "item",
+			"content": "minecraft:iron_ingot",
+			"amount": {
+				"min": 3,
+				"max": 24
+			},
+			"unitWorth": 150
+		},
+
+		"metal_obj_chain": {
+			"type": "item",
+			"content": "minecraft:chain",
+			"amount": {
+				"min": 1,
+				"max": 16
+			},
+			"unitWorth": 200,
+			"forbids": [
+				{
+					"type": "item",
+					"content": "minecraft:iron_ingot"
+				}
+			]
+		},
+
+		"metal_obj_raw_gold": {
+			"type": "item",
+			"content": "minecraft:raw_gold",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 250
+		},
+
+		"metal_obj_gold_ingot": {
+			"type": "item",
+			"content": "minecraft:gold_ingot",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 300
+		},
+
+		"metal_obj_diamond": {
+			"type": "item",
+			"content": "minecraft:diamond",
+			"amount": {
+				"min": 1,
+				"max": 3
+			},
+			"unitWorth": 750,
+			"weightMult": 0.1
+		},
+
+		"metal_obj_netherite": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "minecraft:netherite_ingot",
+			"amount": {
+				"min": 1,
+				"max": 3
+			},
+			"unitWorth": 1250
+		},
+
+		"metal_obj_cloggrum": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "undergarden:cloggrum_ingot",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 500
+		},
+
+		"metal_obj_froststeel": {
+			"type": "item",
+			"rarity": "UNCOMMON",
+			"content": "undergarden:froststeel_ingot",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 1250
+		},
+
+		"metal_obj_regalium": {
+			"type": "item",
+			"rarity": "EPIC",
+			"content": "undergarden:regalium_crystal",
+			"amount": {
+				"min": 1,
+				"max": 3
+			},
+			"unitWorth": 1750
+		},
+
+		"metal_obj_falsite": {
+			"type": "item",
+			"rarity": "EPIC",
+			"content": "blue_skies:falsite_ingot",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 1750
+		},
+
+		"metal_obj_ventium": {
+			"type": "item",
+			"rarity": "EPIC",
+			"content": "blue_skies:ventium_ingot",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 1750
+		},
+
+		"metal_obj_charoite": {
+			"type": "item",
+			"rarity": "LEGENDARY",
+			"content": "blue_skies:charoite",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 2250
+		},
+
+		"metal_obj_diopside": {
+			"type": "item",
+			"rarity": "LEGENDARY",
+			"content": "blue_skies:diopside_gem",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 2250
+		},
+
+		"metal_obj_mining_0": {
+			"type": "item",
+			"content": "mmorpg:material/mining/0",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 50
+		},
+
+		"metal_obj_mining_1": {
+			"type": "item",
+			"content": "mmorpg:material/mining/1",
+			"rarity": "UNCOMMON",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 250
+		},
+
+		"metal_obj_mining_2": {
+			"type": "item",
+			"content": "mmorpg:material/mining/2",
+			"rarity": "RARE",
+			"amount": {
+				"min": 3,
+				"max": 16
+			},
+			"unitWorth": 1000
+		},
+
+		"metal_obj_mining_3": {
+			"type": "item",
+			"content": "mmorpg:material/mining/3",
+			"rarity": "EPIC",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 3000
+		},
+
+		"metal_obj_mining_4": {
+			"type": "item",
+			"content": "mmorpg:material/mining/4",
+			"rarity": "LEGENDARY",
+			"amount": {
+				"min": 2,
+				"max": 9
+			},
+			"unitWorth": 6000
+		}
+
+
+
+	}
+
+
+}

@@ -1,0 +1,13 @@
+{
+  "attribute_id": "kubejs:total_damage_per_perc_of_health",
+  "conversion": 1.0,
+  "enchant_id": "",
+  "id": "kube_total_damage_per_perc_of_health",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "total_damage_per_perc_of_health",
+  "mod_type": "FLAT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

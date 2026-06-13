@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_armageddon",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "armageddon",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

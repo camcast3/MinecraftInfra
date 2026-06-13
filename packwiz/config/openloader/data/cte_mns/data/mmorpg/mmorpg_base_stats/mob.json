@@ -1,0 +1,101 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "accuracy",
+      "v1": 8.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "armor_penetration",
+      "v1": 8.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "critical_damage",
+      "v1": -50.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "armor",
+      "v1": 20.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "dodge",
+      "v1": 20.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": true,
+      "stat": "spell_dodge",
+      "v1": 10.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "elemental_resist",
+      "v1": 10.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "chaos_resist",
+      "v1": 10.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "electrify_proc_chance",
+      "v1": 10.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "freeze_proc_chance",
+      "v1": 5.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "burn_effect_when_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "bleed_effect_when_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "freeze_effect_when_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "poison_effect_when_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "electrify_effect_when_hit",
+      "v1": 1.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "no_attacker_stats_on_selfdmg",
+      "v1": 1.0
+    }
+  ],
+  "id": "mob"
+}

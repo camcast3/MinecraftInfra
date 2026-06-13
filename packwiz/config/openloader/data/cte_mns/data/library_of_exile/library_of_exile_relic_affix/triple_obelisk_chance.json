@@ -1,0 +1,12 @@
+{
+  "id": "triple_obelisk_chance",
+  "mods": [
+    {
+      "max": 15.0,
+      "min": 5.0,
+      "stat": "triple_obelisk_chance"
+    }
+  ],
+  "relic_type": "ancient_obelisks",
+  "weight": 1000
+}

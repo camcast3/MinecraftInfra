@@ -1,0 +1,77 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "aquamirae:sea_stew",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:crab_cakes",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:surf_and_turf",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_skewer",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:shrimp_fried_rice",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:roasted_tambaqui",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:trout_steak",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_grittle_flatfish",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_municipal_monkfish",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_charscale_moki",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cooked_horizofin_tunid",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_crab",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_clawster",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_shrimp",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_clam_meat",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:salty_folly",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:bloody_mary",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:black_cod",
+      "required": false
+    }
+  ]
+}

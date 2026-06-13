@@ -1,0 +1,71 @@
+{
+	"size": "small",
+	"color": "#000485",
+	"waves": [{
+			"entities": [
+				{
+					"entity": "aquamirae:anglerfish",
+					"count": 6
+				}
+			],
+			"rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "aquamirae:anglerfish",
+                    "rolls": 1
+                }
+			],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "alexsmobs:skelewag",
+					"count": 6
+				}
+			],
+			"rewards": [
+                {
+                    "type": "gateways:entity_loot",
+                    "entity": "alexsmobs:skelewag",
+                    "rolls": 1
+                }
+			],
+			"max_wave_time": 1200,
+			"setup_time": 60
+		},
+		{
+			"entities": [
+				{
+					"entity": "aquamirae:maze_mother",
+					"count": 1
+				}
+			],
+			"rewards": [],
+			"max_wave_time": 5400,
+			"setup_time": 60
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 2,
+            "desc": "rewards.gateways.loot_table.drops"
+        },
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_owd",
+            "rolls": 1,
+            "desc": "rewards.gateways.loot_table.owd"
+        }
+    ],
+    "failures": [
+    ],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

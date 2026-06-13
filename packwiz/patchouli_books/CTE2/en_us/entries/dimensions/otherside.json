@@ -1,0 +1,41 @@
+{
+    "name": "Otherside",
+    "icon": "minecraft:sculk",
+    "category": "patchouli:dimensions",
+	"sortnum":5,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "&n&6&lDimension:&r&r    &n&lOtherside&r
+&n&6&lArea Level:&r&r    &n60 - 75 &r&r
+&n&6&lEnraged Area Level:&r &n75 - 95&r
+&n&6&lExceptions:&r  &nNone&r
+&n&6&lQuests covered:&r  &nAct V;&r
+&n&6&lDimension gateways:&r  &nAct V Gateway;
+&n&6&lDimension Bosses:&r &nWarden &r "
+		},
+		{
+            "type": "patchouli:text",
+            "text": " It seems the portal to this dimesion was abruptly closed instead of guarded. It holds much more then just a single Warden, it seems like the portal leads to the Homeland of these 'warden' creatures. All other beings here have similar features, relying on hearing and echolocation.$(br) Dont make a sound unless you are ready for a fight.$(br) On further note it seems that this dimension holds some kind of ancient temple."
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Getting to the Otherside",
+  "item": "deeperdarker:heart_of_the_deep",
+  "text": "If you are looking to get to this dimension you need to lay your hands on&n&l Heart of the Deep that is dropped from a Warden and use it to light up portal frame found in Ancient City.&r$(br)Sometimes you can find a portal frame covered in sculk that needs to be cleared out before lighting the portal" 
+		},
+		{
+            "type": "patchouli:multiblock",
+			"name":"Otherside Portal",
+			"text": "This portal cannot be built in survival, you can use visualization to check if anything blocking portal",
+            "multiblock": {
+    "pattern": [
+        [ "OOOOOOOOOOOOOOOOOOOOOO"],[ "OSSSSSSSSSSSSSSSSSSSSO"],[ "OSSSSSSSSSSSSSSSSSSSSO"],[ "OSSSSSSSSSSSSSSSSSSSSO"],[ "OSSSSSSSSSSSSSSSSSSSSO"],[ "OSSSSSSSSSSSSSSSSSSSSO"],[ "O0SSSSSSSSSSSSSSSSSSSO"],[ "OOOOOOOOOOOOOOOOOOOOOO"]
+    ],
+    "mapping": {
+        "O": "minecraft:reinforced_deepslate",
+		"S": "minecraft:air"
+    }
+}
+		}
+    ]
+}

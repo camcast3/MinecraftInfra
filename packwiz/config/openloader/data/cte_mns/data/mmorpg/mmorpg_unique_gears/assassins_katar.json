@@ -1,0 +1,45 @@
+{
+  "base_gear": "gauntlet",
+  "guid": "assassins_katar",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:katar",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "proc_double_strike_on_basic_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "PERCENT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "attack_speed"
+    }
+  ],
+  "weight": 1000
+}

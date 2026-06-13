@@ -1,0 +1,14 @@
+{
+    "name": "Travelling Backwards",
+    "icon": "mmorpg:mob_effects/slow",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":15,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 45501F3F04639DB1)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rEver wanted to go back to the Overworld to explore, but find the levels too low to make it an enjoyable experience? At certain breakpoint levels, past Dimensions will 'enrage', increasing their level ranges for players to potentially go back and enjoy past Dimensions!"},
+{            "type": "patchouli:text",
+            "text": "&eOverworld&r - Lv. &b50-70&r$(br)&eNether&r - Lv. &b55-75&r$(br)&eUndergarden&r - Lv. &b60-80&r$(br)&eEverbright/Everdawn&r - Lv. &b65-85&r$(br)&eThe End&r - Lv. &b70-90&r$(br)&eThe Otherside&r - Lv. &b75-95&r"
+		}
+    ]
+}

@@ -1,0 +1,53 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "outer_end:cured_jerky",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:scintling_stew",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:suspicious_mix",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gloomgourd_pie_slice",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crawling_sandwich",
+      "required": false
+    },
+    {
+      "id": "endersdelight:crispy_skewer",
+      "required": false
+    },
+    {
+      "id": "endersdelight:ender_paella",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_pie",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:jellyfish_jelly",
+      "required": false
+    },
+    {
+      "id": "nethersdelight:magma_gelatin",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_gamblers_tea",
+      "required": false
+    }
+  ]
+}

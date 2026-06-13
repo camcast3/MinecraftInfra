@@ -1,0 +1,121 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:natto",
+      "required": false
+    },
+    {
+      "id": "outer_end:stalker_meat",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:fugu_slice",
+      "required": false
+    },
+    {
+      "id": "undergarden:rotten_blisterberry",
+      "required": false
+    },
+    {
+      "id": "undergarden:raw_gloomper_leg",
+      "required": false
+    },
+    {
+      "id": "undergarden:blood_globule",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:gloomgourd_slice",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:raw_gloomper_cuts",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:oddion_bulb",
+      "required": false
+    },
+    {
+      "id": "biomeswevegone:cooked_oddion_bulb",
+      "required": false
+    },
+    {
+      "id": "blue_skies:pine_fruit",
+      "required": false
+    },
+    {
+      "id": "twilightforest:experiment_115",
+      "required": false
+    },
+    {
+      "id": "endersdelight:mite_crust",
+      "required": false
+    },
+    {
+      "id": "endersdelight:shulker_mollusk",
+      "required": false
+    },
+    {
+      "id": "endersdelight:chorus_juice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:creepy_cookies_with_milk",
+      "required": false
+    },
+    {
+      "id": "chococraft:pickled_gysahl_raw",
+      "required": false
+    },
+    {
+      "id": "chococraft:pickled_gysahl_cooked",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:pufferfish_slice",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:cooked_pufferfish_slice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:monster_flesh",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:rotten_fish",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_flesh",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:gummy_vampire_teeth",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:pickled_pickles",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:coffee_berries",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:nether_wart_sourdough",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:gamblers_tea",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:long_gamblers_tea",
+      "required": false
+    }
+  ]
+}

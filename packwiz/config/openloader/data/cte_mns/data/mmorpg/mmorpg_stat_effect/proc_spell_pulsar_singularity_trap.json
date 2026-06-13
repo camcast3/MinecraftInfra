@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_pulsar_singularity_trap",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "pulsar_singularity_trap",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

@@ -1,0 +1,37 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "doggytalents:gyudon",
+      "required": false
+    },
+    {
+      "id": "doggytalents:sausage",
+      "required": false
+    },
+    {
+      "id": "oceansdelight:braised_sea_pickle",
+      "required": false
+    },
+    {
+      "id": "undergarden:dweller_steak",
+      "required": false
+    },
+    {
+      "id": "twilightforest:meef_stroganoff",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:honey_glazed_ham",
+      "required": false
+    },
+    {
+      "id": "farmersdelight:steak_and_potatoes",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:ham_and_cheese_sandwich",
+      "required": false
+    }
+  ]
+}

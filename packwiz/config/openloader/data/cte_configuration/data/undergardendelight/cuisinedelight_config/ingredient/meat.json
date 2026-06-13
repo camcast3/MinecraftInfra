@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergardendelight:dweller_meat_slice"
+                }
+            ],
+            "max_time": 200,
+            "min_time": 120,
+            "nutrition": 5.5,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 3,
+            "stir_time": 80
+        },
+        {
+            "type": "SEAFOOD",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergardendelight:raw_gwibling_fillet"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 60,
+            "nutrition": 6,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.5,
+            "size": 2,
+            "stir_time": 40
+        },
+        {
+            "type": "MEAT",
+            "effects": [],
+            "ingredient": [
+                {
+                    "item": "undergardendelight:raw_gloomper_cuts"
+                }
+            ],
+            "max_time": 150,
+            "min_time": 80,
+            "nutrition": 5,
+            "overcook_penalty": 0.5,
+            "raw_penalty": 0.6,
+            "size": 2,
+            "stir_time": 40
+        }
+    ]
+}

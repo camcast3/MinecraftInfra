@@ -1,0 +1,13 @@
+name = "Arrow Clean Up"
+filename = "Arrow Clean Up-1.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "ea22825b68ebeba6039e4972d52e5d01fd7afe66"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6834270
+project-id = 1318313

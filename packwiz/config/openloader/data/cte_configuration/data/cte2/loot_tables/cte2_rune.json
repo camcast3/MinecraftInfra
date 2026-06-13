@@ -1,0 +1,70 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/xer",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/eno",
+          "weight": 6
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/har",
+          "weight": 7
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/toq",
+          "weight": 7
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/fey",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ano",
+          "weight": 8
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/dos",
+          "weight": 9
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/cen",
+          "weight": 9
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/nos",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/ita",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:item",
+          "name": "mmorpg:runes/mos",
+          "weight": 10
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 810
+        }
+      ]
+    }
+  ],
+  "random_sequence": "cte2:cte2_rune"
+}

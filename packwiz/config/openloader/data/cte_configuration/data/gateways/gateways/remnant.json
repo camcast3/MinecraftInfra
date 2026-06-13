@@ -1,0 +1,56 @@
+{
+	"size": "small",
+	"color": "#454752",
+	"waves": [{
+			"entities": [
+                {
+                    "entity": "born_in_chaos_v1:door_knight",
+                    "count": 8
+                }
+            ],
+			"modifiers": [
+            ],
+			"rewards": [],
+			"max_wave_time": 750,
+			"setup_time": 100
+		},
+		{
+			"entities": [
+                {
+                    "entity": "born_in_chaos_v1:fallen_chaos_knight",
+                    "count": 4
+                }
+            ],
+			"modifiers": [
+            ],
+			"rewards": [],
+			"max_wave_time": 750,
+			"setup_time": 100
+		},
+        {
+			"entities": [
+                {
+                    "entity": "remnant_bosses:ossukage",
+                    "count": 1
+                }
+            ],
+			"rewards": [],
+			"max_wave_time": 12000,
+			"setup_time": 100
+		}
+	],
+    "rewards": [
+        {
+            "type": "gateways:loot_table",
+            "loot_table": "cte2:cte2_gateways",
+            "rolls": 5,
+            "desc": "rewards.gateways.loot_table.drops"
+        }
+    ],
+    "failures": [],
+    "rules": {
+        "spawn_range": 4,
+        "leash_range": 16,
+        "spacing": 100
+    }
+}

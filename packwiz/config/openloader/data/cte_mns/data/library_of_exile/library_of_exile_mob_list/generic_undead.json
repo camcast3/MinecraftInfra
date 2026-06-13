@@ -1,0 +1,71 @@
+{
+  "id": "generic_undead",
+  "mobs": [
+    {
+      "mob_id": "minecraft:zombie",
+      "weight": 1000
+    },
+    {
+      "mob_id": "minecraft:skeleton",
+      "weight": 300
+    },
+    {
+      "mob_id": "minecraft:husk",
+      "weight": 500
+    },
+    {
+      "mob_id": "born_in_chaos_v1:barrel_zombie",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:dread_hound",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:decrepit_skeleton",
+      "weight": 125	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:door_knight",
+      "weight": 125
+    },
+    {
+      "mob_id": "born_in_chaos_v1:fallen_chaos_knight",
+      "weight": 25	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:skeleton_thrasher",
+      "weight": 25	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_bruiser",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_clown",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_fisherman",
+      "weight": 50	
+    },
+    {
+      "mob_id": "born_in_chaos_v1:zombie_lumberjack",
+      "weight": 50	
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_skeleton",
+      "weight": 25
+    },
+    {
+      "mob_id": "mutantmonsters:mutant_zombie",
+      "weight": 25
+    }
+  ],
+  "tags": {
+    "tags": [
+	  "generic_undead"
+    ]
+  },
+  "weight": 1000
+}

@@ -1,0 +1,17 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "undergarden:raw_dweller_meat": {
+            "next": "undergarden:dweller_steak",
+            "stage": "COOKED"
+        },
+        "undergarden:raw_gloomper_leg": {
+            "next": "undergarden:gloomper_leg",
+            "stage": "COOKED"
+        },
+        "undergarden:raw_gwibling": {
+            "next": "undergarden:cooked_gwibling",
+            "stage": "COOKED"
+        }
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "entries": [
+        {
+            "type": "NONE",
+            "effects": [
+                {
+                    "effect": "minecraft:resistance",
+                    "level": 1,
+                    "time": 2400
+                }
+            ],
+            "ingredient": [
+                {
+                    "item": "endersdelight:crushed_voidpepper"
+                }
+            ],
+            "max_time": 240,
+            "min_time": 0,
+            "nutrition": 3,
+            "overcook_penalty": 0.0,
+            "raw_penalty": 0.0,
+            "size": 1,
+            "stir_time": 120
+        },
+        {
+            "type": "NONE",
+            "effects": [
+                {
+                    "effect": "minecraft:regeneration",
+                    "level": 1,
+                    "time": 2400
+                }
+            ],
+            "ingredient": [
+                {
+                    "item": "endersdelight:ethereal_saffron"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 0,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.0,
+            "size": 1,
+            "stir_time": 40
+        },
+        {
+            "type": "VEG",
+            "effects": [
+                {
+                    "effect": "alexsmobs:poison_resistance",
+                    "level": 1,
+                    "time": 2400
+                }
+            ],
+            "ingredient": [
+                {
+                    "item": "endersdelight:amberveil"
+                }
+            ],
+            "max_time": 360,
+            "min_time": 60,
+            "nutrition": 4,
+            "overcook_penalty": 0.2,
+            "raw_penalty": 0.2,
+            "size": 1,
+            "stir_time": 60
+        },
+        {
+            "type": "VEG",
+            "effects": [
+                {
+                    "effect": "attributeslib:knowledge",
+                    "level": 0,
+                    "time": 2400
+                }
+            ],
+            "ingredient": [
+                {
+                    "item": "endersdelight:chorusflame"
+                }
+            ],
+            "max_time": 120,
+            "min_time": 0,
+            "nutrition": 3,
+            "overcook_penalty": 0.3,
+            "raw_penalty": 0.0,
+            "size": 1,
+            "stir_time": 40
+        }                                                               
+    ]
+}

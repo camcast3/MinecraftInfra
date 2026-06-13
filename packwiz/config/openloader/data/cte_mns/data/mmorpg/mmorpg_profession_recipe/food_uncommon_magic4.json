@@ -1,0 +1,31 @@
+{
+  "exp": 125,
+  "id": "food_uncommon_magic4",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/4",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/1",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "crabbersdelight:cooked_crab",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_copper",
+      "num": 5
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/uncommon_magic",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 4
+}

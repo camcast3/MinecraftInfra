@@ -1,0 +1,256 @@
+{
+  "attached": {
+    "entity_components": {
+      "fighter": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "fighter_stance",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": -1.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "defender": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "defender_stance",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": -1.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.2,
+              "sound": "roe_sfx:spell_stance",
+              "volume": 0.8
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "fighter",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "defender_stance"
+            }
+          },
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "defender",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "fighter_stance"
+            }
+          },
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "fighter_stance",
+              "potion_action": "GIVE_STACKS",
+              "potion_dur": -1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "fighter_stance",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "defender_stance",
+              "is_false": true
+            }
+          },
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "particles_in_radius",
+            "map": {
+              "motion": "None",
+              "particle_count": 5.0,
+              "particle_type": "minecraft:cloud",
+              "radius": 3.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "sword_slash_single"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 40,
+    "ene_cost": {
+      "max": 4.0,
+      "min": 8.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 4.0,
+      "min": 8.0
+    },
+    "slows_when_casting": true,
+    "style": "str",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+	  "melee",
+	  "buff"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "fighter_stance",
+  "loc_name": "Fighter Stance",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 4,
+  "min_lvl": 10,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [],
+  "weight": 1000
+}

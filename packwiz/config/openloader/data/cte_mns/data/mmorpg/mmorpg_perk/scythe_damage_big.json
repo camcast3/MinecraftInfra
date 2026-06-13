@@ -1,0 +1,15 @@
+{
+  "type": "SPECIAL",
+  "icon": "mmorpg:textures/gui/stat_icons/weapon/scythe_damage.png",
+  "id": "scythe_damage_big",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "scythe_damage",
+      "v1": 10.0
+    }
+  ]
+}

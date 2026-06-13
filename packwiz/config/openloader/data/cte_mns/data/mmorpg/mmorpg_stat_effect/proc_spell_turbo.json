@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_turbo",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "turbo",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

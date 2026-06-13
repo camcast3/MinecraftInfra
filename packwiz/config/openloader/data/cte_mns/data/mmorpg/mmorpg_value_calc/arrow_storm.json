@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 4.5,
+    "min": 1.0
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.45,
+      "min": 1.95
+    },
+    "stat": "health"
+  },
+  "id": "arrow_storm",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.45,
+        "min": 1.95
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "base_stats": [
+    {
+      "type": "FLAT",
+      "max": 8.0,
+      "min": 4.0,
+      "stat": "weapon_damage"
+    },
+	{
+	  "type": "FLAT",
+	  "max": 6.0,
+	  "min": 3.0,
+	  "stat": "mana_on_basic_hit"
+	}
+  ],
+  "gear_slot": "hammer",
+  "guid": "hammer",
+  "possible_items": [
+    {
+      "item_id": "roe_weapons:hammer_0",
+      "min_rar": "common",
+      "weight": 1
+    },
+    {
+      "item_id": "roe_weapons:hammer_1",
+      "min_rar": "uncommon",
+      "weight": 10
+    },
+    {
+      "item_id": "roe_weapons:hammer_2",
+      "min_rar": "rare",
+      "weight": 100
+    },
+    {
+      "item_id": "roe_weapons:hammer_3",
+      "min_rar": "epic",
+      "weight": 1000
+    },
+    {
+      "item_id": "roe_weapons:hammer_4",
+      "min_rar": "legendary",
+      "weight": 10000
+    },
+    {
+      "item_id": "roe_weapons:hammer_5",
+      "min_rar": "mythic",
+      "weight": 100000
+    }
+  ],
+  "req": {
+    "base_req": {},
+    "scaling_req": {
+      "strength": 0.25,
+      "intelligence": 0.25
+    }
+  },
+  "style": "INT",
+  "tags": {
+    "tags": [
+      "mage_weapon",
+      "intelligence",
+      "hammer",
+      "strength",
+      "melee_weapon",
+      "weapon_family"
+    ]
+  },
+  "weapon_type": "hammer",
+  "weight": 1000
+}

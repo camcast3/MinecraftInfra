@@ -1,0 +1,13 @@
+name = "What's Your Build"
+filename = "What's your build-forge-1.20.1-0.4.3.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/7123/325/What%27s%20your%20build-forge-1.20.1-0.4.3.jar"
+hash-format = "sha1"
+hash = "65f393ea8359e12e2ba4dc78cf32cefb276a7802"
+
+[update]
+[update.curseforge]
+file-id = 7123325
+project-id = 1233310

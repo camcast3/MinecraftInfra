@@ -1,0 +1,10 @@
+{
+  "type": "forge:add_spawns",
+  "biomes": "#blue_skies:everbright",
+  "spawners": {
+    "type": "born_in_chaos_v1:nightmare_stalker",
+    "weight": 8,
+    "minCount": 1,
+    "maxCount": 1
+  }
+}

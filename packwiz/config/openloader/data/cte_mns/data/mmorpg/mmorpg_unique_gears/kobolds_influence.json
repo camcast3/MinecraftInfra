@@ -1,0 +1,45 @@
+{
+  "base_gear": "vest_chest",
+  "guid": "kobolds_influence",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 1,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "plus_lvl_buff_spells"
+    },
+    {
+      "type": "FLAT",
+      "max": -25.0,
+      "min": -25.0,
+      "stat": "mana_cost"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "inc_effect_of_positive_buff_given"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "increase_healing"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,51 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "2"
+    ],
+    "ends": [
+      "boss_bedroom",
+      "boss_chest_behind_throne",
+      "boss0",
+      "parkour_hidden_slime",
+      "slime_parkour_hidden",
+      "under_snow_room"
+    ],
+    "entrances": [
+      "0"
+    ],
+    "folder": "spruce_mansion",
+    "four_ways": [
+      "ice_pillar",
+      "redstone_ore_secret"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"illagers",
+			"water"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "1",
+      "blocked_but_under_snow",
+      "crouching",
+      "dangerous_underground",
+      "peek_secret_ice",
+      "simple3"
+    ],
+    "triple_hallway": [
+      "hidden_trapdoor_room",
+      "simple",
+      "2"
+    ]
+  },
+  "id": "spruce_mansion",
+  "weight": 1000
+}

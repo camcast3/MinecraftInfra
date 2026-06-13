@@ -1,0 +1,18 @@
+{
+    "name": "Salvaging",
+    "icon": "mmorpg:stone/0",
+    "category": "patchouli:professions",
+	"sortnum":19,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "Salvaging is the act of deconstructing your gear into materials that can be used to craft Profession items, gear, or repair.
+
+In order to use a Salvaging Station, you &lmust&r place a hopper above the station, and place your gear to be salvaged into the hopper. Salvaging in the Station can yield more results and experience than auto-salvaging."
+},{            "type": "patchouli:text",
+            "text": "Your gear will be salvaged and you will receive materials as the output. &eWhen salvaging, you will receive &eStones&r of varying rarity. These are used to repair or craft gear. They can also be used to craft other items. The rarity of the stone depends on the rarity of the gear salvaged.
+
+&bYou can also salvage your gear via the Hub auto-salvaging feature, but you will earn less experience doing so.&r"
+}
+    ]
+}

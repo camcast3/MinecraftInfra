@@ -1,0 +1,11 @@
+{
+  "affixes": 2,
+  "base_data": {
+    "id": "rare",
+    "text_format": "AQUA",
+    "tier": 2,
+    "weight": 81
+  },
+  "max_affix_percent": 60,
+  "min_affix_percent": 30
+}

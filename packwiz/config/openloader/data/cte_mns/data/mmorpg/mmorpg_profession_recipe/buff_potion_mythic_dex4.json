@@ -1,0 +1,31 @@
+{
+  "exp": 475,
+  "id": "buff_potion_mythic_dex4",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/farming/4",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/5",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "blue_skies:cryo_root",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_emerald",
+      "num": 1
+	}
+  ],
+  "profession": "alchemy",
+  "result": "mmorpg:buff_potion/mythic_dex",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 4
+}

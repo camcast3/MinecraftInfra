@@ -1,0 +1,460 @@
+{
+  "attached": {
+    "entity_components": {
+      "combo_remover": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "combo_linker",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 20.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "height": 6.0,
+                "block": "minecraft:air",
+                "block_fall_speed": -0.03,
+                "entity_name": "anti_gravity",
+                "find_surface": false,
+                "is_falling_block": true,
+                "life_ticks": 200.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "anti_gravity": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 50.0,
+                "particle_type": "minecraft:reverse_portal",
+                "radius": 2.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 150.0,
+                "particle_type": "minecraft:portal",
+                "radius": 3.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "tp_target_to_self",
+              "map": {}
+            }
+          ],
+          "en_preds": [],
+          "ifs": [],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "non_ai_enemies",
+                "radius": 2.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "anti_gravity_smash"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 2.0,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.5,
+                "sound": "undergarden:block.undergarden_portal.activate",
+                "volume": 1.25
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+	},
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.0,
+              "sound": "minecraft:block.fire.extinguish",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "caster_command",
+            "map": {
+              "command": "tellraw @p {\"text\":\"Needs Combo Linker!\",\"color\":\"red\"}"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker",
+              "is_false": true
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.1,
+              "sound": "enhancedai:old_explode",
+              "volume": 1.25
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "combo_remover",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+        ]
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 2.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 1.5
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+		  {
+			"type": "exile_effect",
+			"map": {
+			  "count": 1.0,
+			  "exile_potion_id": "combo_extender",
+			  "potion_action": "GIVE_STACKS",
+			  "potion_dur": 120.0
+			}
+		  }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker"
+            }
+          }
+        ],
+        "targets": [
+          {
+            "type": "self",
+            "map": {}
+          }
+		]
+      },
+      {
+        "acts": [
+          {
+            "type": "sword_sweep_particles",
+            "map": {}
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "combo_linker"
+            }
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "damage",
+            "map": {
+              "element": "Physical",
+				"disable_knockback": true,
+                "value_calculation": "anti_gravity_smash_initial"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          },
+		  {
+			"type": "caster_has_mns_effect",
+			"map": {
+			  "exile_potion_id": "combo_linker"
+			}
+		  }
+        ],
+        "per_entity_hit": [],
+        "targets": [
+          {
+            "type": "in_front",
+            "map": {
+              "distance": 4.0,
+              "en_predicate": "enemies",
+              "width": 2.0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "hand_up_cast"
+  },
+  "cast_finish_animation": {
+    "id": "staff_ground"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 5,
+    "castingWeapon": "MELEE_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 30,
+    "ene_cost": {
+      "max": 12.0,
+      "min": 9.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "slows_when_casting": true,
+    "style": "str",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "weapon_skill",
+        "damage",
+        "melee",
+        "physical",
+		"area",
+        "extender"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "anti_gravity_smash",
+  "loc_name": "Anti Gravity Smash",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [],
+  "weight": 1000
+}

@@ -1,0 +1,31 @@
+{
+  "id": "prism",
+  "runes": [
+    "ano",
+	"owd",
+	"fey"
+  ],
+  "slots": [
+    "ring"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "health"
+    },
+    {
+      "type": "PERCENT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "magic_shield"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 6.0,
+      "stat": "elemental_resist"
+    }
+  ]
+}

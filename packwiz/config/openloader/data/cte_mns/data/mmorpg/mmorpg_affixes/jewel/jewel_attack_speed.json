@@ -1,0 +1,29 @@
+{
+  "type": "jewel",
+  "eye_aura_req": "",
+  "guid": "jewel_attack_speed",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "jewel_str",
+          "jewel_dex"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 7.5,
+      "min": 1.5,
+      "stat": "attack_speed"
+    }
+  ],
+  "weight": 1000
+}

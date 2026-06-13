@@ -1,0 +1,16 @@
+{
+    "name": "Summoning Classes",
+    "icon": "mmorpg:mob_effects/fire_golem_buff",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":4,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 5DA2E0EE110431E0)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rAre you playing as a &5Warlock&r, &2Hunter&r, or &9Elementalist&r? Did you know these classes have access to summons?$(br)You can configure your &esummon behaviour&r in the &eFeatures&r tab of the Mine and Slash Hub (bottom left). You can make them aggressive, or passive.  
+"},
+		{
+            "type": "patchouli:text",
+            "text": "If set to passive, the summons will only attack what you've attacked.$(br)Additionally, you can &eunsummon&r your summons at any time using the unsummon keybind (Default: &e  $(k:mmorpg.key.unsummon)&r)!"
+		}
+    ]
+}

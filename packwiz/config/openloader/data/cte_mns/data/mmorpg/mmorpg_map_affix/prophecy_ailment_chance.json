@@ -1,0 +1,41 @@
+{
+  "affected": "Players",
+  "id": "prophecy_ailment_chance",
+  "map_resist": "Physical",
+  "map_resist_bonus_needed": 0,
+  "prophecy_type": "damage_done",
+  "req": "prophecy",
+  "stats": [
+    {
+      "type": "MORE",
+      "max": -30.0,
+      "min": -30.0,
+      "stat": "bleed_chance"
+    },
+    {
+      "type": "MORE",
+      "max": -30.0,
+      "min": -30.0,
+      "stat": "burn_chance"
+    },
+    {
+      "type": "MORE",
+      "max": -30.0,
+      "min": -30.0,
+      "stat": "freeze_chance"
+    },
+    {
+      "type": "MORE",
+      "max": -30.0,
+      "min": -30.0,
+      "stat": "electrify_chance"
+    },
+    {
+      "type": "MORE",
+      "max": -30.0,
+      "min": -30.0,
+      "stat": "poison_chance"
+    }
+  ],
+  "weight": 1000
+}

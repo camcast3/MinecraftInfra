@@ -1,0 +1,28 @@
+{
+  "type": "chaos_stat",
+  "eye_aura_req": "",
+  "guid": "gear_corruptshield_skillperblock",
+  "one_of_a_kind": "",
+  "only_one_per_item": true,
+  "requirements": {
+    "tag_requirements": [
+      {
+        "type": "GearSlot",
+        "excluded": [],
+        "included": [
+          "shield"
+        ],
+        "req_type": "INCLUDES_ANY"
+      }
+    ]
+  },
+  "stats": [
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 25.0,
+      "stat": "skill_damage_per_block_chance"
+    }
+  ],
+  "weight": 1000
+}

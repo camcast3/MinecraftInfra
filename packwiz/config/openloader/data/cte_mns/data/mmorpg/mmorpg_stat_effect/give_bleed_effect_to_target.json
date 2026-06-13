@@ -1,0 +1,7 @@
+{
+  "effect": "bleed_effect",
+  "give_to": "Target",
+  "id": "give_bleed_effect_to_target",
+  "seconds": 5,
+  "ser": "give_exile_effect"
+}

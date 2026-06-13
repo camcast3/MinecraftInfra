@@ -1,0 +1,39 @@
+{
+  "base_gear": "sword",
+  "guid": "omni_vamp",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 10,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 62.5,
+      "min": 57.5,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 18.0,
+      "stat": "health_on_hit_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 6.0,
+      "stat": "mana_on_hit_hit"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 6.0,
+      "stat": "energy_on_hit_hit"
+    }
+  ],
+  "weight": 1000
+}

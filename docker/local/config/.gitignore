@@ -1,0 +1,5 @@
+# The local stack bind-mounts this whole directory to /data/config rw.
+# Runtime config files written by the C2E2 server are ignored — only
+# the .gitignore itself is tracked.
+*
+!.gitignore

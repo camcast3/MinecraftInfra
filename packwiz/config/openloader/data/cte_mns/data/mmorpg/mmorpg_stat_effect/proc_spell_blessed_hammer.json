@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_blessed_hammer",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "blessed_hammer",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

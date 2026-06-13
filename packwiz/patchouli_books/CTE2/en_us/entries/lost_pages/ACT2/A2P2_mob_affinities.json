@@ -1,0 +1,24 @@
+{
+    "name": "Mob Affinities",
+    "icon": "minecraft:blaze_powder",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":9,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 3F61325EA08B6DAA)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rYou may have noticed some &eNether&r mobs dealing more &cFire Damage.&r Mobs native to a specific dimension tend to have an affinity towards a specific element. For example, in the Nether, some mobs will deal a combination of Fire and Physical Damage. &oAlso note, this doesn't mean they will take less damage from the element they have an affinity for.&r"},
+{            "type": "patchouli:text",
+            "text": "&nElemental Affinities&r
+
+&lOverworld:&r &7None&r
+&lNether:&r &cFire&r
+&lUndergarden:&r &5Chaos&r
+&lAquamirae&r Mobs: &bCold&r
+&lEverbright:&r &bCold&r + &eLightning&r
+&lEverdawn:&r &cFire&r + &5Chaos&r
+&lThe End:&r &cFire&r + &eLightning&r + &5Chaos&r
+&lThe Otherside:&r &5Chaos&r
+&lThe Twilight Forest:&r &7None&r"
+		}
+    ]
+}

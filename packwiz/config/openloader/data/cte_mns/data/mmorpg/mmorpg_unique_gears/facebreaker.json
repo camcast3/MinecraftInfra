@@ -1,0 +1,39 @@
+{
+  "base_gear": "gauntlet",
+  "guid": "facebreaker",
+  "flavor_text": "",
+  "force_item_id": "roe_weapons:gauntlet_7",
+  "league": "",
+  "min_drop_lvl": 20,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 90.0,
+      "min": 80.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 25.0,
+      "min": 20.0,
+      "stat": "combo_extender_on_kill"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 25.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "armor_penetration"
+    }
+  ],
+  "weight": 1000
+}

@@ -1,0 +1,7 @@
+{
+  "effect": "electrify_effect",
+  "give_to": "Target",
+  "id": "give_electrify_effect_to_target",
+  "seconds": 10,
+  "ser": "give_exile_effect"
+}

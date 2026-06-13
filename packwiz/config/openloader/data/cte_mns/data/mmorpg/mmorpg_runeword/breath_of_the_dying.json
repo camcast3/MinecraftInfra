@@ -1,0 +1,72 @@
+{
+  "id": "breath_of_the_dying",
+  "runes": [
+    "owd",
+    "nos",
+    "oru",
+    "fey",
+	"daw",
+	"ano"
+  ],
+  "slots": [
+    "sword",
+    "staff",
+	"dagger",
+	"hammer",
+	"spear",
+	"axe",
+	"gauntlet",
+	"scythe",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 70.0,
+      "min": 60.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 50.0,
+      "min": 50.0,
+      "stat": "proc_putrid_breath_on_kill"
+    },
+    {
+      "type": "FLAT",
+      "max": 100.0,
+      "min": 100.0,
+      "stat": "phys_to_chaos"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "poison_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 30.0,
+      "min": 20.0,
+      "stat": "dmg_to_undead"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "lifesteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 2.0,
+      "stat": "manasteal"
+    },
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 40.0,
+      "stat": "attack_speed"
+    }
+  ]
+}

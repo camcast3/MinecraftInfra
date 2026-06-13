@@ -1,0 +1,6 @@
+
+#RoeWeapons Client Configuration
+[client]
+	#Disable kunai right-click throwing (client-side setting)
+	disableKunaiRightClick = false
+

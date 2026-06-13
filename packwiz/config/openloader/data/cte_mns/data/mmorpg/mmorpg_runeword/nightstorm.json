@@ -1,0 +1,50 @@
+{
+  "id": "nightstorm",
+  "runes": [
+    "und",
+    "toq",
+    "bri",
+	"ita"
+  ],
+  "slots": [
+	"scythe"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "MORE",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "all_water_damage"
+    },
+    {
+      "type": "MORE",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "all_lightning_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 20.0,
+      "min": 15.0,
+      "stat": "power_charge_on_crit"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 6.0,
+      "stat": "crit_dmg_per_power_charge"
+    },
+    {
+      "type": "FLAT",
+      "max": 4.0,
+      "min": 4.0,
+      "stat": "aoe_per_power_charge"
+    }
+  ]
+}

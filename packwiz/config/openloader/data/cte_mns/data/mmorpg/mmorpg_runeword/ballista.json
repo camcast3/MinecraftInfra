@@ -1,0 +1,51 @@
+{
+  "id": "ballista",
+  "runes": [
+    "sid",
+    "toq",
+    "end",
+    "dos",
+    "ano"
+  ],
+  "slots": [
+    "crossbow"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "MORE",
+      "max": 60.0,
+      "min": 50.0,
+      "stat": "projectile_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "armor_penetration"
+    },
+    {
+      "type": "MORE",
+      "max": -100.0,
+      "min": -100.0,
+      "stat": "projectile_count"
+    },
+    {
+      "type": "FLAT",
+      "max": -40.0,
+      "min": -50.0,
+      "stat": "projectile_cdr"
+    },
+    {
+      "type": "FLAT",
+      "max": -40.0,
+      "min": -50.0,
+      "stat": "attack_speed"
+    }
+  ]
+}

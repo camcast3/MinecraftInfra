@@ -1,0 +1,34 @@
+{
+  "dmg_multi": 1.0,
+  "exp_multi": 0.0,
+  "hp_multi": 1.0,
+  "identifier": "born_in_chaos_v1:lord_pumpkinhead",
+  "loot_multi": 0.0,
+  "max_lvl": 1000000,
+  "min_lvl": 60,
+  "set_health_damage_override": false,
+  "set_rar": "mythic",
+  "stat_multi": 1.0,
+  "stats": {
+    "stats": [
+      {
+        "type": "percent",
+        "scale_to_lvl": false,
+        "v1": 50.0,
+        "stat": "armor"
+      },
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 50.0,
+        "stat": "elemental_resist"
+      },
+      {
+        "type": "flat",
+        "scale_to_lvl": false,
+        "v1": 50.0,
+        "stat": "chaos_resist"
+      }
+	]
+  }
+}

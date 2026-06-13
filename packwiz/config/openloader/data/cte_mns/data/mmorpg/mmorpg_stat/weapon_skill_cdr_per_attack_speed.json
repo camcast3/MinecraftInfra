@@ -1,0 +1,15 @@
+{
+  "data": {
+    "add_to": "attack_cast_speed",
+    "adder_stat": "attack_speed",
+    "base": 0.0,
+    "ele": "Physical",
+	"priority": 100,
+    "id": "weapon_skill_cdr_per_attack_speed",
+    "max": 1.0E8,
+    "min": 0.0,
+    "perc": true,
+    "scale": "NONE"
+  },
+  "ser": "one_to_other"
+}

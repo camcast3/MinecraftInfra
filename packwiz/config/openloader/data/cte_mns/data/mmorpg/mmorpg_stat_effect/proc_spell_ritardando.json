@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_ritardando",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "ritardando",
+  "source": "Target",
+  "target": "Source",
+  "use_resource_costs": false
+}

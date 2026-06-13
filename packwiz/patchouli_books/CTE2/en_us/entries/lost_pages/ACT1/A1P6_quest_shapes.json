@@ -1,0 +1,25 @@
+{
+    "name": "Quest Shapes",
+    "icon": "mmorpg:gems/emerald/6",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":5,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 051DB401E3A08D89)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rIn the &eCampaign&r quest line, various quests will have a different background shape which can indicate what type of quest it is.$(br)
+
+Additionally, you will find &e'Lost Pages' which have the paper icon&r. These are simple click to complete quests that provide additional information. 
+"},
+		{
+            "type": "patchouli:text",
+            "text": "
+&aRounded Corner Square: Main Quest&r$(br)
+&eCircle: Side Quest&r$(br)
+&3Gear: Repeatable Quest&r$(br)
+&4Diamond: Mini-Boss&r$(br)
+&dOctagon: Shop&r$(br)
+&bHexagon: Achievement&r$(br)
+"
+		}
+    ]
+}

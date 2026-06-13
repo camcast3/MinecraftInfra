@@ -1,0 +1,13 @@
+name = "CTE2 Essentials"
+filename = "cte_essentials-1.0.7.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "e4a5154245b33a07593ce000bc58f04bdf8d40b9"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6863783
+project-id = 934252

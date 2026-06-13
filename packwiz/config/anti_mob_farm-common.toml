@@ -1,0 +1,33 @@
+
+#Settings
+[general]
+	enable_anti_mob_farm = true
+	affect_animals = false
+	affect_vanilla_loot = true
+	affect_age_of_exile_loot = true
+	affect_age_of_exile_exp = true
+	#0.5 means Player has to do 50% of the mob's total HP in damage to get loot. This counts any player damage, even multiple players
+	#Range: 0.0 ~ 1.0
+	min_player_dmg_for_loot = 0.5
+	#Every time you kill a mob, the chunk drop chance (originally 1), gets reduced by this amount
+	#Range: 0.0 ~ 1.0
+	mob_kill_chunk_penalty = 0.02
+	#How much the chunk penalty regenerates passively per minute.
+	#Range: 0.0 ~ 1.0
+	penalty_regen_per_minute = 0.05
+	#Free kills are kills in a chunk that don't trigger the penalty.
+	#Range: 0 ~ 1000
+	one_time_free_kills_per_chunk = 15
+	#Looting Chests will add this many free kills
+	#Range: 0 ~ 1000
+	added_free_kills_on_chest_looted = 5
+	excluded_dimensions = ["mmorpg:dungeon", "blue_skies:everbright", "blue_skies:everdawn"]
+	excluded_entities = ["blue_skies:summoner", "blue_skies:starlit_crusher", "blue_skies:alchemist", "blue_skies:arachnarch", "born_in_chaos_v1:bonescaller", "born_in_chaos_v1:lifestealer_true_form", "born_in_chaos_v1:nightmare_stalker", "botania:doppleganger", "twilightforest:naga", "twilightforest:lich", "twilightforest:minoshroom", "twilightforest:hydra", "twilightforest:ur_ghast", "twilightforest:alpha_yeti", "twilightforest:snow_queen", "bosses_of_mass_destruction:lich", "bosses_of_mass_destruction:obsidilith", "bosses_of_mass_destruction:gauntlet", "bosses_of_mass_destruction:void_blossom", "illagerinvasion:invoker", "alexsmobs:void_worm", "minecraft:ender_dragon", "monsterplus:abyssologer", "mowziesmobs:frostmaw", "alexsmobs:warped_mosco", "friendsandfoes:wildfire", "monsterplus:mother_lava_squid", "stalwart_dungeons:awful_ghast", "stalwart_dungeons:nether_keeper", "mowziesmobs:ferrous_wroughtnaut", "mowziesmobs:umvuthi", "undergarden:forgotten_guardian", "aquamirae:eel", "aquamirae:maze_mother", "aquamirae:captain_cornelia", "stalwart_dungeons:shelterer", "stalwart_dungeons:shelterer_without_armor", "born_in_chaos_v1:supreme_bonescaller", "born_in_chaos_v1:supreme_bonescaller_stage_2", "minecraft:wither"]
+	#Gateway mod specific compatibility, relaxes the penalty for them.
+	#Range: 0.0 ~ 100.0
+	GATEWAYS_MOB_CHANCE_TO_NOT_PROC_PENALTY = 50.0
+	affect_vanilla_exp_drops = false
+	#If enabled, the chunk that will get penalty will be the one where the mob died, instead of the one where the mob was spawned in
+	USE_DEATH_LOCATION = false
+	ONLY_AFFECT_MOBS_KILLED_BY_PLAYER = true
+

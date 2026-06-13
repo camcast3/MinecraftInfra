@@ -1,0 +1,13 @@
+name = "Realm RPG: Pots & Mimics"
+filename = "realmrpg_pots_and_mimics_1.0.2_forge_1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/4789/152/realmrpg_pots_and_mimics_1.0.2_forge_1.20.1.jar"
+hash-format = "sha1"
+hash = "612e6082f61f9cc56246e42d4039acbbec6159c8"
+
+[update]
+[update.curseforge]
+file-id = 4789152
+project-id = 868333

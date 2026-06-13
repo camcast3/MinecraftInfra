@@ -1,0 +1,46 @@
+{
+  "id": "flourish",
+  "runes": [
+    "ita",
+    "owd",
+    "mos"
+  ],
+  "slots": [
+    "staff",
+	"dagger",
+	"scythe",
+	"hammer"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "int_dmg"
+    },
+    {
+      "type": "FLAT",
+      "max": 6.0,
+      "min": 4.0,
+      "stat": "cast_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 1.0,
+      "min": 1.0,
+      "stat": "mana_regen"
+    },
+    {
+      "type": "PERCENT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "critical_hit"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": "lightmanscurrency:coin_copper",
+    "dropChance": 75.0,
+    "minAmount": 3,
+    "maxAmount": 8,
+    "requiredDimension": "minecraft:the_nether",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_iron",
+    "dropChance": 25.0,
+    "minAmount": 1,
+    "maxAmount": 4,
+    "requiredDimension": "minecraft:the_nether",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "lightmanscurrency:coin_gold",
+    "dropChance": 5.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "requiredDimension": "minecraft:the_nether",
+	"requirePlayerKill": true
+  }
+]

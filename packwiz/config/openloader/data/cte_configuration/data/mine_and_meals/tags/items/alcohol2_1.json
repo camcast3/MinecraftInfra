@@ -1,0 +1,61 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "brewery:whiskey_jojannik",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_lilitusinglemalt",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_cristelwalker",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_maggoallan",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_crrasconlabel",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_ak",
+      "required": false
+    },
+    {
+      "id": "vinery:jo_special_mixture",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_highland_hearth",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_smokey_reverie",
+      "required": false
+    },
+    {
+      "id": "brewery:whiskey_jamesons_malt",
+      "required": false
+    },
+    {
+      "id": "nethervinery:improved_lava_fizz",
+      "required": false
+    },
+    {
+      "id": "nethervinery:improved_nether_fizz",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_apple_cider",
+      "required": false
+    },
+    {
+      "id": "farmersrespite:strong_purulent_tea",
+      "required": false
+    }
+  ]
+}

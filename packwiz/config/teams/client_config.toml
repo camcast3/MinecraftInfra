@@ -1,0 +1,24 @@
+# Don't change this! Version used to track needed updates.
+version = 0
+
+[overlays]
+enableCompassOverlay = true
+enableStatusOverlay = true
+showHunger = false
+showHealth = true
+barAnimationSpeed = 0.3
+originX = 20
+originY = 220
+scale = 0.6
+maxEntryAmount = 5
+entryInterval = 20
+
+[info]
+normalToastShowSecond = 3
+inviteToastShowSecond = 60
+applicationToastShowSecond = 60
+
+[button]
+enableInventoryButton = true
+inventoryButtonXOffset = 0
+inventoryButtonYOffset = 0

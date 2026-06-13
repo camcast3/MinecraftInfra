@@ -1,0 +1,12 @@
+{
+  "id": "bonus_gear",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_gear"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

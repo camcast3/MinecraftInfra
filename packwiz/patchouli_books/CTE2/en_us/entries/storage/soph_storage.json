@@ -1,0 +1,76 @@
+{
+    "name": "Sophisticated Storage",
+    "icon": "sophisticatedstorage:limited_iron_barrel_1",
+    "category": "patchouli:storage",
+	"sortnum":2,
+    "pages": [
+        {
+            "type": "patchouli:spotlight",
+			"title":"Sophisticated Backpacks",
+  "item": "sophisticatedstorage:iron_chest,sophisticatedstorage:gold_chest,sophisticatedstorage:copper_chest,sophisticatedstorage:diamond_chest,sophisticatedstorage:netherite_chest,sophisticatedstorage:chest",
+  "text": "&e&eSophisticated Storage&r is the companion to Sophisticated Backpacks. Chests and Barrels can be upgraded from Iron, Gold, Diamond, to Netherite with increasing amount of item slots and upgrade slots.
+Vanilla Chests and Barrels can be upgraded to their Sophisticated Storage counterparts using the Basic Tier Upgrade..
+
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "Each tier of storage allows for more upgrade slots and  more inventory space.
+&eNormal Chest:&r 27 slots, 1 upgrade slot
+
+&eIron Chest:&r 54 slots, 2 upgrade slots
+
+&eGold Chest:&r 81 slots, 3 upgrade slots
+
+&eDiamond Chest:&r 108 slots, 4 upgrade slots
+
+&eNetherite Chest: &r120 slots, 5 upgrade slots"
+},{
+            "type": "patchouli:spotlight",
+			"title":"Stack Upgrades",
+  "item": "sophisticatedstorage:stack_upgrade_tier_1,sophisticatedstorage:stack_upgrade_tier_2,sophisticatedstorage:crafting_upgrade,sophisticatedstorage:smelting_upgrade",
+  "text": "&eStack Upgrades&r are immensely important. Stack upgrades can stack upon each other if more than one is inside a storage block.
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "
+For example:
+&e1 Tier 4 Stack Upgrade&r: 1024
+
+&e2 Tier 4 Stack Upgrades:&r 16,384
+
+&eTier 4 Stack Upgrades:&r 262,144
+
+&e4 Tier 4 Stack Upgrades: &r4,194,304
+
+Multiply previous max by 16 to get the next maximum up to 7 slots total."
+},{
+            "type": "patchouli:spotlight",
+			"title":"Limited Barrels",
+  "item": "sophisticatedstorage:limited_barrel_2,sophisticatedstorage:limited_iron_barrel_2,sophisticatedstorage:limited_barrel_1,sophisticatedstorage:limited_iron_barrel_1",
+  "text": "&eLimited Barrels&r act as drawers, where up to &efour items&r can be stored within and have &eimmensely high stack limits&r inherently. Barrels are marked by two things: &eTier&r and &eItem Limit&r." 
+		},{
+            "type": "patchouli:text",
+			"title":" ",
+  "text": "&eNormal, Iron, Gold, Diamond, and Netherite&r are the tier, which decides the stack limit.
+
+&eI, II, III, IIII&r are the Item Limit which is how many different items can be inside it from 1 to 4. Barrels with a higher Item Limit have less maximum stack.
+
+These barrels can also be upgraded just like regular storage.
+" 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Storage Controllers",
+  "item": "sophisticatedstorage:controller,sophisticatedstorage:storage_link,sophisticatedstorage:storage_tool,sophisticatedstorage:packing_tape",
+  "text": "&eStorage Controllers&r allow you to &epipe in/out items&r with connected storage blocks. Priority is determined by which storage blocks were placed last. There is no GUI currently.
+&eStorage Link &rallows to &econnect multiple storages&r that are not attached to controller or any blocks that are connected to it.." 
+		},{
+            "type": "patchouli:text",
+			"text": "The &eStorage Tool&r allows you to &elink, lock and toggle visibility of locks and item counts&r. Shift scroll to change mode. Linking works by right clicking the controller to start linking to it and then right click storages or storage link to get these linked.
+
+&ePacking Tape&r allows you to&e pack up&r a storage block and mine it to pick it up like a regular block without the items dropping."
+}
+		
+    ]
+}

@@ -1,0 +1,31 @@
+{
+  "exp": 175,
+  "id": "food_rare_magic5",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/meat/5",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "crabbersdelight:cooked_crab",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/2",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_iron",
+      "num": 1
+	}
+  ],
+  "set_tier_nbt": true,
+  "profession": "cooking",
+  "result": "mmorpg:food/rare_magic",
+  "result_num": 1,
+  "tier": 5
+}

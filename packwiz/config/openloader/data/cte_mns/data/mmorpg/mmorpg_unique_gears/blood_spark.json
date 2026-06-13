@@ -1,0 +1,39 @@
+{
+  "base_gear": "ring",
+  "guid": "blood_spark",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 40,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 2.0,
+      "min": 2.0,
+      "stat": "total_damage_per_perc_of_health"
+    },
+    {
+      "type": "MORE",
+      "max": -35.0,
+      "min": -45.0,
+      "stat": "weapon_damage"
+    },
+    {
+      "type": "MORE",
+      "max": -25.0,
+      "min": -25.0,
+      "stat": "critical_hit"
+    },
+    {
+      "type": "MORE",
+      "max": -10.0,
+      "min": -10.0,
+      "stat": "health_regen"
+    }
+  ],
+  "weight": 1000
+}

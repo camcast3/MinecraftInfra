@@ -1,0 +1,13 @@
+name = "Masik's Puzzle Dungeon [FORGE / FABRIC]"
+filename = "puzzledungeon-forge-1.20.1-1.2.0.jar"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "374ec2764a0ccaaad6f2175497a3c03ead9c5875"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5079759
+project-id = 846659

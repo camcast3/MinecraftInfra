@@ -1,0 +1,13 @@
+name = "Recreation of Exile - Weapons"
+filename = "RoE_Weapons-0.1.7.jar"
+side = "both"
+
+[download]
+url = "https://mediafilez.forgecdn.net/files/6800/846/RoE_Weapons-0.1.7.jar"
+hash-format = "sha1"
+hash = "778e880db315cb3471df0e657b336159d59600f7"
+
+[update]
+[update.curseforge]
+file-id = 6800846
+project-id = 1182717

@@ -1,0 +1,17 @@
+{
+    "name": "Not Vanilla Enchantments",
+    "icon": "mmorpg:enchantment/family/armor/rare",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":14,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 256EB6DAF1808F35)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rHaving difficulty with some mobs? You can power yourself up using the Mine and Slash &eInfusing Profession&r. &eScrolls&r can be used on your Gear to &erandomly apply a beneficial stat&r. This stat can be upgraded by using subsequent Infusion Scrolls.
+"},
+{            "type": "patchouli:text",
+            "text": "     See the $(c:/ftbquests open_book 5B97985430859986)&c$(l)&eM&S Professions chapter$(/c) for more information on how to use this system! Similarly, performing Profession activities will give you &eRested Combat Experience&r!
+
+You can view how much Rested Experience you have in the Mine and Slash Hub by mousing over the Profession icon."
+		}
+    ]
+}

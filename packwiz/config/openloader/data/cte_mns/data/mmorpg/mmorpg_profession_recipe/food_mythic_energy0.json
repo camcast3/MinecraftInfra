@@ -1,0 +1,31 @@
+{
+  "exp": 475,
+  "id": "food_mythic_energy0",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "mmorpg:material/farming/0",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/5",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:carrot",
+      "num": 3
+    },
+    {
+      "type": "ITEM",
+      "id": "lightmanscurrency:coin_emerald",
+      "num": 1
+	}
+  ],
+  "profession": "cooking",
+  "result": "mmorpg:food/mythic_energy",
+  "result_num": 1,
+  "set_tier_nbt": true,
+  "tier": 0
+}

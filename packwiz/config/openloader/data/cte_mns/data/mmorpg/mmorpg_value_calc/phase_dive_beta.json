@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 5.3125,
+    "min": 1.25
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.625,
+      "min": 1.8375
+    },
+    "stat": "health"
+  },
+  "id": "phase_dive_beta",
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.625,
+        "min": 1.8375
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

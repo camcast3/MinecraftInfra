@@ -1,0 +1,10 @@
+[{
+  "entityId": "stalwart_dungeons:shelterer",
+  "itemId": "mmorpg:runes/end",
+  "dropChance": 15.0,
+  "minAmount": 1,
+  "maxAmount": 1,
+  "dropCommand": "tellraw @killer {\"text\":\"End Rune Dropped!\",\"color\":\"gold\"}",
+  "dropCommandChance": 100.0,
+  "requirePlayerKill": true
+}]

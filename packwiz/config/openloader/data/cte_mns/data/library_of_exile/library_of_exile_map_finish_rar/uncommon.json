@@ -1,0 +1,9 @@
+{
+  "id": "uncommon",
+  "loot_table": "library_of_exile:chests/tier_1_dungeon",
+  "mns_loot_multi": 1.25,
+  "perc_to_unlock": 15,
+  "reward_chests": 2,
+  "text_format": "GREEN",
+  "tier": 1
+}

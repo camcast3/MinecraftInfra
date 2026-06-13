@@ -1,0 +1,31 @@
+{
+  "exp": 50,
+  "id": "potion_of_feminity",
+  "mats": [
+    {
+      "type": "ITEM",
+      "id": "minecraft:egg",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:glass_bottle",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "minecraft:pink_dye",
+      "num": 1
+    },
+    {
+      "type": "ITEM",
+      "id": "mmorpg:stone/2",
+      "num": 1
+    }
+  ],
+  "set_tier_nbt": false,
+  "profession": "alchemy",
+  "result": "mca:potion_of_feminity",
+  "result_num": 1,
+  "tier": 0
+}

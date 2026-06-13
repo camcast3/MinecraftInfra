@@ -1,0 +1,13 @@
+{
+  "attribute_id": "kubejs:increase_healing",
+  "conversion": 1.0,
+  "enchant_id": "",
+  "id": "kube_increase_healing",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "increase_healing",
+  "mod_type": "FLAT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

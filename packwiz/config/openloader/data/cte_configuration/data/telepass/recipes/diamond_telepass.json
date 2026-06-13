@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "#": {
+      "tag": "forge:gems/diamond"
+    },
+    "X": {
+      "item": "dungeon_realm:home_pearl"
+    }
+  },
+  "pattern": [
+    " # ",
+    "#X#",
+    " # "
+  ],
+  "result": {
+    "item": "telepass:diamond_telepass"
+  },
+  "show_notification": true
+}

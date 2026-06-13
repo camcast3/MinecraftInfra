@@ -1,0 +1,26 @@
+{
+  "base": {
+    "max": 2.25,
+    "min": 0.5
+  },
+  "base_scaling_type": "NORMAL",
+  "cap_to_wep_dmg": 1000.0,
+  "id": "magma_orb_explosion",
+  "dmg_effectiveness": {
+    "multi": {
+      "max": 2.36,
+      "min": 1.65
+    },
+    "stat": "health"
+  },
+  "target_stat_scalings": [],
+  "stat_scalings": [
+    {
+      "multi": {
+        "max": 2.36,
+        "min": 1.65
+      },
+      "stat": "weapon_damage"
+    }
+  ]
+}

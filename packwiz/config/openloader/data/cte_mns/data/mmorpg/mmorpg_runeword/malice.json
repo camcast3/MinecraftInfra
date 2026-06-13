@@ -1,0 +1,46 @@
+{
+  "id": "malice",
+  "runes": [
+    "end",
+    "toq"
+  ],
+  "slots": [
+    "sword",
+	"axe",
+	"dagger",
+	"gauntlet",
+	"greatsword"
+  ],
+  "stats": [
+    {
+      "type": "PERCENT",
+      "max": 50.0,
+      "min": 40.0,
+      "stat": "gear_weapon_damage"
+    },
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 3.0,
+      "stat": "armor_penetration"
+    },
+    {
+      "type": "FLAT",
+      "max": 15.0,
+      "min": 10.0,
+      "stat": "attack_speed"
+    },
+    {
+      "type": "FLAT",
+      "max": 60.0,
+      "min": 40.0,
+      "stat": "bleed_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 2.0,
+      "stat": "lifesteal"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "bonus_prophecy_coin",
+  "mods": [
+    {
+      "max": 30.0,
+      "min": 10.0,
+      "stat": "bonus_prophecy_coin"
+    }
+  ],
+  "relic_type": "mmorpg",
+  "weight": 1000
+}

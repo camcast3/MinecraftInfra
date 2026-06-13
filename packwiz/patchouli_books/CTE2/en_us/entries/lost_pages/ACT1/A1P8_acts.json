@@ -1,0 +1,22 @@
+{
+    "name": "Acts",
+    "icon": "mmorpg:mob_effects/gale_force",
+    "category": "patchouli:A1lost_pages",
+	"sortnum":7,
+    "pages": [
+        {
+            "type": "patchouli:text",
+            "text": "$(c:/ftbquests open_book 727ADA9C4F420BDC)&c$(l)---> Open Quest Page <--- $(/c)$(br)&rCTE2's Campaign quest line is split into multiple acts, where each act is associated with a different dimension, preceded by a Prologue quest line (which you're already familiar with).
+
+As you complete the main quests, more side quests will unravel. And once you've completed the line of main quests (typically 5-7 quests 
+"},
+		{
+            "type": "patchouli:text",
+            "text": "in length), you will receive the quest to move on to the next act/dimension.
+
+As you move from one dimension to the next, the mobs will become stronger, and the loot quality will improve. Although mobs scale to player level, they cap out in each dimension, making it possible to 'overlevel' for a dimension if you're struggling with it.
+
+&6This Quest Unlocks New Shops In the Campaign Shop. "
+		}
+    ]
+}

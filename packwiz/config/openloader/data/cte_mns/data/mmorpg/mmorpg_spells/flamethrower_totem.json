@@ -1,0 +1,270 @@
+{
+  "attached": {
+    "entity_components": {
+      "arrow": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 5.0,
+                "particle_type": "minecraft:flame",
+                "radius": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 1.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+                "element": "Fire",
+				"disable_knockback": true,
+                "value_calculation": "flamethrower_totem"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_hit",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 0.1,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        }
+      ],
+      "block": [
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.5,
+                "motion": "None",
+                "particle_count": 50.0,
+                "particle_type": "minecraft:flame",
+                "radius": 3.0,
+                "shape": "CIRCLE_2D_EDGE",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "projectile",
+              "map": {
+                "entity_name": "arrow",
+                "gravity": false,
+                "expire_on_en_hit": false,
+                "item": "minecraft:air",
+                "life_ticks": 6.0,
+                "pos_source": "SOURCE_ENTITY",
+                "proj_count": 1.0,
+                "proj_en": "mmorpg:spell_projectile",
+                "proj_speed": 0.1,
+                "shoot_way": "FIND_ENEMY"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 4.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.3,
+                "sound": "roe_sfx:spell_fire_hit",
+                "volume": 0.8
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 8.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "mmorpg:guard_totem",
+                "block_fall_speed": 0.0,
+                "entity_name": "block",
+                "find_surface": true,
+                "is_falling_block": false,
+                "life_ticks": 160.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.2,
+              "sound": "roe_sfx:spell_effect_heat_tick",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "summon_at_sight",
+            "map": {
+              "entity_name": "default_entity_name",
+              "gravity": false,
+              "height": 0.0,
+              "life_ticks": 1.0,
+              "proj_en": "mmorpg:spell_projectile"
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "steady_cast"
+  },
+  "cast_finish_animation": {
+    "id": "staff_ground"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 240,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 15.0,
+      "min": 12.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+      "projectile",
+      "damage",
+      "totem",
+	  "magic",
+	  "fire",
+	  "cast_speed_to_cooldown"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "flamethrower_totem",
+  "loc_name": "Flamethrower Totem",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 20,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 48.0,
+      "min": 16.0,
+      "stat": "burn_chance"
+    }
+  ],
+  "weight": 1000
+}

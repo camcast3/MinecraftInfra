@@ -1,0 +1,13 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "corn_delight:corncob": {
+            "next": "corn_delight:grilled_corn",
+            "stage": "COOKED"
+        },
+        "corn_delight:tortilla_raw": {
+            "next": "corn_delight:tortilla",
+            "stage": "COOKED"
+        }
+    }
+}

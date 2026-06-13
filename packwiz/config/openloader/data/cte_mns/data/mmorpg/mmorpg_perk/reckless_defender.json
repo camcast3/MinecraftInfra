@@ -1,0 +1,45 @@
+{
+  "type": "MAJOR",
+  "icon": "mmorpg:textures/gui/stat_icons/game_changers/reckless_defender.png",
+  "id": "reckless_defender",
+  "is_entry": false,
+  "max_lvls": 1,
+  "stats": [
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "dmg_reduction_chance",
+      "v1": 33.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "bleed_receive_chance",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "burn_receive_chance",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "freeze_receive_chance",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "electrify_receive_chance",
+      "v1": 25.0
+    },
+    {
+      "type": "FLAT",
+      "scale_to_lvl": false,
+      "stat": "poison_receive_chance",
+      "v1": 25.0
+    }
+  ]
+}

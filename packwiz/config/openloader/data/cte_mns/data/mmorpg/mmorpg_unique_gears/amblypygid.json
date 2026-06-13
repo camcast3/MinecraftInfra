@@ -1,0 +1,39 @@
+{
+  "base_gear": "plate_chest",
+  "guid": "amblypygid",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 80,
+  "min_tier": 40,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "PERCENT",
+      "max": 100.0,
+      "min": 69.0,
+      "stat": "gear_defense"
+    },
+    {
+      "type": "FLAT",
+      "max": 10.0,
+      "min": 7.0,
+      "stat": "gear_defense"
+    },    
+    {
+      "type": "FLAT",
+      "max": -25.0,
+      "min": -60.0,
+      "stat": "inc_aoe"
+    },
+    {
+      "type": "FLAT",
+      "max": 50,
+      "min": 25,
+      "stat": "exile_effect_to_source_pedipalps_on_kill"
+    }
+  ],
+  "weight": 1000
+}

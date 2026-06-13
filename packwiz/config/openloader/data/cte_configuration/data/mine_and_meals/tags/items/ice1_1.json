@@ -1,0 +1,33 @@
+{
+  "replace": false,
+  "values": [
+   {
+      "id": "oceansdelight:elder_guardian_slice",
+      "required": false
+    },
+    {
+      "id": "blue_skies:winter_leaves",
+      "required": false
+    },
+    {
+      "id": "blue_skies:cryo_root",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:creepy_cookies_with_milk",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:sea_pickle_juice",
+      "required": false
+    },
+    {
+      "id": "born_in_chaos_v1:smoked_fish",
+      "required": false
+    },
+    {
+      "id": "brewinandchewin:egg_grog",
+      "required": false
+    }
+  ]
+}

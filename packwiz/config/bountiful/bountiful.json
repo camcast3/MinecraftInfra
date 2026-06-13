@@ -1,0 +1,28 @@
+{
+    "boardUpdateFrequency": 45,
+    "boardGenFrequency": 2,
+    "flatBonusTimePerBounty": 0,
+    "shouldBountiesHaveTimersAndExpire": true,
+    "dataPackExclusions": [
+        "bounty_pools/bountiful/example_pool",
+        "bounty_pools/*/another_example",
+        "bounty_decrees/other/*",
+        "bounty_pools/bountiful/_equip_rews",
+        "bounty_pools/bountiful/_gardening_rews",
+        "bounty_pools/bountiful/armorer_rews",
+        "bounty_pools/bountiful/butcher_rews",
+        "bounty_pools/bountiful/cleric_rews",
+        "bounty_pools/bountiful/farmer_rews",
+        "bounty_pools/bountiful/fisherman_rews",
+        "bounty_pools/bountiful/fletcher_rews",
+        "bounty_pools/bountiful/inventor_rews",
+        "bounty_pools/bountiful/leatherer_rews",
+        "bounty_pools/bountiful/librarian_rews",
+        "bounty_pools/bountiful/mapper_rews",
+        "bounty_pools/bountiful/shepherd_rews",
+        "bounty_pools/bountiful/toolsmith_rews"
+    ],
+    "objectiveModifier": 0,
+    "maxNumRewards": 3,
+    "showCompletionToast": true
+}

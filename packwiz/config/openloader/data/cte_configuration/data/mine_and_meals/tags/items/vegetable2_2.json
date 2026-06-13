@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "undergardendelight:stuffed_gloomgourd_bowl",
+      "required": false
+    },
+    {
+      "id": "undergarden:gloomgourd_pie",
+      "required": false
+    }
+  ]
+}

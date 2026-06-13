@@ -1,0 +1,38 @@
+{
+  "base": 0.0,
+  "effect": [
+    {
+      "effects": [
+        "give_ikou_to_source"
+      ],
+      "events": [
+        "on_restore_resource"
+      ],
+      "ifs": [
+        "is_spell",
+        "is_hp_or_ms_restore",
+        "restore_type_is_heal"
+      ],
+      "order": "data_modification",
+      "side": "Source"
+    }
+  ],
+  "ele": "ALL",
+  "format": "yellow",
+  "group": "RESTORATION",
+  "gui_group": "NONE",
+  "has_softcap": false,
+  "icon": "★",
+  "id": "exile_effect_to_source_ikou_on_heal",
+  "is_long": true,
+  "is_perc": false,
+  "max": 1.0,
+  "min": 0.0,
+  "minus_is_good": false,
+  "multiUseType": "MULTIPLY_STAT",
+  "order": 100,
+  "scaling": "NONE",
+  "ser": "data",
+  "show_in_gui": true,
+  "softcap": 0.0
+}

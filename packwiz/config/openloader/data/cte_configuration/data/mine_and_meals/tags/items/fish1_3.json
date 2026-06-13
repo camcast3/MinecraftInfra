@@ -1,0 +1,53 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "seafood_fried_rice",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_pasta",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:meat_with_seafood",
+      "required": false
+    },
+    {
+      "id": "cuisinedelight:seafood_with_vegetables",
+      "required": false
+    },
+    {
+      "id": "undergardendelight:baked_gwibling_and_vegetables",
+      "required": false
+    },
+    {
+      "id": "endersdelight:stuffed_shulker_bowl",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:stuffed_nautilus_shell",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:squid_kebob",
+      "required": false
+    },
+    {
+      "id": "crabbersdelight:clam_chowder",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:halaszle",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:crispy_fried_perch",
+      "required": false
+    },
+    {
+      "id": "aquaculturedelight:fried_perch_roll",
+      "required": false
+    } 
+  ]
+}

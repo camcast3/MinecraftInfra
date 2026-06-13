@@ -1,0 +1,30 @@
+{
+  "type": "gateways:gate_recipe",
+  "group": "gateways",
+  "pattern": [
+    "M#M",
+    "GAG",
+    "MCM"
+  ],
+  "key": {
+    "#": {
+      "item": "aquamirae:sharp_bones"
+    },
+    "G": {
+      "item": "aquamirae:ship_graveyard_echo"
+    },
+	"A": {
+      "item": "aquamirae:shell_horn"
+    },
+	"M": {
+      "item": "mmorpg:stone/3"
+    },
+	"C": {
+      "item": "lightmanscurrency:coin_emerald"
+    }
+  },
+  "result": {
+    "item": "gateways:gate_pearl"
+  },
+  "gateway": "gateways:captain_cornelia"
+}

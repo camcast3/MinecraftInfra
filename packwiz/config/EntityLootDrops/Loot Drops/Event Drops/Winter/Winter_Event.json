@@ -1,0 +1,30 @@
+[
+  {
+	"_comment": "Winter Event Drops",
+    "itemId": "simplehats:hatscraps_festive",
+    "dropChance": 10.0,
+    "minAmount": 1,
+    "maxAmount": 1,
+    "command": "particle minecraft:snowflake {entity_x} {entity_y} {entity_z} 1 1 1 0.1 50",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "born_in_chaos_v1:spiritual_gingerbread",
+    "dropChance": 15.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "command": "summon minecraft:snow_golem {entity_x} {entity_y} {entity_z}",
+    "commandChance": 10.0,
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "minecraft:snowball",
+    "dropChance": 30.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "command": "",
+    "commandChance": 0.0,
+	"requirePlayerKill": true
+  }
+]

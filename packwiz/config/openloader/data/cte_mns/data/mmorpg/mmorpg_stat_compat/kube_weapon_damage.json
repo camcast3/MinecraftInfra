@@ -1,0 +1,13 @@
+{
+  "attribute_id": "kubejs:weapon_damage",
+  "conversion": 1.0,
+  "enchant_id": "",
+  "id": "kube_weapon_damage",
+  "maximum_cap": 100,
+  "minimum_cap": 0,
+  "mns_stat_id": "weapon_damage",
+  "mod_type": "PERCENT",
+  "per_item_max": 100,
+  "per_item_min": 0,
+  "scaling": "NONE"
+}

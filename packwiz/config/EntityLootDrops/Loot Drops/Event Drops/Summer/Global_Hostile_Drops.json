@@ -1,0 +1,29 @@
+[
+  {
+    "itemId": "minecraft:diamond_sword",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "nbtData": "{display:{Name:\u0027{\"text\":\"Ultimate Weapon\",\"color\":\"gold\"}\u0027,Lore:[\u0027{\"text\":\"Legendary drop example\",\"color\":\"purple\"}\u0027,\u0027{\"text\":\"Shows all features\",\"color\":\"gray\"}\u0027]},Enchantments:[{id:\"minecraft:sharpness\",lvl:5},{id:\"minecraft:smite\",lvl:3},{id:\"minecraft:looting\",lvl:3}]}",
+    "requiredAdvancement": "minecraft:story/enter_the_nether",
+    "requiredEffect": "minecraft:strength",
+    "requiredEquipment": "minecraft:diamond_sword",
+    "requiredDimension": "minecraft:overworld",
+    "command": "title {player} title {\"text\":\"Epic Drop!\",\"color\":\"gold\"}\nparticle minecraft:heart {entity_x} {entity_y} {entity_z} 1 1 1 0.1 20\neffect give {player} minecraft:regeneration 10 1",
+    "commandChance": 0.0,
+    "_comment": "Complete example showing all available options",
+	"requirePlayerKill": true
+  },
+  {
+    "itemId": "minecraft:magma_block",
+    "dropChance": 0.0,
+    "minAmount": 1,
+    "maxAmount": 3,
+    "nbtData": "{display:{Name:\u0027{\"text\":\"Summer Heat\",\"color\":\"red\"}\u0027},Enchantments:[{id:\"minecraft:fire_aspect\",lvl:2}]}",
+    "requiredDimension": "minecraft:overworld",
+    "command": "particle minecraft:flame {entity_x} {entity_y} {entity_z} 1 1 1 0.1 50",
+    "commandChance": 0.0,
+    "_comment": "Summer event example drop",
+	"requirePlayerKill": true
+  }
+]

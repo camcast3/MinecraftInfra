@@ -1,0 +1,9 @@
+{
+  "id": "proc_spell_chilling_field",
+  "pos": "CASTER",
+  "ser": "proc_spell",
+  "spellId": "chilling_field",
+  "source": "Source",
+  "target": "Target",
+  "use_resource_costs": false
+}

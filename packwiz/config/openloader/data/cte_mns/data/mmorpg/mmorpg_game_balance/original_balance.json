@@ -1,0 +1,112 @@
+{
+  "CORE_STAT_SCALING": {
+    "base_scaling": 1.0,
+    "cap_to_max_lvl": true,
+    "per_level_scaling": 0.05
+  },
+  "CRAFTED_GEAR_POTENTIAL_MULTI": 1.0,
+  "DMG_MOB_BONUS_PER_MAP_TIER": 0.03,
+  "DMG_REDUCT_PER_CHAIN": 0.2,
+  "HP_MOB_BONUS_PER_MAP_TIER": 0.12,
+  "MANA_COST_SCALING": {
+    "base_scaling": 1.0,
+    "cap_to_max_lvl": true,
+    "per_level_scaling": 0.2
+  },
+  "MAX_BONUS_SPELL_LEVELS": 8,
+  "MAX_LEVEL": 100,
+  "MIN_CHAIN_DMG": 0.2,
+  "MIN_SPELL_COOLDOWN_MULTI": 0.2,
+  "GLOBAL_COOLDOWN_TICKS": 3,
+  "MOB_DAMAGE_SCALING": {
+    "base_scaling": 1.0,
+    "cap_to_max_lvl": false,
+    "per_level_scaling": 0.25
+  },
+  "MOB_DMG_MULTI_PER_MAP_RES_REQ_LACKING": 0.0,
+  "MOB_DMG_POWER_SCALING": 1.015,
+  "MOB_DMG_POWER_SCALING_BASE": 2.5,
+  "MOB_HP_POWER_SCALING": 1.006,
+  "MOB_HP_POWER_SCALING_BASE": 1.02,
+  "NORMAL_STAT_SCALING": {
+    "base_scaling": 1.0,
+    "cap_to_max_lvl": false,
+    "per_level_scaling": 0.2
+  },
+  "PROFESSION_EXP_PENALTY_PER_LOWER_LEVEL": 0.2,
+  "SLOW_STAT_SCALING": {
+    "base_scaling": 1.0,
+    "cap_to_max_lvl": true,
+    "per_level_scaling": 0.01
+  },
+  "STAT_REQ_SCALING": {
+    "base_scaling": 2.0,
+    "cap_to_max_lvl": true,
+    "per_level_scaling": 2.0
+  },
+  "id": "original_balance",
+  "link_1_lvl": 1,
+  "link_2_lvl": 10,
+  "link_3_lvl": 20,
+  "link_4_lvl": 30,
+  "link_5_lvl": 40,
+  "player_points": {
+    "ASCENDANCY": {
+      "type": "ASCENDANCY",
+      "base_points": 0,
+      "max_bonus_points": 9,
+      "max_total_points": 10,
+      "points_per_lvl": 0.0
+    },
+    "PASSIVES": {
+      "type": "PASSIVES",
+      "base_points": 0,
+      "max_bonus_points": 10,
+      "max_total_points": 75,
+      "points_per_lvl": 0.5
+    },
+    "SPELLS": {
+      "type": "SPELLS",
+      "base_points": 0,
+      "max_bonus_points": 10,
+      "max_total_points": 150,
+      "points_per_lvl": 1.0
+    },
+    "STATS": {
+      "type": "STATS",
+      "base_points": 0,
+      "max_bonus_points": 50,
+      "max_total_points": 300,
+      "points_per_lvl": 1.0
+    },
+    "TALENTS": {
+      "type": "TALENTS",
+      "base_points": 1,
+      "max_bonus_points": 25,
+      "max_total_points": 200,
+      "points_per_lvl": 1.0
+    }
+  },
+  "backpack_tabs": {
+    "GEARS": {
+      "rows": 9,
+      "stack_multiplier": 1
+    },
+    "MAPS": {
+      "rows": 9,
+      "stack_multiplier": 1
+    },
+    "CURRENCY": {
+      "rows": 9,
+      "stack_multiplier": 512
+    },
+    "SKILL_GEMS": {
+      "rows": 9,
+      "stack_multiplier": 1
+    },
+    "PROFESSION": {
+      "rows": 6,
+      "stack_multiplier": 512
+    }
+  }
+}

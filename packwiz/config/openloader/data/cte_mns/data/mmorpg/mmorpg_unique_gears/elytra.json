@@ -1,0 +1,27 @@
+{
+  "base_gear": "elytra",
+  "guid": "elytra",
+  "flavor_text": "",
+  "force_item_id": "",
+  "league": "",
+  "min_drop_lvl": 50,
+  "min_tier": 0,
+  "rarity": "unique",
+  "replaces_name": true,
+  "runable": false,
+  "unique_stats": [
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 3.0,
+      "stat": "bonus_exp"
+    },
+    {
+      "type": "FLAT",
+      "max": 3.0,
+      "min": 3.0,
+      "stat": "move_speed"
+    }
+  ],
+  "weight": 0
+}

@@ -1,0 +1,13 @@
+{
+    "fluidTransform": {},
+    "itemTransform": {
+        "chococraft:pickled_gysahl_raw": {
+            "next": "chococraft:pickled_gysahl_cooked",
+            "stage": "COOKED"
+        },
+        "chococraft:chocobo_drumstick_raw": {
+            "next": "chococraft:chocobo_drumstick_cooked",
+            "stage": "COOKED"
+        }
+    }
+}

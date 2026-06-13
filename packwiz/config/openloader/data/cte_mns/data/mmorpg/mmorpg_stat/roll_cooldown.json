@@ -1,0 +1,16 @@
+{
+  "data": {
+    "attribute_id": "combatroll:recharge",
+    "base": 0.0,
+    "cut_by_hundred": true,
+    "ele": "Physical",
+    "id": "roll_cooldown",
+    "max": 1.0E8,
+    "min": -1000.0,
+    "operation": "MULTIPLY_TOTAL",
+    "perc": true,
+    "scale": "NONE",
+    "uuid": "3796b887-c245-4150-a7f6-17191d8e1ff8"
+  },
+  "ser": "vanilla_attribute_stat_ser"
+}

@@ -1,0 +1,38 @@
+{
+  "author": "",
+  "data": {
+    "curved_hallways": [
+      "sewers"
+    ],
+    "ends": [
+      "sewers_treasure"
+    ],
+    "entrances": [
+      "sewers"
+    ],
+    "folder": "sewers",
+    "four_ways": [
+      "sewers",
+      "sewers_flow"
+    ],
+    "mob_list_tag_check": {
+      "checks": [
+        {
+          "check": "HAS_ANY",
+          "tags": [
+            "map",
+			"water"
+          ]
+        }
+      ]
+    },
+    "straight_hallways": [
+      "sewers"
+    ],
+    "triple_hallway": [
+      "sewers_puzzle_easy"
+    ]
+  },
+  "id": "sewers",
+  "weight": 1000
+}

@@ -1,0 +1,75 @@
+{
+    "name": "Refined Storage",
+    "icon": "refinedstorage:controller",
+    "category": "patchouli:storage",
+	"sortnum":3,
+    "pages": [
+        {
+            "type": "patchouli:spotlight",
+			"title":"Refined Storage",
+  "item": "refinedstorage:controller",
+  "text": "&eRefined Storage&r is the best method of item storage, filtering, and mass crafting. Devices within the storage network manipulate your items which are on Disks. 
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "The &eController&r is the core of the storage network. All other Refined Storage must connect to it by being near it or through cables. It requires &eForge Energy&r to operate(only complex operations) which is only obtainable through &eBotania's Mana Fluxfield&ri."
+},{
+            "type": "patchouli:spotlight",
+			"title":"Basic Setup",
+  "item": "refinedstorage:disk_drive,refinedstorage:grid,refinedstorage:crafting_grid,refinedstorage:fluid_grid,refinedstorage:64k_fluid_storage_disk,refinedstorage:1k_storage_disk",
+  "text": "The &eDisk Drive&r contains &eDisks,&r where each disk adds to the network's inventory limit. Higher tiers are more expensive and take longer to craft but can hold more items.
+The &eGrid&r is the basic method of interacting with the items within the network. It lets you &etake or insert items&r from the network. The Crafting Grid is an upgrade to it and allows 
+" 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "for crafting from all items within the grid. JEI can grab items from the grid.
+&eFluid storage&r requires specialized versions of both to store fluids within the network.
+Each Refined Storage block has a priority you can set where the network will first take or receive items from.
+
+&l&nA basic storage system (&eController, Disk Drive and any Grid&r&l&n) uses 0 energy to run!"
+},{
+            "type": "patchouli:spotlight",
+			"title":"Basic Item Manipulation",
+  "item": "refinedstorage:exporter,refinedstorage:importer,refinedstorage:interface,botania:mana_fluxfield",
+  "text": "If you want to get items &eout&r of your storage network, use an &eExporter&r and connect it to an inventory where you want to export to.
+
+If you want to get items &ein&r your storage network, use an &eImporter&r and connect it to an inventory where you want to import from." 
+		},{
+            "type": "patchouli:text",
+			"title":"",
+  "text": "Want the best of both worlds? Use an &eInterface&r to get &eimporting and exporting&r functionality in one block.To &eplace&r blocks from your storage network in the world, use an &eConstructor.&r
+To &edestroy and insert blocks&r from the world into your storage, use an &eDestructor.&r
+The &eMana Fluxfield&r converts Botania Mana into FE for Refined Storage item manipulation!
+Each block can have filters applied to it.
+" 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Compatibility",
+  "item": "refinedstorage:external_storage",
+  "text": "The &eExternal Storage&r allows you to link &eRefined Storage&r with external storage blocks, such as blocks from &eSophisticated Storage&r! Works extremely well when combined with a Sophisticated Storage limited barrel network." 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Advanced Storage",
+  "item": "refinedstorage:storage_monitor,refinedstorage:pattern_grid,refinedstorage:crafter",
+  "text": "The &eStorage Monitor&r lets you select an item from the network to display how many is left.The &ePattern Grid&r allows autocrafting within the network. Each sub-item within a recipe must have its own pattern. The &eCrafter&r is where the patterns will be stored and where the crafting will take place." 
+		},{
+            "type": "patchouli:spotlight",
+			"title":"Long distance relationship",
+  "item": "refinedstorage:network_transmitter,refinedstorage:network_card,refinedstorage:network_receiver",
+  "text": "These allow you to &eaccess&r a network's inventory from &efar away&r.
+Simply craft a &eNetwork Transmitter&r and connect it to your Refined Storage system in your main base.
+Next up, craft a &eNetwork Card&r.
+After crafting a Network Card, craft a &eNetwork Receiver&r and place it in the area far away from your base." 
+		},
+		{
+            "type": "patchouli:text",
+			"text": "
+Take the Network Card and &eright click it&r on the Network Receiver.
+Put the Network Card in the Network Transmitter so the Network Transmitter knows where to &esend a signal&r to.
+And now you are done. Simply &econnect machines&r to your Network Receiver according to the normal machine connecting rules.
+The transmitter must be &echunkloaded&r before linking to the network."
+}
+]
+}

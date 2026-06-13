@@ -1,0 +1,1629 @@
+{
+  "attached": {
+    "entity_components": {
+      "stack_remover": [
+        {
+          "acts": [
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "alpha",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 120.0
+            }
+          },
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "beta",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 120.0
+            }
+          },
+          {
+            "type": "exile_effect",
+            "map": {
+              "count": 1.0,
+              "exile_potion_id": "gamma",
+              "potion_action": "REMOVE_STACKS",
+              "potion_dur": 240.0
+            }
+          }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "self",
+              "map": {}
+            }
+          ]
+        }
+      ],
+      "default_entity_name": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_none",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_alpha",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_alpha_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma",
+              "is_false": true
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_none_gamma",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_alpha_gamma",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_beta_gamma",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha",
+              "is_false": true
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_block_alpha_beta_gamma",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 80.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "alpha"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "beta"
+            }
+          },
+          {
+            "type": "caster_has_mns_effect",
+            "map": {
+              "exile_potion_id": "gamma"
+            }
+          }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_none": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_none",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_alpha": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_beta": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_alpha_beta": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_none_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_none",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_none",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_alpha_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_block_alpha_beta_gamma": [
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "summon_block",
+              "map": {
+                "block": "minecraft:air",
+                "height": 1.0,
+                "block_fall_speed": 0.0,
+                "entity_name": "ice_rock_alpha_beta",
+                "find_surface": false,
+                "is_falling_block": false,
+                "life_ticks": 1.0,
+                "random_x_offset": 4,
+                "random_z_offset": 4
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 5.0
+              }
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "blue_skies:frose_snow",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            },
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "height": 0.1,
+                "motion": "None",
+                "particle_count": 100.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 6.0,
+                "shape": "CIRCLE_2D",
+                "y_rand": 0.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "x_ticks_condition",
+              "map": {
+                "tick_rate": 2.0
+              }
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_rock_none": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Cold",
+                "value_calculation": "chronobreak"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:explosion",
+                "radius": 0.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 25.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.5,
+                "sound": "roe_sfx:spell_ice_hit",
+                "volume": 0.8
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_rock_alpha": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Cold",
+                "value_calculation": "chronobreak_extra"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:explosion",
+                "radius": 0.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 25.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.5,
+                "sound": "roe_sfx:spell_ice_hit",
+                "volume": 0.8
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_rock_beta": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Cold",
+                "value_calculation": "chronobreak"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "stun",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 10.0
+              }
+            },
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "slow",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 40.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:explosion",
+                "radius": 0.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 25.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.4,
+                "sound": "roe_sfx:spell_ice_hit",
+                "volume": 0.9
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ],
+      "ice_rock_alpha_beta": [
+        {
+          "acts": [
+            {
+              "type": "damage",
+              "map": {
+				"disable_knockback": true,
+                "element": "Cold",
+                "value_calculation": "chronobreak"
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "exile_effect",
+              "map": {
+                "count": 1.0,
+                "exile_potion_id": "chronobreak",
+                "potion_action": "GIVE_STACKS",
+                "potion_dur": 120.0
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": [
+            {
+              "type": "aoe",
+              "map": {
+                "en_predicate": "enemies",
+                "radius": 1.5,
+                "selection_type": "RADIUS"
+              }
+            }
+          ]
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 1.0,
+                "particle_type": "minecraft:explosion",
+                "radius": 0.1
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "particles_in_radius",
+              "map": {
+                "motion": "None",
+                "particle_count": 25.0,
+                "particle_type": "minecraft:item_snowball",
+                "radius": 1.5
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        },
+        {
+          "acts": [
+            {
+              "type": "sound",
+              "map": {
+                "pitch": 1.4,
+                "sound": "roe_sfx:spell_ice_hit",
+                "volume": 0.8
+              }
+            }
+          ],
+          "en_preds": [],
+          "ifs": [
+            {
+              "type": "on_entity_expire",
+              "map": {}
+            }
+          ],
+          "targets": []
+        }
+      ]
+    },
+    "on_cast": [
+      {
+        "acts": [
+          {
+            "type": "sound",
+            "map": {
+              "pitch": 1.5,
+              "sound": "roe_sfx:spell_ice_explosion",
+              "volume": 1.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "default_entity_name",
+              "expire_on_en_hit": false,
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 1.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      },
+      {
+        "acts": [
+          {
+            "type": "projectile",
+            "map": {
+              "entity_name": "stack_remover",
+              "gravity": false,
+              "item": "minecraft:air",
+              "life_ticks": 2.0,
+              "proj_count": 1.0,
+              "proj_en": "mmorpg:spell_projectile",
+              "proj_speed": 0.0
+            }
+          }
+        ],
+        "en_preds": [],
+        "ifs": [
+          {
+            "type": "on_spell_cast",
+            "map": {}
+          }
+        ],
+        "targets": []
+      }
+    ]
+  },
+  "cast_animation": {
+    "id": "hand_up_cast"
+  },
+  "cast_finish_animation": {
+    "id": "staff_ground"
+  },
+  "config": {
+    "aggro_radius": 10,
+    "cast_time_ticks": 0,
+    "castingWeapon": "ANY_WEAPON",
+    "charge_name": "",
+    "charge_regen": 0,
+    "charges": 0,
+    "cooldown_ticks": 200,
+    "ene_cost": {
+      "max": 0.0,
+      "min": 0.0
+    },
+    "imbues": 0,
+    "mana_cost": {
+      "max": 16.0,
+      "min": 13.0
+    },
+    "slows_when_casting": true,
+    "style": "int",
+    "summonType": "NONE",
+    "summon_basic_atk": "pet_basic",
+    "swing_arm": false,
+    "tags": {
+      "tags": [
+        "magic",
+        "damage",
+        "cold",
+        "area",
+        "burst"
+      ]
+    },
+    "times_to_cast": 1,
+    "tracking_radius": 5,
+    "tracks": "enemies",
+    "use_support_gems_from": ""
+  },
+  "default_lvl": 0,
+  "disabled_dims": [],
+  "effect_tip": "",
+  "identifier": "chronobreak",
+  "loc_name": "Chronobreak",
+  "lvl_based_on_spell": "",
+  "manual_tip": true,
+  "max_lvl": 16,
+  "min_lvl": 1,
+  "show_other_spell_tooltip": "",
+  "statsForSkillGem": [
+    {
+      "type": "FLAT",
+      "max": 5.0,
+      "min": 5.0,
+      "stat": "freeze_chance"
+    },
+    {
+      "type": "FLAT",
+      "max": 16.0,
+      "min": 1.0,
+      "stat": "freeze_damage"
+    }
+  ],
+  "weight": 1000
+}
