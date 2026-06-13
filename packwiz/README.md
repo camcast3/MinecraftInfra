@@ -179,6 +179,28 @@ https://nightly.link/packwiz/packwiz/workflows/go/main if you'd rather
 not install Go.
 
 
+## Publishing a new version
+
+Trigger the [Publish Prism Pack](../.github/workflows/publish-prism-pack.yml) workflow:
+
+```powershell
+gh workflow run publish-prism-pack.yml -f version=0.3.1
+```
+
+The workflow materializes the staging instance from the packwiz manifest, builds and uploads the client zip to Azure, rewrites `docker/proxmox/docker-compose.yml` (SHA pin + MOTD), bumps `modpack.yml`, and opens the publish PR against `main`. Review and merge the PR — the workflow does **not** auto-merge. Portainer GitOps redeploys C2E2 within ~5 min of merge.
+
+For full details, troubleshooting, and Azure one-time setup see [`docs/operations/publish-runbook.md`](../docs/operations/publish-runbook.md).
+
+### Local testing (no Azure upload)
+
+For dry-runs or development without an Azure session, invoke the underlying script directly:
+
+```powershell
+./infra/azure/scripts/publish-prism-pack.ps1 -Version 0.3.1
+```
+
+The workflow calls this same script. Running it locally lets you verify the zip builds cleanly before triggering CI. The Azure blob-upload step will fail gracefully if no Azure session is active.
+
 ## Data preservation contract (server side)
 
 `packwiz-installer` writes only to modpack-content paths under `/data/`:
