@@ -1632,7 +1632,7 @@ hash = "07f11972b098c8f6a12a25628ffa54d772f1c89bbe7fa292c3010a67e37d1a7a"
 
 [[files]]
 file = "config/fancymenu/assets/mahj_1294853429_mainmenu.pw.toml"
-hash = "7cda5f27ee1df9718ac35c2c5674af2a77ce2821ed8d8178d3659b0ca2694116"
+hash = "78ef8d0c19355d57f4486fa8a41a86bf8c3d5139785e1c59b0c6e28e0bf1c101"
 metafile = true
 
 [[files]]
@@ -28233,7 +28233,7 @@ hash = "d77500594f4ca3785e7fc1d6b278c0d80f8d2439e9138655028cf9d7467009fa"
 
 [[files]]
 file = "config/openloader/resources/resources.pw.toml"
-hash = "0e07d6369945e4a57ba2fed4dcf2d0ec431fefcb4e1cb6ac7f37c8494018a129"
+hash = "f2249938cd437441d72034b47ff21d0ed302f35f97a444b17435046ecd5034f5"
 metafile = true
 
 [[files]]

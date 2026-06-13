@@ -17,18 +17,17 @@ side = "client"
 # No [update.*] block: the upstream source is the C2E2 modpack zip, not
 # a CurseForge project of its own. When a new C2E2 release changes this
 # file, re-run `infra/azure/scripts/import-curseforge-pack.ps1`, manually
-# re-upload the updated .fma to a new `c2e2-blobs-v<ver>` release, and
-# bump the URL + hash here. Documented in packwiz/README.md.
+# re-upload the updated .fma to the active `c2e2-blobs-v<ver>` release,
+# and bump the URL + hash below. Documented in packwiz/README.md.
 #
 # Admin runbook (per packwiz/README.md "Re-hosted cosmetic assets" section):
 #   1. Locate the .fma file inside the C2E2 v<PACK_VERSION> zip at
 #      `overrides/config/fancymenu/assets/mahj_1294853429_mainmenu.fma`.
 #   2. Upload to the `c2e2-blobs-v<PACK_VERSION>` GH Release.
-#   3. Replace the FILL_IN placeholders below with the real download URL
-#      and the file's actual SHA-256 hash.
+#   3. Update the URL + hash below to the new release tag + sha256.
 #   4. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
 [download]
-url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-vFILL_IN/mahj_1294853429_mainmenu.fma"
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/mahj_1294853429_mainmenu.fma"
 hash-format = "sha256"
-hash = "0000000000000000000000000000000000000000000000000000000000000000"
+hash = "966d5c433bd9ceddf77b2ddada90567baf9064c6e53c43a514c3722a4a948a55"
 mode = "url"
