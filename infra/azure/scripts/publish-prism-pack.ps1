@@ -167,6 +167,60 @@ if (-not $repoRoot) {
     throw "Could not resolve repo root via 'git rev-parse --show-toplevel'."
 }
 
+# ─── CI vs local drift detection ────────────────────────────────────────────
+# In CI (GitHub Actions sets $env:CI='true'), actions/checkout produces a
+# clean tree from origin/main, so the local-divergence checks below are
+# vacuous and just add noise. In local runs, drift between the working
+# packwiz/ tree and origin/main would cause the bundled client zip (built
+# from disk) to diverge from the SHA pin written into docker-compose.yml
+# (which the script later resolves via `git rev-parse HEAD` after a fresh
+# `git checkout -B publishBranch origin/main`). Detect drift early and
+# fail with clear remediation so a botched local publish never makes it
+# to the blob upload or PR-open steps.
+if ($env:CI -eq 'true') {
+    Write-Step "CI mode detected (`$env:CI='true'`); skipping local drift checks."
+} else {
+    Write-Step "Local mode; checking packwiz/ for drift vs origin/main..."
+
+    Push-Location $repoRoot
+    try {
+        # 1. No uncommitted packwiz/ changes (working tree or index).
+        $dirty = (git status --porcelain -- packwiz/ | Out-String).TrimEnd()
+        if ($dirty) {
+            Write-Host ""
+            Write-Host "Local repo has uncommitted packwiz/ changes:" -ForegroundColor Yellow
+            $dirty -split "`n" | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+            Write-Host ""
+            Write-Host "Commit and push them to origin/main first (or stash) before publishing." -ForegroundColor Yellow
+            Write-Host "Otherwise the SHA pin in docker-compose.yml will diverge from the bundled client zip." -ForegroundColor Yellow
+            Write-Error "Uncommitted packwiz/ changes detected. Aborting."
+            exit 1
+        }
+
+        # 2. Local packwiz/ matches origin/main's packwiz/.
+        # Use --stat (not --quiet) because $PSNativeCommandUseErrorActionPreference
+        # is on and --quiet returning exit 1 on diff would throw before we can
+        # report the diff cleanly. --stat always exits 0 on success.
+        git fetch origin main --quiet | Out-Null
+        $diffStat = (git diff --stat HEAD origin/main -- packwiz/ | Out-String).TrimEnd()
+        if ($diffStat) {
+            Write-Host ""
+            Write-Host "Local packwiz/ tree differs from origin/main:" -ForegroundColor Yellow
+            $diffStat -split "`n" | ForEach-Object { Write-Host "  $_" -ForegroundColor Yellow }
+            Write-Host ""
+            Write-Host "Push your packwiz/ commits to origin/main (via PR + merge) before publishing." -ForegroundColor Yellow
+            Write-Host "The SHA pin written into docker-compose.yml resolves against origin/main, so" -ForegroundColor Yellow
+            Write-Host "any unmerged local commits would not be visible to Portainer's git fetch." -ForegroundColor Yellow
+            Write-Error "Local packwiz/ tree diverges from origin/main. Aborting."
+            exit 1
+        }
+
+        Write-Ok "packwiz/ tree matches origin/main"
+    } finally {
+        Pop-Location
+    }
+}
+
 # ─── Instance path resolution ───────────────────────────────────────────────
 # Preferred source: the staging instance materialized by
 # build-instance-from-packwiz.ps1. Falls back to a hand-curated instance in
