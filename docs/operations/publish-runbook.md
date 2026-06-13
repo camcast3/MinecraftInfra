@@ -8,9 +8,11 @@ The workflow builds a clean Prism Launcher instance from the `packwiz/`
 manifest, zips and uploads it to the `minecraft-modpack` blob container on
 `stmcminecraftprod`, rewrites `docker/proxmox/docker-compose.yml`
 (`PACKWIZ_URL` + `MOTD`) and `modpack.yml`, and opens a publish PR against
-`main` from branch `modpack/v<version>`. After you merge the PR, Portainer
-GitOps detects the compose change and redeploys C2E2 within ~5 minutes.
-**The workflow does not auto-merge** — you review and merge the PR manually.
+`main` from branch `modpack/v<version>`, and **enables auto-merge** on it
+(`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon
+as required status checks pass (immediately if none are configured); Portainer
+GitOps then detects the compose change and redeploys C2E2 within ~5 minutes.
+End-to-end, the only manual step is triggering the workflow.
 
 ---
 
@@ -72,9 +74,13 @@ GitOps detects the compose change and redeploys C2E2 within ~5 minutes.
      audit trail (the PR) always exists before any player can resolve the
      new version URL.
 
-8. **Admin merges the PR** — workflow deliberately does not auto-merge.
-   Portainer GitOps polls `docker/proxmox/` on a ~5-minute interval;
-   C2E2 redeploys automatically on merge.
+8. **Auto-merge** — the script calls
+   `gh pr merge $prUrl --auto --squash --delete-branch`
+   (`publish-prism-pack.ps1` line 720). The PR squash-merges as soon as
+   required status checks pass; if no required checks are configured for the
+   publish PR, the merge is immediate. Portainer GitOps polls `docker/proxmox/`
+   on a ~5-minute interval; C2E2 redeploys automatically once the compose
+   change lands on `main`.
 
 ---
 
@@ -133,8 +139,12 @@ The workflow's comment block at the top of
 for this analysis. If you're tempted to add a new trigger, re-read that block
 and redo the loop analysis before touching the `on:` section.
 
-The second loop-prevention layer is the manual PR merge: the workflow does
-**not** auto-merge, so a half-finished run can't silently chain into another.
+Loop prevention rests entirely on the trigger allow-list. Auto-merge on the
+publish PR is **safe** because `push: branches: [main]` is not a trigger —
+the publish-PR merge commit can't fire another publish run. (Auto-merge is
+also a player/server-safety feature: without it, `latest.json` would flip
+before the server redeploys, creating a mod-set mismatch window where
+players can't join.)
 
 ---
 

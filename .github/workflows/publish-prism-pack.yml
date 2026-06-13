@@ -204,10 +204,16 @@ jobs:
           #   7. Open the publish PR via `gh pr create`.
           #   8. Upload latest.json AFTER PR push so audit trail is always
           #      present before any player can download.
-          # The script does NOT enable auto-merge — admin merges manually
-          # after CI on the publish PR passes. This is the second layer of
-          # defense against forever-loops (the first being the trigger
-          # allow-list above).
+          # The script DOES enable auto-merge on the publish PR via
+          # `gh pr merge $prUrl --auto --squash --delete-branch`
+          # (publish-prism-pack.ps1 line 720). The PR squash-merges as soon
+          # as required status checks pass. This is safe against forever-
+          # loops because `push: branches: [main]` is excluded from this
+          # workflow's triggers — the merge commit can't re-fire publish.
+          # It's also a correctness feature: latest.json (player auto-update
+          # target) flips at the end of this script, so if merge were
+          # deferred the server would still be on the old version while
+          # clients upgrade, breaking joins until the manual merge.
           ./infra/azure/scripts/publish-prism-pack.ps1 -Version '${{ steps.version.outputs.version }}'
 
       - name: Publish summary
@@ -230,7 +236,9 @@ jobs:
           - Opened the publish PR against ``main`` from branch ``modpack/v${{ steps.version.outputs.version }}``.
           - Portainer GitOps will redeploy C2E2 within ~5 min of PR merge.
 
-          **Next step:** review and merge the publish PR. The workflow does
-          NOT auto-merge — that's a deliberate forever-loop safety gate.
+          **Next step:** none — auto-merge is enabled on the publish PR
+          (``gh pr merge --auto --squash --delete-branch``). It squash-merges
+          as soon as required status checks pass and Portainer redeploys
+          C2E2 within ~5 min of the merge landing on ``main``.
           "@
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary
