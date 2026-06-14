@@ -115,7 +115,7 @@ jobs:
 
       - name: Set up Go (for packwiz CLI)
         if: steps.noop_check.outputs.noop != 'true'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: stable
           cache: false
