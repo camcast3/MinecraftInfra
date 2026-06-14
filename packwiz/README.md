@@ -187,7 +187,7 @@ Trigger the [Publish Prism Pack](../.github/workflows/publish-prism-pack.yml) wo
 gh workflow run publish-prism-pack.yml -f version=0.3.1
 ```
 
-The workflow materializes the staging instance from the packwiz manifest, builds and uploads the client zip to Azure, rewrites `docker/proxmox/docker-compose.yml` (SHA pin + MOTD), bumps `modpack.yml`, opens the publish PR against `main`, and **enables auto-merge** (`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon as required status checks pass, and Portainer GitOps redeploys C2E2 within ~5 min of the merge. End-to-end, the only manual step is triggering the workflow.
+The workflow materializes the staging instance from the packwiz manifest, builds and uploads the client zip to Azure, rewrites `docker/proxmox/docker-compose.yml` (SHA pin only — MOTD is static), bumps `modpack.yml` and `docs/assets/latest-version.txt`, opens the publish PR against `main`, and **enables auto-merge** (`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon as required status checks pass, and Portainer GitOps redeploys C2E2 within ~5 min of the merge. End-to-end, the only manual step is triggering the workflow.
 
 For full details, troubleshooting, and Azure one-time setup see [`docs/operations/publish-runbook.md`](../docs/operations/publish-runbook.md).
 

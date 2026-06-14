@@ -16,8 +16,10 @@ bind = "0.0.0.0:25577"
 # Velocity 3.3.0+ parses motd as MiniMessage — any `&` or `§` codes here would
 # render as literal text. Plain text only. With ping-passthrough = "ALL" below
 # the client normally sees the C2E2 backend's MOTD; this is the fallback shown
-# when C2E2 is unreachable (keep in sync with the backend MOTD in
-# docker/proxmox/docker-compose.yml).
+# when C2E2 is unreachable. Both MOTDs are intentionally version-free — the
+# modpack version is surfaced by prelaunch-check.ps1 at launch time, so
+# duplicating it in the server-list MOTD would just create drift and force
+# a backend restart per release.
 motd = "Craft to Exile 2"
 show-max-players = 20
 
