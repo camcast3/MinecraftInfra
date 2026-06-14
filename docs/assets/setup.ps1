@@ -522,9 +522,88 @@ if ($manifest) {
                     }
                 }
 
+                # Read the prior version BEFORE the swap so we can use it
+                # downstream for the archive zip name and the side-by-side
+                # Prism instance name.
+                $prevVersionFile = Join-Path $instanceTarget '.negativezone-version'
+                $prevVersion = 'unknown'
+                if (Test-Path -LiteralPath $prevVersionFile) {
+                    try {
+                        $vRaw = (Get-Content -LiteralPath $prevVersionFile -Raw -Encoding UTF8).Trim()
+                        if ($vRaw) { $prevVersion = $vRaw }
+                    } catch {}
+                }
+                $prevVersionSafe = ($prevVersion -replace '[^\w\.\-]', '_')
+                $upgradeStamp    = Get-Date -Format 'yyyyMMdd-HHmmss'
+
+                # ZIP-FIRST belt-and-suspenders. The archive lives OUTSIDE
+                # the Prism instances dir and is NEVER touched by setup
+                # again, so even if every later step (Move-Item, carry-over,
+                # side-by-side copy, the player nuking the instance from
+                # Prism's UI) goes wrong, the full pre-upgrade state is
+                # frozen on disk and can be extracted at any time.
+                #
+                # This addressed a real incident: back-to-back setup runs
+                # were clobbering .bak with each other, and at one point
+                # the player ended up with zero local copies of their
+                # tuned settings outside the Recycle Bin.
+                #
+                # If the live instance has a prior .bak alongside it, zip
+                # that too — it represents an even older version that the
+                # next Move-Item would otherwise delete.
+                $archiveRoot = Join-Path $env:LOCALAPPDATA 'NegativeZone\archives'
+                if (-not (Test-Path -LiteralPath $archiveRoot)) {
+                    New-Item -ItemType Directory -Path $archiveRoot -Force | Out-Null
+                }
+                Add-Type -AssemblyName 'System.IO.Compression.FileSystem' -ErrorAction SilentlyContinue
+
+                function New-UpgradeArchive {
+                    param(
+                        [string]$SourceDir,
+                        [string]$VersionTag,
+                        [string]$Stamp,
+                        [string]$ArchiveRoot,
+                        [string]$InstanceLabel
+                    )
+                    $base = "{0}_v{1}_{2}" -f $InstanceLabel, $VersionTag, $Stamp
+                    $zip  = Join-Path $ArchiveRoot ($base + '.zip')
+                    $i = 1
+                    while (Test-Path -LiteralPath $zip) {
+                        $zip = Join-Path $ArchiveRoot ("{0}-{1}.zip" -f $base, $i)
+                        $i++
+                    }
+                    try {
+                        [System.IO.Compression.ZipFile]::CreateFromDirectory(
+                            $SourceDir, $zip,
+                            [System.IO.Compression.CompressionLevel]::Optimal, $false)
+                        $sizeMB = [math]::Round((Get-Item -LiteralPath $zip).Length / 1MB, 1)
+                        Write-Ok "Archived $sizeMB MB to $zip"
+                        return $zip
+                    } catch {
+                        Write-Warn "Could not archive ${SourceDir}: $($_.Exception.Message). Continuing — .bak rename below is still the immediate rollback."
+                        return $null
+                    }
+                }
+
+                Write-Step "Archiving existing instance to a permanent zip (never overwritten by setup)"
+                [void](New-UpgradeArchive -SourceDir $instanceTarget -VersionTag $prevVersionSafe -Stamp $upgradeStamp -ArchiveRoot $archiveRoot -InstanceLabel $manifest.instance)
+
+                if (Test-Path -LiteralPath $backupPath) {
+                    # Read version of the existing .bak (if any) so the zip is
+                    # self-describing — without this we'd label it "unknown".
+                    $oldBakVer = 'unknown'
+                    $oldBakVerFile = Join-Path $backupPath '.negativezone-version'
+                    if (Test-Path -LiteralPath $oldBakVerFile) {
+                        try { $oldBakVer = ((Get-Content -LiteralPath $oldBakVerFile -Raw -Encoding UTF8).Trim()) } catch {}
+                    }
+                    $oldBakVerSafe = ($oldBakVer -replace '[^\w\.\-]', '_')
+                    Write-Step "Archiving existing .bak (an even older copy) before it gets replaced"
+                    [void](New-UpgradeArchive -SourceDir $backupPath -VersionTag ($oldBakVerSafe + '-bak') -Stamp $upgradeStamp -ArchiveRoot $archiveRoot -InstanceLabel $manifest.instance)
+                }
+
                 Write-Host "    Backing up existing instance to $backupPath" -ForegroundColor Yellow
-                if (Test-Path $backupPath) { Remove-Item $backupPath -Recurse -Force }
-                Move-Item $instanceTarget $backupPath
+                if (Test-Path -LiteralPath $backupPath) { Remove-Item -LiteralPath $backupPath -Recurse -Force }
+                Move-Item -LiteralPath $instanceTarget -Destination $backupPath
                 $backedUp = $true
             }
 
@@ -535,20 +614,63 @@ if ($manifest) {
             # Xaero map data — they'd have to manually merge from .bak after
             # every modpack drop.
             #
-            # Mirrors update.ps1's $PreserveRelative — keep in sync when
-            # adding entries. (Both files run on player machines; centralizing
-            # the list isn't possible without making setup.ps1 fetch a manifest
-            # before the install, which would gate the whole install on an
-            # extra network call.)
+            # The preserve set is the UNION of:
+            #   1. The hardcoded $preserveList below — player-state dirs and
+            #      vanilla files that don't live in the pack (saves, options.txt,
+            #      XaeroWaypoints, etc.). Mirrors update.ps1's $PreserveRelative;
+            #      keep in sync when adding entries.
+            #   2. The pack-author manifest at $srcInstance\.negativezone\
+            #      preserve-list.json — pack-shipped mod configs the player
+            #      typically tunes (EMI enable/disable, Embeddium graphics,
+            #      Xaero map prefs, mod keybinds, etc.). Source-of-truth is
+            #      packwiz/.user-prefs.txt; publish-prism-pack.ps1 bundles it
+            #      as JSON. Same union pattern update.ps1 uses on auto-update.
+            # Without #2, setup-driven upgrades silently wiped every mod config
+            # the player had tuned, even though update.ps1's path preserved them.
             if ($backedUp -and (Test-Path -LiteralPath $backupPath)) {
                 Write-Step "Carrying user state from previous instance into new install"
                 $preserveList = @(
                     'saves', 'screenshots', 'logs', 'crash-reports', 'local', 'backups',
                     'options.txt', 'optionsof.txt', 'optionsshaders.txt',
+                    'hotbar.nbt',
                     'usercache.json', 'usernamecache.json', 'realms_persistence.json',
                     'XaeroWaypoints', 'XaeroWorldMap',
+                    'journeymap',
                     'shaderpacks', 'resourcepacks'
                 )
+
+                # Union in the pack-author manifest from the freshly-extracted
+                # zip. Fail-open: a missing/malformed manifest falls back to
+                # the hardcoded list only (matches update.ps1's posture).
+                # NOTE: $srcInstance was just Move-Item'd into $instanceTarget
+                # on line 610, so the manifest is now under $instanceTarget,
+                # NOT $srcInstance (which no longer exists).
+                $manifestPath = Join-Path $instanceTarget '.negativezone\preserve-list.json'
+                if (Test-Path -LiteralPath $manifestPath) {
+                    try {
+                        $manifestObj = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 |
+                            ConvertFrom-Json -ErrorAction Stop
+                        $packAuthor = @()
+                        if ($manifestObj.preserve) {
+                            $packAuthor = @($manifestObj.preserve | Where-Object { $_ })
+                        }
+                        if ($packAuthor.Count -gt 0) {
+                            $seen = @{}
+                            $combined = New-Object System.Collections.Generic.List[string]
+                            foreach ($p in @($preserveList) + @($packAuthor)) {
+                                $t = ($p -as [string]).Trim()
+                                if ($t -and -not $seen.ContainsKey($t)) {
+                                    $seen[$t] = $true
+                                    [void]$combined.Add($t)
+                                }
+                            }
+                            $preserveList = $combined.ToArray()
+                            Write-Ok ("Pack-author preserve-list.json contributes {0} mod-config entries" -f $packAuthor.Count)
+                        }
+                    } catch {
+                        Write-Warn "preserve-list.json malformed ($($_.Exception.Message)); using hardcoded list only."
+                    }
+                }
                 $oldDotMc = Join-Path $backupPath '.minecraft'
                 $newDotMc = Join-Path $instanceTarget '.minecraft'
                 $restored = 0
@@ -601,6 +723,58 @@ if ($manifest) {
                 Write-Host "      $backupPath" -ForegroundColor Cyan
                 Write-Host '    If anything is missing from your new install, copy it from there.' -ForegroundColor Cyan
                 Write-Host ''
+
+                # Side-by-side Prism instance for the prior version. The
+                # .bak above is the rollback target (filesystem-only), but
+                # Prism does NOT list it cleanly: trailing-dot folder name
+                # confuses the launcher and players miss that it's there.
+                # Copying it under a clean name with a disabled prelaunch
+                # hook means the player can launch the prior version
+                # straight from Prism if anything is wrong with the new
+                # install. This is the "C2E - old" the user explicitly
+                # asked for after a setup run wiped their settings.
+                Write-Step "Creating side-by-side 'old' instance for one-click rollback"
+                $oldInstanceName = "$($manifest.instance) (old)"
+                $oldInstancePath = Join-Path $prismInstancesDir $oldInstanceName
+                try {
+                    if (Test-Path -LiteralPath $oldInstancePath) {
+                        Remove-Item -LiteralPath $oldInstancePath -Recurse -Force
+                    }
+                    # robocopy handles long paths and spaces better than
+                    # Copy-Item on large trees. Suppress chatty per-file
+                    # output but keep the summary in case it fails.
+                    $rc = & robocopy $backupPath $oldInstancePath /E /COPY:DAT /R:1 /W:1 /NFL /NDL /NJH /NJS /NP 2>&1
+                    if ($LASTEXITCODE -ge 8) {
+                        throw "robocopy exit $LASTEXITCODE`n$($rc -join "`n")"
+                    }
+                    # Disable PreLaunchCommand/PostExitCommand on the
+                    # side-by-side so the prelaunch version check doesn't
+                    # block its launch with "your version is out of date".
+                    # Setting OverrideCommands=false is the simplest kill
+                    # switch — leaves the command lines intact but inert.
+                    $oldCfg = Join-Path $oldInstancePath 'instance.cfg'
+                    if (Test-Path -LiteralPath $oldCfg) {
+                        $oldCfgLines = Get-Content -LiteralPath $oldCfg -Encoding UTF8
+                        $newCfgLines = New-Object System.Collections.Generic.List[string]
+                        $sawOverrideCmd = $false; $sawOldName = $false
+                        $oldDisplayName = "$($manifest.instance) v$prevVersion (old)"
+                        foreach ($ln in $oldCfgLines) {
+                            if ($ln -match '^OverrideCommands=') {
+                                $newCfgLines.Add('OverrideCommands=false'); $sawOverrideCmd = $true
+                            } elseif ($ln -match '^name=') {
+                                $newCfgLines.Add("name=$oldDisplayName"); $sawOldName = $true
+                            } else {
+                                $newCfgLines.Add($ln)
+                            }
+                        }
+                        if (-not $sawOverrideCmd) { $newCfgLines.Add('OverrideCommands=false') }
+                        if (-not $sawOldName)     { $newCfgLines.Add("name=$oldDisplayName") }
+                        Set-Content -LiteralPath $oldCfg -Value $newCfgLines -Encoding UTF8
+                    }
+                    Write-Ok "Old instance available in Prism as '$oldInstanceName' (auto-update hook disabled)"
+                } catch {
+                    Write-Warn "Could not create side-by-side old instance ($($_.Exception.Message)). Your .bak at $backupPath is still intact for manual rollback."
+                }
             }
 
             # Prism stores instance icons globally (%APPDATA%\PrismLauncher\icons),
@@ -692,18 +866,20 @@ if ($manifest) {
             -FriendlyName 'periodic snapshots enabled (every 3 days by default)'
 
         # Group the live instance under "Latest" and the previous-version
-        # .bak (if any) under "Backup" so Prism's instance grid clearly
-        # separates them. Both stay visible so the player can roll back from
-        # the UI, but they no longer look like duplicate copies of the same
-        # instance under "Ungrouped". Reasserted on every run for self-heal.
+        # .bak (if any) plus the side-by-side "(old)" instance under "Backup"
+        # so Prism's instance grid clearly separates them. All three stay
+        # visible so the player can roll back from the UI, but they no
+        # longer look like duplicate copies of the same instance under
+        # "Ungrouped". Reasserted on every run for self-heal.
         $instName     = Split-Path -Leaf $instanceTarget
         $bakName      = "$instName.bak"
+        $oldName      = "$($manifest.instance) (old)"
         $assignments  = @{
             'Latest' = @($instName)
-            'Backup' = @($bakName)
+            'Backup' = @($bakName, $oldName)
         }
         Set-PrismInstanceGroup -InstancesDir $prismInstancesDir -Assignments $assignments
-        Write-Ok "Prism groups updated ('$instName' -> Latest, '$bakName' -> Backup if present)"
+        Write-Ok "Prism groups updated ('$instName' -> Latest; '$bakName', '$oldName' -> Backup if present)"
     }
 }
 

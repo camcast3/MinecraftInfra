@@ -120,7 +120,14 @@ OverrideCommands=true
 }
 "@ | Set-Content -LiteralPath (Join-Path $instDir 'mmc-pack.json') -Encoding UTF8
 
-    '[]' | Set-Content -LiteralPath (Join-Path $nzDir 'preserve-list.json') -Encoding UTF8
+    # Ship a real pack-author preserve manifest so the union code path in
+    # setup.ps1 / update.ps1 (hardcoded ∪ preserve-list.json) is exercised
+    # by the upgrade test. Format mirrors what publish-prism-pack.ps1 emits
+    # from packwiz/.user-prefs.txt. Test entry is a synthetic mod-config
+    # path so the test is independent of which mods C2E2 actually ships.
+    @'
+{"version":1,"preserve":["config/test-mod-prefs.json"]}
+'@ | Set-Content -LiteralPath (Join-Path $nzDir 'preserve-list.json') -Encoding UTF8
 
     # Bundle .ps1 with UTF-8 BOM (mirrors Add-Ps1ZipEntry in publish-prism-pack.ps1).
     # Repo .ps1 files are BOM-less (lint-ps1.yml enforces this).
@@ -320,6 +327,10 @@ function Invoke-SetupPs1 {
     "`$env:WINDIR\System32\WindowsPowerShell\v1.0\Modules"
 ) -join ';'
 `$env:APPDATA = '$AppData'
+# Setup writes archive zips to %LOCALAPPDATA%\NegativeZone\archives\.
+# Without this override the test would pollute the developer's real
+# AppData\Local.
+`$env:LOCALAPPDATA = '$AppData\Local'
 `$env:NEGATIVEZONE_NONINTERACTIVE = '1'
 `$env:NEGATIVEZONE_SKIP_WINGET = '1'
 `$env:NEGATIVEZONE_SKIP_BITS = '1'
@@ -564,10 +575,18 @@ Register-Test 'upgrade-with-snapshot-restore' {
     Set-Content -LiteralPath "$mcDir\options.txt"    -Value 'mouseSensitivity:0.4'
     Set-Content -LiteralPath "$mcDir\optionsof.txt"  -Value 'renderDistance:16'
     Set-Content -LiteralPath "$mcDir\usercache.json" -Value '[{"name":"player1"}]'
+    Set-Content -LiteralPath "$mcDir\hotbar.nbt"     -Value 'hotbar-sentinel-bytes'
     New-Item -ItemType Directory -Path "$mcDir\XaeroWorldMap\sp" -Force | Out-Null
     Set-Content -LiteralPath "$mcDir\XaeroWorldMap\sp\waypoint.json" -Value '{"x":100}'
+    New-Item -ItemType Directory -Path "$mcDir\journeymap\data\sp" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\journeymap\data\sp\waypoints.json" -Value '{"jm-waypoint":"home"}'
     New-Item -ItemType Directory -Path "$mcDir\shaderpacks" -Force | Out-Null
     Set-Content -LiteralPath "$mcDir\shaderpacks\Sildurs.zip" -Value 'shaderdata'
+    # Pack-author preserve-list.json entry — proves the hardcoded ∪ manifest
+    # union path works (this file isn't on setup.ps1's hardcoded $preserveList,
+    # so it can only be restored via the preserve-list.json union code path).
+    New-Item -ItemType Directory -Path "$mcDir\config" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\config\test-mod-prefs.json" -Value '{"emiEnabled":false}'
 
     # Step 3: publish v1.1.0
     $ctx.PublishVersion.Invoke('1.1.0')
@@ -585,13 +604,52 @@ Register-Test 'upgrade-with-snapshot-restore' {
     Assert-PathNotExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.0.0.jar') 'v1.0.0 mod removed'
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' 'version marker bumped'
 
+    # Permanent archive zip — the "never lose data" safety net. Lives outside
+    # the Prism instances dir so future setup runs cannot touch it.
+    $archiveDir = Join-Path $appData 'Local\NegativeZone\archives'
+    Assert-PathExists $archiveDir 'permanent archive directory created'
+    $archives = @(Get-ChildItem -LiteralPath $archiveDir -Filter '*.zip' -File -ErrorAction SilentlyContinue)
+    Assert-True ($archives.Count -ge 1) "at least one archive zip created (found $($archives.Count))"
+    $archive = $archives | Select-Object -First 1
+    Assert-True ($archive.Length -gt 1024) "archive zip is non-empty (got $($archive.Length) bytes — should contain mods + saves + options)"
+    Assert-True ($archive.Name -match '^Craft to Exile 2_v1\.0\.0_\d{8}-\d{6}\.zip$') "archive zip named with prior version + timestamp (got '$($archive.Name)')"
+    # And verify the zip actually contains the player state we'd want to recover
+    Add-Type -AssemblyName 'System.IO.Compression.FileSystem' -ErrorAction SilentlyContinue
+    $zipArchive = [System.IO.Compression.ZipFile]::OpenRead($archive.FullName)
+    try {
+        $entryNames = @($zipArchive.Entries | ForEach-Object { $_.FullName })
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]options\.txt$' }).Count -gt 0) 'archive zip contains options.txt'
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]hotbar\.nbt$' }).Count -gt 0) 'archive zip contains hotbar.nbt'
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]saves[\\/]' }).Count -gt 0) 'archive zip contains saves/'
+    } finally {
+        $zipArchive.Dispose()
+    }
+
+    # Side-by-side "(old)" instance — must be a Prism-visible launchable
+    # instance with the prelaunch update hook DISABLED so the player can
+    # roll back from the UI without being blocked.
+    $oldInst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2 (old)'
+    Assert-PathExists $oldInst 'side-by-side (old) instance created'
+    Assert-PathExists (Join-Path $oldInst '.minecraft\options.txt') 'side-by-side preserves options.txt'
+    Assert-PathExists (Join-Path $oldInst 'instance.cfg') 'side-by-side has instance.cfg'
+    Assert-FileContains (Join-Path $oldInst 'instance.cfg') '(?m)^OverrideCommands=false' 'side-by-side has prelaunch hooks disabled (cannot be blocked by version check)'
+    Assert-FileContains (Join-Path $oldInst 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.0\.0 \(old\)' 'side-by-side display name marked as old'
+    # And the Prism group config places it under Backup
+    Assert-FileContains (Join-Path $appData 'PrismLauncher\instances\instgroups.json') 'Craft to Exile 2 \(old\)' 'side-by-side instance is in Prism instgroups.json'
+
     # Restored player state — these are the critical checks
     Assert-PathExists (Join-Path $inst '.minecraft\saves\my-world\region\r.0.0.mca') 'saves RESTORED into v1.1.0'
     Assert-FileContains (Join-Path $inst '.minecraft\options.txt') 'mouseSensitivity:0\.4' 'options.txt RESTORED with content'
     Assert-FileContains (Join-Path $inst '.minecraft\optionsof.txt') 'renderDistance:16' 'optionsof.txt RESTORED'
     Assert-FileContains (Join-Path $inst '.minecraft\usercache.json') 'player1' 'usercache RESTORED'
+    Assert-FileContains (Join-Path $inst '.minecraft\hotbar.nbt') 'hotbar-sentinel-bytes' 'hotbar.nbt RESTORED'
     Assert-PathExists (Join-Path $inst '.minecraft\XaeroWorldMap\sp\waypoint.json') 'XaeroWorldMap RESTORED'
+    Assert-PathExists (Join-Path $inst '.minecraft\journeymap\data\sp\waypoints.json') 'journeymap RESTORED'
     Assert-PathExists (Join-Path $inst '.minecraft\shaderpacks\Sildurs.zip') 'shaderpacks RESTORED'
+    # Pack-author preserve-list.json union — proves mod configs (e.g. EMI
+    # enable/disable state) survive setup-driven upgrades, not just
+    # update.ps1-driven ones. Was silently broken before this fix.
+    Assert-FileContains (Join-Path $inst '.minecraft\config\test-mod-prefs.json') 'emiEnabled' 'pack-author preserve-list.json entry RESTORED (union with hardcoded list)'
 
     # Reset for subsequent tests
     $ctx.PublishVersion.Invoke('1.0.0')

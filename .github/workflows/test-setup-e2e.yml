@@ -1,0 +1,70 @@
+---
+name: Setup E2E tests
+
+# Runs the full 16-test end-to-end harness against any change to the
+# player-facing install/update/backup scripts or the harness itself.
+#
+# Why this exists: PR #161 traced a "lost all my settings" incident to
+# setup.ps1 reading the pack-author preserve-list.json from a path that
+# had just been Move-Item'd away — a silent bug that the unit-level BOM
+# lint couldn't catch. The harness drops sentinels in every preserve
+# path and asserts each one survives an upgrade, which is the only
+# layer that catches Move-Item / Copy-Item ordering bugs like that one.
+#
+# Windows-only: setup.ps1 + update.ps1 are Windows scripts. The harness
+# itself runs under pwsh but spawns powershell.exe (5.1) subprocesses to
+# match the production `irm | iex` execution path, so it must run on a
+# Windows runner.
+
+on:
+  pull_request:
+    paths:
+      - "docs/assets/setup.ps1"
+      - "docs/assets/update.ps1"
+      - "docs/assets/backup.ps1"
+      - "docs/assets/migrate-settings.ps1"
+      - "infra/azure/scripts/test-setup-e2e.ps1"
+      - ".github/workflows/test-setup-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/assets/setup.ps1"
+      - "docs/assets/update.ps1"
+      - "docs/assets/backup.ps1"
+      - "docs/assets/migrate-settings.ps1"
+      - "infra/azure/scripts/test-setup-e2e.ps1"
+      - ".github/workflows/test-setup-e2e.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: setup-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Run 16-test e2e harness
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Show toolchain
+        shell: pwsh
+        run: |
+          Write-Host "pwsh: $($PSVersionTable.PSVersion)"
+          $ps51 = & powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+          Write-Host "powershell.exe: $ps51"
+
+      - name: Run e2e harness
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & ./infra/azure/scripts/test-setup-e2e.ps1
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "E2E suite failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }

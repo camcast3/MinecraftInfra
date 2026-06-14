@@ -1,0 +1,108 @@
+---
+name: Release migrate-settings script
+
+# Fires automatically when docs/assets/migrate-settings.ps1 changes on main.
+# Cuts a new GitHub Release tagged `migrate-v<date>-<short-sha>` so each
+# version is downloadable at a stable, signed URL.
+#
+# Note: migrate-v* releases never claim the `Latest` pointer —
+# protect-latest-release.yml keeps that pinned to setup-v* so the player
+# install one-liner in docs/setup.md keeps resolving to setup.ps1.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/assets/migrate-settings.ps1"
+      - ".github/workflows/release-migrate-script.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-migrate-script
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Compute version + SHA-256
+        id: meta
+        run: |
+          sha256=$(sha256sum docs/assets/migrate-settings.ps1 | awk '{print $1}')
+          short_sha=$(git rev-parse --short HEAD)
+          date=$(date -u +%Y.%m.%d)
+          tag="migrate-v${date}-${short_sha}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if a release already exists for this commit
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.meta.outputs.tag }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.meta.outputs.tag }} already exists, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "Migrate script ${{ steps.meta.outputs.tag }}"
+          files: docs/assets/migrate-settings.ps1
+          make_latest: "false"
+          body: |
+            Helper script that migrates client-side settings (keybinds, video
+            options, OptiFine/shader settings, JourneyMap and Xaero waypoints,
+            creative hotbars) from an old Minecraft instance into a new one.
+
+            Use case: you upgraded modpack versions (e.g. C2E2 0.2.0 -> 0.4.2)
+            from a non-setup-managed install (CurseForge instance, manual
+            zip, etc.) and your settings didn't carry over, but you still
+            have a copy of the old instance folder. Installs done via
+            setup.ps1 already preserve these automatically on upgrade.
+
+            servers.dat is intentionally NOT copied — single-server pack
+            policy lets the build pipeline push DNS/backend changes to
+            existing players.
+
+            Auto-published when `docs/assets/migrate-settings.ps1` changed on `main`.
+
+            ## Install command
+
+            ```powershell
+            irm https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/migrate-settings.ps1 | iex
+            ```
+
+            The script auto-detects Prism and CurseForge instances and prompts
+            you to pick the source and destination, then previews the plan and
+            asks for confirmation before copying anything. Existing files in
+            the destination are first moved to `_migration-backup-<timestamp>\`
+            so the operation is fully reversible.
+
+            ## SHA-256
+
+            ```
+            ${{ steps.meta.outputs.sha256 }}
+            ```
+
+            ## Verify before running (optional, recommended)
+
+            ```powershell
+            $url  = 'https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/migrate-settings.ps1'
+            $want = '${{ steps.meta.outputs.sha256 }}'
+            $body = irm $url
+            $got  = (Get-FileHash -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($body))) -Algorithm SHA256).Hash.ToLower()
+            if ($got -eq $want) { iex $body } else { throw "SHA-256 mismatch: $got vs $want" }
+            ```
