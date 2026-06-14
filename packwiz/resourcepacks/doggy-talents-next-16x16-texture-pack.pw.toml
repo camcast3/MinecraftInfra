@@ -1,11 +1,23 @@
 name = "Doggy Talents Next 16x16 texture pack"
-filename = "Doggy16x16.V6.1.20-1.20.1.zip"
+filename = "Doggy16x16.V6.1.21+.zip"
 side = "client"
 
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
+#
+# NOTE: upstream V6 publishes three byte-identical file IDs (one per MC
+# version tag: 6803653=1.20.1, 6803655=1.20.2, 6803657=1.21+). We re-host
+# the V6.1.21+ filename (admin's browser session served that one) but pin
+# [update.curseforge].file-id to 6803653 so PR 4 tracks the 1.20.1 line.
+#
+# NOTE: zip declares pack_format=34 (MC 1.21.2+) so MC 1.20.1 shows a
+# "made for newer version" warning; textures still apply — cosmetic only.
 [download]
-hash-format = "sha1"
-hash = "9d5742674e7b07c12d11a8f5defee325c1850c6b"
-mode = "metadata:curseforge"
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/Doggy16x16.V6.1.21%2B.zip"
+hash-format = "sha256"
+hash = "43bc036195773f77f95e62abb57847e5a1d8a493fac93df6a1413906a92713eb"
+mode = "url"
 
 [update]
 [update.curseforge]

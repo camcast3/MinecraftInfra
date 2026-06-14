@@ -1,0 +1,14 @@
+name = "FancyMenu — C2E2 mahj main menu animation"
+filename = "mahj_1294853429_mainmenu.fma"
+side = "client"
+
+# Re-hosted via GH Release: binary is 151 MB (>GitHub's 100 MB blob limit).
+# Client-only cosmetic asset from the upstream C2E2 CurseForge zip; no
+# [update.*] block because there's no upstream CF project to track — the
+# import-curseforge-pack.ps1 admin script rotates this on C2E2 upstream bumps.
+# Admin runbook: see packwiz/README.md "Re-hosted cosmetic assets".
+[download]
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/mahj_1294853429_mainmenu.fma"
+hash-format = "sha256"
+hash = "966d5c433bd9ceddf77b2ddada90567baf9064c6e53c43a514c3722a4a948a55"
+mode = "url"

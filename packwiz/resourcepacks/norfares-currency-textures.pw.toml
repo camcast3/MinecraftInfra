@@ -2,10 +2,15 @@ name = "Redcap's Currency Retexture"
 filename = "Redcap_LC_Retexture7.5.zip"
 side = "client"
 
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
+# pack_format = 15 (MC 1.20-1.20.1) matches our pack version.
 [download]
-hash-format = "sha1"
-hash = "2762e6a605f4cbcf6f7b1d7385c785f2dd5c5423"
-mode = "metadata:curseforge"
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/Redcap_LC_Retexture7.5.zip"
+hash-format = "sha256"
+hash = "eb1bd344004138810489e11eafae5a91fb7abcae7705b9628c2de336d969ab80"
+mode = "url"
 
 [update]
 [update.curseforge]

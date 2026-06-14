@@ -1,0 +1,19 @@
+name = "FTB Placeholders"
+filename = "FTB_PlaceHolders-1.0.6a.jar"
+side = "both"
+
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
+[download]
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/FTB_PlaceHolders-1.0.6a.jar"
+hash-format = "sha256"
+hash = "2db971488a693b3781539c36aae3d8772c42cb431cffc080eb01f5dd14fac621"
+mode = "url"
+
+# Keep [update.curseforge] so PR 4's daily `packwiz update --all` tracks
+# upstream version bumps without overwriting our GH Release `download.url`.
+[update]
+[update.curseforge]
+file-id = 6321756
+project-id = 1187311

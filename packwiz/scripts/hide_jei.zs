@@ -246,12 +246,9 @@ Jei.hideIngredient(<item:farmersrespite:strong_coffee>);
 Jei.hideIngredient(<item:farmersrespite:long_black_tea>);
 Jei.hideIngredient(<item:farmersrespite:strong_black_tea>);
 
-//FTB Placeholders — REMOVED from this modpack (PR #132). The original
-//block hid ~190 ftb_ph mob/icon items from JEI. Without the mod
-//installed those items don't exist, and CraftTweaker logs a script
-//error for every unresolved item reference at load time. The whole
-//block is removed so the script loads cleanly on both client and
-//server. If FTB Placeholders is ever re-added, restore from git history.
+//FTB Placeholders — TODO: restore JEI hide block from upstream C2E2's
+//`overrides/scripts/hide_jei.zs` (~190 ftb_ph entries dropped by PR #132).
+//Cosmetic only; placeholders remain visible in JEI without it.
 
 //Lightman's Currency
 Jei.hideIngredient(<item:lightmanscurrency:coinmint>);

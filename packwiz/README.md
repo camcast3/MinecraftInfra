@@ -73,6 +73,99 @@ packwiz refresh
 Then mark `side = "server"` in the generated `.pw.toml` if it's a
 server-only mod (PCF, spark, prom-exporter, etc.) and refresh again.
 
+## Re-hosted CF-blocked mods
+
+Some CurseForge projects return `<Nil N="downloadUrl" />` from the CF API
+because their EULA / license requires a browser click-through before
+download. `packwiz-installer` (and the old `AUTO_CURSEFORGE` flow before
+it) can't fetch these. As of C2E2 v0.3.0 we have two:
+
+- `mods/ftb-placeholders.pw.toml`
+- `mods/recreation-of-exile-sfx.pw.toml`
+
+Both ship as `mode = "url"` entries pointing at a
+`c2e2-blobs-v<PACK_VERSION>` GitHub Release. The `[update.curseforge]`
+block is preserved alongside `mode = "url"` so PR 4's daily
+`packwiz update --all` workflow still detects upstream version bumps and
+opens the daily PR — only the actual file fetch comes from our re-host.
+
+**Runbook (admin) — one-time per upstream CF version bump:**
+
+1. From a browser, log into CurseForge and download each mod's
+   Forge 1.20.1 file (the click-through completes here, not later).
+2. **Verify the mod's license permits redistribution** as a modpack
+   binary. FTB Placeholders ships under the FTB Modpack EULA which
+   explicitly permits modpack-bundled redistribution. Other mods need
+   case-by-case review — record the outcome in the PR description.
+   *If a mod's license forbids redistribution, drop it from packwiz
+   entirely and fall back to a setup.ps1 manual-download prompt.*
+3. Create or reuse a release tag `c2e2-blobs-v<PACK_VERSION>` in
+   `camcast3/MinecraftInfra`:
+
+   ```powershell
+   gh release create c2e2-blobs-v<PACK_VERSION> `
+     --title "C2E2 blobs v<PACK_VERSION>" `
+     --notes "Re-hosted CF-blocked mods + >100 MB cosmetic assets for C2E2 v<PACK_VERSION>." `
+     --target main
+   ```
+
+4. Attach the downloaded JARs as release assets:
+
+   ```powershell
+   gh release upload c2e2-blobs-v<PACK_VERSION> path\to\<mod>.jar
+   ```
+
+5. For each re-hosted `.pw.toml`, replace the FILL_IN placeholders:
+
+   - `filename` → the actual JAR filename you uploaded
+   - `[download] url` → the GH Release asset URL
+     (`https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v<PACK_VERSION>/<jar>`)
+   - `[download] hash` → real SHA-256 of the JAR
+     (`(Get-FileHash <jar> -Algorithm SHA256).Hash.ToLower()`)
+   - `[update.curseforge] project-id` and `file-id` → current CF IDs
+     (visible in the CF page URL and the "About Project" sidebar)
+
+6. From `packwiz/`, run `packwiz refresh` to regenerate `index.toml`.
+
+7. Commit + open PR. PR 4's daily workflow will continue to flag CF
+   upstream bumps for these entries via the `[update.curseforge]` block.
+
+## Re-hosted cosmetic assets
+
+Two cosmetic-only assets bundled by the C2E2 modpack creator are too
+large for a git blob (>100 MB) and ride on the same `c2e2-blobs-v<ver>`
+GH Release mechanism:
+
+- `config/fancymenu/assets/mahj_1294853429_mainmenu.pw.toml` →
+  `mahj_1294853429_mainmenu.fma` (~151 MB, custom main-menu animation)
+- `config/openloader/resources/resources.pw.toml` →
+  `resources.zip` (~159 MB, custom resource pack)
+
+Both are flagged `side = "client"` so the server skips them. There's no
+[update.*] block — the upstream is the C2E2 modpack zip itself, not a
+CurseForge project, so version bumps are detected when admin re-runs
+`import-curseforge-pack.ps1` against a new C2E2 release and notices the
+files changed.
+
+**Runbook (admin) — one-time per C2E2 upstream release:**
+
+1. After `import-curseforge-pack.ps1` against the new C2E2 zip, locate
+   the two binaries at:
+   - `packwiz/config/fancymenu/assets/mahj_1294853429_mainmenu.fma`
+   - `packwiz/config/openloader/resources/resources.zip`
+2. Attach them to the same `c2e2-blobs-v<PACK_VERSION>` GH Release
+   (`gh release upload c2e2-blobs-v<PACK_VERSION> <path>`).
+3. Replace the FILL_IN placeholders in each `.pw.toml`:
+   `[download] url`, `[download] hash`, and (if the upstream renamed
+   the file) `filename`.
+4. From `packwiz/`, run `packwiz refresh` to regenerate `index.toml`.
+
+The binary files themselves are excluded from `index.toml` via
+`.packwizignore` so they aren't double-indexed alongside the metafiles.
+The metafiles' install path is determined by their location in the pack
+tree (e.g. `packwiz/config/fancymenu/assets/foo.pw.toml` installs the
+fetched bytes at `<install_root>/config/fancymenu/assets/foo`).
+
 ## Installing the packwiz CLI
 
 ```powershell
@@ -85,6 +178,28 @@ binaries are also available as GitHub Actions artifacts at
 https://nightly.link/packwiz/packwiz/workflows/go/main if you'd rather
 not install Go.
 
+
+## Publishing a new version
+
+Trigger the [Publish Prism Pack](../.github/workflows/publish-prism-pack.yml) workflow:
+
+```powershell
+gh workflow run publish-prism-pack.yml -f version=0.3.1
+```
+
+The workflow materializes the staging instance from the packwiz manifest, builds and uploads the client zip to Azure, rewrites `docker/proxmox/docker-compose.yml` (SHA pin + MOTD), bumps `modpack.yml`, opens the publish PR against `main`, and **enables auto-merge** (`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon as required status checks pass, and Portainer GitOps redeploys C2E2 within ~5 min of the merge. End-to-end, the only manual step is triggering the workflow.
+
+For full details, troubleshooting, and Azure one-time setup see [`docs/operations/publish-runbook.md`](../docs/operations/publish-runbook.md).
+
+### Local testing (no Azure upload)
+
+For dry-runs or development without an Azure session, invoke the underlying script directly:
+
+```powershell
+./infra/azure/scripts/publish-prism-pack.ps1 -Version 0.3.1
+```
+
+The workflow calls this same script. Running it locally lets you verify the zip builds cleanly before triggering CI. The Azure blob-upload step will fail gracefully if no Azure session is active.
 
 ## Data preservation contract (server side)
 

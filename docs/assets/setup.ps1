@@ -1,26 +1,25 @@
-# NegativeZone Minecraft setup script
+﻿# NegativeZone Minecraft setup script
 #
 # Run from PowerShell (no admin needed):
 #   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
 #
-# Verify before running: see the GitHub Release notes for SHA-256 + a
-# verification one-liner that refuses to run if the file was tampered with.
+# SHA-256 verification one-liner: see GitHub Release notes at
 #   https://github.com/camcast3/MinecraftInfra/releases?q=setup-v
 #
-# What this does:
-#   1. Installs Eclipse Temurin 17 JDK via winget
-#   2. Installs Prism Launcher via winget
-#   3. Asks for your Minecraft Java username
-#   4. Looks up your UUID via the Mojang API and copies it to your clipboard
-#   5. Downloads the pre-built Craft to Exile 2 instance from Azure Blob
-#      and installs it into Prism (no CurseForge wait — ~2 min vs ~15 min)
+# Admin test-publish override: set $env:NEGATIVEZONE_MANIFEST_URL to point
+# at latest-test.json before running. The script prints a loud warning when
+# the override is active.
 
 $ErrorActionPreference = 'Stop'
 
-# Manifest URL for the pre-built Prism instance. Public-read Azure blob,
-# anonymous fetch. The manifest is the single source of truth for the
-# current modpack version + zip URL + sha256.
-$ModpackManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+# Manifest URL for the pre-built Prism instance. Public-read Azure blob.
+# $env:NEGATIVEZONE_MANIFEST_URL override = admin test-publish channel.
+$DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
+$ModpackManifestUrl = if ($env:NEGATIVEZONE_MANIFEST_URL) {
+    $env:NEGATIVEZONE_MANIFEST_URL
+} else {
+    $DefaultManifestUrl
+}
 
 function Write-Step($msg) {
     Write-Host ""
@@ -29,6 +28,78 @@ function Write-Step($msg) {
 
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow }
+
+# Pulled from main so re-running setup picks up the latest update.ps1 even
+# when the player is already on the current modpack version.
+$UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
+
+# Single-quoted so PS doesn't expand `$INST_DIR` — Prism does substitution
+# at launch time. Outer double quotes are part of the string Prism parses
+# (QProcess::splitCommand respects quoted segments containing spaces).
+$PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
+
+# Idempotently wires OverrideCommands=true + PreLaunchCommand into the given
+# instance.cfg and downloads update.ps1 into <instanceDir>\.negativezone\.
+# Separate from the zip-bundled wiring so already-installed players who skip
+# the re-install (because they're on the current version) still pick up the
+# launch hook by re-running the setup one-liner.
+function Set-PrismPreLaunchHook($instanceDir) {
+    $cfgPath = Join-Path $instanceDir 'instance.cfg'
+    if (-not (Test-Path -LiteralPath $cfgPath)) {
+        Write-Warn "instance.cfg not found at $cfgPath — skipping PreLaunchCommand backfill"
+        return
+    }
+
+    # Download update.ps1 before writing the hook so a missing script doesn't
+    # fail-closed every launch and block the game.
+    $negDir = Join-Path $instanceDir '.negativezone'
+    $updateScriptPath = Join-Path $negDir 'update.ps1'
+    if (-not (Test-Path -LiteralPath $updateScriptPath)) {
+        if (-not (Test-Path $negDir)) {
+            New-Item -ItemType Directory -Path $negDir -Force | Out-Null
+        }
+        try {
+            Invoke-WebRequest -Uri $UpdateScriptUrl -OutFile $updateScriptPath -UseBasicParsing -ErrorAction Stop
+            Write-Ok "Downloaded update.ps1 to $updateScriptPath"
+        } catch {
+            Write-Warn "Could not download update.ps1 from $UpdateScriptUrl — auto-update will NOT be enabled."
+            Write-Warn "  Re-run this setup script once you have internet access to enable auto-update."
+            return
+        }
+    }
+
+    $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
+    $updated = New-Object System.Collections.Generic.List[string]
+    $sawOverrideCommands = $false
+    $sawPreLaunchCommand = $false
+    $changed = $false
+    foreach ($cfgLine in $cfgLines) {
+        if ($cfgLine -match '^OverrideCommands=') {
+            $sawOverrideCommands = $true
+            if ($cfgLine -ne 'OverrideCommands=true') { $changed = $true }
+            $updated.Add('OverrideCommands=true')
+        } elseif ($cfgLine -match '^PreLaunchCommand=') {
+            $sawPreLaunchCommand = $true
+            $desired = "PreLaunchCommand=$PreLaunchCommand"
+            if ($cfgLine -ne $desired) { $changed = $true }
+            $updated.Add($desired)
+        } else {
+            $updated.Add($cfgLine)
+        }
+    }
+    if (-not $sawOverrideCommands) {
+        $updated.Add('OverrideCommands=true'); $changed = $true
+    }
+    if (-not $sawPreLaunchCommand) {
+        $updated.Add("PreLaunchCommand=$PreLaunchCommand"); $changed = $true
+    }
+    if ($changed) {
+        Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
+        Write-Ok "PreLaunchCommand wired up (auto-update enabled on next launch)"
+    } else {
+        Write-Ok "PreLaunchCommand already in place"
+    }
+}
 
 # ─── Preflight ──────────────────────────────────────────────────────────────
 Write-Host ""
@@ -43,10 +114,7 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# Detect installed system RAM. Used here as a hard gate (C2E2 needs 8 GB+
-# total to leave room for Windows alongside Minecraft) and later to size
-# Prism's max heap. Round to nearest GB so a 7.8 GB-reporting "8 GB" stick
-# still passes.
+# Round to nearest GB so a 7.8 GB-reporting "8 GB" stick still passes.
 $totalGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 if ($totalGB -lt 8) {
     Write-Host ""
@@ -79,10 +147,15 @@ if ($prismInstalled) {
     Write-Ok "Installed"
 }
 
-# ─── Install the Craft to Exile 2 instance from Azure Blob ─────────────────
+# ─── Install Craft to Exile 2 from Azure Blob ──────────────────────────────
 $prismInstancesDir = Join-Path $env:APPDATA 'PrismLauncher\instances'
 
 Write-Step "Fetching modpack manifest"
+if ($ModpackManifestUrl -ne $DefaultManifestUrl) {
+    Write-Warn "Using OVERRIDE manifest URL (test publish mode):"
+    Write-Warn "  $ModpackManifestUrl"
+    Write-Warn "Unset `$env:NEGATIVEZONE_MANIFEST_URL to switch back to production."
+}
 try {
     $manifest = Invoke-RestMethod -Uri $ModpackManifestUrl -ErrorAction Stop
     Write-Ok "Latest version: v$($manifest.version) ($($manifest.instance))"
@@ -108,8 +181,6 @@ if ($manifest) {
     }
 
     if ($needsInstall) {
-        # Bail early if Prism is currently running — overwriting an instance
-        # while Prism has it open leaves stale cached state and lock files.
         $prismRunning = Get-Process -Name 'prismlauncher' -ErrorAction SilentlyContinue
         if ($prismRunning) {
             Write-Host ""
@@ -120,7 +191,6 @@ if ($manifest) {
 
         $tempZip = Join-Path $env:TEMP $manifest.blob
         Write-Step "Downloading modpack v$($manifest.version) (~$([math]::Round($manifest.sizeBytes / 1MB)) MB)"
-        # BITS gives us a progress bar; fall back to Invoke-WebRequest if it fails
         try {
             Start-BitsTransfer -Source $manifest.url -Destination $tempZip -Description "Craft to Exile 2 v$($manifest.version)"
         } catch {
@@ -137,9 +207,8 @@ if ($manifest) {
         Write-Ok "sha256 verified"
 
         Write-Step "Installing into Prism"
-        # Extract to a temp dir first so we can validate the zip layout before
-        # touching the player's existing instance. Older zips ship only the
-        # <InstanceName>/ folder; newer ones also include a top-level icons/.
+        # Extract to temp first so we can validate zip layout before touching
+        # the player's instance. Newer zips include a top-level icons/ folder.
         $extractDir = Join-Path $env:TEMP ("negativezone-extract-" + [guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $extractDir -Force | Out-Null
         $backupPath = "$instanceTarget.bak"
@@ -167,9 +236,9 @@ if ($manifest) {
 
             Move-Item $srcInstance $instanceTarget
 
-            # Copy any bundled icons to Prism's global icons/ directory. Prism
-            # stores instance icons here (not inside the instance folder), so
-            # without this step the imported instance shows the default icon.
+            # Prism stores instance icons globally (%APPDATA%\PrismLauncher\icons),
+            # NOT inside the instance folder — without this copy the imported
+            # instance shows the default icon.
             $srcIcons = Join-Path $extractDir 'icons'
             if (Test-Path $srcIcons) {
                 $prismIconsDir = Join-Path $env:APPDATA 'PrismLauncher\icons'
@@ -182,10 +251,9 @@ if ($manifest) {
                 Write-Ok "Instance icon installed"
             }
 
-            # Tune Java max-heap to half of the player's installed RAM, capped
-            # at 12 GB. C2E2's wiki recommends 4-8 GB and warns that over-
-            # allocating causes GC stalls — 12 GB is a generous ceiling for
-            # 24+ GB systems. Preflight guaranteed totalGB >= 8 so allocGB >= 4.
+            # Half of installed RAM, capped at 12 GB. C2E2 wiki: 4-8 GB
+            # recommended; over-allocation causes GC stalls. Preflight ensures
+            # totalGB >= 8 so allocGB >= 4.
             $allocGB = [math]::Min(12, [math]::Floor($totalGB / 2))
             $allocMB = $allocGB * 1024
             $cfgPath = Join-Path $instanceTarget 'instance.cfg'
@@ -205,8 +273,7 @@ if ($manifest) {
             Set-Content -Path (Join-Path $instanceTarget '.negativezone-version') -Value $manifest.version -Encoding UTF8
             Write-Ok "Instance '$($manifest.instance)' ready in Prism"
         } catch {
-            # Roll back to the prior instance if we replaced it before the
-            # failure, so a partial install doesn't leave the player stranded.
+            # Roll back if we replaced the instance before the failure.
             if ($backedUp -and (Test-Path $backupPath) -and -not (Test-Path $instanceTarget)) {
                 Write-Host "    Install failed — restoring previous instance from backup" -ForegroundColor Yellow
                 Move-Item $backupPath $instanceTarget
@@ -216,6 +283,14 @@ if ($manifest) {
             Remove-Item $extractDir -Recurse -Force -ErrorAction SilentlyContinue
             Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
         }
+    }
+
+    # Re-assert PreLaunchCommand wiring every run — including when re-install
+    # was skipped (version matched). Lets players who pre-date the auto-update
+    # launch hook stitch it in by re-running the setup one-liner.
+    if (Test-Path -LiteralPath $instanceTarget) {
+        Write-Step "Verifying auto-update launch hook"
+        Set-PrismPreLaunchHook -instanceDir $instanceTarget
     }
 }
 

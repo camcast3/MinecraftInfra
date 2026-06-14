@@ -1631,6 +1631,11 @@ file = "config/fancymenu/assets/loading_bar_loading.png"
 hash = "07f11972b098c8f6a12a25628ffa54d772f1c89bbe7fa292c3010a67e37d1a7a"
 
 [[files]]
+file = "config/fancymenu/assets/mahj_1294853429_mainmenu.pw.toml"
+hash = "78ef8d0c19355d57f4486fa8a41a86bf8c3d5139785e1c59b0c6e28e0bf1c101"
+metafile = true
+
+[[files]]
 file = "config/fancymenu/assets/mainaudio.wav"
 hash = "18a54379ef441f158cb2a647ca6ec7d18cbd1a033bbae489cdfbb093e5217ce5"
 
@@ -9217,10 +9222,6 @@ hash = "74fad0631533ebb3e732483ffda5afff44ff0fde3f4409195d3d3f539cf00098"
 [[files]]
 file = "config/openloader/data/cte_mns/data/dungeon_realm/structures/uber/nature_dungeon/5_4.nbt"
 hash = "49a1043e15e2b79293fd1c5f0ea47616fa6827302897eaa3de95f92dfdec518a"
-
-[[files]]
-file = "config/openloader/data/cte_mns/data/dungeon_realm/structures/uber/nature_dungeon/old.zip"
-hash = "5c5967434c0a570e1de89b25db33b17392bd1cf0821b357dcb023070d39fdf55"
 
 [[files]]
 file = "config/openloader/data/cte_mns/data/library_of_exile/library_of_exile_currency/affix_common_reroll.json"
@@ -28231,6 +28232,11 @@ file = "config/openloader/data/cte_mns/pack.mcmeta"
 hash = "d77500594f4ca3785e7fc1d6b278c0d80f8d2439e9138655028cf9d7467009fa"
 
 [[files]]
+file = "config/openloader/resources/resources.pw.toml"
+hash = "f2249938cd437441d72034b47ff21d0ed302f35f97a444b17435046ecd5034f5"
+metafile = true
+
+[[files]]
 file = "config/packetfixer.properties"
 hash = "57528a18ce9598175b27118037110e5a7ed217960ba08229d69c203fbfb682f8"
 
@@ -30208,6 +30214,11 @@ hash = "cb0c18100598426c1680eb75afdfdc667a53c95d684d093677458da0afd8a6cb"
 metafile = true
 
 [[files]]
+file = "mods/ftb-placeholders.pw.toml"
+hash = "48c8cabcbefd022024eb4fcacf67648f8c8590f9e43772bb54227e44333564d8"
+metafile = true
+
+[[files]]
 file = "mods/ftb-quests-forge.pw.toml"
 hash = "7060a76920751b584d6a5c858d1e484ed1445fe0b1d13a11da237f6e15e73240"
 metafile = true
@@ -30835,6 +30846,11 @@ metafile = true
 [[files]]
 file = "mods/realm-rpg-dragon-wyrms.pw.toml"
 hash = "e36e429bce172f0bada663fe510d58894eab3e2dca446b370d62b3880def5715"
+metafile = true
+
+[[files]]
+file = "mods/recreation-of-exile-sfx.pw.toml"
+hash = "26052120d005b239b6255f4a2af8c3e7faa8351e9f5ad7433be2d8ac19907cc0"
 metafile = true
 
 [[files]]
@@ -31605,18 +31621,18 @@ hash = "663b19690bd7529fda3419484a694320360abfcfed6429973255ddb6b34e3303"
 metafile = true
 
 [[files]]
-file = "resourcepacks/create-style-for-refined-storage.pw.toml"
-hash = "c2cce4cb133ffea4896e08a9e9a8731eec8ba0af2b9091136b6f0b38238e0fb3"
+file = "resourcepacks/aures-create-style-for-refined-storage.pw.toml"
+hash = "1fce8d4f424f524c0be58eb5670253fcc2bb3a5cae3d617d4a5c36ce1f95ceb3"
 metafile = true
 
 [[files]]
 file = "resourcepacks/doggy-talents-next-16x16-texture-pack.pw.toml"
-hash = "b24efb1835a11f97aec5e26967fe61ed651ea0b782690fde7dd44f120917b178"
+hash = "1dc4b8860acffa90d0b914b01c98ae2c56c8456e263eaec6c783d44e90f8cd3b"
 metafile = true
 
 [[files]]
 file = "resourcepacks/norfares-currency-textures.pw.toml"
-hash = "ab5e10cdf3fcfc9658659aa0c09acde593ee78ef80fa417366f91858149efa64"
+hash = "63c7066944c4c7d1d0e692b1ff159f3d2565be5724085b194aa6ec6196c05b8c"
 metafile = true
 
 [[files]]
@@ -31660,7 +31676,7 @@ hash = "43b52a43c28bd1e6788c6c929b49077843aa910c106a71735fdd8bdaa88b456b"
 
 [[files]]
 file = "scripts/hide_jei.zs"
-hash = "d1514ffb30d10da6197432b5b7caa60efc6128c1fa19b06a1fc69e5ebd7a8273"
+hash = "1a001a8e8d08f16df7054fc21a50301db7d6a4401ad90cb5fa7cf0bab15649ce"
 
 [[files]]
 file = "scripts/netheritescrap.zs"

@@ -1,40 +1,24 @@
-# .packwizignore tells `packwiz refresh` which files to skip when walking
-# the pack directory to build index.toml. Same syntax as `.gitignore`.
-# https://packwiz.infra.link/reference/pack-format/packwizignore/
-#
-# IMPORTANT: This file is read by `packwiz refresh`, NOT by git. We commit
-# it on purpose so every contributor (and CI) produces the same index.toml.
+# Tells `packwiz refresh` which files to skip when building index.toml.
+# .gitignore syntax. https://packwiz.infra.link/reference/pack-format/packwizignore/
+# Committed so every contributor + CI produces the same index.toml.
 
-# Audit-trail directory created by infra/azure/scripts/import-curseforge-pack.ps1.
-# Contains snapshot copies of the server-only overlay .pw.toml files from the
-# previous run. The script normally wipes this at the end, but defense in depth:
-# if `packwiz refresh` ever walks it, each overlay mod ends up indexed twice
-# (once in mods/, once in .import-staging/) and the server installs both copies
-# — Forge then crashes on duplicate ModIDs.
+# Audit snapshot from import-curseforge-pack.ps1. Normally wiped at end of run,
+# but excluded as defense in depth: if `packwiz refresh` walked it, each overlay
+# mod would index twice and Forge would crash on duplicate ModIDs.
 .import-staging/
 
-# Per packwiz docs — keep Git plumbing out of the pack index. The pack is
-# served via raw HTTP to the Minecraft server; .git contents are noise.
 .git/**
 .gitattributes
 .gitignore
 
-# Repo-level docs that live inside packwiz/ but aren't part of the pack
-# the server consumes.
+# Repo-level docs inside packwiz/ that aren't part of the server pack.
 README.md
 
-# Files exceeding GitHub's 100 MB blob limit. Both are CLIENT-side cosmetic
-# assets (custom main-menu animation + custom resource-pack ZIP) — the
-# server doesn't render menus or load resource packs, so excluding them
-# from the manifest only affects the client install. They were dropped
-# into packwiz/ by the CurseForge import (the upstream C2E2 zip ships
-# them in overrides/); to keep them out of `git push` we exclude here.
-#
-# PR 2's "publish Prism client zip" flow will need to source these
-# separately — either commit them via Git LFS, attach to the modpack
-# Release tag, or download into the published zip at build time.
-# Until then, players using a Prism install from the upstream CF zip
-# (the user's current setup) keep them; packwiz-installed clients see
-# the vanilla title screen + no custom resource-pack.
+# Cosmetic asset binaries hosted via GitHub Release — siblings' `*.pw.toml`
+# metafiles ARE indexed. Excluding the raw binaries prevents `packwiz refresh`
+# from double-indexing them, and avoids hitting GitHub's 100 MB blob limit on
+# `git push`. import-curseforge-pack.ps1 leaves local copies in place by
+# design; admin's job is to verify bytes match the GH Release attachment, not
+# delete them.
 config/fancymenu/assets/mahj_1294853429_mainmenu.fma
 config/openloader/resources/resources.zip

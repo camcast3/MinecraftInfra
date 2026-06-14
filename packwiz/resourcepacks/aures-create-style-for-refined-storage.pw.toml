@@ -1,0 +1,16 @@
+name = "Aures - Create Style for Refined Storage"
+filename = "Create_Style_for_Refined_Storage (1).zip"
+side = "client"
+
+# Modrinth-sourced (not CF): upstream CF entry (project 941802) sets
+# `Allow CurseForge to distribute = false`. Same author publishes to
+# Modrinth which is API-fetchable, so no GH Release re-host needed.
+[download]
+url = "https://cdn.modrinth.com/data/X6z8Zn11/versions/Mv6ktqNI/Create_Style_for_Refined_Storage%20%281%29.zip"
+hash-format = "sha512"
+hash = "5bd8686c0f3606b350302ff9aafe1228d3aeaa2b87e2c08e9aef0c0246580588fbbbdd132e9e417afa6260fd1c62eed97f3dfa107f6009af4de3baba2f577f31"
+
+[update]
+[update.modrinth]
+mod-id = "X6z8Zn11"
+version = "Mv6ktqNI"

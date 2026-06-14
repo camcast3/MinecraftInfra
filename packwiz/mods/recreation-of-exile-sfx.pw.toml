@@ -1,0 +1,19 @@
+name = "Recreation of Exile - SFX"
+filename = "RoE_SFX-0.0.3.jar"
+side = "both"
+
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
+# NOTE: re-confirm the CF "You can use this in your modpack" permission on
+# every upstream bump in case the author updates their terms.
+[download]
+url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/RoE_SFX-0.0.3.jar"
+hash-format = "sha256"
+hash = "a7682cdd5810249e47da228ba40c3ca6f44d29c93a7fea48dff7edef7bfa29f0"
+mode = "url"
+
+[update]
+[update.curseforge]
+file-id = 6240763
+project-id = 1207903
