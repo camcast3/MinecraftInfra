@@ -193,6 +193,7 @@ jobs:
 
           - Uploaded the zip to the ``minecraft-modpack`` blob container.
           - Rewritten ``docker/proxmox/docker-compose.yml`` with the new SHA pin + MOTD.
+          - Rewritten ``docker/azure/velocity/velocity.toml.tmpl`` with the new fallback MOTD.
           - Bumped ``modpack.yml``.
           - Opened the publish PR against ``main`` from branch ``modpack/v${{ steps.version.outputs.version }}``.
           - Portainer GitOps will redeploy C2E2 within ~5 min of PR merge.

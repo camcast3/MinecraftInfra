@@ -162,12 +162,39 @@ echo "✓ velocity_forwarding_secret written to ${SECRETS_DIR}/velocity_forwardi
 # velocity.toml only references the C2E2 backend IP — the forwarding secret is
 # read by Velocity from /server/forwarding.secret (the single-file bind mount
 # of velocity_forwarding_secret above), NOT from this file.
+#
+# velocity.toml is bind-mounted via /data/minecraft/velocity:/server, so
+# Velocity reads its content ONLY at process start. `docker compose up -d`
+# after a git pull will NOT recreate the velocity container when only the
+# template (env unchanged, image unchanged) changes, so we explicitly diff
+# the rendered output against the on-disk file and `docker compose restart`
+# velocity when it differs. Keeps the fallback MOTD (bumped on every modpack
+# publish via publish-prism-pack.ps1) in sync with what players see during a
+# C2E2 backend outage.
 export C2E2_TAILSCALE_IP
+NEW_VELOCITY_TOML=$(mktemp -p "$VELOCITY_DIR" .velocity.toml.new.XXXXXX)
 envsubst '${C2E2_TAILSCALE_IP}' \
   < "${SCRIPT_DIR}/velocity/velocity.toml.tmpl" \
-  > "${VELOCITY_DIR}/velocity.toml"
-chmod 644 "${VELOCITY_DIR}/velocity.toml"
-echo "✓ velocity.toml written to ${VELOCITY_DIR}/velocity.toml"
+  > "$NEW_VELOCITY_TOML"
+chmod 644 "$NEW_VELOCITY_TOML"
+
+if [ -f "${VELOCITY_DIR}/velocity.toml" ] && cmp -s "$NEW_VELOCITY_TOML" "${VELOCITY_DIR}/velocity.toml"; then
+  rm -f "$NEW_VELOCITY_TOML"
+  echo "✓ velocity.toml unchanged"
+else
+  mv -f "$NEW_VELOCITY_TOML" "${VELOCITY_DIR}/velocity.toml"
+  echo "✓ velocity.toml written to ${VELOCITY_DIR}/velocity.toml"
+  # Only restart if velocity is already running. On the first deploy the
+  # subsequent `docker compose up -d` in the workflow creates it with the
+  # fresh config; restarting a not-yet-created service would error.
+  COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
+  if docker compose -f "$COMPOSE_FILE" ps --status=running --services 2>/dev/null | grep -qx 'velocity'; then
+    docker compose -f "$COMPOSE_FILE" restart velocity
+    echo "✓ velocity restarted to pick up new velocity.toml"
+  else
+    echo "✓ velocity not running — next docker compose up will use new config"
+  fi
+fi
 
 # ── Cleanup of legacy plaintext locations ─────────────────────────────────────
 # Older revisions of this script wrote secrets to .env and /data/minecraft/.
