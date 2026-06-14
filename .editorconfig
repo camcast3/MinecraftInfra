@@ -1,0 +1,18 @@
+# https://editorconfig.org
+#
+# Scope is intentionally narrow: this file exists to stop editors
+# (notably VS Code's PowerShell extension, which defaults to writing
+# UTF-8-with-BOM) from reintroducing a BOM on .ps1 files. A leading
+# BOM breaks the `irm <url> | iex` install pattern used by
+# docs/assets/setup.ps1 because irm decodes the body to a string
+# with a literal U+FEFF prefix and iex tries to execute "<U+FEFF>#"
+# as a command. The CI check in .github/workflows/lint-ps1.yml
+# enforces the same rule.
+#
+# Line endings are deliberately not pinned here — .gitattributes
+# uses `* -text` so Git never rewrites them.
+
+root = true
+
+[*.{ps1,psm1,psd1}]
+charset = utf-8

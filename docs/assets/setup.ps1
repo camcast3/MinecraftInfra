@@ -1,4 +1,4 @@
-﻿# NegativeZone Minecraft setup script
+# NegativeZone Minecraft setup script
 #
 # Run from PowerShell (no admin needed):
 #   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
