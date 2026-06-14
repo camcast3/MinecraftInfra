@@ -28,6 +28,7 @@ back_to_top_text: "Back to top"
 plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
+  - jekyll-redirect-from
 
 exclude:
   - README.md

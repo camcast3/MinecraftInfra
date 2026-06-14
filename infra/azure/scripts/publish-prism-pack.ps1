@@ -12,11 +12,12 @@
     cache headers. Atomically commits modpack.yml + rewrites
     docker/proxmox/docker-compose.yml (PACKWIZ_URL pinned to current HEAD
     SHA, MOTD pinned to new version) + docker/azure/velocity/velocity.toml.tmpl
-    (Velocity fallback MOTD pinned to new version) on a fresh
+    (Velocity fallback MOTD pinned to new version) + docs/assets/latest-version.txt
+    (launch-time version pointer polled by prelaunch-check.ps1) on a fresh
     modpack/v<Version> branch, opens a PR with auto-merge. Portainer GitOps
-    redeploys C2E2 within ~5 min — server + client move in lockstep. Compose
-    YAML is rewritten directly (not .env) because Portainer ignores .env files
-    in git.
+    redeploys C2E2 within ~5 min — server + client + fallback-proxy MOTD +
+    launch-time pointer all move in lockstep. Compose YAML is rewritten
+    directly (not .env) because Portainer ignores .env files in git.
     latest.json is uploaded AFTER PR succeeds so the audit trail is always
     present before any player can download.
 
@@ -80,6 +81,14 @@
     coupling (compose-rewrite + PR + auto-merge). -Version MUST start
     with "test-". Manifest goes to latest-test.json, not latest.json.
     Players using setup.ps1 stay on production unless they set
+
+.PARAMETER AllowDowngrade
+    Set "allowDowngrade": true in the published manifest so the player-side
+    update.ps1 / setup.ps1 will accept rolling back from a newer installed
+    build to this older -Version. Default is omitted (false) — the
+    player-side guard refuses downgrades by default to defend against a
+    typo'd manifest version silently rolling everyone back. Use this flag
+    when shipping an intentional emergency rollback.
     $env:NEGATIVEZONE_MANIFEST_URL.
 
 .EXAMPLE
@@ -112,7 +121,8 @@ param(
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
     [switch]$Force,
-    [switch]$SkipDriftCheck
+    [switch]$SkipDriftCheck,
+    [switch]$AllowDowngrade
 )
 
 $ErrorActionPreference = 'Stop'
@@ -423,12 +433,56 @@ $excludePatterns = @(
 # Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+# Re-encodes a player-side .ps1 file as UTF-8 *with* BOM and writes it into
+# the zip. Required because PowerShell 5.1 (the Windows default; what Prism
+# launches via "powershell.exe") reads unsigned .ps1 files as Windows-1252
+# unless a BOM is present. Our scripts contain U+2014 em-dash ("—") in both
+# comments and string literals; its UTF-8 encoding is the byte sequence
+# E2 80 94, and 0x94 is CP1252's RIGHT DOUBLE QUOTATION MARK ("). Without a
+# BOM, PS 5.1 silently closes the surrounding string literal at the em-dash
+# and the parser cascades into "Unexpected token ... refusing" / "Missing
+# closing ')'" errors that crash the PreLaunchCommand at first launch.
+# Source files on disk may or may not have a BOM — File.ReadAllText auto-
+# detects and strips it, so this is safe to call on either.
+function Add-Ps1ZipEntry(
+    [System.IO.Compression.ZipArchive] $zip,
+    [string] $sourcePath,
+    [string] $entryName
+) {
+    $text = [System.IO.File]::ReadAllText($sourcePath)
+    $entry = $zip.CreateEntry($entryName, 'Optimal')
+    $writer = New-Object System.IO.StreamWriter($entry.Open(), [System.Text.UTF8Encoding]::new($true))
+    try { $writer.Write($text) } finally { $writer.Dispose() }
+}
+
 function ShouldExclude([string]$relativePath) {
     $normalized = $relativePath -replace '\\', '/'
     foreach ($pattern in $excludePatterns) {
         if ($normalized -like $pattern) { return $true }
     }
     return $false
+}
+
+# Escapes a string for safe storage in a Qt INI value (the format Prism uses
+# for instance.cfg). Prism re-writes the cfg via QSettings on every launch
+# (lastLaunchTime, lastTimePlayed). On read, Qt processes `\<letter>` escapes
+# and concatenates adjacent `"..."` segments with whitespace stripped — so
+# an unescaped raw `"powershell.exe" -NoProfile ... $INST_DIR\.negativezone\update.ps1`
+# value becomes `powershell.exe-NoProfile ... $INST_DIRnegativezonepdate.ps1`
+# the very first time the player clicks Launch (the closing quote + space
+# get eaten; `\.` collapses to `.`; `\u` is interpreted as the start of a
+# Unicode escape and silently eats `update`'s `u`). The hook then fails with
+# "process failed to start".
+#
+# Format-QtIniValue emits Qt's canonical escaped form (backslashes -> `\\`,
+# double-quotes -> `\"`, whole value wrapped in `"..."`). The round-trip is
+# idempotent: Qt's reader undoes the escapes and the writer re-emits the
+# same bytes, so subsequent launches don't progressively mangle the value.
+# Mirrored verbatim in docs/assets/setup.ps1 — keep in sync.
+function Format-QtIniValue {
+    param([Parameter(Mandatory)][string] $Value)
+    $escaped = $Value.Replace('\', '\\').Replace('"', '\"')
+    return '"' + $escaped + '"'
 }
 
 # Removes machine-specific Java fields, user state, [UI] section. Pins
@@ -453,12 +507,55 @@ function Get-SanitizedInstanceCfg(
         'ExportOptionalFiles'
     )
 
-    # Single-quoted so PS doesn't expand `$INST_DIR` — Prism does substitution
-    # at launch time. Outer double quotes are part of the value: Prism uses
-    # QProcess::splitCommand which respects quoted segments containing spaces
-    # (e.g. C:\Users\Jane Doe\...).
-    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
-    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\backup.ps1"'
+    # Two layers of defense for the Pre/Post launch hooks:
+    #
+    # 1. Encoding-tolerant invocation: PS 5.1's `-File` reads .ps1 as the
+    #    system ANSI codepage (CP1252 on US Windows) unless the file has a
+    #    UTF-8 BOM, which mangles em-dashes (U+2014 -> bytes E2 80 94; 0x94
+    #    reads as a closing smart-quote and silently terminates string
+    #    literals). We publish .ps1 entries WITH BOM, but defense-in-depth:
+    #    the `-Command` form uses .NET's UTF-8 decoder explicitly via
+    #    File::ReadAllText, so the script parses correctly regardless of
+    #    BOM presence or any future editor/tool that strips it.
+    #
+    # 2. try/catch wrapper: a stale or corrupted update.ps1/backup.ps1
+    #    (missing file, parse error, runtime throw) surfaces a clear
+    #    "re-run setup.ps1" message in Prism's launch console instead of a
+    #    PowerShell stack trace. Without this, the original em-dash parse
+    #    crash showed players tokenizer errors with no actionable guidance.
+    #
+    # Quoting layers (outermost -> innermost):
+    #   * Qt INI value wrap: the entire command is the value after `=`.
+    #     Backslashes inside "..." are kept literal (no \u/\n escapes).
+    #   * QProcess::splitCommand: splits on whitespace; "..." segments stay
+    #     intact (handles paths with spaces like "Craft to Exile 2").
+    #   * PowerShell `-Command` parser: the value is parsed as a script.
+    #     Single quotes inside wrap the path/messages so backslashes,
+    #     spaces, and special chars are literal.
+    # Here-strings used because the runtime payload contains many literal
+    # single quotes — '' escaping inside a single-quoted PS literal would
+    # make this near-unreadable. `$INST_DIR` survives unexpanded — Prism
+    # substitutes it at launch time.
+    $updateInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\update.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
+'@
+    # PostExit fails OPEN (exit 0) — player already finished playing; a
+    # blocking popup here adds friction with no recovery benefit. The next
+    # PreLaunch will surface the same condition loudly and block until fixed.
+    $backupInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
+'@
+    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
+    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
+
+    # Apply Qt INI value escape — Prism re-writes instance.cfg via QSettings
+    # on every launch (lastLaunchTime update), and without escaping the raw
+    # `"..."` segments + `\.` / `\u` sequences get mangled (closing quotes
+    # eaten, backslashes dropped, `\u` interpreted as Unicode escape). See
+    # the matching Format-QtIniValue in docs/assets/setup.ps1 for the full
+    # story. Inlined here so this script stays standalone (used in CI).
+    $preLaunchCommand = Format-QtIniValue -Value $preLaunchCommand
+    $postExitCommand  = Format-QtIniValue -Value $postExitCommand
 
     # 8192 MB matches C2E2's recommended ceiling (players on 8 GB systems
     # should lower to 4096 after install). name= carries the version suffix
@@ -559,10 +656,12 @@ try {
     Write-Ok "Bundled icon: $($iconFile.Name) -> $iconEntry"
 
     # Bundle update.ps1 so the PreLaunchCommand has something to run on
-    # first launch.
+    # first launch. Add-Ps1ZipEntry (not CreateEntryFromFile) re-encodes with
+    # a UTF-8 BOM so PS 5.1 on the player's machine reads the em-dashes
+    # correctly instead of parse-crashing on byte 0x94 — see the helper's
+    # comment block for the full encoding-foot-gun explanation.
     $updateEntry = "$InstanceName/.negativezone/update.ps1"
-    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-        $zip, $UpdateScriptPath, $updateEntry, 'Optimal') | Out-Null
+    Add-Ps1ZipEntry -zip $zip -sourcePath $UpdateScriptPath -entryName $updateEntry
     Write-Ok "Bundled update.ps1 -> $updateEntry"
 
     # Same pattern for backup.ps1, invoked by PostExitCommand. Bundling it
@@ -570,8 +669,7 @@ try {
     # version-locked together — a player can't end up with a fresh backup.ps1
     # against an older update.ps1 or vice versa.
     $backupEntry = "$InstanceName/.negativezone/backup.ps1"
-    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-        $zip, $BackupScriptPath, $backupEntry, 'Optimal') | Out-Null
+    Add-Ps1ZipEntry -zip $zip -sourcePath $BackupScriptPath -entryName $backupEntry
     Write-Ok "Bundled backup.ps1 -> $backupEntry"
 
     # Bundle the curated user-prefs manifest as JSON at
@@ -671,6 +769,12 @@ $manifest = [ordered]@{
     sizeBytes  = (Get-Item $tempZip).Length
     instance   = $InstanceName
     publishedAt = (Get-Date).ToUniversalTime().ToString('o')
+}
+if ($AllowDowngrade) {
+    # Opt-in field — only emitted when the admin explicitly approves rollback.
+    # Player-side update.ps1 refuses downgrades unless this is true.
+    $manifest['allowDowngrade'] = $true
+    Write-Host "    [warn] AllowDowngrade=true: players on newer versions WILL roll back to v$Version" -ForegroundColor Yellow
 }
 
 $manifestPath = Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
@@ -775,7 +879,18 @@ publishedAt: "$publishedAt"
         [System.IO.File]::WriteAllText($velocityTmpl, $velocityContent, $utf8NoBom)
         Write-Ok "Rewrote docker/azure/velocity/velocity.toml.tmpl: fallback motd pinned to v$Version"
 
-        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl'
+        # Bump docs/assets/latest-version.txt to the new version. This is the
+        # GitHub-hosted pointer file that prelaunch-check.ps1 polls every
+        # launch — when it's ahead of the player's installed version,
+        # PreLaunch hard-blocks the launch with an "update required" banner
+        # and the iex one-liner. Committing it in the SAME PR as the
+        # docker-compose.yml bump means server + client + fallback-proxy MOTD
+        # + version pointer all move atomically.
+        $latestVersionFile = Join-Path $repoRoot 'docs/assets/latest-version.txt'
+        [System.IO.File]::WriteAllText($latestVersionFile, "$Version`n", $utf8NoBom)
+        Write-Ok "Bumped docs/assets/latest-version.txt to $Version"
+
+        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl' 'docs/assets/latest-version.txt'
         git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
         Write-Step "Pushing $publishBranch to origin"
@@ -810,6 +925,10 @@ This PR atomically bumps:
   pinned to the new version. Surfaces the current version to players when the
   C2E2 backend is briefly unreachable (deploy-azure.yml redeploys the proxy on
   merge; refresh-env.sh restarts Velocity if velocity.toml content changed).
+- ``docs/assets/latest-version.txt`` — single-line version pointer polled on
+  every Prism launch by ``prelaunch-check.ps1``. Player launches start hard-
+  blocking on the prior version as soon as this merges into ``main`` (served
+  via raw.githubusercontent.com).
 "@
         $prUrl = $null
         try {

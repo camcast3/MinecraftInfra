@@ -10,11 +10,20 @@ nav_order: 1
 A small private Minecraft server running the [Craft to Exile 2](https://www.curseforge.com/minecraft/modpacks/craft-to-exile-2) modpack.
 {: .fs-6 .fw-300 }
 
-[Get connected →]({% link player-onboarding.md %}){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Get started →]({% link setup.md %}){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 
 ---
 
 **Server address:** `mc.negativezone.cc`
+
+## Guides
+
+| Topic | Read when |
+|---|---|
+| [**Get started**]({% link setup.md %}) | First-time install — the one-line automated path, plus manual fallback steps. |
+| [**Updates**]({% link updates.md %}) | New modpack version is out, or Prism showed `MODPACK VERSION MISMATCH`. |
+| [**Backups**]({% link backups.md %}) | Lost waypoints, want to roll back to yesterday's modpack version, or curious how the safety net works. |
+| [**Troubleshooting**]({% link troubleshooting.md %}) | Something went wrong and you want a quick fix table to scan. |
 
 ## Can my PC run it?
 
@@ -28,6 +37,3 @@ A small private Minecraft server running the [Craft to Exile 2](https://www.curs
 The automated setup detects your installed RAM and allocates half to
 Minecraft (capped at 12 GB), and **refuses to install on PCs with less
 than 8 GB total system RAM** — the modpack won't run reliably below that.
-
-The [Player Onboarding Guide]({% link player-onboarding.md %}) has install
-instructions and troubleshooting.

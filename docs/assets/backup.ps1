@@ -28,7 +28,7 @@
 # Manual restore:
 #   Each snapshot is a self-contained tree of files mirroring their original
 #   layout under .minecraft\. Copy the dirs/files back into .minecraft\ with
-#   Prism closed to restore. See docs/player-onboarding.md for the runbook.
+#   Prism closed to restore. See docs/backups.md for the runbook.
 #
 # PS 5.1 compatible — players install Temurin 17 + Prism via winget but
 # Windows ships PS 5.1 by default. Don't add PS 7-only syntax here.
@@ -233,8 +233,6 @@ if (-not $lock) {
 $exitCode = 0
 $snapshotDir = $null
 $snapshotCreated = $false
-$robocopyStdoutFile = $null
-$robocopyStderrFile = $null
 
 try {
     if (-not (Test-Path -LiteralPath $backupsDir)) {
@@ -264,9 +262,15 @@ try {
     # transient lock; /NP /NFL /NDL /NJH /NJS minimize output (Prism's
     # PostExit captures stdout into the launch log, so quieter is better).
     # Exit codes 0-7 are non-fatal; 8+ is a real error.
-    $robocopyStdoutFile = [System.IO.Path]::GetTempFileName()
-    $robocopyStderrFile = [System.IO.Path]::GetTempFileName()
-
+    #
+    # We invoke robocopy via PowerShell's call operator (`&`) rather than
+    # `Start-Process -ArgumentList`. In Windows PowerShell 5.1 — which is
+    # what Prism's PostExit shells out to — Start-Process does NOT quote
+    # array elements that contain spaces, so a path like
+    # 'C:\...\Craft to Exile 2\.minecraft\shaderpacks' gets split into four
+    # separate argv entries and robocopy fails with exit 16 "Invalid
+    # Parameter". The call operator hands each arg through the Win32
+    # CreateProcess path with proper escaping, so spaces survive.
     foreach ($rel in $DirectoryItems) {
         $src = Join-Path $dotMinecraft $rel
         if (-not (Test-Path -LiteralPath $src -PathType Container)) { continue }
@@ -280,13 +284,16 @@ try {
             New-Item -ItemType Directory -Path $parent -Force | Out-Null
         }
 
-        $robArgs = @($src, $dst, '/MIR', '/MT:8', '/R:1', '/W:1', '/NP', '/NFL', '/NDL', '/NJH', '/NJS')
         try {
-            $p = Start-Process -FilePath robocopy -ArgumentList $robArgs -Wait -PassThru -NoNewWindow `
-                -RedirectStandardOutput $robocopyStdoutFile `
-                -RedirectStandardError  $robocopyStderrFile
-            if ($p.ExitCode -ge 8) {
-                Write-Log 'WARN' ("robocopy '{0}' failed (exit {1}); skipping." -f $rel, $p.ExitCode)
+            $robocopyOutput = & robocopy $src $dst /MIR /MT:8 /R:1 /W:1 /NP /NFL /NDL /NJH /NJS 2>&1
+            $rc = $LASTEXITCODE
+            if ($rc -ge 8) {
+                $tail = ($robocopyOutput | Select-Object -Last 3 | Out-String).Trim()
+                if ($tail) {
+                    Write-Log 'WARN' ("robocopy '{0}' failed (exit {1}); skipping. {2}" -f $rel, $rc, $tail)
+                } else {
+                    Write-Log 'WARN' ("robocopy '{0}' failed (exit {1}); skipping." -f $rel, $rc)
+                }
             } else {
                 $copiedAny = $true
             }
@@ -366,8 +373,6 @@ catch {
 finally {
     if ($lock) { $lock.Dispose() }
     Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
-    if ($robocopyStdoutFile) { Remove-Item -LiteralPath $robocopyStdoutFile -Force -ErrorAction SilentlyContinue }
-    if ($robocopyStderrFile) { Remove-Item -LiteralPath $robocopyStderrFile -Force -ErrorAction SilentlyContinue }
 }
 
 exit $exitCode

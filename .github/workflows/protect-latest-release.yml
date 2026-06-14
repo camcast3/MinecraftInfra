@@ -3,7 +3,7 @@ name: Protect latest release pointer
 
 # Keeps the GitHub "Latest" release pinned to the newest `setup-v*` release.
 #
-# Why: the player install one-liner in docs/player-onboarding.md uses
+# Why: the player install one-liner in docs/setup.md uses
 # `releases/latest/download/setup.ps1`. Publishing any non-setup release
 # (e.g. `c2e2-blobs-vX.Y.Z`) defaults to marking it "Latest", which breaks
 # that URL because non-setup releases don't carry the script. This workflow

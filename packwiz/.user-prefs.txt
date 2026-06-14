@@ -9,8 +9,13 @@
 # Consumed by docs/assets/update.ps1: after the atomic .minecraft swap,
 # restore any of these paths from .minecraft.bak/ so user tweaks survive
 # pack updates. Default Options mod handles vanilla files (options.txt,
-# servers.dat, keybindings) separately via config/defaultoptions/ — those
-# do NOT belong in this list.
+# keybindings) separately via config/defaultoptions/ — those do NOT
+# belong in this list. servers.dat is ALSO excluded but for a different
+# reason: it's a single-server pack and the build pipeline writes it
+# directly (infra/azure/scripts/build-instance-from-packwiz.ps1 calls
+# Set-NegativeZoneServersDat after packwiz install), so pack-author
+# updates to the server list — name change, DNS migration, additional
+# Velocity backend — propagate to existing players on the next update.
 # Consumed by docs/assets/backup.ps1: widen snapshot scope so accidentally
 # deleted preserve files are recoverable from a snapshot.
 #

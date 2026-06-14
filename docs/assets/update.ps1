@@ -4,7 +4,7 @@
 # <InstanceName>/.negativezone/update.ps1, invoked by Prism on every launch
 # via instance.cfg's OverrideCommands=true + PreLaunchCommand line.
 #
-# Contract (see docs/player-onboarding.md "Updates" for full detail):
+# Contract (see docs/updates.md for full detail):
 #   - Fail-open on network errors so offline play still works.
 #   - Fail-closed on SHA-256 mismatch / structural issues — better to bother
 #     the player than ship a corrupted install.
@@ -28,6 +28,43 @@ $ErrorActionPreference = 'Stop'
 # PS 5.1 has no PSNativeCommandUseErrorActionPreference; native callsites
 # below use -EA Stop for terminating errors.
 
+# ─── User-run auto-detect ───────────────────────────────────────────────────
+# The PreLaunch path is GONE — prelaunch-check.ps1 replaces it and instructs
+# the player to run `irm .../update.ps1 | iex` when the client is stale.
+# So when invoked WITHOUT INST_DIR (no Prism wrapper present) we treat it
+# as a user-run invocation: auto-detect the standard install path, refuse
+# to run while Prism has it locked, and print a friendly banner.
+$UserRunMode = [string]::IsNullOrWhiteSpace($InstanceDir)
+if ($UserRunMode) {
+    Write-Host ''
+    Write-Host 'NegativeZone Minecraft client update' -ForegroundColor Magenta
+    Write-Host '------------------------------------'
+
+    $candidate = Join-Path $env:APPDATA 'PrismLauncher\instances\Craft to Exile 2'
+    if (-not (Test-Path -LiteralPath $candidate -PathType Container)) {
+        Write-Host ''
+        Write-Host "  No Craft to Exile 2 instance found at:" -ForegroundColor Red
+        Write-Host "    $candidate" -ForegroundColor Red
+        Write-Host ''
+        Write-Host "  Run setup first to install the modpack:" -ForegroundColor Yellow
+        Write-Host '    irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex' -ForegroundColor Yellow
+        exit 1
+    }
+    $InstanceDir = $candidate
+    Write-Host "  Instance: $InstanceDir" -ForegroundColor DarkGray
+
+    # Prism holds the cfg open and would corrupt our atomic swap if it
+    # mutates the instance mid-update. Refuse rather than race.
+    $prism = Get-Process -Name 'PrismLauncher','prismlauncher' -ErrorAction SilentlyContinue
+    if ($prism) {
+        Write-Host ''
+        Write-Host "  Prism Launcher is currently running (PID $($prism.Id -join ','))." -ForegroundColor Red
+        Write-Host "  Close Prism completely and re-run this update." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host '  Prism is closed, proceeding with update...' -ForegroundColor DarkGray
+}
+
 $DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
 # Test-publish channel override — same env var as setup.ps1; loud WARN logged
 # below when active so half-set test sessions are visible in update.log.
@@ -49,7 +86,6 @@ $PreserveRelative = @(
     'options.txt',
     'optionsof.txt',
     'optionsshaders.txt',
-    'servers.dat',
     'usercache.json',
     'usernamecache.json',
     'realms_persistence.json',
@@ -66,7 +102,9 @@ $PreserveRelative = @(
     'resourcepacks'
 )
 
-# Fail-open (exit 0) on missing/invalid INST_DIR — captured in Prism's launch log.
+# Fail-open (exit 0) on missing/invalid INST_DIR — only happens when invoked
+# from a wrapper that pre-validated it (the user-run mode above already
+# auto-detected and exit-1'd if the install was missing).
 if ([string]::IsNullOrWhiteSpace($InstanceDir)) {
     Write-Host '[negativezone-update] INST_DIR not set; skipping auto-update.'
     exit 0
@@ -274,6 +312,33 @@ try {
         return
     }
 
+    # Don't downgrade unless the manifest explicitly opts in. Without this
+    # guard, a typo'd manifest version (or a stale local-test manifest
+    # override pointing at an older build) would silently roll the player
+    # back and discard their snapshot history. Admins ship intentional
+    # rollbacks by setting `"allowDowngrade": true` in the published
+    # manifest; players then auto-downgrade on next launch.
+    $allowDowngrade = $false
+    if ($manifest.PSObject.Properties.Name -contains 'allowDowngrade') {
+        $allowDowngrade = [bool]$manifest.allowDowngrade
+    }
+    if ($installedVersion) {
+        try {
+            if (([version]$installedVersion) -gt ([version]$manifest.version)) {
+                if ($allowDowngrade) {
+                    Write-Log 'WARN' ("Manifest opts into downgrade: installed v{0} -> v{1} (admin-approved rollback)." -f $installedVersion, $manifest.version)
+                } else {
+                    Write-Log 'INFO' ("Installed v{0} is newer than manifest v{1}; refusing to downgrade." -f $installedVersion, $manifest.version)
+                    Write-Log 'INFO' "Set 'allowDowngrade: true' in the published manifest if this rollback is intentional."
+                    $exitCode = 0
+                    return
+                }
+            }
+        } catch {
+            # Either side unparseable as [version] — fall through to update path.
+        }
+    }
+
     Write-Log 'INFO' ("Updating: {0} -> {1}" -f $installedVersion, $manifest.version)
 
     # ─── Download + hash verification ──────────────────────────────────────
@@ -322,7 +387,7 @@ try {
     $srcMmcPack    = Join-Path $srcInstance 'mmc-pack.json'
 
     if (-not (Test-Path -LiteralPath (Join-Path $srcMinecraft 'mods'))) {
-        Write-Log 'ERROR' ("Zip is missing '{0}/.minecraft/mods/' — refusing to install." -f $instanceFolderName)
+        Write-Log 'ERROR' ("Zip is missing '{0}/.minecraft/mods/' -- refusing to install." -f $instanceFolderName)
         Write-Log 'ERROR' 'This usually means a major modpack restructure. Please re-run setup.ps1 to refresh your install.'
         $exitCode = 1
         return
@@ -419,7 +484,7 @@ try {
                     try {
                         Move-WithReplace -Source $src -Destination $dst
                     } catch {
-                        Write-Log 'WARN' ("Failed to restore '{0}': {1} (continuing — your data is still in {2})" -f $rel, $_.Exception.Message, $backupMinecraft)
+                        Write-Log 'WARN' ("Failed to restore '{0}': {1} (continuing -- your data is still in {2})" -f $rel, $_.Exception.Message, $backupMinecraft)
                     }
                 }
             }
