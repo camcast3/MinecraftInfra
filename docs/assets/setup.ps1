@@ -772,5 +772,5 @@ if ($manifest) {
 }
 Write-Host "    4. Wait to be allowlisted, then connect to: mc.negativezone.cc"
 Write-Host ""
-Write-Host "Full guide: https://wiki.negativezone.cc/player-onboarding" -ForegroundColor Cyan
+Write-Host "Full guide: https://wiki.negativezone.cc/setup" -ForegroundColor Cyan
 Write-Host ""

@@ -4,7 +4,7 @@
 # <InstanceName>/.negativezone/update.ps1, invoked by Prism on every launch
 # via instance.cfg's OverrideCommands=true + PreLaunchCommand line.
 #
-# Contract (see docs/player-onboarding.md "Updates" for full detail):
+# Contract (see docs/updates.md for full detail):
 #   - Fail-open on network errors so offline play still works.
 #   - Fail-closed on SHA-256 mismatch / structural issues — better to bother
 #     the player than ship a corrupted install.

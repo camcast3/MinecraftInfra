@@ -28,7 +28,7 @@
 # Manual restore:
 #   Each snapshot is a self-contained tree of files mirroring their original
 #   layout under .minecraft\. Copy the dirs/files back into .minecraft\ with
-#   Prism closed to restore. See docs/player-onboarding.md for the runbook.
+#   Prism closed to restore. See docs/backups.md for the runbook.
 #
 # PS 5.1 compatible — players install Temurin 17 + Prism via winget but
 # Windows ships PS 5.1 by default. Don't add PS 7-only syntax here.
