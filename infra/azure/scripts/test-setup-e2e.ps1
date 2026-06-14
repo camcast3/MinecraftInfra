@@ -400,14 +400,28 @@ function Invoke-PreLaunchCommand {
 }
 
 function Invoke-PostExitCommand {
-    param([Parameter(Mandatory)][string] $InstanceDir)
+    param(
+        [Parameter(Mandatory)][string] $InstanceDir,
+        # Mirror of Invoke-PreLaunchCommand's ExtraEnv hook so tests can
+        # inject e.g. NEGATIVEZONE_BACKUP_DAYS=0 to bypass the 3-day cadence
+        # guard without monkey-patching backup.ps1 itself.
+        [hashtable] $ExtraEnv
+    )
     $cfg = Get-Content -LiteralPath (Join-Path $InstanceDir 'instance.cfg')
     $line = $cfg | Where-Object { $_ -match '^PostExitCommand=' } | Select-Object -First 1
     if (-not $line) { throw "No PostExitCommand in instance.cfg" }
     $raw = $line -replace '^PostExitCommand=', ''
     $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
+    $envSetters = New-Object System.Collections.Generic.List[string]
+    $envSetters.Add("set `"INST_DIR=$InstanceDir`"")
+    if ($ExtraEnv) {
+        foreach ($k in $ExtraEnv.Keys) {
+            $envSetters.Add("set `"$k=$($ExtraEnv[$k])`"")
+        }
+    }
     $cmdFile = Join-Path $logDir ("post-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
-    "@echo off`r`nset `"INST_DIR=$InstanceDir`"`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    $script = "@echo off`r`n" + (($envSetters -join "`r`n") + "`r`n") + "$cmd`r`nexit /b %ERRORLEVEL%"
+    Set-Content -LiteralPath $cmdFile -Value $script -Encoding ASCII
     $out = & cmd.exe /c $cmdFile 2>&1
     return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
 }
@@ -756,6 +770,86 @@ Register-Test 'postexit-fail-open' {
     Assert-True ($post.ExitCode -eq 0) "PostExit must fail OPEN (exit 0; got $($post.ExitCode))"
     $joined = ($post.Output -join "`n")
     Assert-True ($joined -match 're-run the setup one-liner') "Must still show setup hint in output"
+}
+
+Register-Test 'postexit-snapshot-captures-directories' {
+    param($ctx)
+    # Regression test for the v0.4.2 robocopy-exit-16 bug.
+    #
+    # backup.ps1 used `Start-Process robocopy -ArgumentList @($src,$dst,...)`
+    # which in Windows PowerShell 5.1 (what Prism PostExit shells out to)
+    # does NOT quote array elements containing spaces. The instance dir
+    # 'Craft to Exile 2' has TWO spaces, so robocopy received:
+    #   arg1 = 'C:\...\instances\Craft'
+    #   arg2 = 'to'
+    #   arg3 = 'Exile'
+    #   arg4 = '2\.minecraft\shaderpacks'   <- "Invalid Parameter #4"
+    # …and silently exited 16 for every directory in $DirectoryItems while
+    # the snapshot kept being marked "successful" because the file items
+    # (options.txt, servers.dat) still copied via Copy-Item. Net effect: a
+    # year of Xaero map cache + shaderpacks could be lost the next time the
+    # modpack updated, with no visible warning to the player.
+    #
+    # This test seeds real directory content under .minecraft/<scope>/ and
+    # asserts the resulting snapshot dir contains those bytes — which only
+    # works if robocopy actually copied them.
+    $appData = Join-Path $sandbox 'appdata-post-snap'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'post-snap-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    # Instance path MUST contain a space for this test to be load-bearing —
+    # the bug only fires when the source path has spaces.
+    Assert-True ($inst -match ' ') "instance path must contain a space to exercise the bug (got: $inst)"
+    $dotMc = Join-Path $inst '.minecraft'
+
+    # Seed a representative subset of $DirectoryItems with real bytes.
+    # Mixing dirs (shaderpacks, resourcepacks), a nested dir (config/jei),
+    # and an empty dir (screenshots) covers the failure modes we saw live.
+    $fixtures = @{
+        'shaderpacks\my-shader.zip.txt'    = 'fake shader pack content'
+        'resourcepacks\my-pack.zip.txt'    = 'fake resource pack content'
+        'config\jei\bookmarks.ini'         = 'recipe-1`r`nrecipe-2'
+        'XaeroWaypoints\dim%2A0.txt'       = 'waypoint data'
+    }
+    foreach ($rel in $fixtures.Keys) {
+        $p = Join-Path $dotMc $rel
+        $parent = [IO.Path]::GetDirectoryName($p)
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+        Set-Content -LiteralPath $p -Value $fixtures[$rel] -Encoding UTF8
+    }
+    # Empty dir — robocopy on empty src + /MIR is non-fatal (exit 0).
+    New-Item -ItemType Directory -Path (Join-Path $dotMc 'screenshots') -Force | Out-Null
+
+    # NEGATIVEZONE_BACKUP_DAYS=0 forces backup.ps1 past the cadence guard.
+    $post = Invoke-PostExitCommand -InstanceDir $inst -ExtraEnv @{ NEGATIVEZONE_BACKUP_DAYS = '0' }
+    Assert-True ($post.ExitCode -eq 0) "PostExit must exit 0 (got $($post.ExitCode)). Output: $($post.Output -join "`n")"
+
+    $bakRoot = Join-Path $inst '.negativezone\backups'
+    Assert-True (Test-Path -LiteralPath $bakRoot) "backups root must exist"
+    $snap = Get-ChildItem -LiteralPath $bakRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+    Assert-True ($null -ne $snap) "at least one snapshot dir must exist after PostExit"
+
+    # Every seeded directory file must be present in the snapshot. This is
+    # the assertion the exit-16 regression would fail on — under the bug,
+    # the snapshot would contain options.txt / servers.dat only.
+    foreach ($rel in $fixtures.Keys) {
+        $snapPath = Join-Path $snap.FullName $rel
+        Assert-PathExists $snapPath "snapshot missing '$rel' — robocopy likely failed (exit 16)"
+        $src = Join-Path $dotMc $rel
+        $srcBytes = [IO.File]::ReadAllBytes($src)
+        $dstBytes = [IO.File]::ReadAllBytes($snapPath)
+        Assert-True ($srcBytes.Length -eq $dstBytes.Length) "size mismatch on '$rel' ($($srcBytes.Length) -> $($dstBytes.Length))"
+    }
+
+    # backup.log MUST NOT contain any "robocopy ... failed (exit 16)" lines.
+    # Even if the snapshot ends up populated some other way, the presence
+    # of that WARN is the canary symptom we're guarding against.
+    $logPath = Join-Path $inst '.negativezone\backup.log'
+    if (Test-Path -LiteralPath $logPath) {
+        $logText = Get-Content -LiteralPath $logPath -Raw
+        Assert-True ($logText -notmatch 'robocopy .* failed \(exit 16\)') "backup.log contains exit-16 WARN — the Start-Process quoting bug regressed."
+    }
 }
 
 Register-Test 'cfg-qt-ini-escape-roundtrip' {
