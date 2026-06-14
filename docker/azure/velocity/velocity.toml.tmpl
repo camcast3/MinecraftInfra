@@ -16,9 +16,10 @@ bind = "0.0.0.0:25577"
 # Velocity 3.3.0+ parses motd as MiniMessage — any `&` or `§` codes here would
 # render as literal text. Plain text only. With ping-passthrough = "ALL" below
 # the client normally sees the C2E2 backend's MOTD; this is the fallback shown
-# when C2E2 is unreachable (keep in sync with the backend MOTD in
+# when C2E2 is unreachable (kept in sync with the backend MOTD in
 # docker/proxmox/docker-compose.yml).
-motd = "Craft to Exile 2"
+# Version segment rewritten in place by publish-prism-pack.ps1 on each publish.
+motd = "Craft to Exile 2 v0.4.0"
 show-max-players = 20
 
 # Velocity handles Mojang auth; backends run with ONLINE_MODE=FALSE.
