@@ -113,18 +113,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Set up Go (for packwiz CLI)
-        if: steps.noop_check.outputs.noop != 'true'
-        uses: actions/setup-go@v6
-        with:
-          go-version: stable
-          cache: false
-
-      - name: Install packwiz CLI
-        if: steps.noop_check.outputs.noop != 'true'
-        run: |
-          go install github.com/packwiz/packwiz@latest
-          packwiz --version
+      # No packwiz CLI step — publish uses packwiz-installer-bootstrap.jar only.
 
       - name: Set up Java (for packwiz-installer-bootstrap)
         if: steps.noop_check.outputs.noop != 'true'
