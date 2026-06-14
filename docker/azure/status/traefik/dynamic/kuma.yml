@@ -2,8 +2,14 @@
 #
 # Cloudflare Tunnel terminates HTTPS at the edge and forwards plaintext HTTP
 # over the tunnel to this Traefik instance (on the same docker network as
-# cloudflared). Traefik then routes Host: status.negativezone.cc to the
-# uptime-kuma container on port 3001.
+# cloudflared). Traefik then routes Host: admin-status.negativezone.cc to
+# the uptime-kuma container on port 3001.
+#
+# Hostname note: the public-facing URL (status.negativezone.cc) now points
+# at an external SaaS monitor (see docs/operations/external-status-monitor.md)
+# so the public status page survives a VM outage. The self-hosted Kuma here
+# is the admin-only dashboard, gated by Cloudflare Access on top of CF Tunnel
+# — see docs/operations/status-page-setup.md for the Access policy.
 #
 # No middlewares. Defense lives at Cloudflare's edge (DDoS, Bot Fight, the
 # Fail2Ban-managed IP blocklist as a WAF Custom Rule) and inside Fail2Ban
@@ -13,7 +19,7 @@
 http:
   routers:
     kuma:
-      rule: "Host(`status.negativezone.cc`)"
+      rule: "Host(`admin-status.negativezone.cc`)"
       entryPoints:
         - web
       service: uptime-kuma

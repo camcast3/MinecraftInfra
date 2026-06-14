@@ -1,9 +1,17 @@
-# Public status page — one-time setup runbook
+# Admin status dashboard — one-time setup runbook
 
-The status page at https://status.negativezone.cc/ is served by the
-`docker/azure/status/docker-compose.yml` stack on the Azure VM:
-**cloudflared → traefik → uptime-kuma**, with **fail2ban** as an
+The **admin** status dashboard at https://admin-status.negativezone.cc/ is
+served by the `docker/azure/status/docker-compose.yml` stack on the Azure
+VM: **cloudflared → traefik → uptime-kuma**, with **fail2ban** as an
 active-response sidecar that bans IPs at Cloudflare's edge via the CF API.
+Access is gated by **Cloudflare Access** (GitHub OAuth + email allow-list)
+on top of CF Tunnel, so only authorized operators ever see the dashboard.
+
+> **The public-facing** status URL — `https://status.negativezone.cc/` —
+> is **not** served by this stack. It's hosted by an external SaaS monitor
+> so it survives an Azure VM outage. See
+> [`docs/operations/external-status-monitor.md`](./external-status-monitor.md)
+> for that side of the world. This runbook is admin-only.
 
 Most of the wiring is fully repo-managed and deploys automatically through
 `.github/workflows/deploy-azure.yml`. The bits below are **one-time manual
@@ -37,13 +45,14 @@ Cloudflare dashboard → **Zero Trust** → **Networks** → **Tunnels** → **+
    right after `--token`. **Copy it.** This is what goes into KV as
    `cloudflare-tunnel-token`.
 4. Click **Next**. On the "Public hostnames" step:
-   - Subdomain: `status`
+   - Subdomain: `admin-status`
    - Domain: `negativezone.cc`
    - Path: *(leave empty)*
    - Service type: `HTTP`
    - URL: `traefik:80`
-5. **Save**. Cloudflare auto-creates the DNS record (`status.negativezone.cc`
-   CNAME to `<tunnel-id>.cfargotunnel.com`) — no manual DNS step needed.
+5. **Save**. Cloudflare auto-creates the DNS record
+   (`admin-status.negativezone.cc` CNAME to `<tunnel-id>.cfargotunnel.com`)
+   — no manual DNS step needed.
 
 ## 2. Find your Cloudflare Account ID
 
@@ -79,7 +88,7 @@ Cloudflare dashboard → **Manage Account** → **Configurations** → **Lists**
 | Setting | Value |
 |---|---|
 | Name | `status_page_fail2ban_blocklist` |
-| Description | `IPs banned by fail2ban on the Azure VM (status.negativezone.cc)` |
+| Description | `IPs banned by fail2ban on the Azure VM (admin-status.negativezone.cc)` |
 | Content type | `IP` |
 
 **Create**. After creation, the list detail page shows a **List ID** at the
@@ -135,15 +144,15 @@ the workflow after the secrets are in KV picks them up.
 
 ## 7. Bootstrap Uptime Kuma
 
-Visit https://status.negativezone.cc/ from a trusted network. First visit
-of a fresh deploy shows the **Setup** screen:
+Visit https://admin-status.negativezone.cc/ from a trusted network. First
+visit of a fresh deploy shows the **Setup** screen:
 
 1. **Create the admin account.** Use a long random password and store it in
    a password manager. Do this *before* anyone else visits the URL — the
    wizard is open until the admin account exists.
 2. After login, go to **Settings → General**:
    - Set **Time zone** to match the host (`America/Los_Angeles`).
-   - Set **Primary base URL** to `https://status.negativezone.cc`.
+   - Set **Primary base URL** to `https://admin-status.negativezone.cc`.
 3. **Add the Minecraft monitor.** Dashboard → **+ Add New Monitor**:
 
    | Setting | Value |
@@ -159,17 +168,110 @@ of a fresh deploy shows the **Setup** screen:
    handshake succeeded — a half-broken state (port open, Velocity crashed)
    correctly reports Down.
 
-4. **Create the public Status Page.** Sidebar → **Status Pages** → **+ New Status Page**:
+4. **Create an internal Status Page** (operator dashboard view — not the
+   public page; that lives in Better Stack, see
+   [`external-status-monitor.md`](./external-status-monitor.md)). Sidebar →
+   **Status Pages** → **+ New Status Page**:
 
    | Setting | Value |
    |---|---|
-   | Slug | `/` (root — so the page is at `https://status.negativezone.cc/` directly) |
-   | Title | `Negative Zone — Craft to Exile 2` |
+   | Slug | `/` (root — so the page is at `https://admin-status.negativezone.cc/` directly) |
+   | Title | `Negative Zone — Admin Dashboard` |
    | Add Group → Add Monitor | the monitor from step 3 |
    | Custom CSS | *(optional)* |
 
-   **Save**. Once saved, the public page is reachable without authentication
-   at the slug above.
+   **Save**. Kuma's own slug-level page is technically reachable without
+   Kuma auth — that's fine here because **Cloudflare Access** (next step)
+   gates the entire hostname at the edge before any request reaches Kuma.
+
+## 8. Cloudflare Access — admin authentication
+
+Kuma's built-in admin login (the password from step 7.1) is good, but
+stacking Cloudflare Access in front gives us:
+
+- **GitHub OAuth** — log in with the same identity used to push to this
+  repo; no separate password to forget or rotate.
+- **Zone-level enforcement** — Access blocks unauthorized requests at
+  Cloudflare's edge, so brute-force probes never reach Kuma or even
+  cloudflared. Big complement to the fail2ban+blocklist defense.
+- **Audit logs** — every successful and failed login attempt is recorded
+  in CF Zero Trust → Logs → Access, viewable for 6 months on the free plan.
+- **Free** — Cloudflare Access free plan covers up to 50 seats. We need 1-3.
+
+### 8a. Register a GitHub OAuth app
+
+GitHub → **Settings** → **Developer settings** → **OAuth Apps** → **New OAuth App**.
+
+| Setting | Value |
+|---|---|
+| Application name | `negativezone-cf-access` |
+| Homepage URL | `https://admin-status.negativezone.cc` |
+| Authorization callback URL | `https://<your-team>.cloudflareaccess.com/cdn-cgi/access/callback` |
+
+The `<your-team>` slug is the Cloudflare Zero Trust team subdomain — visible
+at CF Zero Trust → Settings → Custom Pages → top of the page, or in the
+URL bar when you're in Zero Trust. **Register application** → on the next
+page, **Generate a new client secret** and copy both the **Client ID** and
+**Client Secret**.
+
+### 8b. Add GitHub as a CF Access login method
+
+CF Zero Trust dashboard → **Settings** → **Authentication** → **Login methods**
+→ **Add new** → **GitHub**.
+
+| Setting | Value |
+|---|---|
+| Name | `GitHub` |
+| App ID | *(paste GitHub Client ID from 8a)* |
+| Client secret | *(paste GitHub Client Secret from 8a)* |
+
+**Save** → use the **Test** button to verify Cloudflare can complete a
+GitHub OAuth round-trip with the credentials.
+
+### 8c. Add the Access application
+
+CF Zero Trust → **Access** → **Applications** → **Add an application** →
+**Self-hosted**.
+
+| Setting | Value |
+|---|---|
+| Application name | `admin-status (Uptime Kuma)` |
+| Session duration | `24 hours` *(re-login once a day; tune as needed)* |
+| Application domain | Subdomain: `admin-status`, Domain: `negativezone.cc`, Path: *(empty)* |
+| Identity providers | check **GitHub** (and optionally **One-time PIN** as fallback) |
+| App Launcher | *(optional — adds it to your CF Apps grid)* |
+
+**Next**. Add an access policy:
+
+| Setting | Value |
+|---|---|
+| Policy name | `Allow operator GitHub identities` |
+| Action | `Allow` |
+| Session duration | *(use application default)* |
+| Include rule 1 | `Emails` → comma-separated list of operator emails (matches the email returned by GitHub OAuth — must be a verified, public-or-private-but-visible email on the GitHub account) |
+| Require rule | `Login Methods` → `GitHub` |
+
+**Next** → **Add application**. Access is enforced immediately on the
+hostname. No restart of cloudflared / traefik / kuma needed.
+
+### 8d. Test
+
+From an incognito window (no existing CF Access session):
+
+1. Visit `https://admin-status.negativezone.cc/`.
+2. Expect to be redirected to a Cloudflare Access login chooser with
+   **GitHub** as a button.
+3. Click GitHub → authorize the OAuth app if it's the first time → CF
+   matches your verified GitHub email against the allow-list policy.
+4. On success: redirected back to Kuma, which then asks for *its* admin
+   password (defense in depth — Access proves you're in the allow-list,
+   Kuma still wants its own password before serving the dashboard).
+5. On failure (email not in allow-list, or GitHub auth denied): CF shows
+   a `You don't have access to this application` page; Kuma is never
+   contacted.
+
+If something is misconfigured, CF Zero Trust → **Logs** → **Access** shows
+exactly which rule denied the request and why.
 
 ## Operations runbooks
 
@@ -214,7 +316,7 @@ This calls the cloudflare-api action's `actionunban` (idempotent — a no-op
 if the IP isn't in the CF list anymore) AND clears the local fail2ban DB
 entry.
 
-### Stop the status stack (without affecting the proxy stack)
+### Stop the admin status stack (without affecting the proxy stack)
 
 ```sh
 az vm run-command invoke -g rg-minecraft-prod -n vm-minecraft-prod \
@@ -224,15 +326,20 @@ az vm run-command invoke -g rg-minecraft-prod -n vm-minecraft-prod \
 
 The proxy stack (`docker/azure/docker-compose.yml`) is unaffected — they're
 separate compose projects on separate docker networks. Players keep playing
-even while the status page is down.
+even while the admin dashboard is down, and the public status page at
+`status.negativezone.cc` keeps working too (it's hosted externally — see
+[`external-status-monitor.md`](./external-status-monitor.md)).
 
 ### Verify after deploy
 
 From a workstation:
 
 ```sh
-# 1. Public status page reachable
-curl -sSf https://status.negativezone.cc/api/status-page/heartbeat/<your-slug> | head
+# 1. Admin dashboard reachable (expect a 302 to Cloudflare Access login
+#    when unauthenticated — that proves CF Access AND the tunnel/Traefik/Kuma
+#    chain are all up). Add `-H "CF-Access-Client-Id: ..."` headers from a
+#    service token if you want to bypass the login wall in automation.
+curl -sSI https://admin-status.negativezone.cc/ | head
 
 # 2. cloudflared tunnel registered (CF dashboard → Tunnels → should show Healthy)
 
