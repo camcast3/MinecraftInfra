@@ -39,18 +39,16 @@
 # MC 1.20.1 requires Java 17 — the Velocity image is pinned to a Java 17 variant
 # because Velocity 3.4+ (Java 21 only) drops support for 1.20.1 Forge backends.
 #
-# Secrets are stored on the host at /opt/minecraft/secrets/ (0700, root-owned),
-# written by refresh-env.sh from Azure Key Vault. They reach containers via:
-#   - tailscale: docker compose `secrets:` (mounted at /run/secrets/ts_authkey,
-#     containerboot reads via TS_AUTHKEY=file:/run/secrets/ts_authkey). The
-#     value on disk is the LIVE auth key only at first registration; after
-#     the sidecar registers, refresh-env.sh detects tailscaled.state and
-#     overwrites the file with a dead placeholder. A compromised container
-#     therefore cannot exfiltrate a usable auth key.
-#   - velocity:  single-file bind mount /opt/minecraft/secrets/velocity_forwarding_secret
-#     → /server/forwarding.secret (Velocity reads it from disk; itzg startup
-#     leaves an existing file alone). File is owned UID 1000:1000 so itzg's
-#     in-container chown -R is a same-owner no-op.
+# Secrets are written by refresh-env.sh from Azure Key Vault and reach
+# containers via two paths:
+#   - tailscale: docker compose `secrets:` from /opt/minecraft/secrets/ts_authkey.
+#     The on-disk value is the live auth key only at first registration;
+#     refresh-env.sh detects tailscaled.state and replaces it with a dead
+#     placeholder afterward, so a compromised container can't exfiltrate it.
+#   - velocity: refresh-env.sh writes forwarding.secret directly into
+#     /data/minecraft/velocity/. A single-file bind onto /server/forwarding.secret
+#     would be shadowed by the broader /data/minecraft/velocity:/server bind —
+#     see the velocity volumes block for the postmortem.
 # No secret value is ever written to .env, a Compose env var, or an image layer.
 
 x-common-keys-apps: &common-keys-apps
@@ -174,14 +172,12 @@ services:
           cpus: '1'
           memory: 1G
     volumes:
-      # velocity.toml is written here by refresh-env.sh before compose up.
+      # velocity.toml and forwarding.secret are both written here by
+      # refresh-env.sh before compose up. Do NOT add a single-file bind for
+      # forwarding.secret on top — Linux mounts the parent /server bind after
+      # the child, shadowing it, and Velocity then reads whatever itzg
+      # generated in the data dir (see PR #154).
       - /data/minecraft/velocity:/server
-      # Single-file bind mount overlays the broader /server mount above. itzg's
-      # startup runs `chown -R bungeecord:bungeecord /server` (the script has
-      # `set -eo pipefail`), so the source file MUST already be owned UID 1000
-      # to avoid an EROFS-style failure on this single-file bind mount —
-      # refresh-env.sh handles that.
-      - /opt/minecraft/secrets/velocity_forwarding_secret:/server/forwarding.secret
     environment:
       TYPE: VELOCITY
       # 3.3.0-SNAPSHOT is the last Velocity release supporting Java 17 (3.4+ requires Java 21).
@@ -197,10 +193,9 @@ services:
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
       #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
       PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
-      # forwarding.secret is bind-mounted at /server/forwarding.secret from
-      # /opt/minecraft/secrets/velocity_forwarding_secret. itzg's startup
-      # detects the existing file and leaves it alone (no env-based fallback
-      # needed, no plaintext env var with the secret).
+      # forwarding.secret lives at /server/forwarding.secret via the data-dir
+      # bind mount above (refresh-env.sh writes it). itzg's startup detects
+      # it and leaves it alone — no env-based fallback, no plaintext env var.
       TZ: America/Los_Angeles
     healthcheck:
       test: ["CMD", "mc-monitor", "status", "--host", "localhost", "--port", "25577"]
@@ -382,12 +377,11 @@ configs:
 # the tailnet control plane will reject. Either way, the secret value visible
 # to a compromised container has bounded utility.
 #
-# velocity's forwarding.secret is NOT a Docker secret because itzg/mc-proxy's
-# startup does `chown -R bungeecord:bungeecord /server` under `set -eo pipefail`,
-# which would fail with EROFS on a read-only Compose-secret mount inside /server
-# and kill the container. Instead it's bind-mounted directly into /server via
-# the velocity service's volumes (with UID 1000 ownership so the chown is a
-# same-owner no-op).
+# velocity's forwarding.secret is NOT a Docker secret: itzg's startup runs
+# `chown -R bungeecord:bungeecord /server` under `set -eo pipefail` and would
+# fail EROFS on a read-only Compose-secret mount under /server. A single-file
+# bind on top of the data-dir bind also doesn't work (parent shadows child,
+# see PR #154). refresh-env.sh writes it straight into /data/minecraft/velocity/.
 # ─────────────────────────────────────────────────────────────────────────────
 secrets:
   ts_authkey:
