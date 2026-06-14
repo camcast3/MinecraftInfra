@@ -62,7 +62,19 @@ param(
     [string] $InstallerVersion = 'v0.5.14',
     [string] $BootstrapJar,
     [string] $InstallerJar,
-    [string] $CacheDir
+    [string] $CacheDir,
+    # Single-server pack: the only entry we ship in .minecraft/servers.dat.
+    # We deliberately do NOT seed the upstream CTE2 modpack's server list
+    # (~30 third-party community servers); see Set-NegativeZoneServersDat.
+    [string] $ServerEntryName = 'NegativeZone',
+    [string] $ServerEntryAddress = 'mc.negativezone.cc',
+    # 64x64 PNG to show next to the entry in Multiplayer. Defaults to the
+    # committed cte2-server-icon.png (a downscale of the Prism instance
+    # icon, so the launcher tile + server-list icon share branding). Pass
+    # an empty string to omit the icon tag entirely. Must be exactly 64x64
+    # or Minecraft's NativeImage.read() rejects it and falls back to the
+    # generic Mojang icon.
+    [string] $ServerEntryIconPath = (Join-Path $PSScriptRoot 'cte2-server-icon.png')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -80,6 +92,126 @@ function Get-RepoRoot {
         throw "Could not resolve repo root via 'git rev-parse --show-toplevel'. Are you inside the MinecraftInfra worktree?"
     }
     return ($top | Out-String).Trim()
+}
+
+# Overwrites .minecraft/servers.dat with a single-entry NBT pointing at
+# our Velocity proxy. This pack is a single-server offering, so we don't
+# want to ship the upstream CTE2 modpack's server list (~30 third-party
+# community servers like crafttoexile2-tristram.g.akliz.net, cte2.poeservers.uk,
+# etc.) — players opening Multiplayer should see exactly one server: ours.
+#
+# We write .minecraft/servers.dat directly here (rather than relying on
+# the Default Options mod to seed from config/defaultoptions/servers.dat
+# on first launch) for two reasons:
+#   1. Default Options only seeds when the destination is missing — if a
+#      player carries forward a servers.dat from a previous install, it
+#      keeps the stale list forever.
+#   2. We removed config/defaultoptions/servers.dat from packwiz entirely
+#      in the same change (along with its index.toml entry), so there is
+#      no longer a seed source on disk.
+# Update.ps1's $PreserveRelative was also updated in the same change to
+# stop preserving servers.dat across pack updates, so this list propagates
+# to existing installs on the next two publishes (one to swap the script,
+# one to swap the file).
+#
+# NBT format (uncompressed; modern servers.dat is not gzipped):
+#   TAG_Compound(""):
+#     TAG_List<Compound>("servers"):
+#       TAG_Compound: { name: TAG_String, ip: TAG_String, icon?: TAG_String }
+#
+# `icon` is the base64-encoding of a raw 64x64 PNG (no `data:image/png;base64,`
+# prefix). Minecraft's ServerData.write() emits it this way and the client's
+# ServerSelectionList feeds the decoded bytes straight into NativeImage.read(),
+# which throws IllegalArgumentException unless width == height == 64 — that's
+# why we validate the file's IHDR before embedding instead of letting the
+# player see a fallback Mojang icon at first launch.
+function Set-NegativeZoneServersDat {
+    param(
+        [Parameter(Mandatory = $true)][string] $DotMinecraft,
+        [Parameter(Mandatory = $true)][string] $EntryName,
+        [Parameter(Mandatory = $true)][string] $EntryAddress,
+        # Optional. Empty/null = omit the icon tag (server list falls back
+        # to Mojang's generic icon, which is what we'd see if Minecraft
+        # rejected a bad PNG anyway).
+        [string] $IconPath
+    )
+
+    # Pre-validate the icon before any NBT bytes are emitted. Minecraft is
+    # strict about 64x64; a 192x192 PNG would silently render as the generic
+    # icon and we'd never know until a player complained.
+    $iconB64 = $null
+    if ($IconPath) {
+        if (-not (Test-Path -LiteralPath $IconPath -PathType Leaf)) {
+            throw "Server icon not found at: $IconPath"
+        }
+        $iconBytes = [System.IO.File]::ReadAllBytes($IconPath)
+        if ($iconBytes.Length -lt 24 -or
+            $iconBytes[0] -ne 0x89 -or $iconBytes[1] -ne 0x50 -or
+            $iconBytes[2] -ne 0x4E -or $iconBytes[3] -ne 0x47) {
+            throw "Server icon is not a valid PNG (bad signature): $IconPath"
+        }
+        # PNG IHDR width/height are big-endian uint32 starting at byte 16.
+        $iconW = ([int]$iconBytes[16] -shl 24) -bor ([int]$iconBytes[17] -shl 16) -bor ([int]$iconBytes[18] -shl 8) -bor [int]$iconBytes[19]
+        $iconH = ([int]$iconBytes[20] -shl 24) -bor ([int]$iconBytes[21] -shl 16) -bor ([int]$iconBytes[22] -shl 8) -bor [int]$iconBytes[23]
+        if ($iconW -ne 64 -or $iconH -ne 64) {
+            throw "Server icon must be exactly 64x64; got ${iconW}x${iconH} from: $IconPath"
+        }
+        $iconB64 = [Convert]::ToBase64String($iconBytes)
+    }
+
+    $ms = New-Object System.IO.MemoryStream
+    $bw = New-Object System.IO.BinaryWriter $ms
+    try {
+        function script:Write-NbtU16 { param([int]$v)
+            $bw.Write([byte](($v -shr 8) -band 0xFF)); $bw.Write([byte]($v -band 0xFF))
+        }
+        function script:Write-NbtI32 { param([int]$v)
+            $bw.Write([byte](($v -shr 24) -band 0xFF))
+            $bw.Write([byte](($v -shr 16) -band 0xFF))
+            $bw.Write([byte](($v -shr 8) -band 0xFF))
+            $bw.Write([byte]($v -band 0xFF))
+        }
+        function script:Write-NbtString { param([string]$s)
+            $b = [System.Text.Encoding]::UTF8.GetBytes($s)
+            if ($b.Length -gt 32767) { throw "NBT TAG_String '$s' exceeds 32767 bytes." }
+            Write-NbtU16 $b.Length
+            $bw.Write($b)
+        }
+        function script:Write-NbtTagString { param([string]$name, [string]$value)
+            $bw.Write([byte]0x08)            # TAG_String type
+            Write-NbtString $name
+            Write-NbtString $value
+        }
+
+        # Root TAG_Compound, unnamed (zero-length name).
+        $bw.Write([byte]0x0A); Write-NbtU16 0
+
+        # TAG_List<Compound> named "servers", containing 1 entry.
+        $bw.Write([byte]0x09); Write-NbtString 'servers'
+        $bw.Write([byte]0x0A)                # element type = TAG_Compound
+        Write-NbtI32 1                       # element count
+
+        # Element compound (list elements are unnamed). Field order matches
+        # what Minecraft's ServerData.write() emits so a round-trip through
+        # the client doesn't reshuffle keys.
+        Write-NbtTagString 'name' $EntryName
+        Write-NbtTagString 'ip'   $EntryAddress
+        if ($iconB64) { Write-NbtTagString 'icon' $iconB64 }
+        $bw.Write([byte]0x00)                # TAG_End — closes element compound
+
+        $bw.Write([byte]0x00)                # TAG_End — closes root compound
+
+        $bw.Flush()
+        $bytes = $ms.ToArray()
+    } finally {
+        $bw.Dispose()
+        $ms.Dispose()
+    }
+
+    $serversDatPath = Join-Path $DotMinecraft 'servers.dat'
+    [System.IO.File]::WriteAllBytes($serversDatPath, $bytes)
+    $iconNote = if ($iconB64) { " (+ 64x64 icon, $($iconB64.Length) b64 chars)" } else { ' (no icon)' }
+    Write-Information ("Wrote .minecraft/servers.dat ({0} bytes): '{1}' @ {2}{3}" -f $bytes.Length, $EntryName, $EntryAddress, $iconNote)
 }
 
 # Defaults that depend on the repo root must resolve after the param block.
@@ -309,6 +441,13 @@ if ($installedMods -lt 1) {
 }
 Write-Information ''
 Write-Information "Materialized $installedMods mod JAR(s) into $modsDir"
+
+# Seed .minecraft/servers.dat with just our Velocity proxy. Must happen
+# after packwiz install (packwiz would otherwise overwrite/conflict) and
+# before publish-prism-pack.ps1 zips the staging dir.
+Set-NegativeZoneServersDat -DotMinecraft $dotMinecraft `
+    -EntryName $ServerEntryName -EntryAddress $ServerEntryAddress `
+    -IconPath $ServerEntryIconPath
 
 # Emit staging path on stdout (everything above writes to Information stream),
 # so `$path = ./build-instance-from-packwiz.ps1` captures the path verbatim.

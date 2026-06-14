@@ -49,7 +49,6 @@ $PreserveRelative = @(
     'options.txt',
     'optionsof.txt',
     'optionsshaders.txt',
-    'servers.dat',
     'usercache.json',
     'usernamecache.json',
     'realms_persistence.json',
@@ -322,7 +321,7 @@ try {
     $srcMmcPack    = Join-Path $srcInstance 'mmc-pack.json'
 
     if (-not (Test-Path -LiteralPath (Join-Path $srcMinecraft 'mods'))) {
-        Write-Log 'ERROR' ("Zip is missing '{0}/.minecraft/mods/' — refusing to install." -f $instanceFolderName)
+        Write-Log 'ERROR' ("Zip is missing '{0}/.minecraft/mods/' -- refusing to install." -f $instanceFolderName)
         Write-Log 'ERROR' 'This usually means a major modpack restructure. Please re-run setup.ps1 to refresh your install.'
         $exitCode = 1
         return
@@ -419,7 +418,7 @@ try {
                     try {
                         Move-WithReplace -Source $src -Destination $dst
                     } catch {
-                        Write-Log 'WARN' ("Failed to restore '{0}': {1} (continuing — your data is still in {2})" -f $rel, $_.Exception.Message, $backupMinecraft)
+                        Write-Log 'WARN' ("Failed to restore '{0}': {1} (continuing -- your data is still in {2})" -f $rel, $_.Exception.Message, $backupMinecraft)
                     }
                 }
             }

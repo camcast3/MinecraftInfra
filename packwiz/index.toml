@@ -1415,10 +1415,6 @@ file = "config/defaultoptions/readme.txt"
 hash = "043e2e9b5a32851aa31f90f59493c36bc97cf9d370c8296c27da6a095a96400b"
 
 [[files]]
-file = "config/defaultoptions/servers.dat"
-hash = "549c0c98cbd387de4aff5751ea2482b180ece83b56e34822a1922829f73f0cce"
-
-[[files]]
 file = "config/disenchanting.toml"
 hash = "9321886f31efcb0072daf55328d38f878cbef953d6cd7ef3138928ef07853670"
 

@@ -421,6 +421,28 @@ $excludePatterns = @(
 # Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+# Re-encodes a player-side .ps1 file as UTF-8 *with* BOM and writes it into
+# the zip. Required because PowerShell 5.1 (the Windows default; what Prism
+# launches via "powershell.exe") reads unsigned .ps1 files as Windows-1252
+# unless a BOM is present. Our scripts contain U+2014 em-dash ("—") in both
+# comments and string literals; its UTF-8 encoding is the byte sequence
+# E2 80 94, and 0x94 is CP1252's RIGHT DOUBLE QUOTATION MARK ("). Without a
+# BOM, PS 5.1 silently closes the surrounding string literal at the em-dash
+# and the parser cascades into "Unexpected token ... refusing" / "Missing
+# closing ')'" errors that crash the PreLaunchCommand at first launch.
+# Source files on disk may or may not have a BOM — File.ReadAllText auto-
+# detects and strips it, so this is safe to call on either.
+function Add-Ps1ZipEntry(
+    [System.IO.Compression.ZipArchive] $zip,
+    [string] $sourcePath,
+    [string] $entryName
+) {
+    $text = [System.IO.File]::ReadAllText($sourcePath)
+    $entry = $zip.CreateEntry($entryName, 'Optimal')
+    $writer = New-Object System.IO.StreamWriter($entry.Open(), [System.Text.UTF8Encoding]::new($true))
+    try { $writer.Write($text) } finally { $writer.Dispose() }
+}
+
 function ShouldExclude([string]$relativePath) {
     $normalized = $relativePath -replace '\\', '/'
     foreach ($pattern in $excludePatterns) {
@@ -451,12 +473,28 @@ function Get-SanitizedInstanceCfg(
         'ExportOptionalFiles'
     )
 
-    # Single-quoted so PS doesn't expand `$INST_DIR` — Prism does substitution
-    # at launch time. Outer double quotes are part of the value: Prism uses
-    # QProcess::splitCommand which respects quoted segments containing spaces
-    # (e.g. C:\Users\Jane Doe\...).
-    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
-    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\backup.ps1"'
+    # Encoding-tolerant invocation: PS 5.1's `-File` reads .ps1 as the system
+    # ANSI codepage (CP1252 on US Windows) unless the file has a UTF-8 BOM,
+    # which mangles em-dashes (U+2014 -> bytes E2 80 94; 0x94 reads as a
+    # closing smart-quote and silently terminates string literals). We
+    # publish .ps1 entries WITH BOM, but defense-in-depth: this `-Command`
+    # form uses .NET's UTF-8 decoder explicitly via File::ReadAllText, so
+    # the script parses correctly regardless of BOM presence or any future
+    # editor/tool that strips it.
+    #
+    # Quoting layers (outermost -> innermost):
+    #   * Qt INI value wrap: the entire command is the value after `=`.
+    #     Backslashes inside "..." are kept literal (no \u/\n escapes).
+    #   * QProcess::splitCommand: splits on whitespace; "..." segments stay
+    #     intact (handles paths with spaces like "Craft to Exile 2").
+    #   * PowerShell `-Command` parser: the value is parsed as a script.
+    #     Single quotes wrap the path so backslashes + spaces are literal.
+    # Single-quoted PS string here so `$INST_DIR` survives unexpanded —
+    # Prism substitutes it at launch time.
+    $updateInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\update.ps1'', [System.Text.Encoding]::UTF8)))'
+    $backupInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\backup.ps1'', [System.Text.Encoding]::UTF8)))'
+    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
+    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
 
     # 8192 MB matches C2E2's recommended ceiling (players on 8 GB systems
     # should lower to 4096 after install). name= carries the version suffix
@@ -557,10 +595,12 @@ try {
     Write-Ok "Bundled icon: $($iconFile.Name) -> $iconEntry"
 
     # Bundle update.ps1 so the PreLaunchCommand has something to run on
-    # first launch.
+    # first launch. Add-Ps1ZipEntry (not CreateEntryFromFile) re-encodes with
+    # a UTF-8 BOM so PS 5.1 on the player's machine reads the em-dashes
+    # correctly instead of parse-crashing on byte 0x94 — see the helper's
+    # comment block for the full encoding-foot-gun explanation.
     $updateEntry = "$InstanceName/.negativezone/update.ps1"
-    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-        $zip, $UpdateScriptPath, $updateEntry, 'Optimal') | Out-Null
+    Add-Ps1ZipEntry -zip $zip -sourcePath $UpdateScriptPath -entryName $updateEntry
     Write-Ok "Bundled update.ps1 -> $updateEntry"
 
     # Same pattern for backup.ps1, invoked by PostExitCommand. Bundling it
@@ -568,8 +608,7 @@ try {
     # version-locked together — a player can't end up with a fresh backup.ps1
     # against an older update.ps1 or vice versa.
     $backupEntry = "$InstanceName/.negativezone/backup.ps1"
-    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-        $zip, $BackupScriptPath, $backupEntry, 'Optimal') | Out-Null
+    Add-Ps1ZipEntry -zip $zip -sourcePath $BackupScriptPath -entryName $backupEntry
     Write-Ok "Bundled backup.ps1 -> $backupEntry"
 
     # Bundle the curated user-prefs manifest as JSON at
