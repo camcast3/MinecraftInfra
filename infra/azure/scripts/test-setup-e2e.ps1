@@ -327,6 +327,10 @@ function Invoke-SetupPs1 {
     "`$env:WINDIR\System32\WindowsPowerShell\v1.0\Modules"
 ) -join ';'
 `$env:APPDATA = '$AppData'
+# Setup writes archive zips to %LOCALAPPDATA%\NegativeZone\archives\.
+# Without this override the test would pollute the developer's real
+# AppData\Local.
+`$env:LOCALAPPDATA = '$AppData\Local'
 `$env:NEGATIVEZONE_NONINTERACTIVE = '1'
 `$env:NEGATIVEZONE_SKIP_WINGET = '1'
 `$env:NEGATIVEZONE_SKIP_BITS = '1'
@@ -599,6 +603,39 @@ Register-Test 'upgrade-with-snapshot-restore' {
     Assert-PathExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.1.0.jar') 'v1.1.0 mod installed'
     Assert-PathNotExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.0.0.jar') 'v1.0.0 mod removed'
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' 'version marker bumped'
+
+    # Permanent archive zip — the "never lose data" safety net. Lives outside
+    # the Prism instances dir so future setup runs cannot touch it.
+    $archiveDir = Join-Path $appData 'Local\NegativeZone\archives'
+    Assert-PathExists $archiveDir 'permanent archive directory created'
+    $archives = @(Get-ChildItem -LiteralPath $archiveDir -Filter '*.zip' -File -ErrorAction SilentlyContinue)
+    Assert-True ($archives.Count -ge 1) "at least one archive zip created (found $($archives.Count))"
+    $archive = $archives | Select-Object -First 1
+    Assert-True ($archive.Length -gt 1024) "archive zip is non-empty (got $($archive.Length) bytes — should contain mods + saves + options)"
+    Assert-True ($archive.Name -match '^Craft to Exile 2_v1\.0\.0_\d{8}-\d{6}\.zip$') "archive zip named with prior version + timestamp (got '$($archive.Name)')"
+    # And verify the zip actually contains the player state we'd want to recover
+    Add-Type -AssemblyName 'System.IO.Compression.FileSystem' -ErrorAction SilentlyContinue
+    $zipArchive = [System.IO.Compression.ZipFile]::OpenRead($archive.FullName)
+    try {
+        $entryNames = @($zipArchive.Entries | ForEach-Object { $_.FullName })
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]options\.txt$' }).Count -gt 0) 'archive zip contains options.txt'
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]hotbar\.nbt$' }).Count -gt 0) 'archive zip contains hotbar.nbt'
+        Assert-True (($entryNames | Where-Object { $_ -match '\.minecraft[\\/]saves[\\/]' }).Count -gt 0) 'archive zip contains saves/'
+    } finally {
+        $zipArchive.Dispose()
+    }
+
+    # Side-by-side "(old)" instance — must be a Prism-visible launchable
+    # instance with the prelaunch update hook DISABLED so the player can
+    # roll back from the UI without being blocked.
+    $oldInst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2 (old)'
+    Assert-PathExists $oldInst 'side-by-side (old) instance created'
+    Assert-PathExists (Join-Path $oldInst '.minecraft\options.txt') 'side-by-side preserves options.txt'
+    Assert-PathExists (Join-Path $oldInst 'instance.cfg') 'side-by-side has instance.cfg'
+    Assert-FileContains (Join-Path $oldInst 'instance.cfg') '(?m)^OverrideCommands=false' 'side-by-side has prelaunch hooks disabled (cannot be blocked by version check)'
+    Assert-FileContains (Join-Path $oldInst 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.0\.0 \(old\)' 'side-by-side display name marked as old'
+    # And the Prism group config places it under Backup
+    Assert-FileContains (Join-Path $appData 'PrismLauncher\instances\instgroups.json') 'Craft to Exile 2 \(old\)' 'side-by-side instance is in Prism instgroups.json'
 
     # Restored player state — these are the critical checks
     Assert-PathExists (Join-Path $inst '.minecraft\saves\my-world\region\r.0.0.mca') 'saves RESTORED into v1.1.0'

@@ -112,14 +112,35 @@ function Read-InstancePath {
             Write-Host ("  [{0}] {1,-10} {2}" -f ($i + 1), $c.Launcher, $c.Name)
             Write-Host ("       {0}" -f $c.Path) -ForegroundColor DarkGray
         }
-        Write-Host '  [m]  Type a path manually'
-        $choice = Read-Host '  Pick one'
-        if ($choice -match '^[0-9]+$') {
-            $idx = [int]$choice - 1
-            if ($idx -ge 0 -and $idx -lt $Candidates.Count) {
-                return $Candidates[$idx].Path
+        Write-Host '  [m]  Type a path manually (or paste a full path right here)'
+        while ($true) {
+            $choice = Read-Host '  Pick one'
+            if ([string]::IsNullOrWhiteSpace($choice)) { continue }
+            $choice = $choice.Trim('"').Trim()
+
+            if ($choice -match '^[0-9]+$') {
+                $idx = [int]$choice - 1
+                if ($idx -ge 0 -and $idx -lt $Candidates.Count) {
+                    return $Candidates[$idx].Path
+                }
+                Write-Host "    Out of range: $choice" -ForegroundColor Red
+                continue
             }
-            Write-Host "    Out of range: $choice" -ForegroundColor Red
+
+            if ($choice -eq 'm' -or $choice -eq 'M') { break }
+
+            # User pasted a path at the picker prompt. Accept it directly
+            # instead of silently re-prompting (the original behavior
+            # forced people to retype their path immediately after).
+            if ($choice -match '[\\/:]' -or $choice -match '^\.') {
+                if (Test-Path -LiteralPath $choice -PathType Container) {
+                    return $choice
+                }
+                Write-Host "    Not found: $choice" -ForegroundColor Red
+                continue
+            }
+
+            Write-Host "    Enter a number from the list, 'm' for manual entry, or paste a full path." -ForegroundColor Red
         }
     }
     while ($true) {
@@ -202,7 +223,29 @@ foreach ($d in $folders) {
 }
 
 if (-not $plan) {
+    Write-Host ''
     Write-Host 'Nothing to migrate - none of the expected items exist in the old instance.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host "Looked for these directly under: $old" -ForegroundColor Cyan
+    foreach ($f in $files)   { Write-Host ("  file   $f") }
+    foreach ($d in $folders) { Write-Host ("  folder $d") }
+    Write-Host ''
+    Write-Host "Top-level contents of that folder (first 20 entries):" -ForegroundColor Cyan
+    $entries = @(Get-ChildItem -LiteralPath $old -Force -ErrorAction SilentlyContinue | Select-Object -First 20)
+    if ($entries.Count -eq 0) {
+        Write-Host '  (folder is empty or unreadable)' -ForegroundColor DarkYellow
+    } else {
+        foreach ($e in $entries) {
+            $tag = if ($e.PSIsContainer) { 'd' } else { 'f' }
+            Write-Host ("  [{0}] {1}" -f $tag, $e.Name)
+        }
+    }
+    Write-Host ''
+    Write-Host 'Most common causes:' -ForegroundColor Cyan
+    Write-Host '  - You pointed at the wrong layer. For Prism the right layer is <instance>\.minecraft\.'
+    Write-Host '    Try re-running and pointing directly at the .minecraft folder if you have one.'
+    Write-Host '  - The backup truly has no settings (e.g. a fresh extract with no playtime).'
+    Write-Host '  - You pointed at a .bak that setup.ps1 made AFTER your settings were already lost.'
     return
 }
 
