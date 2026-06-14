@@ -90,6 +90,11 @@ runcmd:
   - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
   - mount /data
   - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
+  # Pre-create per-container state dirs for the status-page stack
+  # (docker/azure/status/docker-compose.yml). cloudflared is intentionally
+  # absent — the tunnel is stateless on the origin (state lives in Cloudflare's
+  # control plane), and `docker compose up` can recreate the container freely.
+  - mkdir -p /data/minecraft/traefik /data/minecraft/kuma /data/minecraft/fail2ban
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
   # Tailscale state dir: chown explicitly to root:root 0700. Order matters —
   # this MUST come AFTER the `chown -R __ADMIN_USERNAME__ /data` above, which
@@ -98,6 +103,26 @@ runcmd:
   # by root.
   - chown root:root /data/minecraft/tailscale
   - chmod 0700 /data/minecraft/tailscale
+  # Status-page stack state-dir ownerships (each container runs as a specific
+  # in-container UID; the on-host directory must be owned by that UID so the
+  # bind mount is writable from inside the container without privilege).
+  # Same "explicit chown after the broad recursive chown" pattern as tailscale.
+  #
+  # traefik writes its JSON access log here as UID 65532 (nonroot, set by the
+  # traefik image's USER directive); fail2ban mounts the same dir read-only
+  # and tails the log as UID 0 inside its userns. Mode 0755 lets fail2ban
+  # traverse and read.
+  - chown 65532:65532 /data/minecraft/traefik
+  - chmod 0755 /data/minecraft/traefik
+  # Uptime Kuma rootless image runs as UID 1000. Sqlite DB + uploads live
+  # under /app/data → /data/minecraft/kuma. 0750 because Kuma is the only
+  # consumer; no other container needs to read it.
+  - chown 1000:1000 /data/minecraft/kuma
+  - chmod 0750 /data/minecraft/kuma
+  # crazymax/fail2ban runs as root in its userns (needed for fail2ban-server
+  # socket + jail.sqlite3 management). 0700 — no other container reads it.
+  - chown 0:0 /data/minecraft/fail2ban
+  - chmod 0700 /data/minecraft/fail2ban
   # Secrets dir for the docker stack — root-only on the host. refresh-env.sh
   # writes ts_authkey + velocity_forwarding_secret here; docker compose mounts
   # those into the tailscale and velocity containers. Create it explicitly so

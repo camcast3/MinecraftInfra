@@ -30,3 +30,8 @@ packwiz/config/openloader/resources/resources.zip
 # (~3-4 GB) that would balloon the repo.
 build/
 infra/azure/scripts/cache/
+
+# Python bytecode caches (created when validating helper scripts locally
+# via `python -m py_compile`).
+__pycache__/
+*.pyc

@@ -100,8 +100,46 @@ kv_secret() {
   az keyvault secret show --vault-name "$KV_NAME" --name "$1" --query value -o tsv
 }
 
+# kv_secret_or_empty: returns "" instead of erroring when the secret is missing.
+# Used for the Cloudflare status-page secrets, which are OPTIONAL — if any of
+# them is missing, the status stack just doesn't deploy (proxy stack is
+# unaffected). Anything that calls this AT ALL must handle the empty case.
+kv_secret_or_empty() {
+  az keyvault secret show --vault-name "$KV_NAME" --name "$1" --query value -o tsv 2>/dev/null || true
+}
+
 VELOCITY_FORWARDING_SECRET=$(kv_secret "velocity-forwarding-secret")
 C2E2_TAILSCALE_IP=$(kv_secret "c2e2-tailscale-ip")
+
+# ── Cloudflare status-page secrets (OPTIONAL — see below) ────────────────────
+# All four (or none) must be present in KV. If any is missing on this run, we
+# log a warning and skip writing the status-stack secrets entirely so the deploy
+# workflow's status-stack step can detect the absence and skip its
+# `docker compose up`. Proxy stack deploy is unaffected.
+#
+# Once the operator has worked through docs/operations/status-page-setup.md
+# (creates the CF tunnel, API token, IP list, firewall rule, and seeds the four
+# KV entries), the next deploy picks them up automatically — no script change.
+#
+# UID ownership for each on-host file:
+#   - cloudflare_tunnel_token  → 65532:65532 (cloudflared image USER nonroot)
+#   - cloudflare_api_token     → 0:0         (crazymax/fail2ban runs as root in userns)
+#   - cloudflare_account_id    → 0:0         (read by fail2ban)
+#   - cloudflare_list_id       → 0:0         (read by fail2ban)
+CLOUDFLARE_TUNNEL_TOKEN=$(kv_secret_or_empty "cloudflare-tunnel-token")
+CLOUDFLARE_API_TOKEN=$(kv_secret_or_empty "cloudflare-api-token")
+CLOUDFLARE_ACCOUNT_ID=$(kv_secret_or_empty "cloudflare-account-id")
+CLOUDFLARE_LIST_ID=$(kv_secret_or_empty "cloudflare-list-id")
+
+# cloudflared runs as the `nonroot` user (UID 65532) baked into its
+# Dockerfile. Its docker-secret file must be readable by that UID.
+CLOUDFLARED_UID=65532
+CLOUDFLARED_GID=65532
+
+# crazymax/fail2ban runs as root inside its userns (fail2ban-server needs it
+# for /var/run/fail2ban socket + jail state). Files owned 0:0 0400 work.
+FAIL2BAN_UID=0
+FAIL2BAN_GID=0
 
 # ── State directories ─────────────────────────────────────────────────────────
 mkdir -p "$VELOCITY_DIR"
@@ -157,6 +195,47 @@ fi
 write_secret "$SECRETS_DIR/velocity_forwarding_secret" \
   "$BUNGEECORD_UID" "$BUNGEECORD_GID" "$VELOCITY_FORWARDING_SECRET"
 echo "✓ velocity_forwarding_secret written to ${SECRETS_DIR}/velocity_forwarding_secret"
+
+# ── Cloudflare status-page secrets (all-or-nothing) ──────────────────────────
+# Either all four KV entries are populated → write all four files → status
+# stack deploys; or any is missing → wipe any stale files → status stack
+# deploy step in deploy-azure.yml detects the absence and skips
+# `docker compose up`. Proxy stack is never affected by either branch.
+#
+# CF_STATUS_FILES is the canonical list of files this block manages — used
+# both for writing (success path) and for cleanup (any-missing path) so the
+# on-disk state is always either "all four files present" or "none".
+CF_STATUS_FILES=(
+  "$SECRETS_DIR/cloudflare_tunnel_token"
+  "$SECRETS_DIR/cloudflare_api_token"
+  "$SECRETS_DIR/cloudflare_account_id"
+  "$SECRETS_DIR/cloudflare_list_id"
+)
+if [ -n "$CLOUDFLARE_TUNNEL_TOKEN" ] && [ -n "$CLOUDFLARE_API_TOKEN" ] \
+    && [ -n "$CLOUDFLARE_ACCOUNT_ID" ] && [ -n "$CLOUDFLARE_LIST_ID" ]; then
+  write_secret "$SECRETS_DIR/cloudflare_tunnel_token" \
+    "$CLOUDFLARED_UID" "$CLOUDFLARED_GID" "$CLOUDFLARE_TUNNEL_TOKEN"
+  write_secret "$SECRETS_DIR/cloudflare_api_token" \
+    "$FAIL2BAN_UID" "$FAIL2BAN_GID" "$CLOUDFLARE_API_TOKEN"
+  write_secret "$SECRETS_DIR/cloudflare_account_id" \
+    "$FAIL2BAN_UID" "$FAIL2BAN_GID" "$CLOUDFLARE_ACCOUNT_ID"
+  write_secret "$SECRETS_DIR/cloudflare_list_id" \
+    "$FAIL2BAN_UID" "$FAIL2BAN_GID" "$CLOUDFLARE_LIST_ID"
+  echo "✓ cloudflare status-page secrets written (4 files)"
+else
+  echo "⚠ One or more Cloudflare status-page secrets missing from KV — status stack will not deploy."
+  echo "  See docs/operations/status-page-setup.md for one-time setup of:"
+  echo "    cloudflare-tunnel-token, cloudflare-api-token, cloudflare-account-id, cloudflare-list-id"
+  # Clean any stale files so deploy-azure.yml's all-four-present check is
+  # accurate (no partial state from a prior config where one of the four
+  # was populated and then later removed).
+  for f in "${CF_STATUS_FILES[@]}"; do
+    if [ -e "$f" ]; then
+      rm -f "$f"
+      echo "  ✓ removed stale ${f}"
+    fi
+  done
+fi
 
 # ── Velocity config (non-secret) ──────────────────────────────────────────────
 # velocity.toml only references the C2E2 backend IP — the forwarding secret is

@@ -1,0 +1,31 @@
+# Traefik v3 dynamic configuration — single route for Uptime Kuma.
+#
+# Cloudflare Tunnel terminates HTTPS at the edge and forwards plaintext HTTP
+# over the tunnel to this Traefik instance (on the same docker network as
+# cloudflared). Traefik then routes Host: status.negativezone.cc to the
+# uptime-kuma container on port 3001.
+#
+# No middlewares. Defense lives at Cloudflare's edge (DDoS, Bot Fight, the
+# Fail2Ban-managed IP blocklist as a WAF Custom Rule) and inside Fail2Ban
+# (which reads Traefik's access log and pushes offending IPs to CF). Adding
+# middlewares here would duplicate work CF is already doing for free.
+
+http:
+  routers:
+    kuma:
+      rule: "Host(`status.negativezone.cc`)"
+      entryPoints:
+        - web
+      service: uptime-kuma
+
+  services:
+    uptime-kuma:
+      loadBalancer:
+        servers:
+          # Kuma listens on :3001 by default. Container resolves via docker DNS
+          # on the shared status-net bridge.
+          - url: "http://uptime-kuma:3001"
+        # Kuma's WebSocket connections (used for the live status badge and
+        # admin dashboard) need long-lived idle support. Traefik defaults
+        # are fine for HTTP/1.1 keepalives; no special config required.
+        passHostHeader: true
