@@ -155,18 +155,21 @@ function Write-Manifest {
         [Parameter(Mandatory)][string] $BlobName,
         [Parameter(Mandatory)][string] $ZipPath,
         [Parameter(Mandatory)][string] $OutPath,
-        [Parameter(Mandatory)][string] $BaseUrl
+        [Parameter(Mandatory)][string] $BaseUrl,
+        [switch] $AllowDowngrade
     )
     $sha = (Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLower()
     $size = (Get-Item -LiteralPath $ZipPath).Length
-    $json = [pscustomobject]@{
+    $payload = [ordered]@{
         version   = $Version
         instance  = $InstanceName
         blob      = $BlobName
         url       = "$BaseUrl$BlobName"
         sha256    = $sha
         sizeBytes = $size
-    } | ConvertTo-Json -Compress
+    }
+    if ($AllowDowngrade) { $payload['allowDowngrade'] = $true }
+    $json = ($payload | ConvertTo-Json -Compress)
     # PS 5.1's `Set-Content -Encoding UTF8` writes a UTF-8 BOM, which makes
     # Invoke-RestMethod on the receiving side bail out of JSON auto-parse
     # (it returns the raw string instead of an object). The real Azure Blob
@@ -353,8 +356,11 @@ function Invoke-PreLaunchCommand {
     # in a form that survives Prism's launch-time re-read.
     $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
     # Simulate Prism's QProcess::splitCommand by handing the whole line to cmd /c.
+    # Also export INST_DIR so child processes can use it — Prism's CustomCommands
+    # plumbing injects this env var for the duration of the hook (update.ps1
+    # bails with "INST_DIR not set" when missing, by design).
     $cmdFile = Join-Path $logDir ("pre-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
-    "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    "@echo off`r`nset `"INST_DIR=$InstanceDir`"`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
     $out = & cmd.exe /c $cmdFile 2>&1
     return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
 }
@@ -367,7 +373,7 @@ function Invoke-PostExitCommand {
     $raw = $line -replace '^PostExitCommand=', ''
     $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
     $cmdFile = Join-Path $logDir ("post-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
-    "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    "@echo off`r`nset `"INST_DIR=$InstanceDir`"`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
     $out = & cmd.exe /c $cmdFile 2>&1
     return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
 }
@@ -740,6 +746,61 @@ Register-Test 'instgroups-latest-and-backup' {
     $ctx.PublishVersion.Invoke('1.0.0')  # reset
 }
 
+Register-Test 'no-downgrade-by-default' {
+    param($ctx)
+    # If the published manifest version drops below what's installed (admin
+    # typo, stale local test manifest, mis-aimed -ManifestUrl override),
+    # setup.ps1 and update.ps1 must BOTH refuse to silently roll the player
+    # back. The .bak strategy only protects one level of history, so a
+    # spurious downgrade-then-update sequence would permanently erase the
+    # actual previous version. Allow only when the manifest opts in with
+    # allowDowngrade:true, which is how admins ship intentional emergency
+    # rollbacks.
+    $appData = Join-Path $sandbox 'appdata-no-downgrade'
+
+    # Step 1: install v1.1.0 fresh
+    $ctx.PublishVersion.Invoke('1.1.0')
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'no-down-1'
+    Assert-True ($r1.ExitCode -eq 0) "v1.1.0 install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' 'starts on v1.1.0'
+
+    # Step 2: roll the published manifest BACKWARDS to v1.0.0 with NO opt-in.
+    # Re-run setup.ps1 — must stay on v1.1.0.
+    $ctx.PublishVersion.Invoke('1.0.0')
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'no-down-2'
+    Assert-True ($r2.ExitCode -eq 0) "setup.ps1 must exit 0 even when refusing downgrade"
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' `
+        'setup.ps1 must NOT downgrade from v1.1.0 to v1.0.0 without opt-in'
+
+    # And the PreLaunch hook must skip too — this is the path that fires
+    # every launch, so a bug here would be catastrophic (see PR comment).
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    Assert-True ($pre.ExitCode -eq 0) "update.ps1 must exit 0 when refusing downgrade (got $($pre.ExitCode))"
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' `
+        'update.ps1 must NOT downgrade from v1.1.0 to v1.0.0 without opt-in'
+    $joined = ($pre.Output -join "`n")
+    Assert-True ($joined -match 'refusing to downgrade') `
+        "update.ps1 must explain it refused the downgrade. Output: $joined"
+
+    # Step 3: re-publish v1.0.0 WITH allowDowngrade:true — both setup.ps1
+    # and update.ps1 must now perform the rollback.
+    $ctx.PublishVersion.Invoke('1.0.0', $true)
+    $r3 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'no-down-3'
+    Assert-True ($r3.ExitCode -eq 0) "v1.0.0 admin-approved rollback must succeed"
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.0\.0' `
+        'setup.ps1 must downgrade when allowDowngrade:true'
+
+    $ctx.PublishVersion.Invoke('1.0.0')  # reset (clear allowDowngrade flag)
+}
+
 # ─── Main ───────────────────────────────────────────────────────────────────
 
 Write-Section 'NegativeZone setup.ps1 E2E harness'
@@ -765,13 +826,16 @@ $null = Build-FakeModpackZip -Version '1.1.0' -OutDir $blobDir
 $server = Start-NzHttpServer -ServeDir $blobDir
 Write-Info "HTTP:    $($server.BaseUrl)"
 
-# Allow tests to swap which version the latest.json points at
+# Allow tests to swap which version the latest.json points at, optionally
+# with the allowDowngrade opt-in flag set so downgrade-rollback tests can
+# prove that path works end-to-end.
 $publishVersion = {
-    param([string]$v)
+    param([string]$v, [switch]$AllowDowngrade)
     Write-Manifest -Version $v -InstanceName $instanceName -BlobName "c2e2-v$v.zip" `
                    -ZipPath (Join-Path $blobDir "c2e2-v$v.zip") `
                    -OutPath (Join-Path $blobDir 'latest.json') `
-                   -BaseUrl $server.BaseUrl
+                   -BaseUrl $server.BaseUrl `
+                   -AllowDowngrade:$AllowDowngrade
 }
 $publishVersion.Invoke('1.0.0')
 

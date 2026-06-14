@@ -78,6 +78,14 @@
     coupling (compose-rewrite + PR + auto-merge). -Version MUST start
     with "test-". Manifest goes to latest-test.json, not latest.json.
     Players using setup.ps1 stay on production unless they set
+
+.PARAMETER AllowDowngrade
+    Set "allowDowngrade": true in the published manifest so the player-side
+    update.ps1 / setup.ps1 will accept rolling back from a newer installed
+    build to this older -Version. Default is omitted (false) — the
+    player-side guard refuses downgrades by default to defend against a
+    typo'd manifest version silently rolling everyone back. Use this flag
+    when shipping an intentional emergency rollback.
     $env:NEGATIVEZONE_MANIFEST_URL.
 
 .EXAMPLE
@@ -110,7 +118,8 @@ param(
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
     [switch]$Force,
-    [switch]$SkipDriftCheck
+    [switch]$SkipDriftCheck,
+    [switch]$AllowDowngrade
 )
 
 $ErrorActionPreference = 'Stop'
@@ -757,6 +766,12 @@ $manifest = [ordered]@{
     sizeBytes  = (Get-Item $tempZip).Length
     instance   = $InstanceName
     publishedAt = (Get-Date).ToUniversalTime().ToString('o')
+}
+if ($AllowDowngrade) {
+    # Opt-in field — only emitted when the admin explicitly approves rollback.
+    # Player-side update.ps1 refuses downgrades unless this is true.
+    $manifest['allowDowngrade'] = $true
+    Write-Host "    [warn] AllowDowngrade=true: players on newer versions WILL roll back to v$Version" -ForegroundColor Yellow
 }
 
 $manifestPath = Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'

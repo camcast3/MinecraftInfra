@@ -273,6 +273,33 @@ try {
         return
     }
 
+    # Don't downgrade unless the manifest explicitly opts in. Without this
+    # guard, a typo'd manifest version (or a stale local-test manifest
+    # override pointing at an older build) would silently roll the player
+    # back and discard their snapshot history. Admins ship intentional
+    # rollbacks by setting `"allowDowngrade": true` in the published
+    # manifest; players then auto-downgrade on next launch.
+    $allowDowngrade = $false
+    if ($manifest.PSObject.Properties.Name -contains 'allowDowngrade') {
+        $allowDowngrade = [bool]$manifest.allowDowngrade
+    }
+    if ($installedVersion) {
+        try {
+            if (([version]$installedVersion) -gt ([version]$manifest.version)) {
+                if ($allowDowngrade) {
+                    Write-Log 'WARN' ("Manifest opts into downgrade: installed v{0} -> v{1} (admin-approved rollback)." -f $installedVersion, $manifest.version)
+                } else {
+                    Write-Log 'INFO' ("Installed v{0} is newer than manifest v{1}; refusing to downgrade." -f $installedVersion, $manifest.version)
+                    Write-Log 'INFO' "Set 'allowDowngrade: true' in the published manifest if this rollback is intentional."
+                    $exitCode = 0
+                    return
+                }
+            }
+        } catch {
+            # Either side unparseable as [version] — fall through to update path.
+        }
+    }
+
     Write-Log 'INFO' ("Updating: {0} -> {1}" -f $installedVersion, $manifest.version)
 
     # ─── Download + hash verification ──────────────────────────────────────

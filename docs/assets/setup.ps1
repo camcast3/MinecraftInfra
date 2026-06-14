@@ -346,11 +346,40 @@ if ($manifest) {
 
     if (Test-Path $existingVersionFile) {
         $current = (Get-Content $existingVersionFile -Raw).Trim()
-        if ($current -eq $manifest.version) {
-            Write-Ok "Modpack '$($manifest.instance)' v$($manifest.version) already installed"
+        # Skip install if installed >= manifest, UNLESS the manifest opts
+        # into a downgrade. Default-safe: a typo'd manifest version can't
+        # silently roll players backward; emergency rollback (publishing
+        # an older blob with allowDowngrade:true) still works.
+        $allowDowngrade = $false
+        if ($manifest.PSObject.Properties.Name -contains 'allowDowngrade') {
+            $allowDowngrade = [bool]$manifest.allowDowngrade
+        }
+        $skipInstall = $false
+        try {
+            $cv = [version]$current
+            $mv = [version]$manifest.version
+            if ($cv -eq $mv) {
+                $skipInstall = $true
+            } elseif ($cv -gt $mv -and -not $allowDowngrade) {
+                $skipInstall = $true
+            }
+        } catch {
+            if ($current -eq $manifest.version) { $skipInstall = $true }
+        }
+        if ($skipInstall) {
+            if ($current -eq $manifest.version) {
+                Write-Ok "Modpack '$($manifest.instance)' v$($manifest.version) already installed"
+            } else {
+                Write-Ok "Installed v$current is newer than published v$($manifest.version); not downgrading"
+                Write-Host "    Admin must set 'allowDowngrade: true' in the manifest to force a rollback." -ForegroundColor DarkGray
+            }
             $needsInstall = $false
         } else {
-            Write-Host "    Updating from v$current to v$($manifest.version)" -ForegroundColor Yellow
+            if ($allowDowngrade -and ([version]$current -gt [version]$manifest.version)) {
+                Write-Host "    Rolling back from v$current to v$($manifest.version) (admin-approved downgrade)" -ForegroundColor Yellow
+            } else {
+                Write-Host "    Updating from v$current to v$($manifest.version)" -ForegroundColor Yellow
+            }
         }
     }
 
