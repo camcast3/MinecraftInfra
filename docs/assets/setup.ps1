@@ -39,6 +39,19 @@ $UpdateScriptUrl = if ($env:NEGATIVEZONE_UPDATE_SCRIPT_URL) {
     $DefaultUpdateScriptUrl
 }
 
+# Lightweight version-check hook wired into Prism's PreLaunchCommand. Replaces
+# the heavyweight auto-update path that used to live in update.ps1 — see
+# prelaunch-check.ps1's header for rationale (1 GB downloads with no progress
+# UI were unacceptable). update.ps1 is still bundled for the user-run
+# `irm .../update.ps1 | iex` flow that prelaunch-check.ps1 directs players to.
+# $env:NEGATIVEZONE_PRELAUNCH_CHECK_SCRIPT_URL override = local-E2E harness.
+$DefaultPrelaunchCheckScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/prelaunch-check.ps1'
+$PrelaunchCheckScriptUrl = if ($env:NEGATIVEZONE_PRELAUNCH_CHECK_SCRIPT_URL) {
+    $env:NEGATIVEZONE_PRELAUNCH_CHECK_SCRIPT_URL
+} else {
+    $DefaultPrelaunchCheckScriptUrl
+}
+
 # Same backfill rationale as update.ps1 — re-running setup once is how pre-PR 2
 # players pick up the periodic snapshot hook on an already-installed instance.
 # $env:NEGATIVEZONE_BACKUP_SCRIPT_URL override = local-E2E test harness.
@@ -55,6 +68,20 @@ $BackupScriptUrl = if ($env:NEGATIVEZONE_BACKUP_SCRIPT_URL) {
 # flow. The Prism-running check is also gated on this since the harness uses
 # a sandboxed APPDATA that can't collide with a real Prism install.
 $NonInteractive = ($env:NEGATIVEZONE_NONINTERACTIVE -eq '1')
+# Test-only escape hatch. After ~10 rapid winget invocations the harness
+# hits winget's source-update rate limiting and `winget list` hangs for
+# minutes. Production users never see this because they run setup.ps1
+# at most once or twice per machine. The flag short-circuits BOTH
+# "already installed" checks AND the install calls themselves —
+# harnesses must arrange for Java + Prism to already exist on disk.
+$SkipWinget    = ($env:NEGATIVEZONE_SKIP_WINGET -eq '1')
+# Test-only escape hatch for the BITS transfer path. BITS occasionally
+# wedges on repeated loopback transfers (the harness fires 10+ in a
+# minute against a localhost TcpListener) and Start-BitsTransfer can
+# block indefinitely. Setting this forces the plain Invoke-WebRequest
+# path, which is fine for harness purposes — production users keep BITS
+# for its resume + throttling behaviour on large multi-hundred-MB pulls.
+$SkipBits      = ($env:NEGATIVEZONE_SKIP_BITS -eq '1')
 
 # Encoding-tolerant + parse-safe Pre/Post commands. Two layers of defense:
 #
@@ -78,7 +105,7 @@ $NonInteractive = ($env:NEGATIVEZONE_NONINTERACTIVE -eq '1')
 # make this near-impossible to read or modify.
 # $INST_DIR is preserved verbatim — Prism substitutes it at launch time.
 $updateInvoke = @'
-try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\update.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\prelaunch-check.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
 '@
 # PostExit fails OPEN (exit 0) — the player already finished playing, so
 # blocking the launcher with a popup adds friction with no recovery benefit.
@@ -303,22 +330,30 @@ Write-Ok "${totalGB} GB system RAM detected"
 
 # ─── Install Java 17 ────────────────────────────────────────────────────────
 Write-Step "Installing Eclipse Temurin 17 (Java)"
-$javaInstalled = winget list --id EclipseAdoptium.Temurin.17.JDK -e --accept-source-agreements 2>$null | Select-String 'EclipseAdoptium.Temurin.17.JDK'
-if ($javaInstalled) {
-    Write-Ok "Already installed"
+if ($SkipWinget) {
+    Write-Ok "Skipped (NEGATIVEZONE_SKIP_WINGET=1; test mode)"
 } else {
-    winget install --id EclipseAdoptium.Temurin.17.JDK -e --source winget --accept-package-agreements --accept-source-agreements
-    Write-Ok "Installed"
+    $javaInstalled = winget list --id EclipseAdoptium.Temurin.17.JDK -e --accept-source-agreements 2>$null | Select-String 'EclipseAdoptium.Temurin.17.JDK'
+    if ($javaInstalled) {
+        Write-Ok "Already installed"
+    } else {
+        winget install --id EclipseAdoptium.Temurin.17.JDK -e --source winget --accept-package-agreements --accept-source-agreements
+        Write-Ok "Installed"
+    }
 }
 
 # ─── Install Prism Launcher ─────────────────────────────────────────────────
 Write-Step "Installing Prism Launcher"
-$prismInstalled = winget list --id PrismLauncher.PrismLauncher -e --accept-source-agreements 2>$null | Select-String 'PrismLauncher.PrismLauncher'
-if ($prismInstalled) {
-    Write-Ok "Already installed"
+if ($SkipWinget) {
+    Write-Ok "Skipped (NEGATIVEZONE_SKIP_WINGET=1; test mode)"
 } else {
-    winget install --id PrismLauncher.PrismLauncher -e --source winget --accept-package-agreements --accept-source-agreements
-    Write-Ok "Installed"
+    $prismInstalled = winget list --id PrismLauncher.PrismLauncher -e --accept-source-agreements 2>$null | Select-String 'PrismLauncher.PrismLauncher'
+    if ($prismInstalled) {
+        Write-Ok "Already installed"
+    } else {
+        winget install --id PrismLauncher.PrismLauncher -e --source winget --accept-package-agreements --accept-source-agreements
+        Write-Ok "Installed"
+    }
 }
 
 # ─── Install Craft to Exile 2 from Azure Blob ──────────────────────────────
@@ -399,10 +434,14 @@ if ($manifest) {
 
         $tempZip = Join-Path $env:TEMP $manifest.blob
         Write-Step "Downloading modpack v$($manifest.version) (~$([math]::Round($manifest.sizeBytes / 1MB)) MB)"
-        try {
-            Start-BitsTransfer -Source $manifest.url -Destination $tempZip -Description "Craft to Exile 2 v$($manifest.version)"
-        } catch {
-            Invoke-WebRequest -Uri $manifest.url -OutFile $tempZip
+        if ($SkipBits) {
+            Invoke-WebRequest -Uri $manifest.url -OutFile $tempZip -UseBasicParsing
+        } else {
+            try {
+                Start-BitsTransfer -Source $manifest.url -Destination $tempZip -Description "Craft to Exile 2 v$($manifest.version)"
+            } catch {
+                Invoke-WebRequest -Uri $manifest.url -OutFile $tempZip
+            }
         }
 
         Write-Step "Verifying SHA-256"
@@ -625,11 +664,26 @@ if ($manifest) {
     # skipped (version matched). Lets players who pre-date the auto-update /
     # backup hooks stitch them in by re-running the setup one-liner.
     if (Test-Path -LiteralPath $instanceTarget) {
-        Write-Step "Verifying auto-update launch hook"
+        Write-Step "Verifying pre-launch version check hook"
+        # Bundle update.ps1 too even though it's no longer PreLaunch-invoked —
+        # it's the script players run manually via the iex one-liner that
+        # prelaunch-check.ps1 points at when an update is required. Keeping
+        # it bundled means an offline player can still run it locally without
+        # another network round-trip.
+        $negDir = Join-Path $instanceTarget '.negativezone'
+        if (-not (Test-Path -LiteralPath $negDir)) {
+            New-Item -ItemType Directory -Path $negDir -Force | Out-Null
+        }
+        try {
+            Invoke-WebRequest -Uri $UpdateScriptUrl -OutFile (Join-Path $negDir 'update.ps1') -UseBasicParsing -ErrorAction Stop
+            Write-Ok "Bundled update.ps1 (user-run by 'irm .../update.ps1 | iex' when prelaunch blocks)"
+        } catch {
+            Write-Warn "Could not refresh bundled update.ps1 from $UpdateScriptUrl ($($_.Exception.Message)); existing copy (if any) left in place."
+        }
         Set-PrismCommandHook -InstanceDir $instanceTarget `
             -CommandKey 'PreLaunchCommand' -CommandValue $PreLaunchCommand `
-            -ScriptFilename 'update.ps1'   -ScriptUrl $UpdateScriptUrl `
-            -FriendlyName 'auto-update enabled on next launch'
+            -ScriptFilename 'prelaunch-check.ps1' -ScriptUrl $PrelaunchCheckScriptUrl `
+            -FriendlyName 'pre-launch version check'
 
         Write-Step "Verifying periodic backup hook"
         Set-PrismCommandHook -InstanceDir $instanceTarget `

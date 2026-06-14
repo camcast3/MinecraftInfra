@@ -57,11 +57,13 @@ $ProgressPreference = 'SilentlyContinue'
 # ─── Locate repo + source scripts ───────────────────────────────────────────
 $repoRoot   = Resolve-Path (Join-Path $PSScriptRoot '..\..\..') | Select-Object -ExpandProperty Path
 $docsAssets = Join-Path $repoRoot 'docs\assets'
-$setupPs1   = Join-Path $docsAssets 'setup.ps1'
-$updatePs1  = Join-Path $docsAssets 'update.ps1'
-$backupPs1  = Join-Path $docsAssets 'backup.ps1'
+$setupPs1          = Join-Path $docsAssets 'setup.ps1'
+$updatePs1         = Join-Path $docsAssets 'update.ps1'
+$backupPs1         = Join-Path $docsAssets 'backup.ps1'
+$prelaunchCheckPs1 = Join-Path $docsAssets 'prelaunch-check.ps1'
+$latestVersionTxt  = Join-Path $docsAssets 'latest-version.txt'
 
-foreach ($f in @($setupPs1, $updatePs1, $backupPs1)) {
+foreach ($f in @($setupPs1, $updatePs1, $backupPs1, $prelaunchCheckPs1, $latestVersionTxt)) {
     if (-not (Test-Path -LiteralPath $f)) { throw "Missing source: $f" }
 }
 
@@ -232,6 +234,7 @@ public static class NzTestHttpServer {
                     switch (ext) {
                         case ".json": contentType = "application/json; charset=utf-8"; break;
                         case ".ps1":  contentType = "text/plain; charset=utf-8"; break;
+                        case ".txt":  contentType = "text/plain; charset=utf-8"; break;
                         case ".zip":  contentType = "application/zip"; break;
                         default:      contentType = "application/octet-stream"; break;
                     }
@@ -285,6 +288,8 @@ function Invoke-SetupPs1 {
         [Parameter(Mandatory)][string] $ManifestUrl,
         [Parameter(Mandatory)][string] $UpdateScriptUrl,
         [Parameter(Mandatory)][string] $BackupScriptUrl,
+        [Parameter(Mandatory)][string] $PrelaunchCheckScriptUrl,
+        [Parameter(Mandatory)][string] $LatestVersionUrl,
         [Parameter(Mandatory)][string] $SetupUrl,
         [string] $Label = 'setup'
     )
@@ -298,6 +303,11 @@ function Invoke-SetupPs1 {
     # decoding, which is the path that makes setup.ps1's em-dashes work
     # without a BOM. PowerShell 5.1 `-File <script>` reads as Windows-1252
     # and corrupts those bytes.
+    #
+    # Every URL the script will hit is funneled through the local TcpListener
+    # via the NEGATIVEZONE_*_URL overrides. NOTHING should reach the public
+    # internet (production Azure blob, raw.githubusercontent.com) during a
+    # harness run — confirms the e2e isolation contract.
     $bootstrap = @"
 `$ProgressPreference = 'SilentlyContinue'
 # When the harness is launched from pwsh (PS 7), PS 7's PSModulePath leaks
@@ -311,9 +321,13 @@ function Invoke-SetupPs1 {
 ) -join ';'
 `$env:APPDATA = '$AppData'
 `$env:NEGATIVEZONE_NONINTERACTIVE = '1'
+`$env:NEGATIVEZONE_SKIP_WINGET = '1'
+`$env:NEGATIVEZONE_SKIP_BITS = '1'
 `$env:NEGATIVEZONE_MANIFEST_URL = '$ManifestUrl'
 `$env:NEGATIVEZONE_UPDATE_SCRIPT_URL = '$UpdateScriptUrl'
 `$env:NEGATIVEZONE_BACKUP_SCRIPT_URL = '$BackupScriptUrl'
+`$env:NEGATIVEZONE_PRELAUNCH_CHECK_SCRIPT_URL = '$PrelaunchCheckScriptUrl'
+`$env:NEGATIVEZONE_LATEST_VERSION_URL = '$LatestVersionUrl'
 `$setupSrc = Invoke-RestMethod -UseBasicParsing -Uri '$SetupUrl'
 Invoke-Expression `$setupSrc
 "@
@@ -342,7 +356,16 @@ Invoke-Expression `$setupSrc
 # Run the PreLaunchCommand from an installed instance.cfg as Prism would,
 # substituting $INST_DIR. Returns ExitCode + Output.
 function Invoke-PreLaunchCommand {
-    param([Parameter(Mandatory)][string] $InstanceDir)
+    param(
+        [Parameter(Mandatory)][string] $InstanceDir,
+        # Mirror Prism's CustomCommands env contract: INST_DIR is injected,
+        # and the harness ALSO injects the test override env vars so the
+        # on-disk prelaunch-check.ps1 hits the local TcpListener rather than
+        # raw.githubusercontent.com. Caller can override for negative tests
+        # (e.g. "what if the version URL is unreachable").
+        [string] $LatestVersionUrl,
+        [hashtable] $ExtraEnv
+    )
     $cfgPath = Join-Path $InstanceDir 'instance.cfg'
     $cfg = Get-Content -LiteralPath $cfgPath
     $line = $cfg | Where-Object { $_ -match '^PreLaunchCommand=' } | Select-Object -First 1
@@ -356,11 +379,22 @@ function Invoke-PreLaunchCommand {
     # in a form that survives Prism's launch-time re-read.
     $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
     # Simulate Prism's QProcess::splitCommand by handing the whole line to cmd /c.
-    # Also export INST_DIR so child processes can use it — Prism's CustomCommands
-    # plumbing injects this env var for the duration of the hook (update.ps1
-    # bails with "INST_DIR not set" when missing, by design).
+    # Also export INST_DIR + NEGATIVEZONE_LATEST_VERSION_URL so child processes
+    # use the local server.  ExtraEnv lets a test inject (or clear) more
+    # variables, e.g. NEGATIVEZONE_SKIP_VERSION_CHECK=1.
+    $envSetters = New-Object System.Collections.Generic.List[string]
+    $envSetters.Add("set `"INST_DIR=$InstanceDir`"")
+    if ($LatestVersionUrl) {
+        $envSetters.Add("set `"NEGATIVEZONE_LATEST_VERSION_URL=$LatestVersionUrl`"")
+    }
+    if ($ExtraEnv) {
+        foreach ($k in $ExtraEnv.Keys) {
+            $envSetters.Add("set `"$k=$($ExtraEnv[$k])`"")
+        }
+    }
     $cmdFile = Join-Path $logDir ("pre-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
-    "@echo off`r`nset `"INST_DIR=$InstanceDir`"`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    $script = "@echo off`r`n" + (($envSetters -join "`r`n") + "`r`n") + "$cmd`r`nexit /b %ERRORLEVEL%"
+    Set-Content -LiteralPath $cmdFile -Value $script -Encoding ASCII
     $out = & cmd.exe /c $cmdFile 2>&1
     return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
 }
@@ -455,6 +489,8 @@ Register-Test 'fresh-install' {
         -ManifestUrl     $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl `
         -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl `
+        -LatestVersionUrl        $ctx.LatestVersionUrl `
         -SetupUrl        $ctx.SetupUrl `
         -Label 'fresh'
     Assert-True ($result.ExitCode -eq 0) "setup.ps1 must exit 0 (got $($result.ExitCode); log: $($result.Log))"
@@ -465,10 +501,11 @@ Register-Test 'fresh-install' {
     Assert-PathExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.0.0.jar') 'mod jar present'
     Assert-PathExists (Join-Path $inst '.negativezone\update.ps1') 'update.ps1 bundled'
     Assert-PathExists (Join-Path $inst '.negativezone\backup.ps1') 'backup.ps1 bundled'
+    Assert-PathExists (Join-Path $inst '.negativezone\prelaunch-check.ps1') 'prelaunch-check.ps1 bundled'
     Assert-PathExists (Join-Path $inst '.negativezone-version') 'version marker'
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.0\.0' 'version marker matches manifest'
     Assert-FileContains (Join-Path $inst 'instance.cfg') 'OverrideCommands=true' 'OverrideCommands set'
-    Assert-FileContains (Join-Path $inst 'instance.cfg') 'PreLaunchCommand=.*scriptblock.*update\.ps1' 'PreLaunchCommand wired to scriptblock wrapper'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') 'PreLaunchCommand=.*scriptblock.*prelaunch-check\.ps1' 'PreLaunchCommand wired to scriptblock wrapper'
     Assert-FileContains (Join-Path $inst 'instance.cfg') 'PostExitCommand=.*scriptblock.*backup\.ps1' 'PostExitCommand wired'
     Assert-FileContains (Join-Path $inst 'instance.cfg') 're-run the setup one-liner' 'PreLaunch wrapper carries setup hint'
     Assert-PathNotExists "$inst.bak" 'no .bak for first install'
@@ -478,7 +515,7 @@ Register-Test 'heal-broken-install' {
     param($ctx)
     $appData = Join-Path $sandbox 'appdata-heal'
     # Step 1: fresh install
-    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'heal-1'
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'heal-1'
     Assert-True ($r1.ExitCode -eq 0) "first install must succeed (rc=$($r1.ExitCode))"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
@@ -488,7 +525,7 @@ Register-Test 'heal-broken-install' {
     Set-Content -LiteralPath $updateFile -Value 'function { broken syntax }' -Encoding UTF8
 
     # Step 3: re-run setup.ps1; same manifest version, should still re-fetch hook scripts
-    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'heal-2'
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'heal-2'
     Assert-True ($r2.ExitCode -eq 0) "re-run must succeed (rc=$($r2.ExitCode))"
 
     # Verify update.ps1 was re-downloaded (no longer the broken stub)
@@ -501,7 +538,7 @@ Register-Test 'upgrade-with-snapshot-restore' {
     param($ctx)
     $appData = Join-Path $sandbox 'appdata-upgrade'
     # Step 1: install v1.0.0
-    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'upg-1'
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'upg-1'
     Assert-True ($r1.ExitCode -eq 0) "v1.0.0 install must succeed"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
@@ -522,7 +559,7 @@ Register-Test 'upgrade-with-snapshot-restore' {
     $ctx.PublishVersion.Invoke('1.1.0')
 
     # Step 4: re-run setup.ps1 with new manifest
-    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'upg-2'
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'upg-2'
     Assert-True ($r2.ExitCode -eq 0) "v1.1.0 upgrade must succeed (rc=$($r2.ExitCode))"
 
     # Step 5: verify
@@ -548,14 +585,18 @@ Register-Test 'upgrade-with-snapshot-restore' {
 
 Register-Test 'prelaunch-missing-script' {
     param($ctx)
+    # PreLaunch now invokes prelaunch-check.ps1 (not update.ps1) — that's
+    # the load-bearing script for blocking stale launches. If a user deletes
+    # or corrupts it, Prism must hard-fail with the "re-run setup" hint
+    # rather than silently allowing a stale launch.
     $appData = Join-Path $sandbox 'appdata-pre-missing'
-    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-miss-install'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-miss-install'
     Assert-True ($r.ExitCode -eq 0) "install must succeed"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
-    Remove-Item (Join-Path $inst '.negativezone\update.ps1') -Force
+    Remove-Item (Join-Path $inst '.negativezone\prelaunch-check.ps1') -Force
 
-    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
     Assert-True ($pre.ExitCode -eq 1) "PreLaunch must exit 1 (got $($pre.ExitCode))"
     $joined = ($pre.Output -join "`n")
     Assert-True ($joined -match 're-run the setup one-liner') "Must contain setup hint. Output: $joined"
@@ -564,14 +605,17 @@ Register-Test 'prelaunch-missing-script' {
 
 Register-Test 'prelaunch-parse-error' {
     param($ctx)
+    # Corrupted prelaunch-check.ps1 must also be caught by the try/catch
+    # wrapper in instance.cfg's PreLaunchCommand and surface the same
+    # "client is broken, re-run setup" UX as a missing script.
     $appData = Join-Path $sandbox 'appdata-pre-parse'
-    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-parse-install'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-parse-install'
     Assert-True ($r.ExitCode -eq 0) "install must succeed"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
-    Set-Content -LiteralPath (Join-Path $inst '.negativezone\update.ps1') -Value 'function { unbalanced' -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $inst '.negativezone\prelaunch-check.ps1') -Value 'function { unbalanced' -Encoding UTF8
 
-    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
     Assert-True ($pre.ExitCode -eq 1) "parse-error must exit 1"
     $joined = ($pre.Output -join "`n")
     Assert-True ($joined -match 're-run the setup one-liner') "Must contain setup hint"
@@ -579,26 +623,101 @@ Register-Test 'prelaunch-parse-error' {
 
 Register-Test 'prelaunch-happy-path' {
     param($ctx)
+    # When installed == latest, prelaunch-check.ps1 exits 0 silently — no
+    # banner, no "update available" prompt, no perceptible delay. This is
+    # the launch path that runs EVERY time a player clicks Play, so any
+    # output here is user-visible noise.
     $appData = Join-Path $sandbox 'appdata-pre-ok'
-    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-ok-install'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-ok-install'
     Assert-True ($r.ExitCode -eq 0) "install must succeed"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
-    # Replace update.ps1 with a benign script that respects the manifest contract
-    # but doesn't try a real update (we don't want network in this test path).
-    'Write-Host "[update-stub] running"; exit 0' | Set-Content -LiteralPath (Join-Path $inst '.negativezone\update.ps1') -Encoding UTF8
+    # latest-version.txt is staged with the just-installed version (1.0.0)
+    # already, so prelaunch-check should see installed == latest.
 
-    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
     Assert-True ($pre.ExitCode -eq 0) "happy path must exit 0 (got $($pre.ExitCode))"
     $joined = ($pre.Output -join "`n")
-    Assert-True ($joined -match '\[update-stub\] running') "Stub must have run"
     Assert-True ($joined -notmatch 're-run the setup one-liner') "Must NOT contain setup hint on success"
+    Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Must NOT show update banner when current"
+}
+
+Register-Test 'prelaunch-blocks-when-stale' {
+    param($ctx)
+    # New behaviour: when latest-version.txt is ahead of installed,
+    # prelaunch-check MUST exit 1 (hard block), show the UPDATE REQUIRED
+    # banner, and surface the irm update.ps1 one-liner. This is the whole
+    # point of the new architecture — without this guard players could join
+    # a multiplayer server with a stale modpack and the FML handshake would
+    # boot them anyway. Better to block the launch with clear instructions.
+    $appData = Join-Path $sandbox 'appdata-pre-stale'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-stale-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed (rc=$($r.ExitCode))"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+
+    & $ctx.BumpLatestVersion 1.1.0
+    try {
+        $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
+        Assert-True ($pre.ExitCode -eq 1) "stale launch must exit 1 (got $($pre.ExitCode))"
+        $joined = ($pre.Output -join "`n")
+        Assert-True ($joined -match 'UPDATE REQUIRED') "Must show UPDATE REQUIRED banner. Output: $joined"
+        Assert-True ($joined -match 'iex')               "Must show iex one-liner so player can run update. Output: $joined"
+        Assert-True ($joined -match 'update\.ps1')       "Must reference update.ps1. Output: $joined"
+    } finally {
+        & $ctx.BumpLatestVersion 1.0.0  # reset for subsequent tests
+    }
+}
+
+Register-Test 'prelaunch-bypass-env-allows-stale' {
+    param($ctx)
+    # Offline-play / dev escape hatch: NEGATIVEZONE_SKIP_VERSION_CHECK=1
+    # bypasses the stale guard entirely. Useful for LAN parties where the
+    # GitHub pointer is unreachable but local servers are running, and for
+    # us when debugging without re-publishing.
+    $appData = Join-Path $sandbox 'appdata-pre-bypass'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-bypass-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    & $ctx.BumpLatestVersion 1.1.0
+    try {
+        $pre = Invoke-PreLaunchCommand -InstanceDir $inst `
+            -LatestVersionUrl $ctx.LatestVersionUrl `
+            -ExtraEnv @{ NEGATIVEZONE_SKIP_VERSION_CHECK = '1' }
+        Assert-True ($pre.ExitCode -eq 0) "bypass env must let launch proceed (got $($pre.ExitCode))"
+        $joined = ($pre.Output -join "`n")
+        Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Bypass must suppress update banner. Output: $joined"
+    } finally {
+        & $ctx.BumpLatestVersion 1.0.0
+    }
+}
+
+Register-Test 'prelaunch-fails-open-when-pointer-unreachable' {
+    param($ctx)
+    # If raw.githubusercontent.com is down or the player is offline,
+    # prelaunch-check MUST NOT block the launch. Offline single-player
+    # should always work even when the version pointer can't be fetched.
+    # Fail-open is critical here — fail-closed would mean any GitHub outage
+    # is a complete-platform outage for our players.
+    $appData = Join-Path $sandbox 'appdata-pre-offline'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-offline-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    # Point at a 404 path on the (running) test server — simulates DNS works
+    # but the file is missing / 5xx / network blip.
+    $deadUrl = "$($ctx.BlobBaseUrl)does-not-exist-$([guid]::NewGuid().ToString('N')).txt"
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $deadUrl
+    Assert-True ($pre.ExitCode -eq 0) "unreachable pointer must fail OPEN (got $($pre.ExitCode))"
+    $joined = ($pre.Output -join "`n")
+    Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Must NOT block when version check fails. Output: $joined"
 }
 
 Register-Test 'postexit-fail-open' {
     param($ctx)
     $appData = Join-Path $sandbox 'appdata-post-miss'
-    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'post-miss-install'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'post-miss-install'
     Assert-True ($r.ExitCode -eq 0) "install must succeed"
 
     $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
@@ -623,6 +742,7 @@ Register-Test 'cfg-qt-ini-escape-roundtrip' {
     $appData = Join-Path $sandbox 'appdata-qt-escape'
     $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'qt-escape'
     Assert-True ($r.ExitCode -eq 0) "install must succeed (rc=$($r.ExitCode))"
 
@@ -638,7 +758,7 @@ Register-Test 'cfg-qt-ini-escape-roundtrip' {
     $raw = $line -replace '^PreLaunchCommand=', ''
     Assert-True ($raw.StartsWith('"') -and $raw.EndsWith('"')) `
         "PreLaunchCommand value must be wrapped in outer quotes (got: $raw)"
-    Assert-True ($raw -match '\\\\\.negativezone\\\\update\.ps1') `
+    Assert-True ($raw -match '\\\\\.negativezone\\\\prelaunch-check\.ps1') `
         ('Path backslashes must be escaped as \\ (got: ' + $raw + ')')
     Assert-True ($raw -match '\\"powershell\.exe\\"') `
         ('Inner quotes must be escaped as backslash-quote (got: ' + $raw + ')')
@@ -648,8 +768,8 @@ Register-Test 'cfg-qt-ini-escape-roundtrip' {
     $unwrapped = ConvertFrom-QtIniValue -Raw $raw
     Assert-True ($unwrapped -match '"powershell\.exe" -NoProfile') `
         "Un-escaped value must have intact quoted exe path + space (got: $unwrapped)"
-    Assert-True ($unwrapped -match '\$INST_DIR\\\.negativezone\\update\.ps1') `
-        ('Un-escaped value must preserve $INST_DIR\.negativezone\update.ps1 (got: ' + $unwrapped + ')')
+    Assert-True ($unwrapped -match '\$INST_DIR\\\.negativezone\\prelaunch-check\.ps1') `
+        ('Un-escaped value must preserve $INST_DIR\.negativezone\prelaunch-check.ps1 (got: ' + $unwrapped + ')')
 }
 
 Register-Test 'instance-name-bumped-on-upgrade' {
@@ -662,6 +782,7 @@ Register-Test 'instance-name-bumped-on-upgrade' {
     $appData = Join-Path $sandbox 'appdata-name-bump'
     $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'name-1'
     Assert-True ($r1.ExitCode -eq 0) "v1.0.0 install must succeed"
 
@@ -674,6 +795,7 @@ Register-Test 'instance-name-bumped-on-upgrade' {
     $ctx.PublishVersion.Invoke('1.1.0')
     $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'name-2'
     Assert-True ($r2.ExitCode -eq 0) "v1.1.0 upgrade must succeed"
     Assert-FileContains (Join-Path $inst 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.1\.0' `
@@ -695,6 +817,7 @@ Register-Test 'instgroups-latest-and-backup' {
     $appData = Join-Path $sandbox 'appdata-groups'
     $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'grp-1'
     Assert-True ($r1.ExitCode -eq 0) "fresh install must succeed"
 
@@ -710,6 +833,7 @@ Register-Test 'instgroups-latest-and-backup' {
     $ctx.PublishVersion.Invoke('1.1.0')
     $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'grp-2'
     Assert-True ($r2.ExitCode -eq 0) "upgrade must succeed"
 
@@ -734,6 +858,7 @@ Register-Test 'instgroups-latest-and-backup' {
     [IO.File]::WriteAllBytes($groupsFile, [Text.UTF8Encoding]::new($false).GetBytes($custom))
     $r3 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'grp-3'
     Assert-True ($r3.ExitCode -eq 0) "third run (same version) must succeed"
 
@@ -762,6 +887,7 @@ Register-Test 'no-downgrade-by-default' {
     $ctx.PublishVersion.Invoke('1.1.0')
     $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'no-down-1'
     Assert-True ($r1.ExitCode -eq 0) "v1.1.0 install must succeed"
 
@@ -773,18 +899,38 @@ Register-Test 'no-downgrade-by-default' {
     $ctx.PublishVersion.Invoke('1.0.0')
     $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'no-down-2'
     Assert-True ($r2.ExitCode -eq 0) "setup.ps1 must exit 0 even when refusing downgrade"
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' `
         'setup.ps1 must NOT downgrade from v1.1.0 to v1.0.0 without opt-in'
 
-    # And the PreLaunch hook must skip too — this is the path that fires
-    # every launch, so a bug here would be catastrophic (see PR comment).
-    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
-    Assert-True ($pre.ExitCode -eq 0) "update.ps1 must exit 0 when refusing downgrade (got $($pre.ExitCode))"
+    # And update.ps1 must skip too — invoke it DIRECTLY (not via PreLaunch
+    # any more — PreLaunch runs prelaunch-check.ps1 now, which has no
+    # downgrade opinion). update.ps1 is what the user runs via the
+    # `irm | iex` one-liner, so its downgrade guard remains critical: if
+    # an admin accidentally rolls latest-version.txt back, the user who
+    # runs update should be told no.
+    $updateBootstrap = @"
+`$env:PSModulePath = @(
+    "`$env:USERPROFILE\Documents\WindowsPowerShell\Modules",
+    "`$env:ProgramFiles\WindowsPowerShell\Modules",
+    "`$env:WINDIR\System32\WindowsPowerShell\v1.0\Modules"
+) -join ';'
+`$env:INST_DIR = '$inst'
+`$env:NEGATIVEZONE_MANIFEST_URL = '$($ctx.ManifestUrl)'
+& '$updatePs1'
+exit `$LASTEXITCODE
+"@
+    $updateBootstrapFile = Join-Path $logDir 'no-downgrade-update-bootstrap.ps1'
+    [IO.File]::WriteAllBytes($updateBootstrapFile,
+                              [Text.UTF8Encoding]::new($false).GetBytes($updateBootstrap))
+    $updateOut = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $updateBootstrapFile 2>&1
+    $updateRc = $LASTEXITCODE
+    Assert-True ($updateRc -eq 0) "update.ps1 must exit 0 when refusing downgrade (got $updateRc; out: $($updateOut -join ' / '))"
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' `
         'update.ps1 must NOT downgrade from v1.1.0 to v1.0.0 without opt-in'
-    $joined = ($pre.Output -join "`n")
+    $joined = ($updateOut -join "`n")
     Assert-True ($joined -match 'refusing to downgrade') `
         "update.ps1 must explain it refused the downgrade. Output: $joined"
 
@@ -793,6 +939,7 @@ Register-Test 'no-downgrade-by-default' {
     $ctx.PublishVersion.Invoke('1.0.0', $true)
     $r3 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
         -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
         -SetupUrl $ctx.SetupUrl -Label 'no-down-3'
     Assert-True ($r3.ExitCode -eq 0) "v1.0.0 admin-approved rollback must succeed"
     Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.0\.0' `
@@ -812,8 +959,14 @@ Write-Info "Sandbox: $sandbox"
 # (Set-PrismCommandHook ALWAYS re-downloads to heal corrupted on-disk copies.)
 $instanceName = 'Craft to Exile 2'
 $currentZipName = "c2e2-v1.0.0.zip"
-Copy-Item -LiteralPath $updatePs1 -Destination (Join-Path $blobDir 'update.ps1') -Force
-Copy-Item -LiteralPath $backupPs1 -Destination (Join-Path $blobDir 'backup.ps1') -Force
+Copy-Item -LiteralPath $updatePs1         -Destination (Join-Path $blobDir 'update.ps1')         -Force
+Copy-Item -LiteralPath $backupPs1         -Destination (Join-Path $blobDir 'backup.ps1')         -Force
+Copy-Item -LiteralPath $prelaunchCheckPs1 -Destination (Join-Path $blobDir 'prelaunch-check.ps1') -Force
+# latest-version.txt is the GitHub-hosted version pointer prelaunch-check.ps1
+# polls every launch. Harness re-writes this between tests to simulate "admin
+# published a new version" without touching Azure.
+[IO.File]::WriteAllBytes((Join-Path $blobDir 'latest-version.txt'),
+                          [Text.UTF8Encoding]::new($false).GetBytes("1.0.0`n"))
 # Serve setup.ps1 itself so the bootstrap can `iex (irm ...)` it the same way
 # real users do via the README one-liner. Critical because setup.ps1 contains
 # UTF-8 em-dashes without a BOM (lint-ps1.yml enforces no-BOM) and PowerShell
@@ -836,6 +989,13 @@ $publishVersion = {
                    -OutPath (Join-Path $blobDir 'latest.json') `
                    -BaseUrl $server.BaseUrl `
                    -AllowDowngrade:$AllowDowngrade
+    # Also rewrite the GitHub-hosted pointer to match. This is what
+    # publish-prism-pack.ps1 will do for real (in the same git commit as
+    # the docker-compose.yml bump). Tests that need them OUT of sync
+    # (e.g. prelaunch-blocks-when-stale) can call BumpLatestVersion
+    # independently after this.
+    [IO.File]::WriteAllBytes((Join-Path $blobDir 'latest-version.txt'),
+                              [Text.UTF8Encoding]::new($false).GetBytes("$v`n"))
 }
 $publishVersion.Invoke('1.0.0')
 
@@ -858,13 +1018,44 @@ if ($setupSmoke -isnot [string] -or $setupSmoke.Length -lt 1000) {
 Write-Info "    setup.ps1 fetched: $($setupSmoke.Length) chars, starts: $($setupSmoke.Substring(0, 80))"
 
 $ctx = [pscustomobject]@{
-    ManifestUrl     = "$($server.BaseUrl)latest.json"
-    UpdateUrl       = "$($server.BaseUrl)update.ps1"
-    BackupUrl       = "$($server.BaseUrl)backup.ps1"
-    SetupUrl        = "$($server.BaseUrl)setup.ps1"
-    BlobBaseUrl     = $server.BaseUrl
-    PublishVersion  = $publishVersion
-    Sandbox         = $sandbox
+    ManifestUrl              = "$($server.BaseUrl)latest.json"
+    UpdateUrl                = "$($server.BaseUrl)update.ps1"
+    BackupUrl                = "$($server.BaseUrl)backup.ps1"
+    PrelaunchCheckUrl        = "$($server.BaseUrl)prelaunch-check.ps1"
+    LatestVersionUrl         = "$($server.BaseUrl)latest-version.txt"
+    SetupUrl                 = "$($server.BaseUrl)setup.ps1"
+    BlobBaseUrl              = $server.BaseUrl
+    PublishVersion           = $publishVersion
+    Sandbox                  = $sandbox
+    # Mutates the GitHub-hosted version pointer (locally). Mirrors what
+    # publish-prism-pack.ps1 would commit to docs/assets/latest-version.txt.
+    BumpLatestVersion        = {
+        param([string]$v)
+        [IO.File]::WriteAllBytes((Join-Path $blobDir 'latest-version.txt'),
+                                  [Text.UTF8Encoding]::new($false).GetBytes("$v`n"))
+    }
+}
+
+# Thin wrapper so the 14+ existing Register-Test bodies don't all need to
+# pass the new prelaunch-check + version-pointer URLs explicitly. New URLs
+# default to whatever's in $ctx; tests that need to point one elsewhere
+# (e.g. "what if latest-version.txt is unreachable") can still call
+# Invoke-SetupPs1 directly with -LatestVersionUrl 'http://127.0.0.1:1/404'.
+function Invoke-SetupFromCtx {
+    param(
+        [Parameter(Mandatory)][string] $AppData,
+        [Parameter(Mandatory)][string] $Label,
+        [string] $LatestVersionUrl,
+        [string] $PrelaunchCheckScriptUrl
+    )
+    if (-not $PrelaunchCheckScriptUrl) { $PrelaunchCheckScriptUrl = $ctx.PrelaunchCheckUrl }
+    if (-not $LatestVersionUrl)         { $LatestVersionUrl         = $ctx.LatestVersionUrl }
+    return Invoke-SetupPs1 -AppData $AppData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl `
+        -PrelaunchCheckScriptUrl $PrelaunchCheckScriptUrl `
+        -LatestVersionUrl $LatestVersionUrl `
+        -SetupUrl $ctx.SetupUrl -Label $Label
 }
 
 $ran = 0; $passed = 0; $failed = @()

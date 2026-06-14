@@ -28,6 +28,43 @@ $ErrorActionPreference = 'Stop'
 # PS 5.1 has no PSNativeCommandUseErrorActionPreference; native callsites
 # below use -EA Stop for terminating errors.
 
+# ─── User-run auto-detect ───────────────────────────────────────────────────
+# The PreLaunch path is GONE — prelaunch-check.ps1 replaces it and instructs
+# the player to run `irm .../update.ps1 | iex` when the client is stale.
+# So when invoked WITHOUT INST_DIR (no Prism wrapper present) we treat it
+# as a user-run invocation: auto-detect the standard install path, refuse
+# to run while Prism has it locked, and print a friendly banner.
+$UserRunMode = [string]::IsNullOrWhiteSpace($InstanceDir)
+if ($UserRunMode) {
+    Write-Host ''
+    Write-Host 'NegativeZone Minecraft client update' -ForegroundColor Magenta
+    Write-Host '------------------------------------'
+
+    $candidate = Join-Path $env:APPDATA 'PrismLauncher\instances\Craft to Exile 2'
+    if (-not (Test-Path -LiteralPath $candidate -PathType Container)) {
+        Write-Host ''
+        Write-Host "  No Craft to Exile 2 instance found at:" -ForegroundColor Red
+        Write-Host "    $candidate" -ForegroundColor Red
+        Write-Host ''
+        Write-Host "  Run setup first to install the modpack:" -ForegroundColor Yellow
+        Write-Host '    irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex' -ForegroundColor Yellow
+        exit 1
+    }
+    $InstanceDir = $candidate
+    Write-Host "  Instance: $InstanceDir" -ForegroundColor DarkGray
+
+    # Prism holds the cfg open and would corrupt our atomic swap if it
+    # mutates the instance mid-update. Refuse rather than race.
+    $prism = Get-Process -Name 'PrismLauncher','prismlauncher' -ErrorAction SilentlyContinue
+    if ($prism) {
+        Write-Host ''
+        Write-Host "  Prism Launcher is currently running (PID $($prism.Id -join ','))." -ForegroundColor Red
+        Write-Host "  Close Prism completely and re-run this update." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host '  Prism is closed, proceeding with update...' -ForegroundColor DarkGray
+}
+
 $DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
 # Test-publish channel override — same env var as setup.ps1; loud WARN logged
 # below when active so half-set test sessions are visible in update.log.
@@ -65,7 +102,9 @@ $PreserveRelative = @(
     'resourcepacks'
 )
 
-# Fail-open (exit 0) on missing/invalid INST_DIR — captured in Prism's launch log.
+# Fail-open (exit 0) on missing/invalid INST_DIR — only happens when invoked
+# from a wrapper that pre-validated it (the user-run mode above already
+# auto-detected and exit-1'd if the install was missing).
 if ([string]::IsNullOrWhiteSpace($InstanceDir)) {
     Write-Host '[negativezone-update] INST_DIR not set; skipping auto-update.'
     exit 0

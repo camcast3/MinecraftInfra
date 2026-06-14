@@ -856,7 +856,18 @@ publishedAt: "$publishedAt"
         [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
         Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
 
-        git add modpack.yml 'docker/proxmox/docker-compose.yml'
+        # Bump docs/assets/latest-version.txt to the new version. This is the
+        # GitHub-hosted pointer file that prelaunch-check.ps1 polls every
+        # launch — when it's ahead of the player's installed version,
+        # PreLaunch hard-blocks the launch with an "update required" banner
+        # and the iex one-liner. Committing it in the SAME PR as the
+        # docker-compose.yml bump means server + client + version pointer
+        # all move atomically.
+        $latestVersionFile = Join-Path $repoRoot 'docs/assets/latest-version.txt'
+        [System.IO.File]::WriteAllText($latestVersionFile, "$Version`n", $utf8NoBom)
+        Write-Ok "Bumped docs/assets/latest-version.txt to $Version"
+
+        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docs/assets/latest-version.txt'
         git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
         Write-Step "Pushing $publishBranch to origin"
