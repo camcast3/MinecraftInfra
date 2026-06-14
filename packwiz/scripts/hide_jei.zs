@@ -246,17 +246,9 @@ Jei.hideIngredient(<item:farmersrespite:strong_coffee>);
 Jei.hideIngredient(<item:farmersrespite:long_black_tea>);
 Jei.hideIngredient(<item:farmersrespite:strong_black_tea>);
 
-//FTB Placeholders — JEI hide block not yet restored (PR 2).
-//
-//PR #132 removed the original ~190-line block hiding ftb_ph mob/icon
-//items from JEI when the mod itself was excluded over a CF-blocked
-//download. PR 2 re-adds the mod (via `mode = "url"` re-host through the
-//`c2e2-blobs-v<PACK_VERSION>` GitHub Release) but does NOT restore the
-//hide block here, because the entries are content curation that lives
-//upstream in C2E2's `overrides/scripts/hide_jei.zs`. To restore: extract
-//the original block from the C2E2 v<PACK_VERSION> CurseForge zip and
-//paste it here. Without the block, ~190 ftb_ph placeholder items remain
-//visible in JEI — a cosmetic regression, not a functional one.
+//FTB Placeholders — TODO: restore JEI hide block from upstream C2E2's
+//`overrides/scripts/hide_jei.zs` (~190 ftb_ph entries dropped by PR #132).
+//Cosmetic only; placeholders remain visible in JEI without it.
 
 //Lightman's Currency
 Jei.hideIngredient(<item:lightmanscurrency:coinmint>);

@@ -4,115 +4,53 @@
     Materialize a clean Prism Launcher instance from the committed packwiz
     manifest, ready to be sanitized + zipped + uploaded by publish-prism-pack.ps1.
 
-.DESCRIPTION
-    Bridges PR 1's packwiz manifest to PR 2's published client zip. Replaces
-    the hand-maintained Prism instance with a manifest-driven materialization,
-    so every published client zip is gated by `packwiz/pack.toml` at the
-    publish-time commit SHA.
-
-    Steps:
-      1. Sanity-check packwiz/pack.toml exists, java is on PATH.
-      2. Read Forge + Minecraft versions from packwiz/pack.toml's [versions]
-         block so the generated mmc-pack.json mirrors what the server runs.
-      3. Cache packwiz-installer-bootstrap.jar AND packwiz-installer.jar
-         at infra/azure/scripts/cache/. Both JAR versions are pinned to
-         $BootstrapVersion / $InstallerVersion below and bumped manually
-         (admin tracks packwiz/packwiz-installer-bootstrap and
-         packwiz/packwiz-installer releases when PR 4's daily packwiz
-         workflow surfaces drift). The installer JAR is cached separately
-         from the staging instance because step 4 wipes the staging dir
-         every run — without a stable cache the bootstrap would re-fetch
-         the installer release metadata from api.github.com on every run
-         (unauthenticated 60 req/hr rate limit, trivial to exhaust during
-         testing). See step 5 for how the cache is wired in.
-      4. Recreate the staging instance dir from scratch under <RepoRoot>/build/
-         (cleaning any prior run) with:
-           - `instance.cfg`   minimal Prism instance metadata; the
-             publish script will sanitize this further (AutomaticJava=true,
-             memory caps, iconKey override).
-           - `mmc-pack.json`  component list matching the loader + MC
-             versions read from pack.toml.
-           - `.minecraft/`    empty; packwiz-installer fills it next.
-      5. Invoke `java -jar packwiz-installer-bootstrap.jar
-              --bootstrap-no-update
-              --bootstrap-main-jar <cached-installer-jar>
-              -g -s client <pack-url>`
-         inside `.minecraft/`. The two `--bootstrap-*` flags tell the
-         bootstrap to skip its self-update check and load our pre-cached
-         installer JAR directly — no api.github.com calls. `-g` disables
-         the bootstrap's own Swing progress monitor (packwiz-installer
-         still shows its own GUI for per-mod download progress). `-s
-         client` skips `side = "server"` overlay JARs (PCF, spark,
-         prom-exporter) that have no business in a player's instance.
-         The URL points at the live committed manifest on disk, NOT a
-         SHA-pinned raw.githubusercontent.com URL — at build time we want
-         HEAD of the local working tree, because the publish script's
-         commit-and-bump step is what turns HEAD into the pinned
-         production SHA later.
-      6. Emit the staging instance path on stdout so callers can pipe it
-         into publish-prism-pack.ps1's -InstancePath argument.
+    Bridges PR 1's packwiz manifest to PR 2's published client zip — every
+    published client zip is gated by `packwiz/pack.toml` at the publish-time
+    commit SHA. Reads loader/MC versions from pack.toml, wipes any prior
+    staging dir, writes a minimal instance.cfg + mmc-pack.json, runs
+    `packwiz-installer-bootstrap` against the local working tree via a
+    file:// URL, and emits the staging path on stdout.
 
 .PARAMETER InstanceName
-    Folder name to use for the staging instance. Must match the
-    InstanceName publish-prism-pack.ps1 will sanitize against (default for
-    both is "Craft to Exile 2") so the zip layout matches what setup.ps1
-    expects in players' %APPDATA%\PrismLauncher\instances\.
+    Folder name for the staging instance. Must match publish-prism-pack.ps1's
+    -InstanceName (default for both is "Craft to Exile 2").
 
 .PARAMETER StagingRoot
-    Directory under which the staging instance is materialized. Defaults
-    to <RepoRoot>/build/ — under .gitignore so the staged tree never gets
-    accidentally committed. The full materialized path is
-    "$StagingRoot\$InstanceName".
+    Where the instance is materialized. Defaults to <RepoRoot>/build/
+    (under .gitignore).
 
 .PARAMETER PackwizDir
-    Path to the packwiz manifest directory. Defaults to packwiz/ at the
-    repo root (resolved relative to this script).
+    Packwiz manifest directory. Defaults to packwiz/ at the repo root.
 
 .PARAMETER BootstrapVersion
-    GitHub release tag of packwiz/packwiz-installer-bootstrap to download.
-    Pinned to keep the build reproducible across machines; bump this
-    deliberately when PR 4's daily workflow flags drift (manual — admin
-    edits the default here and re-runs build-instance-from-packwiz.ps1).
+    GH release tag of packwiz/packwiz-installer-bootstrap. Pinned for
+    reproducibility; admin bumps manually when PR 4's daily workflow flags drift.
 
 .PARAMETER InstallerVersion
-    GitHub release tag of packwiz/packwiz-installer to download. Same
-    rationale as $BootstrapVersion — pinning keeps builds reproducible
-    AND keeps the bootstrap from hitting api.github.com to discover the
-    "latest" tag on every clean-staging run.
+    GH release tag of packwiz/packwiz-installer. Same rationale as
+    $BootstrapVersion — pinning also prevents the bootstrap from hitting
+    api.github.com to discover "latest" on every run (60 req/hr unauthenticated).
 
 .PARAMETER BootstrapJar
-    Override path to a local packwiz-installer-bootstrap.jar. Skips the
-    download step. Useful for offline / air-gapped admin runs.
+    Override path to a local packwiz-installer-bootstrap.jar (offline runs).
 
 .PARAMETER InstallerJar
-    Override path to a local packwiz-installer.jar. Skips the download
-    step. Useful for offline / air-gapped admin runs.
+    Override path to a local packwiz-installer.jar (offline runs).
 
 .PARAMETER CacheDir
-    Directory used to cache packwiz-installer-bootstrap.jar AND
-    packwiz-installer.jar across runs. Defaults to
-    infra/azure/scripts/cache/ (under .gitignore).
+    Cache for the two JARs. Defaults to infra/azure/scripts/cache/ (under
+    .gitignore). Cache is separate from the staging dir because step 4 wipes
+    staging every run.
 
 .EXAMPLE
-    # Standard flow — materialize the staging instance, then pass the path
-    # to publish-prism-pack.ps1:
     $stagingPath = ./infra/azure/scripts/build-instance-from-packwiz.ps1
     ./infra/azure/scripts/publish-prism-pack.ps1 -InstancePath $stagingPath -Version 0.4.0
 
-.EXAMPLE
-    # Materialize without re-downloading the bootstrap jar:
-    ./infra/azure/scripts/build-instance-from-packwiz.ps1 -BootstrapJar C:\tools\packwiz-installer-bootstrap.jar
-
 .NOTES
-    Requires:
-      - Java 17+ on PATH (`java -version`). itzg's image uses Temurin 17;
-        the player onboarding install Temurin 17 via winget. Matching here
-        keeps materialization behavior identical to runtime.
-      - First run: network access to github.com/releases/download (CDN,
-        not rate-limited) to fetch the two pinned JARs. Subsequent runs
-        only need network access to CurseForge / Modrinth CDNs for the
-        per-mod downloads. Admin should have CURSEFORGE_API_KEY set in
-        the environment to avoid CF rate limits on the ~390-mod install.
+    Requires Java 17+ on PATH (matches itzg's runtime + player onboarding's
+    Temurin 17 install). First run needs network access for the pinned JARs.
+    Admin should set CURSEFORGE_API_KEY to avoid CF rate limits on the ~390-mod
+    install.
 #>
 
 [CmdletBinding()]
@@ -144,8 +82,7 @@ function Get-RepoRoot {
     return ($top | Out-String).Trim()
 }
 
-# Defaults that depend on the repo root must be resolved after the param
-# block so callers can still override any of them.
+# Defaults that depend on the repo root must resolve after the param block.
 $repoRoot = Get-RepoRoot
 if (-not $PackwizDir)   { $PackwizDir   = Join-Path $repoRoot 'packwiz' }
 if (-not $StagingRoot)  { $StagingRoot  = Join-Path $repoRoot 'build' }
@@ -172,10 +109,6 @@ On Windows: winget install --id EclipseAdoptium.Temurin.17.JDK -e --source winge
 Write-Information "Using java at: $($java.Source)"
 
 # ─── Parse pack.toml versions ───────────────────────────────────────────────
-# We need MC + Forge versions for mmc-pack.json. packwiz emits them as:
-#   [versions]
-#   forge = "47.4.10"
-#   minecraft = "1.20.1"
 # Tiny TOML probe — avoids pulling a real parser into the admin toolchain.
 $packTomlContent = Get-Content -Raw -LiteralPath $packToml
 $mcMatch    = [regex]::Match($packTomlContent, '(?m)^minecraft\s*=\s*"([^"]+)"')
@@ -191,10 +124,9 @@ $forgeVersion    = $forgeMatch.Groups[1].Value
 Write-Information "Manifest versions: Minecraft $minecraftVersion / Forge $forgeVersion"
 
 # ─── Bootstrap + Installer JARs (cached, version-pinned) ───────────────────
-# Both JARs are cached so step 5 can run with --bootstrap-no-update +
-# --bootstrap-main-jar pointing at the cached installer. This avoids
-# api.github.com calls on every run, which the bootstrap would otherwise
-# make (unauthenticated, 60 req/hr — exhausted by a few test iterations).
+# Both pinned + cached so step 5 can run with --bootstrap-no-update +
+# --bootstrap-main-jar pointing at the cached installer — no api.github.com
+# calls (60 req/hr unauthenticated, exhausted by a few test iterations).
 if (-not (Test-Path -LiteralPath $CacheDir -PathType Container)) {
     New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null
 }
@@ -206,9 +138,8 @@ if ($BootstrapJar) {
     $BootstrapJar = Resolve-AbsolutePath $BootstrapJar
     Write-Information "Using bootstrap jar override: $BootstrapJar"
 } else {
-    # Pin the cached filename to the version so a manual bump doesn't pick up
-    # a stale jar from a previous run. Cleanup of old versions is left to the
-    # admin — they're a few MB each.
+    # Pin cached filename to version so a manual bump doesn't pick up a
+    # stale jar.
     $BootstrapJar = Join-Path $CacheDir "packwiz-installer-bootstrap-$BootstrapVersion.jar"
     if (-not (Test-Path -LiteralPath $BootstrapJar)) {
         $url = "https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/$BootstrapVersion/packwiz-installer-bootstrap.jar"
@@ -238,8 +169,7 @@ if ($InstallerJar) {
 
 # ─── Staging directory ──────────────────────────────────────────────────────
 # Recreate from scratch each run. Leftover .pw.toml entries from a previous
-# pack version that were since dropped would otherwise persist into the
-# published zip and confuse Forge's mod loader.
+# pack version would otherwise persist into the zip and confuse Forge.
 $stagingInstance = Join-Path $StagingRoot $InstanceName
 if (Test-Path -LiteralPath $stagingInstance) {
     Write-Information "Cleaning prior staging instance: $stagingInstance"
@@ -250,10 +180,8 @@ New-Item -ItemType Directory -Path $dotMinecraft -Force | Out-Null
 Write-Information "Created staging instance at: $stagingInstance"
 
 # ─── instance.cfg ───────────────────────────────────────────────────────────
-# Minimal Prism instance.cfg. publish-prism-pack.ps1 will sanitize this
-# further (AutomaticJava, memory caps, iconKey, etc.) so we only need the
-# fields Prism requires to import the folder as an instance at all. The
-# name= line gets rewritten with the version suffix at publish time.
+# Minimal — publish-prism-pack.ps1 sanitizes further. name= gets the version
+# suffix at publish time.
 $instanceCfg = @"
 [General]
 ConfigVersion=1.2
@@ -280,11 +208,9 @@ Set-Content -LiteralPath (Join-Path $stagingInstance 'instance.cfg') -Value $ins
 Write-Information 'Wrote instance.cfg'
 
 # ─── mmc-pack.json ──────────────────────────────────────────────────────────
-# Components Prism uses to build the launch classpath. LWJGL pin matches
-# what Prism's metadata server records for Minecraft 1.20.1 — bumping MC
-# may require bumping this too (Prism would normally re-resolve it at
-# import time, but a wrong value here keeps the zip self-contained and
-# importable offline).
+# LWJGL pinned to what Prism's metadata server records for MC 1.20.1 —
+# bumping MC may require bumping this too (Prism would re-resolve at import,
+# but a wrong value here keeps the zip importable offline).
 $mmcPack = [pscustomobject]@{
     components    = @(
         [pscustomobject]@{
@@ -328,16 +254,12 @@ $mmcPack | ConvertTo-Json -Depth 6 |
 Write-Information "Wrote mmc-pack.json (MC $minecraftVersion / Forge $forgeVersion)"
 
 # ─── Run packwiz-installer-bootstrap ────────────────────────────────────────
-# Point at the local pack.toml via a file:// URL so we materialize EXACTLY
-# what's in the working tree, not what's on `main` or any other branch.
-# The publish flow's commit step (in publish-prism-pack.ps1) is what
-# captures the SHA and pins it into docker/proxmox/.env — at build time
-# we just want the working-tree state.
-#
-# Java's URL handler treats file:// URIs as fetchable inputs to
-# packwiz-installer-bootstrap; the bootstrap then walks index.toml + each
-# .pw.toml and fetches their actual download URLs (which are real HTTPS
-# in every case).
+# file:// URL so we materialize EXACTLY the working tree, not origin/main.
+# The publish script's commit step is what turns HEAD into the production
+# SHA pin. Bootstrap walks index.toml + each .pw.toml from there.
+# Flags: --bootstrap-no-update + --bootstrap-main-jar skip api.github.com;
+# -g disables bootstrap's Swing UI (installer still shows per-mod progress);
+# -s client skips `side = "server"` overlays (PCF, spark, prom-exporter).
 $packTomlUri = ([System.Uri](Resolve-AbsolutePath $packToml)).AbsoluteUri
 Write-Information ''
 Write-Information '── packwiz-installer-bootstrap (--side client) ──'
@@ -367,7 +289,6 @@ if ($installedMods -lt 1) {
 Write-Information ''
 Write-Information "Materialized $installedMods mod JAR(s) into $modsDir"
 
-# Pipe the path on stdout for the caller to capture. Everything above this
-# point writes to the Information stream so the captured value is purely
-# the path — `$path = ./build-instance-from-packwiz.ps1` works.
+# Emit staging path on stdout (everything above writes to Information stream),
+# so `$path = ./build-instance-from-packwiz.ps1` captures the path verbatim.
 Write-Output $stagingInstance

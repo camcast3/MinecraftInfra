@@ -2,29 +2,16 @@ name = "Redcap's Currency Retexture"
 filename = "Redcap_LC_Retexture7.5.zip"
 side = "client"
 
-# Re-hosted via GitHub Release because CurseForge returns
-# `<Nil N="downloadUrl" />` for this project — its files require browser
-# license click-through and packwiz-installer cannot fetch them directly.
-# Resource pack declares `pack_format = 15` (MC 1.20-1.20.1) — exact
-# match for our pack version.
-#
-# Admin runbook (per packwiz/README.md "Re-hosted CF-blocked mods" section):
-#   1. Open the CF page and download the matching 1.20.1 file manually
-#      (browser-only, completes the license click-through).
-#   2. Upload to the `c2e2-blobs-v<PACK_VERSION>` release with `gh release upload`.
-#   3. Replace [download].url + hash with the GH Release URL + sha256.
-#   4. Update [update.curseforge] file-id to the current CF file-id so PR 4's
-#      daily workflow can still detect upstream version bumps for this entry.
-#   5. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
+# pack_format = 15 (MC 1.20-1.20.1) matches our pack version.
 [download]
 url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/Redcap_LC_Retexture7.5.zip"
 hash-format = "sha256"
 hash = "eb1bd344004138810489e11eafae5a91fb7abcae7705b9628c2de336d969ab80"
 mode = "url"
 
-# Keep [update.curseforge] alongside `mode = "url"` so PR 4's daily
-# `packwiz update --all` still pings CF for upstream version bumps and
-# surfaces them in the daily PR.
 [update]
 [update.curseforge]
 file-id = 5918840

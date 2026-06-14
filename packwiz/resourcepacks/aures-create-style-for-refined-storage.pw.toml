@@ -2,15 +2,9 @@ name = "Aures - Create Style for Refined Storage"
 filename = "Create_Style_for_Refined_Storage (1).zip"
 side = "client"
 
-# Modrinth-sourced rather than CurseForge: the upstream CF entry
-# (create-style-for-refined-storage / project 941802) sets
-# `Allow CurseForge to distribute this mod = false`, so packwiz-installer
-# cannot resolve a download URL via the CF API. The same author
-# (Aures / BlackAures) re-uploaded the pack to Modrinth where it is
-# API-fetchable; we point [download] at Modrinth's CDN directly and let
-# [update.modrinth] (PR 4's daily `packwiz update --all`) track new versions.
-# No GH Release re-host needed for this entry — Modrinth access is the
-# author's explicit publish target.
+# Modrinth-sourced (not CF): upstream CF entry (project 941802) sets
+# `Allow CurseForge to distribute = false`. Same author publishes to
+# Modrinth which is API-fetchable, so no GH Release re-host needed.
 [download]
 url = "https://cdn.modrinth.com/data/X6z8Zn11/versions/Mv6ktqNI/Create_Style_for_Refined_Storage%20%281%29.zip"
 hash-format = "sha512"

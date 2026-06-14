@@ -2,41 +2,23 @@ name = "Doggy Talents Next 16x16 texture pack"
 filename = "Doggy16x16.V6.1.21+.zip"
 side = "client"
 
-# Re-hosted via GitHub Release because CurseForge returns
-# `<Nil N="downloadUrl" />` for this project — its files require browser
-# license click-through and packwiz-installer cannot fetch them directly.
+# Re-hosted via GH Release: CurseForge returns `<Nil N="downloadUrl" />`
+# (mod requires browser license click-through). Admin runbook: see
+# packwiz/README.md "Re-hosted CF-blocked mods".
 #
-# Filename note: the upstream V6 release is published under three CF file IDs
-# that are byte-identical (per CF's API `fileLength = 4963010` for each):
-#   - 6803653  Doggy16x16.V6.1.20-1.20.1.zip  (tagged for MC 1.20-1.20.1)
-#   - 6803655  Doggy16x16.V6.1.20.2.zip       (tagged for MC 1.20.2)
-#   - 6803657  Doggy16x16.V6.1.21+.zip        (tagged for MC 1.21+)
-# We re-host the V6.1.21+ filename because that's the one CF served when the
-# admin completed the browser click-through. `[update.curseforge].file-id`
-# stays at 6803653 so PR 4's daily `packwiz update --all` tracks the
-# 1.20-1.20.1 release line (our pack is MC 1.20.1).
+# NOTE: upstream V6 publishes three byte-identical file IDs (one per MC
+# version tag: 6803653=1.20.1, 6803655=1.20.2, 6803657=1.21+). We re-host
+# the V6.1.21+ filename (admin's browser session served that one) but pin
+# [update.curseforge].file-id to 6803653 so PR 4 tracks the 1.20.1 line.
 #
-# Pack-format note: the zip declares `pack_format = 34` (MC 1.21.2+). MC
-# 1.20.1 expects `pack_format = 15` and will show a "made for newer version"
-# warning if a player opens resource-pack settings. The texture overrides
-# still apply — it's cosmetic, not a load failure.
-#
-# Admin runbook (per packwiz/README.md "Re-hosted CF-blocked mods" section):
-#   1. Open the CF page and download the matching 1.20.1 file manually
-#      (browser-only, completes the license click-through).
-#   2. Upload to the `c2e2-blobs-v<PACK_VERSION>` release with `gh release upload`.
-#   3. Replace [download].url + hash with the GH Release URL + sha256.
-#   4. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
+# NOTE: zip declares pack_format=34 (MC 1.21.2+) so MC 1.20.1 shows a
+# "made for newer version" warning; textures still apply — cosmetic only.
 [download]
 url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/Doggy16x16.V6.1.21%2B.zip"
 hash-format = "sha256"
 hash = "43bc036195773f77f95e62abb57847e5a1d8a493fac93df6a1413906a92713eb"
 mode = "url"
 
-# Keep [update.curseforge] alongside `mode = "url"` so PR 4's daily
-# `packwiz update --all` still pings CF for upstream version bumps and
-# surfaces them in the daily PR. file-id pinned to the 1.20-1.20.1
-# release line per the filename note above.
 [update]
 [update.curseforge]
 file-id = 6803653

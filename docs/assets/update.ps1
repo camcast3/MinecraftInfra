@@ -1,31 +1,17 @@
 ﻿# NegativeZone client auto-update — Prism PreLaunchCommand hook
 #
-# Bundled into the published Prism instance zip at:
-#   <InstanceName>/.negativezone/update.ps1
+# Bundled into the published Prism instance zip at
+# <InstanceName>/.negativezone/update.ps1, invoked by Prism on every launch
+# via instance.cfg's OverrideCommands=true + PreLaunchCommand line.
 #
-# Invoked by Prism on every launch via the instance.cfg lines:
-#   OverrideCommands=true
-#   PreLaunchCommand="powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"
+# Contract (see docs/player-onboarding.md "Updates" for full detail):
+#   - Fail-open on network errors so offline play still works.
+#   - Fail-closed on SHA-256 mismatch / structural issues — better to bother
+#     the player than ship a corrupted install.
+#   - Atomic .minecraft swap with rollback; user state preserved.
 #
-# Behavior contract (per docs/player-onboarding.md "Updates" section):
-#   - Fail-open on network errors (exit 0, log, let the game launch).
-#     Players offline or while Azure Blob is down can still play.
-#   - Fail-closed on SHA-256 mismatch or structural issues (exit 1, block
-#     launch). Better to bother the player than ship a corrupted install.
-#   - Atomic .minecraft/ swap: user state (saves, screenshots, options.txt,
-#     etc.) is preserved across the swap. Rollback on any mid-swap failure.
-#   - One-launch lag on the version label in instance.cfg's name= line.
-#     The on-disk source of truth is .negativezone-version; the label is
-#     cosmetic so it's safe to bump in this launch and have Prism show it
-#     on the next launch.
-#
-# PS 5.1 compatible — players install Temurin 17 + Prism via winget but
-# Windows ships PS 5.1 by default. Don't add PS 7-only syntax here.
-#
-# Prism injects these environment variables (and substitutes them in
-# the command string) per its CustomCommands plumbing. We trust $env:INST_DIR
-# as the source of truth and only fall back to other detection if it's
-# missing for some reason.
+# PS 5.1 compatible — Windows ships PS 5.1 by default, so no PS 7-only syntax.
+# Trusts $env:INST_DIR (Prism injects this via CustomCommands plumbing).
 
 [CmdletBinding()]
 param(
@@ -33,27 +19,20 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-# PS 5.1 doesn't have PSNativeCommandUseErrorActionPreference — native calls
-# (Expand-Archive, Get-FileHash, BITS) raise terminating errors via -EA Stop
-# at each callsite below.
+# PS 5.1 has no PSNativeCommandUseErrorActionPreference; native callsites
+# below use -EA Stop for terminating errors.
 
 $DefaultManifestUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest.json'
-# Test-publish override: when set, the bundled-into-zip update.ps1 honors
-# the same NEGATIVEZONE_MANIFEST_URL env var as setup.ps1. The Prism
-# PreLaunchCommand fires update.ps1 in the user's session, so the env var
-# only needs to be set in that session for the test-pack auto-update to
-# stay on the test channel. Loud warning is logged when the override is in
-# use, so a half-set test session is visible in the update.log.
+# Test-publish channel override — same env var as setup.ps1; loud WARN logged
+# below when active so half-set test sessions are visible in update.log.
 $ManifestUrl = if ($env:NEGATIVEZONE_MANIFEST_URL) {
     $env:NEGATIVEZONE_MANIFEST_URL
 } else {
     $DefaultManifestUrl
 }
 
-# Files + directories the swap MUST preserve from the player's current
-# install. Mirrors publish-prism-pack.ps1's $excludePatterns — anything
-# excluded from the published zip needs to be restored from .minecraft.bak
-# after the swap, or the player loses user state on every update.
+# Mirrors publish-prism-pack.ps1's $excludePatterns — restored from
+# .minecraft.bak after the swap so player state survives updates.
 $PreserveRelative = @(
     'saves',
     'screenshots',
@@ -70,10 +49,7 @@ $PreserveRelative = @(
     'realms_persistence.json'
 )
 
-# ─── INST_DIR resolution ────────────────────────────────────────────────────
-# Without $InstanceDir we don't know which instance to touch. Fail-open
-# (exit 0) so missing variable doesn't block the launch — Prism's launch
-# log captures the warning for diagnosis.
+# Fail-open (exit 0) on missing/invalid INST_DIR — captured in Prism's launch log.
 if ([string]::IsNullOrWhiteSpace($InstanceDir)) {
     Write-Host '[negativezone-update] INST_DIR not set; skipping auto-update.'
     exit 0
@@ -102,16 +78,14 @@ function Write-Log {
     try {
         Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8
     } catch {
-        # Best-effort: if even the log write fails (disk full?), there's
-        # nothing useful we can do beyond also printing to the launch log.
+        # Best-effort: nothing useful to do if even the log write fails.
     }
     Write-Host "[negativezone-update] $Message"
 }
 
-# ─── Concurrency lock ───────────────────────────────────────────────────────
-# Prism allows double-click-to-launch which can spawn the PreLaunchCommand
-# twice in quick succession. Without a lock, two concurrent update.ps1
-# instances would race the .minecraft swap and corrupt the install.
+# Prism's double-click-to-launch can spawn PreLaunchCommand twice in quick
+# succession; without a lock the two update.ps1 instances would race the
+# .minecraft swap and corrupt the install.
 function Acquire-UpdateLock {
     param([string]$Path, [int]$StaleSeconds = 300)
 
@@ -125,9 +99,8 @@ function Acquire-UpdateLock {
         }
     }
     try {
-        # CreateNew + FileShare.None makes the open atomic across processes —
-        # the second concurrent launcher will get IOException and we return
-        # $null so it can exit gracefully (the first one is mid-update).
+        # CreateNew + FileShare.None is atomic across processes — the second
+        # concurrent launcher gets IOException and exits gracefully.
         $stream = [System.IO.File]::Open(
             $Path,
             [System.IO.FileMode]::CreateNew,
@@ -150,9 +123,8 @@ if (-not $lock) {
 function Download-Zip {
     param([string]$Url, [string]$Destination)
 
-    # BITS gives us progress and resumes; Invoke-WebRequest is the universal
-    # fallback (Server Core, BITS service disabled, etc.). Either one ends
-    # with the full file at $Destination or throws.
+    # BITS for progress/resume; Invoke-WebRequest fallback for Server Core or
+    # when BITS service is disabled.
     try {
         if (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
             Start-BitsTransfer -Source $Url -Destination $Destination -ErrorAction Stop
@@ -171,16 +143,12 @@ function Get-Sha256 {
 
 function Move-WithReplace {
     param([string]$Source, [string]$Destination)
-    # Replace the destination atomically if it exists. Move-Item refuses to
-    # overwrite directories, so for dirs we delete-then-move; for files we
-    # let Move-Item with -Force do its job.
+    # Move-Item refuses to overwrite directories, so for dirs we delete then move.
     if (Test-Path -LiteralPath $Destination) {
         if ((Get-Item -LiteralPath $Destination).PSIsContainer) {
             Remove-Item -LiteralPath $Destination -Recurse -Force
         }
     }
-    # Ensure parent exists for files like servers.dat being restored after
-    # the new .minecraft was written empty.
     $parent = Split-Path -LiteralPath $Destination -Parent
     if ($parent -and -not (Test-Path -LiteralPath $parent)) {
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
@@ -195,7 +163,7 @@ $extractDir = $null
 $backupMinecraft = $null
 
 try {
-    # Detect installed version. Missing file = treat as "v0", forcing an update.
+    # Missing version file = treat as "v0", forcing an update.
     $installedVersion = if (Test-Path -LiteralPath $versionPath) {
         (Get-Content -LiteralPath $versionPath -Raw -ErrorAction SilentlyContinue).Trim()
     } else {
@@ -203,14 +171,13 @@ try {
     }
     Write-Log 'INFO' ("Installed version: '{0}'" -f $installedVersion)
 
-    # Loud log line when the test manifest override is in use so half-set
-    # test sessions are obvious in update.log (which the admin reads when
-    # debugging an auto-update issue).
+    # Loud log line on test-channel override so admin can spot it when
+    # debugging.
     if ($ManifestUrl -ne $DefaultManifestUrl) {
         Write-Log 'WARN' ("Using OVERRIDE manifest URL (test publish mode): {0}" -f $ManifestUrl)
     }
 
-    # Fetch manifest. Fail-open on any network error so offline play works.
+    # Fail-open: offline play works.
     $manifest = $null
     try {
         $manifest = Invoke-RestMethod -Uri $ManifestUrl -TimeoutSec 5 -ErrorAction Stop
@@ -250,8 +217,7 @@ try {
     $actualSha = Get-Sha256 -Path $tempZip
     $expectedSha = ($manifest.sha256 -as [string]).ToLower()
     if ($actualSha -ne $expectedSha) {
-        # Hash mismatch is fail-closed: a corrupted download or a tampered
-        # blob must not silently land in the player's instance.
+        # Fail-closed: corrupted/tampered blob must not land on disk.
         Write-Log 'ERROR' ("SHA-256 mismatch! expected={0} actual={1}" -f $expectedSha, $actualSha)
         Write-Log 'ERROR' 'Refusing to install. Re-run setup.ps1 if this persists.'
         $exitCode = 1
@@ -287,10 +253,9 @@ try {
         return
     }
 
-    # mmc-pack.json change detection — Prism already parsed the OLD file
-    # earlier this launch, so we CANNOT safely swap it now. Bail with a
-    # clear message; setup.ps1 (run before Prism opens) is the right
-    # fix-path because Prism re-reads mmc-pack.json on import.
+    # mmc-pack.json change = loader or MC version bumped. Prism already
+    # parsed the OLD file earlier this launch, so we CANNOT safely swap it
+    # now. Player must close Prism and re-run setup.ps1.
     if ((Test-Path -LiteralPath $srcMmcPack) -and (Test-Path -LiteralPath $instanceMmc)) {
         $currentMmcHash = Get-Sha256 -Path $instanceMmc
         $newMmcHash     = Get-Sha256 -Path $srcMmcPack
@@ -306,14 +271,13 @@ try {
     # ─── Atomic .minecraft swap with rollback ──────────────────────────────
     $backupMinecraft = "$dotMinecraft.bak"
     if (Test-Path -LiteralPath $backupMinecraft) {
-        # Leftover from a prior crashed run — clear it so the rename below
-        # has a clean target. The current .minecraft is still authoritative.
+        # Leftover from a prior crashed run.
         Write-Log 'WARN' ("Removing leftover backup at {0}" -f $backupMinecraft)
         Remove-Item -LiteralPath $backupMinecraft -Recurse -Force
     }
 
     if (Test-Path -LiteralPath $dotMinecraft) {
-        # Atomic rename — same volume, instant on Windows.
+        # Atomic rename on same volume.
         Move-Item -LiteralPath $dotMinecraft -Destination $backupMinecraft -Force
     } else {
         # First-run-without-.minecraft case (shouldn't happen but be safe).
@@ -321,16 +285,12 @@ try {
     }
 
     try {
-        # Move the new .minecraft into place.
         Move-Item -LiteralPath $srcMinecraft -Destination $dotMinecraft -Force
 
-        # Preserve user state from the backup. We move (rather than copy)
-        # the relative paths from .minecraft.bak into the new .minecraft —
-        # rename-style moves on the same volume are O(1) per path regardless
-        # of the size of `saves/`, which can be many GB. The plan called for
-        # "copy aside, then restore" but move is functionally equivalent
-        # since the backup is wiped at the end anyway, and copy doubles the
-        # disk usage + IO for no extra safety.
+        # Restore user state via move (not copy): rename-style moves on the
+        # same volume are O(1) regardless of saves/ size (can be many GB).
+        # Copy would double disk usage + IO with no extra safety since the
+        # backup is wiped at the end anyway.
         if ($backupMinecraft -and (Test-Path -LiteralPath $backupMinecraft)) {
             foreach ($rel in $PreserveRelative) {
                 $src = Join-Path $backupMinecraft $rel
@@ -345,14 +305,12 @@ try {
             }
         }
 
-        # Persist the new version. If this write fails we'd reapply the same
-        # update on every launch — annoying but not destructive.
+        # Persist the new version (write failure = same update re-applies
+        # every launch; annoying but not destructive).
         Set-Content -LiteralPath $versionPath -Value $manifest.version -Encoding UTF8 -NoNewline
 
-        # Update the Prism instance.cfg name= line so the player sees the
-        # version in Prism's instance grid. Cosmetic; effective next launch
-        # because Prism cached the previous value during this launch's
-        # instance.cfg parse.
+        # Cosmetic: name= shows up in Prism's instance grid one launch later
+        # because Prism cached the prior value during this launch's parse.
         if (Test-Path -LiteralPath $instanceCfg) {
             try {
                 $cfg = Get-Content -LiteralPath $instanceCfg -Encoding UTF8
@@ -360,8 +318,8 @@ try {
                 $patched = $cfg | ForEach-Object {
                     if ($_ -match '^name=') { "name=$newLabel" } else { $_ }
                 }
-                # Preserve CRLF line endings — Prism writes CRLF on Windows
-                # and rewriting with LF causes a noisy first launch.
+                # Preserve CRLF — Prism writes CRLF on Windows and LF causes
+                # a noisy first launch.
                 Set-Content -LiteralPath $instanceCfg -Value $patched -Encoding UTF8
             } catch {
                 Write-Log 'WARN' ("Failed to patch instance.cfg name= line: {0}" -f $_.Exception.Message)
@@ -371,9 +329,8 @@ try {
         Write-Log 'INFO' ("Update complete: now on v{0}" -f $manifest.version)
     }
     catch {
-        # Swap failed — try to roll back to the prior install. We expect the
-        # rollback to succeed because $backupMinecraft is the original
-        # directory we renamed aside in step 1.
+        # Roll back to the prior install. $backupMinecraft is the original
+        # directory we renamed aside.
         Write-Log 'ERROR' ("Swap failed: {0}" -f $_.Exception.Message)
         Write-Log 'ERROR' $_.ScriptStackTrace
         try {
@@ -405,16 +362,14 @@ try {
     }
 }
 catch {
-    # Any unexpected exception above the inner try-catch: log full trace and
-    # fail-closed. Players running Prism via setup.ps1 should never hit this
-    # path — if they do, the launch log + update.log have what we need.
+    # Fail-closed on unexpected exceptions. update.log + launch log have what
+    # we need to diagnose.
     Write-Log 'ERROR' ("Unhandled exception: {0}" -f $_.Exception.Message)
     Write-Log 'ERROR' $_.ScriptStackTrace
     $exitCode = 1
 }
 finally {
-    # Release lock + clean transient artifacts. Lock dispose must come before
-    # the Remove-Item so the file handle is released first.
+    # Lock dispose MUST come before Remove-Item so the file handle releases first.
     if ($lock) { $lock.Dispose() }
     Remove-Item -LiteralPath $lockPath -Force -ErrorAction SilentlyContinue
     if ($tempZip)    { Remove-Item -LiteralPath $tempZip    -Force -ErrorAction SilentlyContinue }

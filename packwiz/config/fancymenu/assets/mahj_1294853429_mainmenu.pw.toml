@@ -2,30 +2,11 @@ name = "FancyMenu — C2E2 mahj main menu animation"
 filename = "mahj_1294853429_mainmenu.fma"
 side = "client"
 
-# Re-hosted via GitHub Release because this binary asset is 151 MB —
-# over GitHub's 100 MB single-blob limit, so it can't be committed
-# directly to the repo. It's a CLIENT-ONLY cosmetic asset (custom main-menu
-# animation authored by the C2E2 modpack creator and bundled in the
-# upstream CurseForge zip's `overrides/config/fancymenu/assets/`).
-# The server doesn't render menus, so `side = "client"` keeps the server
-# install lean.
-#
-# This file's install path is determined by the .pw.toml's location in the
-# pack tree (config/fancymenu/assets/<filename>), so it lands at the same
-# path FancyMenu expects in the player's .minecraft/.
-#
-# No [update.*] block: the upstream source is the C2E2 modpack zip, not
-# a CurseForge project of its own. When a new C2E2 release changes this
-# file, re-run `infra/azure/scripts/import-curseforge-pack.ps1`, manually
-# re-upload the updated .fma to the active `c2e2-blobs-v<ver>` release,
-# and bump the URL + hash below. Documented in packwiz/README.md.
-#
-# Admin runbook (per packwiz/README.md "Re-hosted cosmetic assets" section):
-#   1. Locate the .fma file inside the C2E2 v<PACK_VERSION> zip at
-#      `overrides/config/fancymenu/assets/mahj_1294853429_mainmenu.fma`.
-#   2. Upload to the `c2e2-blobs-v<PACK_VERSION>` GH Release.
-#   3. Update the URL + hash below to the new release tag + sha256.
-#   4. From `packwiz/`, run `packwiz refresh` to regenerate index.toml.
+# Re-hosted via GH Release: binary is 151 MB (>GitHub's 100 MB blob limit).
+# Client-only cosmetic asset from the upstream C2E2 CurseForge zip; no
+# [update.*] block because there's no upstream CF project to track — the
+# import-curseforge-pack.ps1 admin script rotates this on C2E2 upstream bumps.
+# Admin runbook: see packwiz/README.md "Re-hosted cosmetic assets".
 [download]
 url = "https://github.com/camcast3/MinecraftInfra/releases/download/c2e2-blobs-v0.3.0/mahj_1294853429_mainmenu.fma"
 hash-format = "sha256"
