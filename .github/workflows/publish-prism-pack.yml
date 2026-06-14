@@ -34,6 +34,13 @@ permissions:
   # create or approve pull requests`. Toggle via:
   #   gh api -X PUT /repos/{owner}/{repo}/actions/permissions/workflow \
   #     -F can_approve_pull_request_reviews=true
+  #
+  # SIBLING SETTING: "Allow auto-merge" must also be enabled
+  # (Settings → General → Pull Requests), otherwise `gh pr merge --auto`
+  # in publish-prism-pack.ps1 throws and halts the publish before
+  # latest.json flips (intentional — see the fail-loud comment in the
+  # script). Toggle via:
+  #   gh api -X PATCH /repos/{owner}/{repo} -F allow_auto_merge=true
   pull-requests: write
   id-token: write
 

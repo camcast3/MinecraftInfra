@@ -68,6 +68,10 @@
     Allow re-publishing over an existing `modpack/v<Version>` branch on
     origin. Without this, the script refuses (PR #121 root cause). With
     -Force, local branch resets to origin/main and force-pushes with lease.
+    Also the recovery mode for resuming a publish that failed at the
+    auto-merge step (PR #147 root cause): re-running with -Force after
+    enabling `allow_auto_merge` on the repo will reuse the existing PR,
+    enable auto-merge, and finally upload latest.json.
 
 .PARAMETER SkipDriftCheck
     Test-publish escape hatch — bypasses drift check AND server-side
@@ -766,14 +770,38 @@ This PR atomically bumps:
         }
         Write-Ok "PR: $prUrl"
 
-        # Enable auto-merge so the PR squash-merges as soon as required checks pass.
-        # Shrinks the window where a second publish could race and collide.
-        # Non-fatal: if the repo doesn't have auto-merge enabled, just warn and move on.
+        # Enable auto-merge so the PR squash-merges as soon as required reviews
+        # / checks pass. Shrinks the window where a second publish could race
+        # and collide.
+        #
+        # FAIL LOUD: a silent warn here strands the PR with no merge intent
+        # while latest.json (uploaded ~10 lines below) flips clients onto the
+        # new version → server keeps running the previous packwiz snapshot
+        # until someone notices and merges manually → "kicked by mod mismatch"
+        # window for every joining player. That was tonight's PR #147 root
+        # cause. Throwing here halts BEFORE latest.json upload, so player-
+        # visible state never gets ahead of a stranded PR. Recovery: enable
+        # `allow_auto_merge` on the repo (Settings → General → Pull Requests,
+        # or `gh api -X PATCH /repos/<owner>/<repo> -F allow_auto_merge=true`)
+        # then re-run with -Force.
         try {
             gh pr merge $prUrl --auto --squash --delete-branch | Out-Null
             Write-Ok "Auto-merge enabled (squash + delete branch)"
         } catch {
-            Write-Host "    [warn] Could not enable auto-merge (is it enabled on the repo?). Merge the PR manually." -ForegroundColor Yellow
+            throw @"
+Failed to enable auto-merge on $prUrl :
+$($_.Exception.Message)
+
+Most likely cause: ``allow_auto_merge`` is disabled on this repo. Fix via
+GitHub UI (Settings → General → Pull Requests → "Allow auto-merge") or:
+  gh api -X PATCH /repos/<owner>/<repo> -F allow_auto_merge=true
+
+Halting BEFORE uploading latest.json so player-visible state doesn't flip
+to a stranded PR. Branch + zip blob are already uploaded — once the repo
+setting is fixed, re-run this script with -Force to resume (it will
+force-push the same branch, reuse the existing PR, enable auto-merge,
+and finally upload latest.json).
+"@
         }
     } finally {
         Pop-Location
