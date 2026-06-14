@@ -1,8 +1,8 @@
 # Central modpack version record — updated by publish-prism-pack.ps1
 # This provides a committed, auditable record of the currently published pack.
-version: "0.3.0"
-blob: c2e2-v0.3.0.zip
-sha256: 87a2b1454a8d53cdebe8a3972ff0e18b63121c0b8698ddc38d7e98aebac76510
-url: https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/c2e2-v0.3.0.zip
+version: "0.4.0"
+blob: c2e2-v0.4.0.zip
+sha256: ff76210a387ce69ad4e2d86d0c46d9da60d0cc5fced9602731255c59ac401737
+url: https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/c2e2-v0.4.0.zip
 instance: Craft to Exile 2
-publishedAt: "2026-06-07T06:05:59Z"
+publishedAt: "2026-06-14T02:33:53Z"
