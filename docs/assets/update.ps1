@@ -1,4 +1,4 @@
-# NegativeZone client auto-update — Prism PreLaunchCommand hook
+﻿# NegativeZone client auto-update — Prism PreLaunchCommand hook
 #
 # Bundled into the published Prism instance zip at:
 #   <InstanceName>/.negativezone/update.ps1
