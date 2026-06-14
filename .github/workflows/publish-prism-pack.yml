@@ -131,7 +131,7 @@ jobs:
 
       - name: Set up Java (for packwiz-installer-bootstrap)
         if: steps.noop_check.outputs.noop != 'true'
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
