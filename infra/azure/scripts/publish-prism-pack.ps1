@@ -380,8 +380,12 @@ if ($blobAlreadyExists) {
 }
 
 # ─── Export ────────────────────────────────────────────────────────────────
+# [System.IO.Path]::GetTempPath() instead of $env:TEMP — the latter is
+# unset on Linux/macOS PowerShell, so the GitHub Actions ubuntu-latest
+# runner hit "Cannot bind argument to parameter 'Path' because it is null"
+# when Join-Path got a null first argument.
 $blobName = "c2e2-v$Version.zip"
-$tempZip  = Join-Path $env:TEMP $blobName
+$tempZip  = Join-Path ([System.IO.Path]::GetTempPath()) $blobName
 
 Write-Step "Exporting Prism instance '$InstanceName' -> $tempZip"
 if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
@@ -632,7 +636,7 @@ $manifest = [ordered]@{
     publishedAt = (Get-Date).ToUniversalTime().ToString('o')
 }
 
-$manifestPath = Join-Path $env:TEMP 'latest.json'
+$manifestPath = Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
 # ─── Update modpack.yml + .env + open PR ───────────────────────────────────
