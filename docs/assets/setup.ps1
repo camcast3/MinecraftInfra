@@ -37,17 +37,36 @@ $UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/ma
 # players pick up the periodic snapshot hook on an already-installed instance.
 $BackupScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/backup.ps1'
 
-# Encoding-tolerant Pre/Post commands: PS 5.1's `-File` reads .ps1 as the
-# system ANSI codepage (CP1252 on US Windows) unless the file has a UTF-8
-# BOM, which silently mangles em-dashes inside double-quoted string
-# literals (byte 0x94 of the em-dash's UTF-8 encoding reads as a closing
-# smart-quote). The `-Command` form below uses .NET's UTF-8 decoder
-# explicitly so the script parses correctly regardless of file encoding.
+# Encoding-tolerant + parse-safe Pre/Post commands. Two layers of defense:
+#
+# 1. PS 5.1's `-File` reads .ps1 as the system ANSI codepage (CP1252 on US
+#    Windows) unless the file has a UTF-8 BOM, which silently mangles em-
+#    dashes inside double-quoted string literals. The scriptblock::Create +
+#    File.ReadAllText UTF-8 form below decodes the file with .NET's UTF-8
+#    decoder explicitly so the script parses correctly regardless of file
+#    encoding on disk.
+#
+# 2. Wrapped in try/catch so a stale or corrupted update.ps1/backup.ps1
+#    (missing file, parse error, runtime throw) surfaces a clear "re-run
+#    setup.ps1" message in Prism's launch console instead of a stack trace.
+#    Without this wrapper the original em-dash parse-crash showed players
+#    a wall of PowerShell tokenizer errors with no actionable guidance.
+#
 # See publish-prism-pack.ps1's Get-SanitizedInstanceCfg for the full
 # quoting-layers explanation (Qt INI -> QProcess::splitCommand -> PS).
-# Single-quoted so $INST_DIR survives — Prism substitutes it at launch.
-$updateInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\update.ps1'', [System.Text.Encoding]::UTF8)))'
-$backupInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\backup.ps1'', [System.Text.Encoding]::UTF8)))'
+# Here-strings used because the runtime payload contains many literal
+# single quotes — '' escaping inside a single-quoted PS literal would
+# make this near-impossible to read or modify.
+# $INST_DIR is preserved verbatim — Prism substitutes it at launch time.
+$updateInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\update.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
+'@
+# PostExit fails OPEN (exit 0) — the player already finished playing, so
+# blocking the launcher with a popup adds friction with no recovery benefit.
+# Next PreLaunch will surface the same condition loudly and block until fixed.
+$backupInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
+'@
 $PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
 $PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
 
@@ -272,6 +291,38 @@ if ($manifest) {
             }
 
             if (Test-Path $instanceTarget) {
+                # Pre-swap curated snapshot via the freshly-extracted backup.ps1
+                # (NOT the on-disk one — pre-fix installs have a broken copy).
+                # Snapshot lives at $instanceTarget\.negativezone\backups\<ts>\
+                # and rides along into $backupPath when we Move-Item below, so
+                # the snapshot history is preserved on .bak even if the post-
+                # swap restore below somehow misses something.
+                #
+                # Fail-open: if backup.ps1 errors, log and continue — the full
+                # filesystem .bak rename one line down is still the safety net.
+                $freshBackupPs1 = Join-Path $srcInstance '.negativezone\backup.ps1'
+                if (Test-Path -LiteralPath $freshBackupPs1) {
+                    Write-Step "Snapshotting existing instance via backup.ps1 (pre-swap safety)"
+                    try {
+                        # Use the call operator (not Start-Process) — PowerShell
+                        # quotes argv elements correctly here, whereas Start-Process
+                        # -ArgumentList silently splits paths containing spaces
+                        # (e.g. 'Craft to Exile 2' → truncated at first space).
+                        & powershell.exe -NoProfile -ExecutionPolicy Bypass `
+                            -File $freshBackupPs1 `
+                            -InstanceDir $instanceTarget `
+                            -Force
+                        $backupExit = $LASTEXITCODE
+                        if ($backupExit -eq 0) {
+                            Write-Ok "Pre-swap snapshot created in $instanceTarget\.negativezone\backups\"
+                        } else {
+                            Write-Warn "backup.ps1 exited with code $backupExit. Continuing — .bak rename below is still your safety net."
+                        }
+                    } catch {
+                        Write-Warn "Pre-swap snapshot failed ($($_.Exception.Message)). Continuing — .bak rename below is the fallback."
+                    }
+                }
+
                 Write-Host "    Backing up existing instance to $backupPath" -ForegroundColor Yellow
                 if (Test-Path $backupPath) { Remove-Item $backupPath -Recurse -Force }
                 Move-Item $instanceTarget $backupPath
@@ -279,6 +330,79 @@ if ($manifest) {
             }
 
             Move-Item $srcInstance $instanceTarget
+
+            # Carry player state from .bak into the new install. Without this
+            # the fresh instance has zero of the player's worlds, configs, or
+            # Xaero map data — they'd have to manually merge from .bak after
+            # every modpack drop.
+            #
+            # Mirrors update.ps1's $PreserveRelative — keep in sync when
+            # adding entries. (Both files run on player machines; centralizing
+            # the list isn't possible without making setup.ps1 fetch a manifest
+            # before the install, which would gate the whole install on an
+            # extra network call.)
+            if ($backedUp -and (Test-Path -LiteralPath $backupPath)) {
+                Write-Step "Carrying user state from previous instance into new install"
+                $preserveList = @(
+                    'saves', 'screenshots', 'logs', 'crash-reports', 'local', 'backups',
+                    'options.txt', 'optionsof.txt', 'optionsshaders.txt',
+                    'usercache.json', 'usernamecache.json', 'realms_persistence.json',
+                    'XaeroWaypoints', 'XaeroWorldMap',
+                    'shaderpacks', 'resourcepacks'
+                )
+                $oldDotMc = Join-Path $backupPath '.minecraft'
+                $newDotMc = Join-Path $instanceTarget '.minecraft'
+                $restored = 0
+                if (Test-Path -LiteralPath $oldDotMc) {
+                    if (-not (Test-Path -LiteralPath $newDotMc)) {
+                        New-Item -ItemType Directory -Path $newDotMc -Force | Out-Null
+                    }
+                    foreach ($rel in $preserveList) {
+                        $src = Join-Path $oldDotMc $rel
+                        if (-not (Test-Path -LiteralPath $src)) { continue }
+                        $dst = Join-Path $newDotMc $rel
+                        try {
+                            if (Test-Path -LiteralPath $dst) {
+                                Remove-Item -LiteralPath $dst -Recurse -Force
+                            }
+                            $parent = Split-Path -Parent $dst
+                            if ($parent -and -not (Test-Path -LiteralPath $parent)) {
+                                New-Item -ItemType Directory -Path $parent -Force | Out-Null
+                            }
+                            # Copy (not move) so .bak stays a complete snapshot
+                            # the player can mine for anything we missed.
+                            Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+                            $restored++
+                        } catch {
+                            Write-Warn "Failed to carry over '$rel' ($($_.Exception.Message)). Original is still in $backupPath."
+                        }
+                    }
+                }
+                Write-Ok "Restored $restored user-state item(s) from previous instance"
+
+                # Carry over .negativezone\backups\ so the player keeps their
+                # snapshot history (including the pre-swap snapshot above) in
+                # the live instance instead of stranded in .bak.
+                $oldBackupsDir = Join-Path $backupPath '.negativezone\backups'
+                if (Test-Path -LiteralPath $oldBackupsDir) {
+                    try {
+                        $newNzDir = Join-Path $instanceTarget '.negativezone'
+                        if (-not (Test-Path -LiteralPath $newNzDir)) {
+                            New-Item -ItemType Directory -Path $newNzDir -Force | Out-Null
+                        }
+                        Copy-Item -LiteralPath $oldBackupsDir -Destination $newNzDir -Recurse -Force
+                        Write-Ok "Carried over snapshot history (.negativezone\backups\)"
+                    } catch {
+                        Write-Warn "Could not carry over snapshot history ($($_.Exception.Message)). Snapshots still in $backupPath."
+                    }
+                }
+
+                Write-Host ''
+                Write-Host '    Your previous instance is preserved at:' -ForegroundColor Cyan
+                Write-Host "      $backupPath" -ForegroundColor Cyan
+                Write-Host '    If anything is missing from your new install, copy it from there.' -ForegroundColor Cyan
+                Write-Host ''
+            }
 
             # Prism stores instance icons globally (%APPDATA%\PrismLauncher\icons),
             # NOT inside the instance folder — without this copy the imported

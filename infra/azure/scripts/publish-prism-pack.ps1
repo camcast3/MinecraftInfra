@@ -473,14 +473,22 @@ function Get-SanitizedInstanceCfg(
         'ExportOptionalFiles'
     )
 
-    # Encoding-tolerant invocation: PS 5.1's `-File` reads .ps1 as the system
-    # ANSI codepage (CP1252 on US Windows) unless the file has a UTF-8 BOM,
-    # which mangles em-dashes (U+2014 -> bytes E2 80 94; 0x94 reads as a
-    # closing smart-quote and silently terminates string literals). We
-    # publish .ps1 entries WITH BOM, but defense-in-depth: this `-Command`
-    # form uses .NET's UTF-8 decoder explicitly via File::ReadAllText, so
-    # the script parses correctly regardless of BOM presence or any future
-    # editor/tool that strips it.
+    # Two layers of defense for the Pre/Post launch hooks:
+    #
+    # 1. Encoding-tolerant invocation: PS 5.1's `-File` reads .ps1 as the
+    #    system ANSI codepage (CP1252 on US Windows) unless the file has a
+    #    UTF-8 BOM, which mangles em-dashes (U+2014 -> bytes E2 80 94; 0x94
+    #    reads as a closing smart-quote and silently terminates string
+    #    literals). We publish .ps1 entries WITH BOM, but defense-in-depth:
+    #    the `-Command` form uses .NET's UTF-8 decoder explicitly via
+    #    File::ReadAllText, so the script parses correctly regardless of
+    #    BOM presence or any future editor/tool that strips it.
+    #
+    # 2. try/catch wrapper: a stale or corrupted update.ps1/backup.ps1
+    #    (missing file, parse error, runtime throw) surfaces a clear
+    #    "re-run setup.ps1" message in Prism's launch console instead of a
+    #    PowerShell stack trace. Without this, the original em-dash parse
+    #    crash showed players tokenizer errors with no actionable guidance.
     #
     # Quoting layers (outermost -> innermost):
     #   * Qt INI value wrap: the entire command is the value after `=`.
@@ -488,11 +496,21 @@ function Get-SanitizedInstanceCfg(
     #   * QProcess::splitCommand: splits on whitespace; "..." segments stay
     #     intact (handles paths with spaces like "Craft to Exile 2").
     #   * PowerShell `-Command` parser: the value is parsed as a script.
-    #     Single quotes wrap the path so backslashes + spaces are literal.
-    # Single-quoted PS string here so `$INST_DIR` survives unexpanded —
-    # Prism substitutes it at launch time.
-    $updateInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\update.ps1'', [System.Text.Encoding]::UTF8)))'
-    $backupInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\backup.ps1'', [System.Text.Encoding]::UTF8)))'
+    #     Single quotes inside wrap the path/messages so backslashes,
+    #     spaces, and special chars are literal.
+    # Here-strings used because the runtime payload contains many literal
+    # single quotes — '' escaping inside a single-quoted PS literal would
+    # make this near-unreadable. `$INST_DIR` survives unexpanded — Prism
+    # substitutes it at launch time.
+    $updateInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\update.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
+'@
+    # PostExit fails OPEN (exit 0) — player already finished playing; a
+    # blocking popup here adds friction with no recovery benefit. The next
+    # PreLaunch will surface the same condition loudly and block until fixed.
+    $backupInvoke = @'
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
+'@
     $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
     $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
 
