@@ -1,0 +1,246 @@
+# NegativeZone client settings migrator
+#
+# Copies client-side settings (keybinds, video options, OptiFine/shader
+# settings, server list, JourneyMap + Xaero waypoints) from an old
+# Minecraft instance into a new one. For the (uncommon) case where a
+# modpack version upgrade left you without your tuned settings — e.g.
+# moving from a backup of C2E2 v0.2.0 onto a freshly installed v0.4.x.
+#
+# Run from PowerShell (no admin needed). With no args the script
+# auto-detects Prism / CurseForge instances and lets you pick source +
+# destination interactively:
+#
+#   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/migrate-settings.ps1 | iex
+#
+# Or pass explicit paths:
+#
+#   & ([scriptblock]::Create((irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/migrate-settings.ps1))) `
+#       -OldInstance 'C:\path\to\old' `
+#       -NewInstance 'C:\path\to\new'
+#
+# Each cut release also publishes a signed copy under
+#   https://github.com/camcast3/MinecraftInfra/releases?q=migrate-v
+# with a SHA-256 verification one-liner in the release notes.
+#
+# Behavior:
+#   - Preview-then-confirm flow. Nothing is touched until you say 'y'.
+#   - Anything overwritten in the destination is first moved to
+#     <NewInstance>\_migration-backup-<timestamp>\ so the operation is
+#     fully reversible.
+#   - Skips items not present in the source (no errors).
+#   - Does NOT touch config\, defaultconfigs\, mods\, kubejs\, scripts\,
+#     packmenu\, saves\, logs\, crash-reports\. Mod configs MUST be ported
+#     manually between modpack versions — schemas change and bulk-copying
+#     config\ is the #1 cause of post-update crashes.
+#
+# PS 5.1 compatible — Windows ships PS 5.1 by default, so no PS 7-only syntax.
+
+[CmdletBinding(SupportsShouldProcess)]
+param(
+    [string] $OldInstance,
+    [string] $NewInstance
+)
+
+$ErrorActionPreference = 'Stop'
+
+function Write-Step($msg) {
+    Write-Host ''
+    Write-Host "==> $msg" -ForegroundColor Cyan
+}
+
+# Prism / MultiMC / Modrinth wrap the game files in a .minecraft subfolder;
+# CurseForge puts them directly in the instance dir. Auto-detect so callers
+# can paste either path.
+function Resolve-MinecraftRoot {
+    param([Parameter(Mandatory)][string] $Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        throw "Instance path not found: $Path"
+    }
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $dotMc = Join-Path $resolved '.minecraft'
+    if (Test-Path -LiteralPath $dotMc -PathType Container) { return $dotMc }
+    return $resolved
+}
+
+function Find-CandidateInstances {
+    $candidates = @()
+
+    $prism = Join-Path $env:APPDATA 'PrismLauncher\instances'
+    if (Test-Path -LiteralPath $prism -PathType Container) {
+        Get-ChildItem -LiteralPath $prism -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            if (Test-Path -LiteralPath (Join-Path $_.FullName '.minecraft') -PathType Container) {
+                $candidates += [pscustomobject]@{
+                    Launcher = 'Prism'
+                    Name     = $_.Name
+                    Path     = $_.FullName
+                }
+            }
+        }
+    }
+
+    $cf = Join-Path $env:USERPROFILE 'curseforge\minecraft\Instances'
+    if (Test-Path -LiteralPath $cf -PathType Container) {
+        Get-ChildItem -LiteralPath $cf -Directory -ErrorAction SilentlyContinue | ForEach-Object {
+            $candidates += [pscustomobject]@{
+                Launcher = 'CurseForge'
+                Name     = $_.Name
+                Path     = $_.FullName
+            }
+        }
+    }
+
+    return ,$candidates
+}
+
+function Read-InstancePath {
+    param(
+        [Parameter(Mandatory)][string] $Prompt,
+        [array] $Candidates
+    )
+    if ($Candidates -and $Candidates.Count -gt 0) {
+        Write-Host ''
+        Write-Host $Prompt -ForegroundColor Cyan
+        for ($i = 0; $i -lt $Candidates.Count; $i++) {
+            $c = $Candidates[$i]
+            Write-Host ("  [{0}] {1,-10} {2}" -f ($i + 1), $c.Launcher, $c.Name)
+            Write-Host ("       {0}" -f $c.Path) -ForegroundColor DarkGray
+        }
+        Write-Host '  [m]  Type a path manually'
+        $choice = Read-Host '  Pick one'
+        if ($choice -match '^[0-9]+$') {
+            $idx = [int]$choice - 1
+            if ($idx -ge 0 -and $idx -lt $Candidates.Count) {
+                return $Candidates[$idx].Path
+            }
+            Write-Host "    Out of range: $choice" -ForegroundColor Red
+        }
+    }
+    while ($true) {
+        $p = Read-Host $Prompt
+        if (-not [string]::IsNullOrWhiteSpace($p)) {
+            $p = $p.Trim('"').Trim()
+            if (Test-Path -LiteralPath $p -PathType Container) {
+                return $p
+            }
+            Write-Host "    Not found: $p" -ForegroundColor Red
+        }
+    }
+}
+
+Write-Host ''
+Write-Host 'NegativeZone Minecraft settings migrator' -ForegroundColor Magenta
+Write-Host '----------------------------------------'
+
+$candidates = Find-CandidateInstances
+
+if ([string]::IsNullOrWhiteSpace($OldInstance)) {
+    $OldInstance = Read-InstancePath 'Path to your OLD instance (the one with your settings)' $candidates
+}
+if ([string]::IsNullOrWhiteSpace($NewInstance)) {
+    $NewInstance = Read-InstancePath 'Path to your NEW instance (the one to copy settings INTO)' $candidates
+}
+
+$old = Resolve-MinecraftRoot -Path $OldInstance
+$new = Resolve-MinecraftRoot -Path $NewInstance
+
+if ($old -eq $new) { throw 'Old and new instance resolve to the same folder.' }
+
+# Files copied if present in the old instance.
+$files = @(
+    'options.txt',
+    'optionsof.txt',
+    'optionsshaders.txt',
+    'servers.dat',
+    'servers.dat_old',
+    'hotbar.nbt'
+)
+
+# Folders copied recursively if present in the old instance.
+$folders = @(
+    'journeymap',
+    'XaeroWaypoints',
+    'XaeroWorldMap'
+)
+
+$timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$backupDir = Join-Path $new "_migration-backup-$timestamp"
+
+Write-Step 'Plan'
+Write-Host "  From:   $old"
+Write-Host "  To:     $new"
+Write-Host "  Backup: $backupDir  (created only if existing files would be overwritten)"
+Write-Host ''
+
+$plan = @()
+foreach ($f in $files) {
+    $src = Join-Path $old $f
+    if (Test-Path -LiteralPath $src -PathType Leaf) {
+        $plan += [pscustomobject]@{
+            Type       = 'File'
+            Name       = $f
+            Source     = $src
+            Overwrites = Test-Path -LiteralPath (Join-Path $new $f)
+        }
+    }
+}
+foreach ($d in $folders) {
+    $src = Join-Path $old $d
+    if (Test-Path -LiteralPath $src -PathType Container) {
+        $plan += [pscustomobject]@{
+            Type       = 'Folder'
+            Name       = $d
+            Source     = $src
+            Overwrites = Test-Path -LiteralPath (Join-Path $new $d)
+        }
+    }
+}
+
+if (-not $plan) {
+    Write-Host 'Nothing to migrate - none of the expected items exist in the old instance.' -ForegroundColor Yellow
+    return
+}
+
+$plan | Format-Table Type, Name, Overwrites -AutoSize
+
+if (-not $PSCmdlet.ShouldProcess($new, 'Apply migration')) {
+    Write-Host 'Dry run (-WhatIf). Re-run without -WhatIf to apply.' -ForegroundColor Yellow
+    return
+}
+
+$confirm = Read-Host 'Proceed? (y/N)'
+if ($confirm -notmatch '^[Yy]') {
+    Write-Host 'Aborted.' -ForegroundColor Yellow
+    return
+}
+
+Write-Step 'Applying'
+$backupCreated = $false
+foreach ($item in $plan) {
+    $dst = Join-Path $new $item.Name
+    if (Test-Path -LiteralPath $dst) {
+        if (-not $backupCreated) {
+            New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+            $backupCreated = $true
+        }
+        Write-Host ("  backup : {0}" -f $item.Name) -ForegroundColor DarkGray
+        Move-Item -LiteralPath $dst -Destination (Join-Path $backupDir $item.Name) -Force
+    }
+    Write-Host ("  copy   : {0}" -f $item.Name) -ForegroundColor Green
+    if ($item.Type -eq 'File') {
+        Copy-Item -LiteralPath $item.Source -Destination $dst -Force
+    } else {
+        Copy-Item -LiteralPath $item.Source -Destination $dst -Recurse -Force
+    }
+}
+
+Write-Step 'Done'
+if ($backupCreated) {
+    Write-Host "Overwritten items backed up to: $backupDir"
+} else {
+    Write-Host 'No existing files were overwritten; no backup needed.'
+}
+Write-Host ''
+Write-Host 'Next:' -ForegroundColor Cyan
+Write-Host '  1. Launch the new instance and verify keybinds, video settings, waypoints, server list.'
+Write-Host '  2. Port mod configs manually from old\config\ -> new\config\ one mod at a time.'
+Write-Host '     Bulk-copying config\ between modpack versions can crash the game.'
