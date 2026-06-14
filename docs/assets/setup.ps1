@@ -31,11 +31,30 @@ function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow
 
 # Pulled from main so re-running setup picks up the latest update.ps1 even
 # when the player is already on the current modpack version.
-$UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
+# $env:NEGATIVEZONE_UPDATE_SCRIPT_URL override = local-E2E test harness.
+$DefaultUpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
+$UpdateScriptUrl = if ($env:NEGATIVEZONE_UPDATE_SCRIPT_URL) {
+    $env:NEGATIVEZONE_UPDATE_SCRIPT_URL
+} else {
+    $DefaultUpdateScriptUrl
+}
 
 # Same backfill rationale as update.ps1 — re-running setup once is how pre-PR 2
 # players pick up the periodic snapshot hook on an already-installed instance.
-$BackupScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/backup.ps1'
+# $env:NEGATIVEZONE_BACKUP_SCRIPT_URL override = local-E2E test harness.
+$DefaultBackupScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/backup.ps1'
+$BackupScriptUrl = if ($env:NEGATIVEZONE_BACKUP_SCRIPT_URL) {
+    $env:NEGATIVEZONE_BACKUP_SCRIPT_URL
+} else {
+    $DefaultBackupScriptUrl
+}
+
+# NEGATIVEZONE_NONINTERACTIVE=1 skips every blocking Read-Host prompt and the
+# Mojang UUID lookup at the end. The E2E test harness sets this so it can run
+# unattended; production users never set it and see the normal interactive
+# flow. The Prism-running check is also gated on this since the harness uses
+# a sandboxed APPDATA that can't collide with a real Prism install.
+$NonInteractive = ($env:NEGATIVEZONE_NONINTERACTIVE -eq '1')
 
 # Encoding-tolerant + parse-safe Pre/Post commands. Two layers of defense:
 #
@@ -229,12 +248,17 @@ if ($manifest) {
     }
 
     if ($needsInstall) {
-        $prismRunning = Get-Process -Name 'prismlauncher' -ErrorAction SilentlyContinue
-        if ($prismRunning) {
-            Write-Host ""
-            Write-Host "    Prism Launcher is currently running. Close it before installing." -ForegroundColor Red
-            Write-Host "    (Right-click the Prism icon in the system tray / taskbar -> Quit)" -ForegroundColor Red
-            Read-Host "    Press Enter once Prism is closed to continue"
+        # In production this guards against overwriting a live Prism install,
+        # but the E2E harness writes to a sandboxed APPDATA that has no
+        # relationship to whatever Prism the developer might have open.
+        if (-not $NonInteractive) {
+            $prismRunning = Get-Process -Name 'prismlauncher' -ErrorAction SilentlyContinue
+            if ($prismRunning) {
+                Write-Host ""
+                Write-Host "    Prism Launcher is currently running. Close it before installing." -ForegroundColor Red
+                Write-Host "    (Right-click the Prism icon in the system tray / taskbar -> Quit)" -ForegroundColor Red
+                Read-Host "    Press Enter once Prism is closed to continue"
+            }
         }
 
         $tempZip = Join-Path $env:TEMP $manifest.blob
@@ -472,50 +496,56 @@ if ($manifest) {
 }
 
 # ─── Look up UUID ───────────────────────────────────────────────────────────
-Write-Step "Looking up your Minecraft UUID"
-$username = Read-Host "    Enter your Minecraft Java username"
-$username = $username.Trim()
-
-if ([string]::IsNullOrWhiteSpace($username)) {
-    Write-Host "    No username entered, exiting." -ForegroundColor Red
-    exit 1
-}
-
-try {
-    $response = Invoke-RestMethod -Uri "https://api.mojang.com/users/profiles/minecraft/$username" -ErrorAction Stop
-} catch {
+if ($NonInteractive) {
     Write-Host ""
-    Write-Host "    Could not find a Minecraft Java account with username '$username'." -ForegroundColor Red
-    Write-Host "    Double-check the spelling and try again." -ForegroundColor Red
-    exit 1
-}
+    Write-Host "    NEGATIVEZONE_NONINTERACTIVE=1 set — skipping UUID lookup." -ForegroundColor DarkGray
+    Write-Host "    (Production users see a prompt here to look up their Minecraft UUID for the allowlist.)"
+} else {
+    Write-Step "Looking up your Minecraft UUID"
+    $username = Read-Host "    Enter your Minecraft Java username"
+    $username = $username.Trim()
 
-$raw = $response.id
-$uuid = '{0}-{1}-{2}-{3}-{4}' -f `
-    $raw.Substring(0, 8),
-    $raw.Substring(8, 4),
-    $raw.Substring(12, 4),
-    $raw.Substring(16, 4),
-    $raw.Substring(20, 12)
+    if ([string]::IsNullOrWhiteSpace($username)) {
+        Write-Host "    No username entered, exiting." -ForegroundColor Red
+        exit 1
+    }
 
-$realName = $response.name
+    try {
+        $response = Invoke-RestMethod -Uri "https://api.mojang.com/users/profiles/minecraft/$username" -ErrorAction Stop
+    } catch {
+        Write-Host ""
+        Write-Host "    Could not find a Minecraft Java account with username '$username'." -ForegroundColor Red
+        Write-Host "    Double-check the spelling and try again." -ForegroundColor Red
+        exit 1
+    }
 
-$payload = @"
+    $raw = $response.id
+    $uuid = '{0}-{1}-{2}-{3}-{4}' -f `
+        $raw.Substring(0, 8),
+        $raw.Substring(8, 4),
+        $raw.Substring(12, 4),
+        $raw.Substring(16, 4),
+        $raw.Substring(20, 12)
+
+    $realName = $response.name
+
+    $payload = @"
 Username: $realName
 UUID: $uuid
 "@
 
-Write-Host ""
-Write-Host "==> Send this to the admin to get allowlisted:" -ForegroundColor Cyan
-Write-Host ""
-Write-Host $payload -ForegroundColor White
-Write-Host ""
+    Write-Host ""
+    Write-Host "==> Send this to the admin to get allowlisted:" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host $payload -ForegroundColor White
+    Write-Host ""
 
-try {
-    Set-Clipboard -Value $payload
-    Write-Ok "Copied to your clipboard — paste it to the admin with Ctrl+V"
-} catch {
-    Write-Warn "Couldn't copy to clipboard automatically — copy the text above manually"
+    try {
+        Set-Clipboard -Value $payload
+        Write-Ok "Copied to your clipboard — paste it to the admin with Ctrl+V"
+    } catch {
+        Write-Warn "Couldn't copy to clipboard automatically — copy the text above manually"
+    }
 }
 
 # ─── Next steps ─────────────────────────────────────────────────────────────

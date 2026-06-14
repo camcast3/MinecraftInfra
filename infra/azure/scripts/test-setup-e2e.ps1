@@ -1,0 +1,672 @@
+<#
+.SYNOPSIS
+    End-to-end test harness for the NegativeZone client install/update flow.
+
+.DESCRIPTION
+    Repeatable local verification of setup.ps1 + update.ps1 + backup.ps1 +
+    the Prism PreLaunchCommand/PostExitCommand wrappers — without touching
+    production (no Azure Blob, no real APPDATA, no real Prism, no network).
+
+    What it does:
+      1. Builds two fake "published" modpack zips (v1.0.0 and v1.1.0) from
+         the real .ps1 sources in docs/assets/, mirroring the on-blob layout
+         publish-prism-pack.ps1 produces.
+      2. Spins up a tiny TcpListener-based HTTP server on a random loopback
+         port (admin-free, no URL ACL) serving the zips + manifest +
+         standalone update.ps1/backup.ps1 mirror files.
+      3. Sets the three NEGATIVEZONE_* URL env vars + APPDATA to a sandbox.
+      4. Runs setup.ps1 in subprocesses against the sandboxed APPDATA and
+         asserts the expected on-disk state for each scenario:
+           - Fresh install
+           - Heal-broken-install (re-run after corruption)
+           - Upgrade with snapshot+restore of player state
+           - PreLaunchCommand wrapper: missing script   -> setup hint
+           - PreLaunchCommand wrapper: parse error      -> setup hint
+           - PreLaunchCommand wrapper: happy path       -> bubble exit code
+           - PostExitCommand  wrapper: missing script   -> fail-open exit 0
+
+    Each test gets a clean APPDATA so they're independent. Sandbox + HTTP
+    server are torn down in `finally` so a Ctrl-C mid-run doesn't leak.
+
+.PARAMETER Only
+    Run only tests whose name matches this substring (case-insensitive).
+
+.PARAMETER KeepSandbox
+    Leave the sandbox directory in $env:TEMP for post-mortem inspection.
+
+.EXAMPLE
+    pwsh infra/azure/scripts/test-setup-e2e.ps1
+
+.EXAMPLE
+    pwsh infra/azure/scripts/test-setup-e2e.ps1 -Only PreLaunch -KeepSandbox
+#>
+
+[CmdletBinding()]
+param(
+    [string] $Only,
+    [switch] $KeepSandbox
+)
+
+$ErrorActionPreference = 'Stop'
+# Compress-Archive + Invoke-WebRequest both blast a progress bar to the host
+# by default — turns the harness output into hard-to-read overwrites and on
+# some terminals masks the actual test results. Suppressed here; explicit
+# Write-Step messages give us all the progress we need.
+$ProgressPreference = 'SilentlyContinue'
+
+# ─── Locate repo + source scripts ───────────────────────────────────────────
+$repoRoot   = Resolve-Path (Join-Path $PSScriptRoot '..\..\..') | Select-Object -ExpandProperty Path
+$docsAssets = Join-Path $repoRoot 'docs\assets'
+$setupPs1   = Join-Path $docsAssets 'setup.ps1'
+$updatePs1  = Join-Path $docsAssets 'update.ps1'
+$backupPs1  = Join-Path $docsAssets 'backup.ps1'
+
+foreach ($f in @($setupPs1, $updatePs1, $backupPs1)) {
+    if (-not (Test-Path -LiteralPath $f)) { throw "Missing source: $f" }
+}
+
+# ─── Sandbox dirs ───────────────────────────────────────────────────────────
+$sandbox      = Join-Path $env:TEMP ('nz-e2e-{0}' -f (Get-Date -Format 'yyyyMMddHHmmss'))
+$blobDir      = Join-Path $sandbox 'blob'
+$logDir       = Join-Path $sandbox 'log'
+New-Item -ItemType Directory -Path $blobDir, $logDir -Force | Out-Null
+
+function Write-Section($t) { Write-Host ''; Write-Host ('=' * 60) -ForegroundColor DarkGray; Write-Host $t -ForegroundColor Cyan; Write-Host ('=' * 60) -ForegroundColor DarkGray }
+function Write-Info($t)    { Write-Host "    $t" -ForegroundColor DarkGray }
+
+# ─── Fixture builder: a published "modpack zip" ─────────────────────────────
+# Mirrors publish-prism-pack.ps1's output:
+#   <Instance>/instance.cfg
+#   <Instance>/mmc-pack.json
+#   <Instance>/.minecraft/mods/<some>.jar         (structural validation)
+#   <Instance>/.negativezone/update.ps1           (with UTF-8 BOM)
+#   <Instance>/.negativezone/backup.ps1           (with UTF-8 BOM)
+#   <Instance>/.negativezone/preserve-list.json
+function Build-FakeModpackZip {
+    param(
+        [Parameter(Mandatory)][string] $Version,
+        [string] $InstanceName = 'Craft to Exile 2',
+        [Parameter(Mandatory)][string] $OutDir,
+        [string] $UpdatePs1Override,
+        [string] $BackupPs1Override
+    )
+    $stage = Join-Path $env:TEMP ('nz-build-{0}' -f [guid]::NewGuid().ToString('N'))
+    $instDir = Join-Path $stage $InstanceName
+    $mcDir   = Join-Path $instDir '.minecraft'
+    $modsDir = Join-Path $mcDir 'mods'
+    $nzDir   = Join-Path $instDir '.negativezone'
+    New-Item -ItemType Directory -Path $modsDir, $nzDir -Force | Out-Null
+
+    Set-Content -LiteralPath (Join-Path $modsDir "fabric-loader-v$Version.jar") `
+                -Value "stub-mod-bytes-$Version" -Encoding ASCII
+
+@"
+[General]
+ConfigVersion=1.2
+iconKey=cte2
+InstanceType=OneSix
+name=NegativeZone CTE2 v$Version
+OverrideCommands=true
+"@ | Set-Content -LiteralPath (Join-Path $instDir 'instance.cfg') -Encoding UTF8
+
+@"
+{
+  "components": [
+    { "cachedName": "Minecraft", "cachedVersion": "1.20.1", "uid": "net.minecraft", "version": "1.20.1" }
+  ],
+  "formatVersion": 1
+}
+"@ | Set-Content -LiteralPath (Join-Path $instDir 'mmc-pack.json') -Encoding UTF8
+
+    '[]' | Set-Content -LiteralPath (Join-Path $nzDir 'preserve-list.json') -Encoding UTF8
+
+    # Bundle .ps1 with UTF-8 BOM (mirrors Add-Ps1ZipEntry in publish-prism-pack.ps1).
+    # Repo .ps1 files are BOM-less (lint-ps1.yml enforces this).
+    $bom = [byte[]](0xEF, 0xBB, 0xBF)
+    $updBytes = if ($UpdatePs1Override) {
+        $bom + [Text.UTF8Encoding]::new($false).GetBytes($UpdatePs1Override)
+    } else {
+        $bom + [IO.File]::ReadAllBytes($updatePs1)
+    }
+    $bakBytes = if ($BackupPs1Override) {
+        $bom + [Text.UTF8Encoding]::new($false).GetBytes($BackupPs1Override)
+    } else {
+        $bom + [IO.File]::ReadAllBytes($backupPs1)
+    }
+    [IO.File]::WriteAllBytes((Join-Path $nzDir 'update.ps1'), $updBytes)
+    [IO.File]::WriteAllBytes((Join-Path $nzDir 'backup.ps1'), $bakBytes)
+
+    $zipName = "c2e2-v$Version.zip"
+    $zipPath = Join-Path $OutDir $zipName
+    if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
+    # Compress-Archive: -Path with trailing \* zips contents at root; without
+    # it zips the dir itself. We want the dir IN the zip (setup.ps1 looks for
+    # <InstanceName>/instance.cfg) so pass the dir directly.
+    Compress-Archive -Path $instDir -DestinationPath $zipPath -CompressionLevel Fastest -Force
+
+    Remove-Item $stage -Recurse -Force
+    return $zipPath
+}
+
+function Write-Manifest {
+    param(
+        [Parameter(Mandatory)][string] $Version,
+        [Parameter(Mandatory)][string] $InstanceName,
+        [Parameter(Mandatory)][string] $BlobName,
+        [Parameter(Mandatory)][string] $ZipPath,
+        [Parameter(Mandatory)][string] $OutPath,
+        [Parameter(Mandatory)][string] $BaseUrl
+    )
+    $sha = (Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLower()
+    $size = (Get-Item -LiteralPath $ZipPath).Length
+    $json = [pscustomobject]@{
+        version   = $Version
+        instance  = $InstanceName
+        blob      = $BlobName
+        url       = "$BaseUrl$BlobName"
+        sha256    = $sha
+        sizeBytes = $size
+    } | ConvertTo-Json -Compress
+    # PS 5.1's `Set-Content -Encoding UTF8` writes a UTF-8 BOM, which makes
+    # Invoke-RestMethod on the receiving side bail out of JSON auto-parse
+    # (it returns the raw string instead of an object). The real Azure Blob
+    # responses don't have a BOM, so write BOM-less here to match.
+    [IO.File]::WriteAllBytes($OutPath, [Text.UTF8Encoding]::new($false).GetBytes($json))
+}
+
+# ─── Tiny HTTP server (TcpListener-based, admin-free) ───────────────────────
+Add-Type -Language CSharp @'
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+public static class NzTestHttpServer {
+    public static Thread Start(string serveDir, int port, CancellationToken ct) {
+        var listener = new TcpListener(IPAddress.Loopback, port);
+        listener.Start();
+        var t = new Thread(() => {
+            try {
+                while (!ct.IsCancellationRequested) {
+                    if (!listener.Pending()) { Thread.Sleep(20); continue; }
+                    var client = listener.AcceptTcpClient();
+                    Task.Run(() => Handle(client, serveDir));
+                }
+            } catch { }
+            try { listener.Stop(); } catch { }
+        });
+        t.IsBackground = true;
+        t.Start();
+        return t;
+    }
+    static void Handle(TcpClient client, string serveDir) {
+        try {
+            using (var stream = client.GetStream())
+            using (var reader = new StreamReader(stream, Encoding.ASCII, false, 8192, true)) {
+                var requestLine = reader.ReadLine();
+                if (requestLine == null) return;
+                var parts = requestLine.Split(' ');
+                if (parts.Length < 2) return;
+                var pathQ = parts[1];
+                var qIdx = pathQ.IndexOf('?');
+                var rel = (qIdx >= 0 ? pathQ.Substring(0, qIdx) : pathQ).TrimStart('/');
+                string line; while ((line = reader.ReadLine()) != null && line.Length > 0) { }
+                var full = Path.Combine(serveDir, rel.Replace('/', Path.DirectorySeparatorChar));
+                if (File.Exists(full)) {
+                    var bytes = File.ReadAllBytes(full);
+                    // Content-Type drives Invoke-RestMethod's auto-parse:
+                    //   application/json  -> ConvertFrom-Json result (PSCustomObject)
+                    //   text/plain        -> raw string
+                    //   octet-stream      -> byte[] (breaks JSON deserialization
+                    //                       and PS 5.1's `iex` on script text).
+                    // Production blob storage serves json/ps1 with appropriate
+                    // text/* types, so mirror that here.
+                    var ext = Path.GetExtension(full).ToLowerInvariant();
+                    string contentType;
+                    switch (ext) {
+                        case ".json": contentType = "application/json; charset=utf-8"; break;
+                        case ".ps1":  contentType = "text/plain; charset=utf-8"; break;
+                        case ".zip":  contentType = "application/zip"; break;
+                        default:      contentType = "application/octet-stream"; break;
+                    }
+                    var hdr = Encoding.ASCII.GetBytes(
+                        "HTTP/1.1 200 OK\r\nContent-Length: " + bytes.Length +
+                        "\r\nContent-Type: " + contentType +
+                        "\r\nConnection: close\r\n\r\n");
+                    stream.Write(hdr, 0, hdr.Length);
+                    stream.Write(bytes, 0, bytes.Length);
+                } else {
+                    var hdr = Encoding.ASCII.GetBytes(
+                        "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+                    stream.Write(hdr, 0, hdr.Length);
+                }
+            }
+        } catch { }
+        finally { try { client.Close(); } catch { } }
+    }
+}
+'@
+
+function Start-NzHttpServer {
+    param([Parameter(Mandatory)][string] $ServeDir)
+    # Get a free port via ephemeral TcpListener probe
+    $probe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+    $probe.Start()
+    $port = ([System.Net.IPEndPoint]$probe.LocalEndpoint).Port
+    $probe.Stop()
+
+    $cts = [System.Threading.CancellationTokenSource]::new()
+    $thread = [NzTestHttpServer]::Start($ServeDir, $port, $cts.Token)
+    Start-Sleep -Milliseconds 150
+
+    return [pscustomobject]@{
+        Port = $port
+        BaseUrl = "http://127.0.0.1:$port/"
+        Cts = $cts
+        Thread = $thread
+    }
+}
+
+function Stop-NzHttpServer {
+    param($Server)
+    if ($Server -and $Server.Cts) { $Server.Cts.Cancel() }
+}
+
+# ─── Invoke setup.ps1 in a clean subprocess against sandboxed APPDATA ───────
+function Invoke-SetupPs1 {
+    param(
+        [Parameter(Mandatory)][string] $AppData,
+        [Parameter(Mandatory)][string] $ManifestUrl,
+        [Parameter(Mandatory)][string] $UpdateScriptUrl,
+        [Parameter(Mandatory)][string] $BackupScriptUrl,
+        [Parameter(Mandatory)][string] $SetupUrl,
+        [string] $Label = 'setup'
+    )
+    New-Item -ItemType Directory -Path $AppData -Force | Out-Null
+
+    # Mimic the production user flow as closely as possible:
+    #   iwr -useb '<url>/setup.ps1' | iex
+    # We can't pipe the same way in a script (would dot-source into a child
+    # scope), so we use the documented equivalent: download as a string and
+    # Invoke-Expression. Both go through Invoke-RestMethod's UTF-8 text
+    # decoding, which is the path that makes setup.ps1's em-dashes work
+    # without a BOM. PowerShell 5.1 `-File <script>` reads as Windows-1252
+    # and corrupts those bytes.
+    $bootstrap = @"
+`$ProgressPreference = 'SilentlyContinue'
+`$env:APPDATA = '$AppData'
+`$env:NEGATIVEZONE_NONINTERACTIVE = '1'
+`$env:NEGATIVEZONE_MANIFEST_URL = '$ManifestUrl'
+`$env:NEGATIVEZONE_UPDATE_SCRIPT_URL = '$UpdateScriptUrl'
+`$env:NEGATIVEZONE_BACKUP_SCRIPT_URL = '$BackupScriptUrl'
+`$setupSrc = Invoke-RestMethod -UseBasicParsing -Uri '$SetupUrl'
+Invoke-Expression `$setupSrc
+"@
+    $bsFile = Join-Path $logDir ("bootstrap-{0}-{1}.ps1" -f $Label, [guid]::NewGuid().ToString('N').Substring(0,8))
+    Set-Content -LiteralPath $bsFile -Value $bootstrap -Encoding UTF8
+
+    $stdoutFile = Join-Path $logDir ("$Label.stdout.log")
+    $stderrFile = Join-Path $logDir ("$Label.stderr.log")
+    $proc = Start-Process -FilePath 'powershell.exe' `
+        -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',$bsFile) `
+        -NoNewWindow -Wait -PassThru `
+        -RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile
+    $rc = $proc.ExitCode
+    $stdout = if (Test-Path -LiteralPath $stdoutFile) { Get-Content -LiteralPath $stdoutFile -Raw } else { '' }
+    $stderr = if (Test-Path -LiteralPath $stderrFile) { Get-Content -LiteralPath $stderrFile -Raw } else { '' }
+    return [pscustomobject]@{
+        ExitCode = $rc
+        StdOut   = $stdout
+        StdErr   = $stderr
+        Output   = "$stdout`n$stderr"
+        Log      = $stdoutFile
+        ErrLog   = $stderrFile
+    }
+}
+
+# Run the PreLaunchCommand from an installed instance.cfg as Prism would,
+# substituting $INST_DIR. Returns ExitCode + Output.
+function Invoke-PreLaunchCommand {
+    param([Parameter(Mandatory)][string] $InstanceDir)
+    $cfgPath = Join-Path $InstanceDir 'instance.cfg'
+    $cfg = Get-Content -LiteralPath $cfgPath
+    $line = $cfg | Where-Object { $_ -match '^PreLaunchCommand=' } | Select-Object -First 1
+    if (-not $line) { throw "No PreLaunchCommand in $cfgPath" }
+    $cmd = $line -replace '^PreLaunchCommand=', ''
+    $cmd = $cmd.Replace('$INST_DIR', $InstanceDir)
+    # Simulate Prism's QProcess::splitCommand by handing the whole line to cmd /c.
+    $cmdFile = Join-Path $logDir ("pre-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
+    "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    $out = & cmd.exe /c $cmdFile 2>&1
+    return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
+}
+
+function Invoke-PostExitCommand {
+    param([Parameter(Mandatory)][string] $InstanceDir)
+    $cfg = Get-Content -LiteralPath (Join-Path $InstanceDir 'instance.cfg')
+    $line = $cfg | Where-Object { $_ -match '^PostExitCommand=' } | Select-Object -First 1
+    if (-not $line) { throw "No PostExitCommand in instance.cfg" }
+    $cmd = ($line -replace '^PostExitCommand=', '').Replace('$INST_DIR', $InstanceDir)
+    $cmdFile = Join-Path $logDir ("post-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
+    "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
+    $out = & cmd.exe /c $cmdFile 2>&1
+    return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
+}
+
+# ─── Test runner ────────────────────────────────────────────────────────────
+$script:tests = New-Object System.Collections.Generic.List[object]
+function Register-Test {
+    param([Parameter(Mandatory)][string] $Name, [Parameter(Mandatory)][scriptblock] $Body)
+    $script:tests.Add([pscustomobject]@{ Name = $Name; Body = $Body })
+}
+
+function Assert-True {
+    param([bool] $Condition, [string] $Message)
+    if (-not $Condition) { throw "ASSERTION FAILED: $Message" }
+}
+
+function Assert-PathExists {
+    param([string] $Path, [string] $Message)
+    Assert-True (Test-Path -LiteralPath $Path) ($Message + ": $Path")
+}
+
+function Assert-PathNotExists {
+    param([string] $Path, [string] $Message)
+    Assert-True (-not (Test-Path -LiteralPath $Path)) ($Message + ": $Path")
+}
+
+function Assert-FileContains {
+    param([string] $Path, [string] $Pattern, [string] $Message)
+    Assert-PathExists $Path "file must exist for content check"
+    $content = Get-Content -LiteralPath $Path -Raw
+    Assert-True ($content -match $Pattern) ($Message + " (pattern: $Pattern, in: $Path)")
+}
+
+# ─── Test cases ─────────────────────────────────────────────────────────────
+
+Register-Test 'fresh-install' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-fresh'
+    $result = Invoke-SetupPs1 -AppData $appData `
+        -ManifestUrl     $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl `
+        -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl        $ctx.SetupUrl `
+        -Label 'fresh'
+    Assert-True ($result.ExitCode -eq 0) "setup.ps1 must exit 0 (got $($result.ExitCode); log: $($result.Log))"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Assert-PathExists $inst 'instance directory created'
+    Assert-PathExists (Join-Path $inst 'instance.cfg') 'instance.cfg'
+    Assert-PathExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.0.0.jar') 'mod jar present'
+    Assert-PathExists (Join-Path $inst '.negativezone\update.ps1') 'update.ps1 bundled'
+    Assert-PathExists (Join-Path $inst '.negativezone\backup.ps1') 'backup.ps1 bundled'
+    Assert-PathExists (Join-Path $inst '.negativezone-version') 'version marker'
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.0\.0' 'version marker matches manifest'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') 'OverrideCommands=true' 'OverrideCommands set'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') 'PreLaunchCommand=.*scriptblock.*update\.ps1' 'PreLaunchCommand wired to scriptblock wrapper'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') 'PostExitCommand=.*scriptblock.*backup\.ps1' 'PostExitCommand wired'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') 're-run the setup one-liner' 'PreLaunch wrapper carries setup hint'
+    Assert-PathNotExists "$inst.bak" 'no .bak for first install'
+}
+
+Register-Test 'heal-broken-install' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-heal'
+    # Step 1: fresh install
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'heal-1'
+    Assert-True ($r1.ExitCode -eq 0) "first install must succeed (rc=$($r1.ExitCode))"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    $updateFile = Join-Path $inst '.negativezone\update.ps1'
+
+    # Step 2: corrupt update.ps1 with a parse error (the original em-dash bug class)
+    Set-Content -LiteralPath $updateFile -Value 'function { broken syntax }' -Encoding UTF8
+
+    # Step 3: re-run setup.ps1; same manifest version, should still re-fetch hook scripts
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'heal-2'
+    Assert-True ($r2.ExitCode -eq 0) "re-run must succeed (rc=$($r2.ExitCode))"
+
+    # Verify update.ps1 was re-downloaded (no longer the broken stub)
+    $healed = Get-Content -LiteralPath $updateFile -Raw
+    Assert-True ($healed -notmatch 'function \{ broken syntax \}') 'update.ps1 was re-fetched (broken stub gone)'
+    Assert-True ($healed -match 'NegativeZone client auto-update') 'update.ps1 has real content'
+}
+
+Register-Test 'upgrade-with-snapshot-restore' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-upgrade'
+    # Step 1: install v1.0.0
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'upg-1'
+    Assert-True ($r1.ExitCode -eq 0) "v1.0.0 install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+
+    # Step 2: simulate player state — drop sentinel files in each preserved location
+    $mcDir = Join-Path $inst '.minecraft'
+    New-Item -ItemType Directory -Path "$mcDir\saves\my-world\region" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\saves\my-world\region\r.0.0.mca" -Value 'player-world-bytes'
+    Set-Content -LiteralPath "$mcDir\options.txt"    -Value 'mouseSensitivity:0.4'
+    Set-Content -LiteralPath "$mcDir\optionsof.txt"  -Value 'renderDistance:16'
+    Set-Content -LiteralPath "$mcDir\usercache.json" -Value '[{"name":"player1"}]'
+    New-Item -ItemType Directory -Path "$mcDir\XaeroWorldMap\sp" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\XaeroWorldMap\sp\waypoint.json" -Value '{"x":100}'
+    New-Item -ItemType Directory -Path "$mcDir\shaderpacks" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\shaderpacks\Sildurs.zip" -Value 'shaderdata'
+
+    # Step 3: publish v1.1.0
+    $ctx.PublishVersion.Invoke('1.1.0')
+
+    # Step 4: re-run setup.ps1 with new manifest
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'upg-2'
+    Assert-True ($r2.ExitCode -eq 0) "v1.1.0 upgrade must succeed (rc=$($r2.ExitCode))"
+
+    # Step 5: verify
+    $bak = "$inst.bak"
+    Assert-PathExists $bak '.bak created from old instance'
+    Assert-PathExists (Join-Path $bak '.minecraft\saves\my-world\region\r.0.0.mca') '.bak preserves saves'
+    Assert-PathExists (Join-Path $bak '.minecraft\options.txt') '.bak preserves options.txt'
+    Assert-PathExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.1.0.jar') 'v1.1.0 mod installed'
+    Assert-PathNotExists (Join-Path $inst '.minecraft\mods\fabric-loader-v1.0.0.jar') 'v1.0.0 mod removed'
+    Assert-FileContains (Join-Path $inst '.negativezone-version') '^1\.1\.0' 'version marker bumped'
+
+    # Restored player state — these are the critical checks
+    Assert-PathExists (Join-Path $inst '.minecraft\saves\my-world\region\r.0.0.mca') 'saves RESTORED into v1.1.0'
+    Assert-FileContains (Join-Path $inst '.minecraft\options.txt') 'mouseSensitivity:0\.4' 'options.txt RESTORED with content'
+    Assert-FileContains (Join-Path $inst '.minecraft\optionsof.txt') 'renderDistance:16' 'optionsof.txt RESTORED'
+    Assert-FileContains (Join-Path $inst '.minecraft\usercache.json') 'player1' 'usercache RESTORED'
+    Assert-PathExists (Join-Path $inst '.minecraft\XaeroWorldMap\sp\waypoint.json') 'XaeroWorldMap RESTORED'
+    Assert-PathExists (Join-Path $inst '.minecraft\shaderpacks\Sildurs.zip') 'shaderpacks RESTORED'
+
+    # Reset for subsequent tests
+    $ctx.PublishVersion.Invoke('1.0.0')
+}
+
+Register-Test 'prelaunch-missing-script' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-pre-missing'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-miss-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Remove-Item (Join-Path $inst '.negativezone\update.ps1') -Force
+
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    Assert-True ($pre.ExitCode -eq 1) "PreLaunch must exit 1 (got $($pre.ExitCode))"
+    $joined = ($pre.Output -join "`n")
+    Assert-True ($joined -match 're-run the setup one-liner') "Must contain setup hint. Output: $joined"
+    Assert-True ($joined -match 'PreLaunch hook failed') "Must contain failure header"
+}
+
+Register-Test 'prelaunch-parse-error' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-pre-parse'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-parse-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Set-Content -LiteralPath (Join-Path $inst '.negativezone\update.ps1') -Value 'function { unbalanced' -Encoding UTF8
+
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    Assert-True ($pre.ExitCode -eq 1) "parse-error must exit 1"
+    $joined = ($pre.Output -join "`n")
+    Assert-True ($joined -match 're-run the setup one-liner') "Must contain setup hint"
+}
+
+Register-Test 'prelaunch-happy-path' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-pre-ok'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'pre-ok-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    # Replace update.ps1 with a benign script that respects the manifest contract
+    # but doesn't try a real update (we don't want network in this test path).
+    'Write-Host "[update-stub] running"; exit 0' | Set-Content -LiteralPath (Join-Path $inst '.negativezone\update.ps1') -Encoding UTF8
+
+    $pre = Invoke-PreLaunchCommand -InstanceDir $inst
+    Assert-True ($pre.ExitCode -eq 0) "happy path must exit 0 (got $($pre.ExitCode))"
+    $joined = ($pre.Output -join "`n")
+    Assert-True ($joined -match '\[update-stub\] running') "Stub must have run"
+    Assert-True ($joined -notmatch 're-run the setup one-liner') "Must NOT contain setup hint on success"
+}
+
+Register-Test 'postexit-fail-open' {
+    param($ctx)
+    $appData = Join-Path $sandbox 'appdata-post-miss'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -SetupUrl $ctx.SetupUrl -Label 'post-miss-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Remove-Item (Join-Path $inst '.negativezone\backup.ps1') -Force
+
+    $post = Invoke-PostExitCommand -InstanceDir $inst
+    Assert-True ($post.ExitCode -eq 0) "PostExit must fail OPEN (exit 0; got $($post.ExitCode))"
+    $joined = ($post.Output -join "`n")
+    Assert-True ($joined -match 're-run the setup one-liner') "Must still show setup hint in output"
+}
+
+# ─── Main ───────────────────────────────────────────────────────────────────
+
+Write-Section 'NegativeZone setup.ps1 E2E harness'
+Write-Info "Repo:    $repoRoot"
+Write-Info "Sandbox: $sandbox"
+
+# Stage published artifacts. Standalone .ps1 mirrors are served at the same
+# host so Set-PrismCommandHook downloads them off the local server too.
+# (Set-PrismCommandHook ALWAYS re-downloads to heal corrupted on-disk copies.)
+$instanceName = 'Craft to Exile 2'
+$currentZipName = "c2e2-v1.0.0.zip"
+Copy-Item -LiteralPath $updatePs1 -Destination (Join-Path $blobDir 'update.ps1') -Force
+Copy-Item -LiteralPath $backupPs1 -Destination (Join-Path $blobDir 'backup.ps1') -Force
+# Serve setup.ps1 itself so the bootstrap can `iex (irm ...)` it the same way
+# real users do via the README one-liner. Critical because setup.ps1 contains
+# UTF-8 em-dashes without a BOM (lint-ps1.yml enforces no-BOM) and PowerShell
+# 5.1 invoked with -File reads scripts as Windows-1252 by default, which
+# corrupts the bytes and breaks parsing. The irm path decodes as UTF-8.
+Copy-Item -LiteralPath $setupPs1 -Destination (Join-Path $blobDir 'setup.ps1') -Force
+$null = Build-FakeModpackZip -Version '1.0.0' -OutDir $blobDir
+$null = Build-FakeModpackZip -Version '1.1.0' -OutDir $blobDir
+
+$server = Start-NzHttpServer -ServeDir $blobDir
+Write-Info "HTTP:    $($server.BaseUrl)"
+
+# Allow tests to swap which version the latest.json points at
+$publishVersion = {
+    param([string]$v)
+    Write-Manifest -Version $v -InstanceName $instanceName -BlobName "c2e2-v$v.zip" `
+                   -ZipPath (Join-Path $blobDir "c2e2-v$v.zip") `
+                   -OutPath (Join-Path $blobDir 'latest.json') `
+                   -BaseUrl $server.BaseUrl
+}
+$publishVersion.Invoke('1.0.0')
+
+# Smoke-test the HTTP server before running tests. If this fails, every
+# downstream test would fail with the same root cause — better to surface
+# it once, at the top, with a clear message.
+Write-Section 'Self-test: HTTP server'
+$smoke = Invoke-RestMethod -UseBasicParsing -Uri "$($server.BaseUrl)latest.json"
+if ($smoke -is [string]) {
+    throw "HTTP server returned manifest as a raw string (Content-Type negotiation broken). Got: $smoke"
+}
+if (-not $smoke.version) {
+    throw "HTTP server returned manifest with empty .version. Raw: $($smoke | ConvertTo-Json -Compress)"
+}
+Write-Info "    manifest parsed: version=$($smoke.version) url=$($smoke.url)"
+$setupSmoke = Invoke-RestMethod -UseBasicParsing -Uri "$($server.BaseUrl)setup.ps1"
+if ($setupSmoke -isnot [string] -or $setupSmoke.Length -lt 1000) {
+    throw "HTTP server returned setup.ps1 as type [$($setupSmoke.GetType().Name)] length=$($setupSmoke.Length); expected long string."
+}
+Write-Info "    setup.ps1 fetched: $($setupSmoke.Length) chars, starts: $($setupSmoke.Substring(0, 80))"
+
+$ctx = [pscustomobject]@{
+    ManifestUrl     = "$($server.BaseUrl)latest.json"
+    UpdateUrl       = "$($server.BaseUrl)update.ps1"
+    BackupUrl       = "$($server.BaseUrl)backup.ps1"
+    SetupUrl        = "$($server.BaseUrl)setup.ps1"
+    BlobBaseUrl     = $server.BaseUrl
+    PublishVersion  = $publishVersion
+    Sandbox         = $sandbox
+}
+
+$ran = 0; $passed = 0; $failed = @()
+try {
+    foreach ($t in $script:tests) {
+        if ($Only -and ($t.Name -notlike "*$Only*")) { continue }
+        $ran++
+        Write-Section "TEST: $($t.Name)"
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        try {
+            & $t.Body $ctx
+            $sw.Stop()
+            Write-Host ("    [PASS] {0} ({1} ms)" -f $t.Name, $sw.ElapsedMilliseconds) -ForegroundColor Green
+            $passed++
+        } catch {
+            $sw.Stop()
+            Write-Host ("    [FAIL] {0} ({1} ms)" -f $t.Name, $sw.ElapsedMilliseconds) -ForegroundColor Red
+            Write-Host ("        $($_.Exception.Message)") -ForegroundColor Red
+            if ($_.ScriptStackTrace) {
+                # PS 5.1 has no Join-String — keep it manual + simple.
+                $stack = ($_.ScriptStackTrace -split "`n" | Select-Object -First 4 | ForEach-Object { '          ' + $_.Trim() }) -join "`n"
+                Write-Host $stack -ForegroundColor DarkRed
+            }
+            # Surface last subprocess log on failure so we can see what setup.ps1
+            # actually printed inside the subprocess — without this every test
+            # failure becomes a guessing game.
+            $latestOut = Get-ChildItem -LiteralPath $logDir -Filter '*.stdout.log' -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            $latestErr = Get-ChildItem -LiteralPath $logDir -Filter '*.stderr.log' -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            foreach ($pair in @(
+                @{Label='STDOUT'; File=$latestOut},
+                @{Label='STDERR'; File=$latestErr}
+            )) {
+                if ($pair.File -and (Get-Item -LiteralPath $pair.File.FullName).Length -gt 0) {
+                    Write-Host ("        --- last subprocess {0} ({1}) ---" -f $pair.Label, $pair.File.Name) -ForegroundColor DarkYellow
+                    Get-Content -LiteralPath $pair.File.FullName -Tail 40 | ForEach-Object { Write-Host "          $_" -ForegroundColor DarkGray }
+                    Write-Host ("        --- end {0} ---" -f $pair.Label) -ForegroundColor DarkYellow
+                }
+            }
+            $failed += $t.Name
+        }
+    }
+} finally {
+    Stop-NzHttpServer -Server $server
+    Start-Sleep -Milliseconds 200
+    if (-not $KeepSandbox) {
+        Remove-Item $sandbox -Recurse -Force -ErrorAction SilentlyContinue
+    } else {
+        Write-Host ''
+        Write-Host "Sandbox preserved: $sandbox" -ForegroundColor Yellow
+    }
+}
+
+Write-Section "RESULT: $passed/$ran passed"
+if ($failed.Count -gt 0) {
+    Write-Host ("FAILED: " + ($failed -join ', ')) -ForegroundColor Red
+    exit 1
+}
+exit 0
