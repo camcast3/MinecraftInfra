@@ -639,17 +639,17 @@ Register-Test 'prelaunch-happy-path' {
     Assert-True ($pre.ExitCode -eq 0) "happy path must exit 0 (got $($pre.ExitCode))"
     $joined = ($pre.Output -join "`n")
     Assert-True ($joined -notmatch 're-run the setup one-liner') "Must NOT contain setup hint on success"
-    Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Must NOT show update banner when current"
+    Assert-True ($joined -notmatch 'MODPACK VERSION MISMATCH') "Must NOT show mismatch banner when current"
 }
 
 Register-Test 'prelaunch-blocks-when-stale' {
     param($ctx)
     # New behaviour: when latest-version.txt is ahead of installed,
-    # prelaunch-check MUST exit 1 (hard block), show the UPDATE REQUIRED
-    # banner, and surface the irm update.ps1 one-liner. This is the whole
-    # point of the new architecture — without this guard players could join
-    # a multiplayer server with a stale modpack and the FML handshake would
-    # boot them anyway. Better to block the launch with clear instructions.
+    # prelaunch-check MUST exit 1 (hard block), show the MODPACK VERSION
+    # MISMATCH banner, and surface the irm update.ps1 one-liner. This is
+    # the whole point of the new architecture — without this guard players
+    # could join a multiplayer server with a stale modpack and the FML
+    # handshake would boot them anyway. Better to block with instructions.
     $appData = Join-Path $sandbox 'appdata-pre-stale'
     $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-stale-install'
     Assert-True ($r.ExitCode -eq 0) "install must succeed (rc=$($r.ExitCode))"
@@ -661,9 +661,38 @@ Register-Test 'prelaunch-blocks-when-stale' {
         $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
         Assert-True ($pre.ExitCode -eq 1) "stale launch must exit 1 (got $($pre.ExitCode))"
         $joined = ($pre.Output -join "`n")
-        Assert-True ($joined -match 'UPDATE REQUIRED') "Must show UPDATE REQUIRED banner. Output: $joined"
+        Assert-True ($joined -match 'MODPACK VERSION MISMATCH') "Must show MODPACK VERSION MISMATCH banner. Output: $joined"
+        Assert-True ($joined -match 'behind') "Banner must call out 'behind' direction when installed < latest. Output: $joined"
         Assert-True ($joined -match 'iex')               "Must show iex one-liner so player can run update. Output: $joined"
         Assert-True ($joined -match 'update\.ps1')       "Must reference update.ps1. Output: $joined"
+    } finally {
+        & $ctx.BumpLatestVersion 1.0.0  # reset for subsequent tests
+    }
+}
+
+Register-Test 'prelaunch-blocks-when-installed-ahead' {
+    param($ctx)
+    # Strict-equality contract (forced while lifecycle scripts are still
+    # being shaken out): a player whose installed version is AHEAD of the
+    # server-pinned pointer must also be blocked. Real-world trigger:
+    # admin republished an older modpack under allowDowngrade:true and the
+    # player hasn't run update.ps1 yet. Allowing them through would risk
+    # the same FML handshake mismatch as the "behind" case.
+    $appData = Join-Path $sandbox 'appdata-pre-ahead'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl -PrelaunchCheckScriptUrl $ctx.PrelaunchCheckUrl -LatestVersionUrl $ctx.LatestVersionUrl -SetupUrl $ctx.SetupUrl -Label 'pre-ahead-install'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed (rc=$($r.ExitCode))"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+
+    # Install was v1.0.0; roll the pointer DOWN to v0.9.0 so installed > latest.
+    & $ctx.BumpLatestVersion 0.9.0
+    try {
+        $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $ctx.LatestVersionUrl
+        Assert-True ($pre.ExitCode -eq 1) "installed-ahead launch must exit 1 (got $($pre.ExitCode))"
+        $joined = ($pre.Output -join "`n")
+        Assert-True ($joined -match 'MODPACK VERSION MISMATCH') "Must show MODPACK VERSION MISMATCH banner. Output: $joined"
+        Assert-True ($joined -match 'ahead') "Banner must call out 'ahead' direction when installed > latest. Output: $joined"
+        Assert-True ($joined -match 'allowDowngrade') "Must mention allowDowngrade so player understands rollback path. Output: $joined"
     } finally {
         & $ctx.BumpLatestVersion 1.0.0  # reset for subsequent tests
     }
@@ -687,7 +716,7 @@ Register-Test 'prelaunch-bypass-env-allows-stale' {
             -ExtraEnv @{ NEGATIVEZONE_SKIP_VERSION_CHECK = '1' }
         Assert-True ($pre.ExitCode -eq 0) "bypass env must let launch proceed (got $($pre.ExitCode))"
         $joined = ($pre.Output -join "`n")
-        Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Bypass must suppress update banner. Output: $joined"
+        Assert-True ($joined -notmatch 'MODPACK VERSION MISMATCH') "Bypass must suppress mismatch banner. Output: $joined"
     } finally {
         & $ctx.BumpLatestVersion 1.0.0
     }
@@ -711,7 +740,7 @@ Register-Test 'prelaunch-fails-open-when-pointer-unreachable' {
     $pre = Invoke-PreLaunchCommand -InstanceDir $inst -LatestVersionUrl $deadUrl
     Assert-True ($pre.ExitCode -eq 0) "unreachable pointer must fail OPEN (got $($pre.ExitCode))"
     $joined = ($pre.Output -join "`n")
-    Assert-True ($joined -notmatch 'UPDATE REQUIRED') "Must NOT block when version check fails. Output: $joined"
+    Assert-True ($joined -notmatch 'MODPACK VERSION MISMATCH') "Must NOT block when version check fails. Output: $joined"
 }
 
 Register-Test 'postexit-fail-open' {

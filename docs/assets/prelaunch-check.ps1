@@ -20,13 +20,17 @@
 # Fail-open conditions (exit 0, allow launch):
 #   - INST_DIR unset / missing (mirrors update.ps1)
 #   - Version pointer fetch fails (offline play stays usable)
-#   - Installed version >= latest version (already current OR ahead - the
-#     downgrade-guard scenario where allowDowngrade-less rollback is refused)
-#   - Either version unparseable as a [version]
+#   - Installed version == latest version  (strict equality)
+#   - Both versions unparseable AND identical as strings
 #   - $env:NEGATIVEZONE_SKIP_VERSION_CHECK = '1' bypass set
 #
 # Fail-closed (exit 1, block launch):
-#   - Installed version < latest version  ->  prints update instructions
+#   - Installed version != latest version  ->  blocks in EITHER direction
+#     (upgrade required when behind, rollback required when ahead). The
+#     lifecycle scripts are not production-stable yet, so the operator
+#     wants every version delta to force the user through the explicit
+#     update flow until each path is shaken out in real use. We'll relax
+#     this to "block on MINOR delta only" once the toolchain is trusted.
 
 [CmdletBinding()]
 param(
@@ -99,44 +103,46 @@ if ([string]::IsNullOrWhiteSpace($latestRaw)) {
 }
 
 # ─── Compare ────────────────────────────────────────────────────────────────
-# Use [version] for proper MAJOR.MINOR.PATCH ordering. If either side isn't
-# parseable as a version, fall back to strict equality (covers test-channel
-# tags like 'test-1' that aren't [version]-shaped).
+# Strict equality in either direction. Use [version] when both sides parse so
+# 1.10.0 sorts correctly vs 1.9.0; fall back to string-eq when either side is
+# non-semver (we still block on mismatch — the policy says ANY delta blocks).
 $installedV = $null; $latestV = $null
 try { $installedV = [version]$installedVersion } catch {}
 try { $latestV    = [version]$latestRaw }        catch {}
 
+$mismatchDirection = 'mismatch'
 if ($installedV -and $latestV) {
-    if ($installedV -ge $latestV) {
-        # Up to date OR ahead of latest (e.g. dev-installed pre-release). The
-        # downgrade-guard in update.ps1 prevents accidental rollback if the
-        # admin republishes an older blob without allowDowngrade:true, so a
-        # player on a newer version stays on it.
-        exit 0
-    }
+    if ($installedV -eq $latestV) { exit 0 }
+    $mismatchDirection = if ($installedV -lt $latestV) { 'behind' } else { 'ahead' }
 } else {
     if ($installedVersion -eq $latestRaw) { exit 0 }
-    # Unparseable on either side -> allow launch (we'd rather fail-open than
-    # block a player because of a tag format we didn't anticipate).
-    Write-Note "Version strings not [version]-parseable (installed='$installedVersion', latest='$latestRaw'); allowing launch."
-    exit 0
+    Write-Note "Version strings not [version]-parseable (installed='$installedVersion', latest='$latestRaw'); falling back to string compare."
 }
 
 # ─── Block launch with clear instructions ───────────────────────────────────
 # Exit 1 makes Prism refuse to launch the game. Players get this banner in
-# Prism's pre-launch console window.
+# Prism's pre-launch console window. The direction hint helps the user
+# understand whether they need to update (behind) or roll back (ahead).
 Write-Host ''
 Write-Note '============================================================'
-Write-Note "  UPDATE REQUIRED  -  installed v$installedVersion, latest v$latestRaw"
+Write-Note '  MODPACK VERSION MISMATCH'
+Write-Note "  installed: v$installedVersion"
+Write-Note "  server:    v$latestRaw  ($mismatchDirection)"
 Write-Note '============================================================'
 Write-Note ''
-Write-Note 'The server is pinned to the latest modpack version, so joining'
-Write-Note 'with an older client would fail at the FML handshake.'
+Write-Note 'The server is pinned to a specific modpack version. Joining with'
+Write-Note 'a different client version would fail at the FML handshake.'
 Write-Note ''
-Write-Note 'Run this in a NEW PowerShell window to update (close Prism first):'
+Write-Note 'Run this in a NEW PowerShell window (close Prism first):'
 Write-Note ''
 Write-Note "  $UpdateOneLiner"
 Write-Note ''
+if ($mismatchDirection -eq 'ahead') {
+    Write-Note '(Your client is AHEAD of the server. update.ps1 will refuse a'
+    Write-Note ' rollback unless the admin opted in via allowDowngrade:true.'
+    Write-Note ' If you need to force a rollback, contact the admin.)'
+    Write-Note ''
+}
 Write-Note "Walk-through: $WikiUrl"
 Write-Note ''
 Write-Note '(Set $env:NEGATIVEZONE_SKIP_VERSION_CHECK=1 to bypass for offline play.)'
