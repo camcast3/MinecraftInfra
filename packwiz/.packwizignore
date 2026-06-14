@@ -14,6 +14,15 @@
 # Repo-level docs inside packwiz/ that aren't part of the server pack.
 README.md
 
+# Curated manifest of pack-shipped files that players typically tune
+# (graphics, shaders, map style, HUD position, etc.). Consumed by the
+# publish pipeline (infra/azure/scripts/publish-prism-pack.ps1) to
+# generate the client-side preserve list bundled in the published zip
+# at <InstanceName>/.negativezone/preserve-list.json. Not a packwiz
+# content file — exclude from the recursive walk so `packwiz refresh`
+# doesn't try to add it to index.toml.
+.user-prefs.txt
+
 # Cosmetic asset binaries hosted via GitHub Release — siblings' `*.pw.toml`
 # metafiles ARE indexed. Excluding the raw binaries prevents `packwiz refresh`
 # from double-indexing them, and avoids hitting GitHub's 100 MB blob limit on
