@@ -11,13 +11,12 @@
     icon + update.ps1 into the zip. Uploads versioned blob with immutable
     cache headers. Atomically commits modpack.yml + rewrites
     docker/proxmox/docker-compose.yml (PACKWIZ_URL pinned to current HEAD
-    SHA) on a fresh modpack/v<Version> branch, opens a PR with auto-merge.
-    Portainer GitOps redeploys C2E2 within ~5 min — server + client move in
-    lockstep. Compose YAML is rewritten directly (not .env) because
-    Portainer ignores .env files in git. latest.json is uploaded AFTER PR
-    succeeds so the audit trail is always present before any player can
-    download. MOTD is intentionally NOT touched here; see the MOTD comment
-    in docker/proxmox/docker-compose.yml.
+    SHA, MOTD pinned to new version) on a fresh modpack/v<Version> branch,
+    opens a PR with auto-merge. Portainer GitOps redeploys C2E2 within
+    ~5 min — server + client move in lockstep. Compose YAML is rewritten
+    directly (not .env) because Portainer ignores .env files in git.
+    latest.json is uploaded AFTER PR succeeds so the audit trail is always
+    present before any player can download.
 
     Authenticates via existing `az login`. Requires Storage Blob Data
     Contributor on the container.
@@ -817,21 +816,14 @@ publishedAt: "$publishedAt"
 "@
         Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
 
-        # Atomic SHA bump: rewriting PACKWIZ_URL in the same commit as
-        # modpack.yml means Portainer GitOps redeploys the server with the
-        # new SHA-pinned mod set; players' next Prism launch is gated by
-        # prelaunch-check.ps1, which compares installed version against
-        # docs/assets/latest-version.txt (also bumped below). Server +
-        # client + version pointer move together — no kicked-by-mod-mismatch
-        # window.
+        # Atomic SHA + version bump: rewriting PACKWIZ_URL + MOTD in the same
+        # commit as modpack.yml means Portainer GitOps redeploys the server
+        # with the new MOTD and SHA-pinned mod set; players' next Prism launch
+        # fetches the new client zip via PreLaunchCommand. Server + client
+        # move together — no kicked-by-mod-mismatch window.
         #
-        # MOTD is intentionally NOT bumped here. The modpack version lives
-        # in latest-version.txt and is surfaced by prelaunch-check.ps1, so
-        # the C2E2 MOTD can stay static and a client-only release (no
-        # packwiz-side server changes) avoids a Forge restart entirely.
-        #
-        # We rewrite compose YAML (not .env) because Portainer's GitOps
-        # mode polls compose changes and ignores .env files in git.
+        # We rewrite compose YAML (not .env) because Portainer's GitOps mode
+        # polls compose changes and ignores .env files in git.
         $composeFile = Join-Path $repoRoot 'docker/proxmox/docker-compose.yml'
         if (-not (Test-Path -LiteralPath $composeFile)) {
             throw "Expected $composeFile to exist. Cannot bump PACK_VERSION / PACKWIZ_COMMIT_SHA."
@@ -849,11 +841,20 @@ publishedAt: "$publishedAt"
         }
         $composeContent = [regex]::Replace($composeContent, $urlRegex, "`${1}$packwizSha`${3}")
 
+        # Pin MOTD version. Same exactly-1-match guard.
+        $motdRegex = '(?m)^(\s*MOTD:\s*"Craft to Exile 2 v)([^"]+)(")\s*$'
+        $motdMatches = [regex]::Matches($composeContent, $motdRegex)
+        if ($motdMatches.Count -ne 1) {
+            throw ("Expected exactly 1 MOTD line in $composeFile (matched {0}). " +
+                   "Has the line been manually edited?") -f $motdMatches.Count
+        }
+        $composeContent = [regex]::Replace($composeContent, $motdRegex, "`${1}$Version`${3}")
+
         # Write back UTF-8 no-BOM, original line endings preserved (Get-Content
         # -Raw + WriteAllText keeps the existing `r`n vs `n).
         $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
         [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
-        Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha"
+        Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
 
         # Bump docs/assets/latest-version.txt to the new version. This is the
         # GitHub-hosted pointer file that prelaunch-check.ps1 polls every
@@ -894,11 +895,9 @@ Automated modpack publish.
 This PR atomically bumps:
 - ``modpack.yml`` — the published-version audit record consumed by ``setup.ps1``.
 - ``docker/proxmox/docker-compose.yml`` — ``PACKWIZ_URL`` pinned to the new
-  packwiz SHA. Portainer GitOps redeploys C2E2 within ~5 min of merge,
-  pulling the same packwiz snapshot that's bundled in the client zip above.
-  Server + client move in lockstep.
-- ``docs/assets/latest-version.txt`` — the version pointer ``prelaunch-check.ps1``
-  polls every player launch to gate the join.
+  packwiz SHA, ``MOTD`` pinned to the new version. Portainer GitOps redeploys
+  C2E2 within ~5 min of merge, pulling the same packwiz snapshot that's bundled
+  in the client zip above. Server + client move in lockstep.
 "@
         $prUrl = $null
         try {

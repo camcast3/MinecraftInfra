@@ -7,8 +7,7 @@ Run `gh workflow run publish-prism-pack.yml -f version=0.3.1` (or push a
 The workflow builds a clean Prism Launcher instance from the `packwiz/`
 manifest, zips and uploads it to the `minecraft-modpack` blob container on
 `stmcminecraftprod`, rewrites `docker/proxmox/docker-compose.yml`
-(`PACKWIZ_URL` only — MOTD stays static) and `modpack.yml`, bumps
-`docs/assets/latest-version.txt`, and opens a publish PR against
+(`PACKWIZ_URL` + `MOTD`) and `modpack.yml`, and opens a publish PR against
 `main` from branch `modpack/v<version>`, and **enables auto-merge** on it
 (`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon
 as required status checks pass (immediately if none are configured); Portainer
@@ -67,11 +66,7 @@ End-to-end, the only manual step is triggering the workflow.
    - Rewrites `docker/proxmox/docker-compose.yml` in-place:
      - `PACKWIZ_URL` → SHA-pinned `raw.githubusercontent.com` URL
        (commit SHA of `origin/main` HEAD at publish time).
-     - `MOTD` is intentionally NOT touched — it stays the static
-       `"Craft to Exile 2"`. Players see the live modpack version via
-       `prelaunch-check.ps1` (which polls `docs/assets/latest-version.txt`),
-       so duplicating it in the MOTD would just force a Forge restart per
-       release with no UX benefit.
+     - `MOTD` → `Craft to Exile 2 v<ver>`.
    - Bumps `modpack.yml` (version, blob name, sha256, URL, publishedAt).
    - Commits both files to a new `modpack/v<ver>` branch and pushes.
    - Opens a PR against `main` via `gh pr create`.
@@ -179,8 +174,7 @@ git push origin main
 ```
 
 Portainer GitOps detects the revert within ~5 minutes and redeploys C2E2
-with the previous `PACKWIZ_URL` SHA pin. (`MOTD` is static and not part of
-the publish bump.)
+with the previous `PACKWIZ_URL` SHA pin and `MOTD`.
 
 **Blob state:** each publish uploads a new filename (`c2e2-v<ver>.zip`) — no
 blob is overwritten. The bad zip stays in the container indefinitely; it's

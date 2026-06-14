@@ -1,8 +1,8 @@
 ---
 # Proxmox stack: C2E2 (Forge + packwiz) behind TailScale, with tiered 3-2-1 backups.
 # Managed by Portainer CE GitOps. Secrets come from Portainer's env-var UI; never
-# hardcoded here. Build metadata (PACKWIZ_URL SHA) is inlined and rewritten in
-# place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
+# hardcoded here. Build metadata (PACKWIZ_URL SHA, MOTD version) is inlined and
+# rewritten in place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
 # MC 1.20.1 ⇒ all server images MUST stay on java17 variants.
 # Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups}
 
@@ -99,12 +99,8 @@ services:
       ENABLE_ROLLING_LOGS: "true"
       # C2E2's Mine and Slash Dungeons fires world commands via command blocks.
       ENABLE_COMMAND_BLOCK: "TRUE"
-      # Intentionally version-free. The modpack version lives in
-      # docs/assets/latest-version.txt and is surfaced to players by
-      # prelaunch-check.ps1 at launch time. Keeping MOTD out of the publish
-      # bump means a client-only release (no packwiz-side server changes)
-      # doesn't force a Forge restart just to refresh a label.
-      MOTD: "Craft to Exile 2"
+      # Version segment rewritten in place by publish-prism-pack.ps1.
+      MOTD: "Craft to Exile 2 v0.4.0"
       # 31G stays just under the ~32G compressed-oops cliff; 40G container
       # ceiling leaves headroom for off-heap (Netty, direct buffers, metaspace).
       MEMORY: "31G"

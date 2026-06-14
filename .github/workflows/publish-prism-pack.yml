@@ -192,7 +192,7 @@ jobs:
           On success the script will have:
 
           - Uploaded the zip to the ``minecraft-modpack`` blob container.
-          - Rewritten ``docker/proxmox/docker-compose.yml`` with the new SHA pin.
+          - Rewritten ``docker/proxmox/docker-compose.yml`` with the new SHA pin + MOTD.
           - Bumped ``modpack.yml``.
           - Opened the publish PR against ``main`` from branch ``modpack/v${{ steps.version.outputs.version }}``.
           - Portainer GitOps will redeploy C2E2 within ~5 min of PR merge.
