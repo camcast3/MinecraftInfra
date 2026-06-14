@@ -94,13 +94,13 @@ services:
       FORGE_VERSION: "47.4.10"
       # SHA segment rewritten in place by publish-prism-pack.ps1; "main" is the
       # bootstrap default in effect before the first publish.
-      PACKWIZ_URL: "https://raw.githubusercontent.com/camcast3/MinecraftInfra/9dd87bf66a96847c9a6f7765c9e04497563df2a4/packwiz/pack.toml"
+      PACKWIZ_URL: "https://raw.githubusercontent.com/camcast3/MinecraftInfra/ef7338d57e6b4a5034fd6e44581e965b8cc6c758/packwiz/pack.toml"
       ONLINE_MODE: "FALSE"
       ENABLE_ROLLING_LOGS: "true"
       # C2E2's Mine and Slash Dungeons fires world commands via command blocks.
       ENABLE_COMMAND_BLOCK: "TRUE"
       # Version segment rewritten in place by publish-prism-pack.ps1.
-      MOTD: "Craft to Exile 2 v0.4.1"
+      MOTD: "Craft to Exile 2 v0.4.2"
       # 31G stays just under the ~32G compressed-oops cliff; 40G container
       # ceiling leaves headroom for off-heap (Netty, direct buffers, metaspace).
       MEMORY: "31G"
