@@ -27,6 +27,13 @@ concurrency:
 
 permissions:
   contents: write
+  # pull-requests: write alone is NOT enough to let GITHUB_TOKEN open PRs.
+  # The repo must also have "Allow GitHub Actions to create and approve pull
+  # requests" enabled (Settings → Actions → General → Workflow permissions),
+  # otherwise `gh pr create` fails with `GitHub Actions is not permitted to
+  # create or approve pull requests`. Toggle via:
+  #   gh api -X PUT /repos/{owner}/{repo}/actions/permissions/workflow \
+  #     -F can_approve_pull_request_reviews=true
   pull-requests: write
   id-token: write
 
@@ -148,8 +155,9 @@ jobs:
         if: steps.noop_check.outputs.noop != 'true'
         shell: pwsh
         env:
-          # gh CLI reads GH_TOKEN; default GITHUB_TOKEN has pull-requests:
-          # write per permissions block above.
+          # gh CLI reads GH_TOKEN. The `pull-requests: write` permission above
+          # is necessary but NOT sufficient — see the comment on the permissions
+          # block for the repo-level setting that also has to be on.
           GH_TOKEN: ${{ github.token }}
         run: |
           # Auto-merge safety: publish-prism-pack.ps1 line 720 enables
