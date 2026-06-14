@@ -11,9 +11,12 @@
     icon + update.ps1 into the zip. Uploads versioned blob with immutable
     cache headers. Atomically commits modpack.yml + rewrites
     docker/proxmox/docker-compose.yml (PACKWIZ_URL pinned to current HEAD
-    SHA, MOTD pinned to new version) on a fresh modpack/v<Version> branch,
-    opens a PR with auto-merge. Portainer GitOps redeploys C2E2 within
-    ~5 min — server + client move in lockstep. Compose YAML is rewritten
+    SHA, MOTD pinned to new version) + docker/azure/velocity/velocity.toml.tmpl
+    (Velocity fallback MOTD pinned to new version) + docs/assets/latest-version.txt
+    (launch-time version pointer polled by prelaunch-check.ps1) on a fresh
+    modpack/v<Version> branch, opens a PR with auto-merge. Portainer GitOps
+    redeploys C2E2 within ~5 min — server + client + fallback-proxy MOTD +
+    launch-time pointer all move in lockstep. Compose YAML is rewritten
     directly (not .env) because Portainer ignores .env files in git.
     latest.json is uploaded AFTER PR succeeds so the audit trail is always
     present before any player can download.
@@ -856,18 +859,38 @@ publishedAt: "$publishedAt"
         [System.IO.File]::WriteAllText($composeFile, $composeContent, $utf8NoBom)
         Write-Ok "Rewrote docker/proxmox/docker-compose.yml: PACKWIZ_URL pinned to $packwizSha, MOTD pinned to v$Version"
 
+        # Velocity fallback MOTD (shown when the C2E2 backend is unreachable —
+        # ping-passthrough = "ALL" otherwise surfaces the backend's MOTD).
+        # Kept in lockstep with the backend MOTD so players always see the
+        # currently-published version, even during a backend outage. Same
+        # exactly-1-match guard.
+        $velocityTmpl = Join-Path $repoRoot 'docker/azure/velocity/velocity.toml.tmpl'
+        if (-not (Test-Path -LiteralPath $velocityTmpl)) {
+            throw "Expected $velocityTmpl to exist. Cannot bump Velocity fallback MOTD."
+        }
+        $velocityContent = Get-Content -Raw -LiteralPath $velocityTmpl -Encoding UTF8
+        $velocityMotdRegex = '(?m)^(motd\s*=\s*"Craft to Exile 2 v)([^"]+)(")\s*$'
+        $velocityMotdMatches = [regex]::Matches($velocityContent, $velocityMotdRegex)
+        if ($velocityMotdMatches.Count -ne 1) {
+            throw ("Expected exactly 1 fallback motd line in $velocityTmpl (matched {0}). " +
+                   "Has the line been manually edited?") -f $velocityMotdMatches.Count
+        }
+        $velocityContent = [regex]::Replace($velocityContent, $velocityMotdRegex, "`${1}$Version`${3}")
+        [System.IO.File]::WriteAllText($velocityTmpl, $velocityContent, $utf8NoBom)
+        Write-Ok "Rewrote docker/azure/velocity/velocity.toml.tmpl: fallback motd pinned to v$Version"
+
         # Bump docs/assets/latest-version.txt to the new version. This is the
         # GitHub-hosted pointer file that prelaunch-check.ps1 polls every
         # launch — when it's ahead of the player's installed version,
         # PreLaunch hard-blocks the launch with an "update required" banner
         # and the iex one-liner. Committing it in the SAME PR as the
-        # docker-compose.yml bump means server + client + version pointer
-        # all move atomically.
+        # docker-compose.yml bump means server + client + fallback-proxy MOTD
+        # + version pointer all move atomically.
         $latestVersionFile = Join-Path $repoRoot 'docs/assets/latest-version.txt'
         [System.IO.File]::WriteAllText($latestVersionFile, "$Version`n", $utf8NoBom)
         Write-Ok "Bumped docs/assets/latest-version.txt to $Version"
 
-        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docs/assets/latest-version.txt'
+        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl' 'docs/assets/latest-version.txt'
         git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
         Write-Step "Pushing $publishBranch to origin"
@@ -898,6 +921,14 @@ This PR atomically bumps:
   packwiz SHA, ``MOTD`` pinned to the new version. Portainer GitOps redeploys
   C2E2 within ~5 min of merge, pulling the same packwiz snapshot that's bundled
   in the client zip above. Server + client move in lockstep.
+- ``docker/azure/velocity/velocity.toml.tmpl`` — Velocity fallback ``motd``
+  pinned to the new version. Surfaces the current version to players when the
+  C2E2 backend is briefly unreachable (deploy-azure.yml redeploys the proxy on
+  merge; refresh-env.sh restarts Velocity if velocity.toml content changed).
+- ``docs/assets/latest-version.txt`` — single-line version pointer polled on
+  every Prism launch by ``prelaunch-check.ps1``. Player launches start hard-
+  blocking on the prior version as soon as this merges into ``main`` (served
+  via raw.githubusercontent.com).
 "@
         $prUrl = $null
         try {
