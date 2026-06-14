@@ -64,12 +64,18 @@ jobs:
           make_latest: "false"
           body: |
             Helper script that migrates client-side settings (keybinds, video
-            options, OptiFine/shader settings, server list, JourneyMap and
-            Xaero waypoints) from an old Minecraft instance into a new one.
+            options, OptiFine/shader settings, JourneyMap and Xaero waypoints,
+            creative hotbars) from an old Minecraft instance into a new one.
 
             Use case: you upgraded modpack versions (e.g. C2E2 0.2.0 -> 0.4.2)
-            and your settings didn't carry over, but you still have a copy of
-            the old instance folder.
+            from a non-setup-managed install (CurseForge instance, manual
+            zip, etc.) and your settings didn't carry over, but you still
+            have a copy of the old instance folder. Installs done via
+            setup.ps1 already preserve these automatically on upgrade.
+
+            servers.dat is intentionally NOT copied — single-server pack
+            policy lets the build pipeline push DNS/backend changes to
+            existing players.
 
             Auto-published when `docs/assets/migrate-settings.ps1` changed on `main`.
 

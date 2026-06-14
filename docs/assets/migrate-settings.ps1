@@ -1,10 +1,17 @@
 # NegativeZone client settings migrator
 #
 # Copies client-side settings (keybinds, video options, OptiFine/shader
-# settings, server list, JourneyMap + Xaero waypoints) from an old
+# settings, JourneyMap + Xaero waypoints, creative hotbars) from an old
 # Minecraft instance into a new one. For the (uncommon) case where a
 # modpack version upgrade left you without your tuned settings — e.g.
-# moving from a backup of C2E2 v0.2.0 onto a freshly installed v0.4.x.
+# moving from a backup of C2E2 v0.2.0 onto a freshly installed v0.4.x
+# that wasn't installed via setup.ps1 (setup.ps1 already preserves these
+# automatically on upgrade via the .negativezone\preserve-list.json union).
+#
+# servers.dat is deliberately NOT copied: this is a single-server pack
+# and the build pipeline writes servers.dat directly so pack-author
+# updates (DNS migration, additional backend, etc.) propagate to existing
+# players. See packwiz/.user-prefs.txt for the full policy rationale.
 #
 # Run from PowerShell (no admin needed). With no args the script
 # auto-detects Prism / CurseForge instances and lets you pick source +
@@ -145,13 +152,12 @@ $new = Resolve-MinecraftRoot -Path $NewInstance
 
 if ($old -eq $new) { throw 'Old and new instance resolve to the same folder.' }
 
-# Files copied if present in the old instance.
+# Files copied if present in the old instance. servers.dat / servers.dat_old
+# are intentionally excluded; see header comment.
 $files = @(
     'options.txt',
     'optionsof.txt',
     'optionsshaders.txt',
-    'servers.dat',
-    'servers.dat_old',
     'hotbar.nbt'
 )
 

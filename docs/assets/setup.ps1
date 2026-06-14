@@ -535,20 +535,60 @@ if ($manifest) {
             # Xaero map data — they'd have to manually merge from .bak after
             # every modpack drop.
             #
-            # Mirrors update.ps1's $PreserveRelative — keep in sync when
-            # adding entries. (Both files run on player machines; centralizing
-            # the list isn't possible without making setup.ps1 fetch a manifest
-            # before the install, which would gate the whole install on an
-            # extra network call.)
+            # The preserve set is the UNION of:
+            #   1. The hardcoded $preserveList below — player-state dirs and
+            #      vanilla files that don't live in the pack (saves, options.txt,
+            #      XaeroWaypoints, etc.). Mirrors update.ps1's $PreserveRelative;
+            #      keep in sync when adding entries.
+            #   2. The pack-author manifest at $srcInstance\.negativezone\
+            #      preserve-list.json — pack-shipped mod configs the player
+            #      typically tunes (EMI enable/disable, Embeddium graphics,
+            #      Xaero map prefs, mod keybinds, etc.). Source-of-truth is
+            #      packwiz/.user-prefs.txt; publish-prism-pack.ps1 bundles it
+            #      as JSON. Same union pattern update.ps1 uses on auto-update.
+            # Without #2, setup-driven upgrades silently wiped every mod config
+            # the player had tuned, even though update.ps1's path preserved them.
             if ($backedUp -and (Test-Path -LiteralPath $backupPath)) {
                 Write-Step "Carrying user state from previous instance into new install"
                 $preserveList = @(
                     'saves', 'screenshots', 'logs', 'crash-reports', 'local', 'backups',
                     'options.txt', 'optionsof.txt', 'optionsshaders.txt',
+                    'hotbar.nbt',
                     'usercache.json', 'usernamecache.json', 'realms_persistence.json',
                     'XaeroWaypoints', 'XaeroWorldMap',
+                    'journeymap',
                     'shaderpacks', 'resourcepacks'
                 )
+
+                # Union in the pack-author manifest from the freshly-extracted
+                # zip. Fail-open: a missing/malformed manifest falls back to
+                # the hardcoded list only (matches update.ps1's posture).
+                $manifestPath = Join-Path $srcInstance '.negativezone\preserve-list.json'
+                if (Test-Path -LiteralPath $manifestPath) {
+                    try {
+                        $manifestObj = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 |
+                            ConvertFrom-Json -ErrorAction Stop
+                        $packAuthor = @()
+                        if ($manifestObj.preserve) {
+                            $packAuthor = @($manifestObj.preserve | Where-Object { $_ })
+                        }
+                        if ($packAuthor.Count -gt 0) {
+                            $seen = @{}
+                            $combined = New-Object System.Collections.Generic.List[string]
+                            foreach ($p in @($preserveList) + @($packAuthor)) {
+                                $t = ($p -as [string]).Trim()
+                                if ($t -and -not $seen.ContainsKey($t)) {
+                                    $seen[$t] = $true
+                                    [void]$combined.Add($t)
+                                }
+                            }
+                            $preserveList = $combined.ToArray()
+                            Write-Ok ("Pack-author preserve-list.json contributes {0} mod-config entries" -f $packAuthor.Count)
+                        }
+                    } catch {
+                        Write-Warn "preserve-list.json malformed ($($_.Exception.Message)); using hardcoded list only."
+                    }
+                }
                 $oldDotMc = Join-Path $backupPath '.minecraft'
                 $newDotMc = Join-Path $instanceTarget '.minecraft'
                 $restored = 0

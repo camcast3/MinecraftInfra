@@ -51,6 +51,10 @@ $ErrorActionPreference = 'Stop'
 $DirectoryItems = @(
     'XaeroWaypoints'
     'XaeroWorldMap'
+    # JourneyMap data — same rationale as XaeroWorldMap (waypoints + tile
+    # cache, multi-GB on heavy explorers). C2E2's waystones mod writes
+    # waypoints here when displayWaystonesOnJourneyMap is enabled.
+    'journeymap'
     'screenshots'
     'shaderpacks'
     'resourcepacks'
@@ -60,10 +64,12 @@ $DirectoryItems = @(
 
 # Individual files. servers.dat is small but critical — losing the server
 # list entry is annoying. options* files capture keybinds + video settings.
+# hotbar.nbt is vanilla creative-mode hotbar saves (tiny).
 $FileItems = @(
     'options.txt'
     'optionsof.txt'
     'optionsshaders.txt'
+    'hotbar.nbt'
     'servers.dat'
     'usercache.json'
     'usernamecache.json'

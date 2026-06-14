@@ -86,6 +86,8 @@ $PreserveRelative = @(
     'options.txt',
     'optionsof.txt',
     'optionsshaders.txt',
+    # Creative-mode hotbar saves (vanilla). Tiny but annoying to lose.
+    'hotbar.nbt',
     'usercache.json',
     'usernamecache.json',
     'realms_persistence.json',
@@ -95,6 +97,11 @@ $PreserveRelative = @(
     # history and explored-area cache.
     'XaeroWaypoints',
     'XaeroWorldMap',
+    # JourneyMap data — alternative/companion to Xaero. C2E2's waystones
+    # mod integrates with it (see packwiz/config/waystones-common.toml's
+    # displayWaystonesOnJourneyMap=true), so any player using JourneyMap
+    # has waypoints + map-tile cache here that we don't want to wipe.
+    'journeymap',
     # Player-installed shader/resource packs ride alongside the pack-shipped
     # ones; wiping them on update would force re-installation of personal
     # cosmetic choices that have nothing to do with the modpack itself.

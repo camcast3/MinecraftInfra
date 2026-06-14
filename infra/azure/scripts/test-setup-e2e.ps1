@@ -120,7 +120,14 @@ OverrideCommands=true
 }
 "@ | Set-Content -LiteralPath (Join-Path $instDir 'mmc-pack.json') -Encoding UTF8
 
-    '[]' | Set-Content -LiteralPath (Join-Path $nzDir 'preserve-list.json') -Encoding UTF8
+    # Ship a real pack-author preserve manifest so the union code path in
+    # setup.ps1 / update.ps1 (hardcoded ∪ preserve-list.json) is exercised
+    # by the upgrade test. Format mirrors what publish-prism-pack.ps1 emits
+    # from packwiz/.user-prefs.txt. Test entry is a synthetic mod-config
+    # path so the test is independent of which mods C2E2 actually ships.
+    @'
+{"version":1,"preserve":["config/test-mod-prefs.json"]}
+'@ | Set-Content -LiteralPath (Join-Path $nzDir 'preserve-list.json') -Encoding UTF8
 
     # Bundle .ps1 with UTF-8 BOM (mirrors Add-Ps1ZipEntry in publish-prism-pack.ps1).
     # Repo .ps1 files are BOM-less (lint-ps1.yml enforces this).
@@ -564,10 +571,18 @@ Register-Test 'upgrade-with-snapshot-restore' {
     Set-Content -LiteralPath "$mcDir\options.txt"    -Value 'mouseSensitivity:0.4'
     Set-Content -LiteralPath "$mcDir\optionsof.txt"  -Value 'renderDistance:16'
     Set-Content -LiteralPath "$mcDir\usercache.json" -Value '[{"name":"player1"}]'
+    Set-Content -LiteralPath "$mcDir\hotbar.nbt"     -Value 'hotbar-sentinel-bytes'
     New-Item -ItemType Directory -Path "$mcDir\XaeroWorldMap\sp" -Force | Out-Null
     Set-Content -LiteralPath "$mcDir\XaeroWorldMap\sp\waypoint.json" -Value '{"x":100}'
+    New-Item -ItemType Directory -Path "$mcDir\journeymap\data\sp" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\journeymap\data\sp\waypoints.json" -Value '{"jm-waypoint":"home"}'
     New-Item -ItemType Directory -Path "$mcDir\shaderpacks" -Force | Out-Null
     Set-Content -LiteralPath "$mcDir\shaderpacks\Sildurs.zip" -Value 'shaderdata'
+    # Pack-author preserve-list.json entry — proves the hardcoded ∪ manifest
+    # union path works (this file isn't on setup.ps1's hardcoded $preserveList,
+    # so it can only be restored via the preserve-list.json union code path).
+    New-Item -ItemType Directory -Path "$mcDir\config" -Force | Out-Null
+    Set-Content -LiteralPath "$mcDir\config\test-mod-prefs.json" -Value '{"emiEnabled":false}'
 
     # Step 3: publish v1.1.0
     $ctx.PublishVersion.Invoke('1.1.0')
@@ -590,8 +605,14 @@ Register-Test 'upgrade-with-snapshot-restore' {
     Assert-FileContains (Join-Path $inst '.minecraft\options.txt') 'mouseSensitivity:0\.4' 'options.txt RESTORED with content'
     Assert-FileContains (Join-Path $inst '.minecraft\optionsof.txt') 'renderDistance:16' 'optionsof.txt RESTORED'
     Assert-FileContains (Join-Path $inst '.minecraft\usercache.json') 'player1' 'usercache RESTORED'
+    Assert-FileContains (Join-Path $inst '.minecraft\hotbar.nbt') 'hotbar-sentinel-bytes' 'hotbar.nbt RESTORED'
     Assert-PathExists (Join-Path $inst '.minecraft\XaeroWorldMap\sp\waypoint.json') 'XaeroWorldMap RESTORED'
+    Assert-PathExists (Join-Path $inst '.minecraft\journeymap\data\sp\waypoints.json') 'journeymap RESTORED'
     Assert-PathExists (Join-Path $inst '.minecraft\shaderpacks\Sildurs.zip') 'shaderpacks RESTORED'
+    # Pack-author preserve-list.json union — proves mod configs (e.g. EMI
+    # enable/disable state) survive setup-driven upgrades, not just
+    # update.ps1-driven ones. Was silently broken before this fix.
+    Assert-FileContains (Join-Path $inst '.minecraft\config\test-mod-prefs.json') 'emiEnabled' 'pack-author preserve-list.json entry RESTORED (union with hardcoded list)'
 
     # Reset for subsequent tests
     $ctx.PublishVersion.Invoke('1.0.0')
