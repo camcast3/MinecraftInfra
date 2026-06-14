@@ -451,6 +451,28 @@ function ShouldExclude([string]$relativePath) {
     return $false
 }
 
+# Escapes a string for safe storage in a Qt INI value (the format Prism uses
+# for instance.cfg). Prism re-writes the cfg via QSettings on every launch
+# (lastLaunchTime, lastTimePlayed). On read, Qt processes `\<letter>` escapes
+# and concatenates adjacent `"..."` segments with whitespace stripped — so
+# an unescaped raw `"powershell.exe" -NoProfile ... $INST_DIR\.negativezone\update.ps1`
+# value becomes `powershell.exe-NoProfile ... $INST_DIRnegativezonepdate.ps1`
+# the very first time the player clicks Launch (the closing quote + space
+# get eaten; `\.` collapses to `.`; `\u` is interpreted as the start of a
+# Unicode escape and silently eats `update`'s `u`). The hook then fails with
+# "process failed to start".
+#
+# Format-QtIniValue emits Qt's canonical escaped form (backslashes -> `\\`,
+# double-quotes -> `\"`, whole value wrapped in `"..."`). The round-trip is
+# idempotent: Qt's reader undoes the escapes and the writer re-emits the
+# same bytes, so subsequent launches don't progressively mangle the value.
+# Mirrored verbatim in docs/assets/setup.ps1 — keep in sync.
+function Format-QtIniValue {
+    param([Parameter(Mandatory)][string] $Value)
+    $escaped = $Value.Replace('\', '\\').Replace('"', '\"')
+    return '"' + $escaped + '"'
+}
+
 # Removes machine-specific Java fields, user state, [UI] section. Pins
 # memory + iconKey + version label. Wires PreLaunchCommand for auto-update.
 function Get-SanitizedInstanceCfg(
@@ -513,6 +535,15 @@ try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativ
 '@
     $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
     $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
+
+    # Apply Qt INI value escape — Prism re-writes instance.cfg via QSettings
+    # on every launch (lastLaunchTime update), and without escaping the raw
+    # `"..."` segments + `\.` / `\u` sequences get mangled (closing quotes
+    # eaten, backslashes dropped, `\u` interpreted as Unicode escape). See
+    # the matching Format-QtIniValue in docs/assets/setup.ps1 for the full
+    # story. Inlined here so this script stays standalone (used in CI).
+    $preLaunchCommand = Format-QtIniValue -Value $preLaunchCommand
+    $postExitCommand  = Format-QtIniValue -Value $postExitCommand
 
     # 8192 MB matches C2E2's recommended ceiling (players on 8 GB systems
     # should lower to 4096 after install). name= carries the version suffix

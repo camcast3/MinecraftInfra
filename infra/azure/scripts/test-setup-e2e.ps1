@@ -344,8 +344,14 @@ function Invoke-PreLaunchCommand {
     $cfg = Get-Content -LiteralPath $cfgPath
     $line = $cfg | Where-Object { $_ -match '^PreLaunchCommand=' } | Select-Object -First 1
     if (-not $line) { throw "No PreLaunchCommand in $cfgPath" }
-    $cmd = $line -replace '^PreLaunchCommand=', ''
-    $cmd = $cmd.Replace('$INST_DIR', $InstanceDir)
+    $raw = $line -replace '^PreLaunchCommand=', ''
+    # Mirror Prism: Qt INI value -> un-escape -> QProcess::splitCommand.
+    # Without this round-trip the harness would happily exec malformed cfg
+    # bytes that Prism rejects in production (closing quote + space eaten,
+    # \. dropped, \u eating the next char). The Qt-aware un-escape is the
+    # canary that ensures setup.ps1 / publish-prism-pack.ps1 write values
+    # in a form that survives Prism's launch-time re-read.
+    $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
     # Simulate Prism's QProcess::splitCommand by handing the whole line to cmd /c.
     $cmdFile = Join-Path $logDir ("pre-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
     "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
@@ -358,11 +364,51 @@ function Invoke-PostExitCommand {
     $cfg = Get-Content -LiteralPath (Join-Path $InstanceDir 'instance.cfg')
     $line = $cfg | Where-Object { $_ -match '^PostExitCommand=' } | Select-Object -First 1
     if (-not $line) { throw "No PostExitCommand in instance.cfg" }
-    $cmd = ($line -replace '^PostExitCommand=', '').Replace('$INST_DIR', $InstanceDir)
+    $raw = $line -replace '^PostExitCommand=', ''
+    $cmd = (ConvertFrom-QtIniValue -Raw $raw).Replace('$INST_DIR', $InstanceDir)
     $cmdFile = Join-Path $logDir ("post-{0}.cmd" -f [guid]::NewGuid().ToString('N').Substring(0,8))
     "@echo off`r`n$cmd`r`nexit /b %ERRORLEVEL%" | Set-Content -LiteralPath $cmdFile -Encoding ASCII
     $out = & cmd.exe /c $cmdFile 2>&1
     return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $out }
+}
+
+# Mirror of Qt's QSettings::iniUnescapedString — enough to round-trip values
+# we write via Format-QtIniValue (\\ -> \, \" -> ", and standard letter
+# escapes). Used by the launch-command helpers above so the harness fails
+# exactly the way Prism does when a cfg value is mis-escaped.
+function ConvertFrom-QtIniValue {
+    param([Parameter(Mandatory)][string] $Raw)
+    $s = $Raw
+    # Strip a single pair of outer `"..."` if present.
+    if ($s.Length -ge 2 -and $s[0] -eq '"' -and $s[$s.Length - 1] -eq '"') {
+        $s = $s.Substring(1, $s.Length - 2)
+    }
+    $sb = New-Object Text.StringBuilder
+    $i = 0
+    while ($i -lt $s.Length) {
+        $c = $s[$i]
+        if ($c -eq '\' -and ($i + 1) -lt $s.Length) {
+            $next = $s[$i + 1]
+            switch ($next) {
+                '\' { [void]$sb.Append('\'); $i += 2; continue }
+                '"' { [void]$sb.Append('"'); $i += 2; continue }
+                'n' { [void]$sb.Append("`n"); $i += 2; continue }
+                'r' { [void]$sb.Append("`r"); $i += 2; continue }
+                't' { [void]$sb.Append("`t"); $i += 2; continue }
+                default {
+                    # Qt drops the backslash and emits the next char alone for
+                    # unknown escapes. That is the failure mode that broke the
+                    # real-data run ('\.' -> '.', '\u' -> 'u' but then \uXXXX
+                    # tries to consume 4 hex chars).
+                    [void]$sb.Append($next); $i += 2; continue
+                }
+            }
+        } else {
+            [void]$sb.Append($c)
+            $i++
+        }
+    }
+    return $sb.ToString()
 }
 
 # ─── Test runner ────────────────────────────────────────────────────────────
@@ -556,6 +602,142 @@ Register-Test 'postexit-fail-open' {
     Assert-True ($post.ExitCode -eq 0) "PostExit must fail OPEN (exit 0; got $($post.ExitCode))"
     $joined = ($post.Output -join "`n")
     Assert-True ($joined -match 're-run the setup one-liner') "Must still show setup hint in output"
+}
+
+Register-Test 'cfg-qt-ini-escape-roundtrip' {
+    param($ctx)
+    # Catches the v0.4.2 regression where setup.ps1 wrote unescaped
+    # `"powershell.exe" -NoProfile ... $INST_DIR\.negativezone\update.ps1`
+    # straight into instance.cfg. Prism's Qt INI reader collapsed the
+    # value on first launch (closing quote + space eaten, `\.` dropped,
+    # `\u` consumed the `u` from `update`), breaking PreLaunch with
+    # "process failed to start". This test asserts that the on-disk
+    # PreLaunchCommand round-trips through ConvertFrom-QtIniValue back to
+    # the exact byte sequence we wanted Prism to receive.
+    $appData = Join-Path $sandbox 'appdata-qt-escape'
+    $r = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'qt-escape'
+    Assert-True ($r.ExitCode -eq 0) "install must succeed (rc=$($r.ExitCode))"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    $line = Get-Content -LiteralPath (Join-Path $inst 'instance.cfg') |
+        Where-Object { $_ -match '^PreLaunchCommand=' } | Select-Object -First 1
+    Assert-True ($null -ne $line) "PreLaunchCommand line present"
+
+    # On-disk form MUST be wrapped + escaped, not the raw `"powershell.exe" ...`
+    # form that was broken in production. The wrap is the load-bearing bit:
+    # without outer `"..."` Qt parses adjacent quoted/unquoted segments and
+    # concatenates them with the space stripped.
+    $raw = $line -replace '^PreLaunchCommand=', ''
+    Assert-True ($raw.StartsWith('"') -and $raw.EndsWith('"')) `
+        "PreLaunchCommand value must be wrapped in outer quotes (got: $raw)"
+    Assert-True ($raw -match '\\\\\.negativezone\\\\update\.ps1') `
+        ('Path backslashes must be escaped as \\ (got: ' + $raw + ')')
+    Assert-True ($raw -match '\\"powershell\.exe\\"') `
+        ('Inner quotes must be escaped as backslash-quote (got: ' + $raw + ')')
+
+    # And the un-escape round-trips back to a string that LOOKS like a
+    # valid PS command line — exactly what Prism feeds QProcess::splitCommand.
+    $unwrapped = ConvertFrom-QtIniValue -Raw $raw
+    Assert-True ($unwrapped -match '"powershell\.exe" -NoProfile') `
+        "Un-escaped value must have intact quoted exe path + space (got: $unwrapped)"
+    Assert-True ($unwrapped -match '\$INST_DIR\\\.negativezone\\update\.ps1') `
+        ('Un-escaped value must preserve $INST_DIR\.negativezone\update.ps1 (got: ' + $unwrapped + ')')
+}
+
+Register-Test 'instance-name-bumped-on-upgrade' {
+    param($ctx)
+    # The original v0.4.2 real-data run shipped a zip whose instance.cfg
+    # still had `name=Craft to Exile 2 v0.4.1` baked in, and setup.ps1
+    # never rewrote it after extract — both the live install and the .bak
+    # showed up as `v0.4.1` in Prism's grid. Setup.ps1 must overwrite the
+    # name with the manifest version regardless of what the zip contained.
+    $appData = Join-Path $sandbox 'appdata-name-bump'
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'name-1'
+    Assert-True ($r1.ExitCode -eq 0) "v1.0.0 install must succeed"
+
+    $inst = Join-Path $appData 'PrismLauncher\instances\Craft to Exile 2'
+    Assert-FileContains (Join-Path $inst 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.0\.0' `
+        'name= must include the current manifest version after install'
+
+    # Upgrade to v1.1.0 and verify name= bumps on the live install while
+    # the .bak still has the old name=.
+    $ctx.PublishVersion.Invoke('1.1.0')
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'name-2'
+    Assert-True ($r2.ExitCode -eq 0) "v1.1.0 upgrade must succeed"
+    Assert-FileContains (Join-Path $inst 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.1\.0' `
+        'live install name= bumped to v1.1.0'
+    Assert-FileContains (Join-Path "$inst.bak" 'instance.cfg') '(?m)^name=Craft to Exile 2 v1\.0\.0' `
+        '.bak name= preserved at v1.0.0'
+
+    $ctx.PublishVersion.Invoke('1.0.0')  # reset for subsequent tests
+}
+
+Register-Test 'instgroups-latest-and-backup' {
+    param($ctx)
+    # Before this fix Prism showed both the live install and the .bak in
+    # the default "Ungrouped" bucket with identical display names — players
+    # had no quick way to tell which one was current. Setup.ps1 now writes
+    # instgroups.json so the live instance lands in "Latest" and the .bak
+    # (if any) lands in "Backup". Also asserts that on a FRESH install
+    # (no .bak yet) we only create the Latest group.
+    $appData = Join-Path $sandbox 'appdata-groups'
+    $r1 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'grp-1'
+    Assert-True ($r1.ExitCode -eq 0) "fresh install must succeed"
+
+    $groupsFile = Join-Path $appData 'PrismLauncher\instances\instgroups.json'
+    Assert-PathExists $groupsFile 'instgroups.json created'
+    $groups = Get-Content -LiteralPath $groupsFile -Raw | ConvertFrom-Json
+    Assert-True ($groups.groups.Latest -ne $null) 'Latest group present after fresh install'
+    Assert-True (@($groups.groups.Latest.instances) -contains 'Craft to Exile 2') `
+        'Latest group contains live instance'
+    Assert-True ($groups.groups.Backup -eq $null) 'No Backup group when no .bak exists'
+
+    # Upgrade -> .bak should appear AND get filed under Backup.
+    $ctx.PublishVersion.Invoke('1.1.0')
+    $r2 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'grp-2'
+    Assert-True ($r2.ExitCode -eq 0) "upgrade must succeed"
+
+    $groups2 = Get-Content -LiteralPath $groupsFile -Raw | ConvertFrom-Json
+    Assert-True (@($groups2.groups.Latest.instances) -contains 'Craft to Exile 2') `
+        'Latest still contains live instance after upgrade'
+    Assert-True ($groups2.groups.Backup -ne $null) 'Backup group exists after upgrade'
+    Assert-True (@($groups2.groups.Backup.instances) -contains 'Craft to Exile 2.bak') `
+        'Backup group contains .bak'
+    Assert-True ((@($groups2.groups.Latest.instances) | Where-Object { $_ -eq 'Craft to Exile 2.bak' }).Count -eq 0) `
+        '.bak NOT also stuck in Latest group'
+
+    # Idempotency: a player-created group survives reasserts.
+    $custom = @{
+        formatVersion = '1'
+        groups = @{
+            Latest = @{ hidden = $false; instances = @('Craft to Exile 2') }
+            Backup = @{ hidden = $false; instances = @('Craft to Exile 2.bak') }
+            MyPersonalGroup = @{ hidden = $false; instances = @('Vanilla 1.20') }
+        }
+    } | ConvertTo-Json -Depth 10
+    [IO.File]::WriteAllBytes($groupsFile, [Text.UTF8Encoding]::new($false).GetBytes($custom))
+    $r3 = Invoke-SetupPs1 -AppData $appData -ManifestUrl $ctx.ManifestUrl `
+        -UpdateScriptUrl $ctx.UpdateUrl -BackupScriptUrl $ctx.BackupUrl `
+        -SetupUrl $ctx.SetupUrl -Label 'grp-3'
+    Assert-True ($r3.ExitCode -eq 0) "third run (same version) must succeed"
+
+    $groups3 = Get-Content -LiteralPath $groupsFile -Raw | ConvertFrom-Json
+    Assert-True ($groups3.groups.MyPersonalGroup -ne $null) `
+        'User-created group survived setup.ps1 group reassert'
+    Assert-True (@($groups3.groups.MyPersonalGroup.instances) -contains 'Vanilla 1.20') `
+        'User group contents preserved'
+
+    $ctx.PublishVersion.Invoke('1.0.0')  # reset
 }
 
 # ─── Main ───────────────────────────────────────────────────────────────────

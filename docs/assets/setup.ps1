@@ -89,6 +89,109 @@ try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativ
 $PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
 $PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
 
+# ─── Qt INI value escape ────────────────────────────────────────────────────
+# Prism stores instance.cfg via Qt's QSettings, which on read processes a
+# `\<letter>` escape vocabulary (\\, \", \n, \r, \t, \u####, \x##) and treats
+# unwrapped `"..."` segments as quoted runs that get concatenated with the
+# whitespace stripped. Our raw PreLaunchCommand is full of literal quotes and
+# backslashes (`"powershell.exe" -NoProfile ... '$INST_DIR\.negativezone\update.ps1'`)
+# so the very first time Prism saves the cfg back (just clicking Launch
+# updates lastLaunchTime, which triggers a full file rewrite) the value gets
+# mangled into `"powershell.exe-NoProfile ... $INST_DIRnegativezonepdate.ps1`
+# — closing quote + space eaten, `\.` collapsed to `.`, `\u` interpreted as
+# the start of a Unicode escape so `update.ps1` becomes `pdate.ps1`. The hook
+# then fails to launch with "process failed to start".
+#
+# Format-QtIniValue emits the canonical Qt escaped form: escape `\` -> `\\`
+# and `"` -> `\"`, then wrap the whole value in `"..."`. Qt's reader undoes
+# the escapes and Qt's writer re-emits the identical bytes, so the round-trip
+# is idempotent and the player's first Launch click no longer corrupts the
+# hook. Always wrapping (even when not strictly required) keeps the on-disk
+# format predictable across all instance.cfg values we write.
+function Format-QtIniValue {
+    param([Parameter(Mandatory)][string] $Value)
+    $escaped = $Value.Replace('\', '\\').Replace('"', '\"')
+    return '"' + $escaped + '"'
+}
+
+# ─── instgroups.json updater ────────────────────────────────────────────────
+# Prism enumerates every <instances>\<dir>\instance.cfg as an instance and
+# shows them in a flat list under "Ungrouped" unless instgroups.json assigns
+# them to a group. Without grouping, the .bak we leave behind after an
+# upgrade shows up alongside the live instance with the same display name —
+# confusing players ("which one do I click?"). Same problem appears in the
+# unit harness output.
+#
+# Set-PrismInstanceGroup is the same idempotent, additive pattern as
+# Set-PrismCommandHook: preserve any groups the player created themselves,
+# strip our managed instances out of every existing group, then assign each
+# managed instance to its target group ("Latest" for the live install,
+# "Backup" for the previous-version .bak). Skips instances whose folder
+# doesn't exist so a missing .bak doesn't leave an empty "Backup" group.
+function Set-PrismInstanceGroup {
+    param(
+        [Parameter(Mandatory)] [string] $InstancesDir,
+        [Parameter(Mandatory)] [hashtable] $Assignments
+    )
+    if (-not (Test-Path -LiteralPath $InstancesDir)) {
+        Write-Warn "Instances dir not found at $InstancesDir — skipping group update"
+        return
+    }
+    $groupsFile = Join-Path $InstancesDir 'instgroups.json'
+
+    # Build a set of every instance we're managing so we can strip them out of
+    # any previously-existing group before re-assigning. Without this an
+    # instance dragged into "Backup" manually would stay in both groups.
+    $managed = @{}
+    foreach ($g in $Assignments.Keys) {
+        foreach ($inst in @($Assignments[$g])) { $managed[$inst] = $true }
+    }
+
+    $finalGroups = [ordered]@{}
+    if (Test-Path -LiteralPath $groupsFile) {
+        try {
+            $existing = Get-Content -LiteralPath $groupsFile -Raw -Encoding UTF8 |
+                ConvertFrom-Json -ErrorAction Stop
+            if ($existing.groups) {
+                foreach ($prop in $existing.groups.PSObject.Properties) {
+                    if ($Assignments.ContainsKey($prop.Name)) { continue }
+                    $kept = @($prop.Value.instances | Where-Object { -not $managed.ContainsKey($_) })
+                    if ($kept.Count -eq 0) { continue }
+                    $hiddenVal = $false
+                    if ($prop.Value.PSObject.Properties.Match('hidden').Count -gt 0) {
+                        $hiddenVal = [bool]$prop.Value.hidden
+                    }
+                    $finalGroups[$prop.Name] = [pscustomobject]@{
+                        hidden    = $hiddenVal
+                        instances = $kept
+                    }
+                }
+            }
+        } catch {
+            Write-Warn "Could not parse $groupsFile ($($_.Exception.Message)) — rewriting from scratch"
+        }
+    }
+
+    foreach ($g in $Assignments.Keys) {
+        $present = @(
+            @($Assignments[$g]) | Where-Object { Test-Path -LiteralPath (Join-Path $InstancesDir $_) }
+        )
+        if ($present.Count -eq 0) { continue }
+        $finalGroups[$g] = [pscustomobject]@{
+            hidden    = $false
+            instances = $present
+        }
+    }
+
+    $payload = [pscustomobject]@{
+        formatVersion = '1'
+        groups        = [pscustomobject]$finalGroups
+    }
+    $json = $payload | ConvertTo-Json -Depth 10
+    # Match Prism's stock instgroups.json: BOM-less UTF-8.
+    [IO.File]::WriteAllBytes($groupsFile, [Text.UTF8Encoding]::new($false).GetBytes($json))
+}
+
 # Idempotently wires OverrideCommands=true + the given command line into the
 # instance.cfg and downloads the named script into <instanceDir>\.negativezone\.
 # Separate from the zip-bundled wiring so already-installed players who skip
@@ -140,6 +243,10 @@ function Set-PrismCommandHook {
     $sawOverrideCommands = $false
     $sawCommandKey = $false
     $changed = $false
+    # Qt INI escape — see Format-QtIniValue's comment. Required so Prism's
+    # round-trip save doesn't corrupt the value (eating quotes/backslashes
+    # and breaking PreLaunch / PostExit).
+    $escapedValue = Format-QtIniValue -Value $CommandValue
     foreach ($cfgLine in $cfgLines) {
         if ($cfgLine -match '^OverrideCommands=') {
             $sawOverrideCommands = $true
@@ -147,7 +254,7 @@ function Set-PrismCommandHook {
             $updated.Add('OverrideCommands=true')
         } elseif ($cfgLine -match "^$CommandKey=") {
             $sawCommandKey = $true
-            $desired = "$CommandKey=$CommandValue"
+            $desired = "$CommandKey=$escapedValue"
             if ($cfgLine -ne $desired) { $changed = $true }
             $updated.Add($desired)
         } else {
@@ -158,7 +265,7 @@ function Set-PrismCommandHook {
         $updated.Add('OverrideCommands=true'); $changed = $true
     }
     if (-not $sawCommandKey) {
-        $updated.Add("$CommandKey=$CommandValue"); $changed = $true
+        $updated.Add("$CommandKey=$escapedValue"); $changed = $true
     }
     if ($changed) {
         Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
@@ -448,22 +555,30 @@ if ($manifest) {
             # totalGB >= 8 so allocGB >= 4.
             $allocGB = [math]::Min(12, [math]::Floor($totalGB / 2))
             $allocMB = $allocGB * 1024
+            # Bump name= to "<instance> v<version>" so Prism's instance grid
+            # shows the new version after upgrade. Without this rewrite the
+            # zip's stale name= (e.g. "Craft to Exile 2 v0.4.1") survives the
+            # upgrade and both the live install and .bak read identically in
+            # the UI — players can't tell which one is current.
+            $desiredName = "$($manifest.instance) v$($manifest.version)"
             $cfgPath = Join-Path $instanceTarget 'instance.cfg'
             $cfgLines = Get-Content -LiteralPath $cfgPath -Encoding UTF8
             $updated = New-Object System.Collections.Generic.List[string]
-            $sawMax = $false; $sawOverride = $false
+            $sawMax = $false; $sawOverride = $false; $sawName = $false
             foreach ($cfgLine in $cfgLines) {
-                if ($cfgLine -match '^MaxMemAlloc=')      { $updated.Add("MaxMemAlloc=$allocMB"); $sawMax = $true }
+                if ($cfgLine -match '^MaxMemAlloc=')        { $updated.Add("MaxMemAlloc=$allocMB"); $sawMax = $true }
                 elseif ($cfgLine -match '^OverrideMemory=') { $updated.Add('OverrideMemory=true'); $sawOverride = $true }
+                elseif ($cfgLine -match '^name=')           { $updated.Add("name=$desiredName"); $sawName = $true }
                 else                                        { $updated.Add($cfgLine) }
             }
             if (-not $sawMax)      { $updated.Add("MaxMemAlloc=$allocMB") }
             if (-not $sawOverride) { $updated.Add('OverrideMemory=true') }
+            if (-not $sawName)     { $updated.Add("name=$desiredName") }
             Set-Content -LiteralPath $cfgPath -Value $updated -Encoding UTF8
             Write-Ok "Allocated ${allocGB} GB to Minecraft (half of ${totalGB} GB system RAM, capped at 12 GB)"
 
             Set-Content -Path (Join-Path $instanceTarget '.negativezone-version') -Value $manifest.version -Encoding UTF8
-            Write-Ok "Instance '$($manifest.instance)' ready in Prism"
+            Write-Ok "Instance '$($manifest.instance)' (v$($manifest.version)) ready in Prism"
         } catch {
             # Roll back if we replaced the instance before the failure.
             if ($backedUp -and (Test-Path $backupPath) -and -not (Test-Path $instanceTarget)) {
@@ -492,6 +607,20 @@ if ($manifest) {
             -CommandKey 'PostExitCommand' -CommandValue $PostExitCommand `
             -ScriptFilename 'backup.ps1'  -ScriptUrl $BackupScriptUrl `
             -FriendlyName 'periodic snapshots enabled (every 3 days by default)'
+
+        # Group the live instance under "Latest" and the previous-version
+        # .bak (if any) under "Backup" so Prism's instance grid clearly
+        # separates them. Both stay visible so the player can roll back from
+        # the UI, but they no longer look like duplicate copies of the same
+        # instance under "Ungrouped". Reasserted on every run for self-heal.
+        $instName     = Split-Path -Leaf $instanceTarget
+        $bakName      = "$instName.bak"
+        $assignments  = @{
+            'Latest' = @($instName)
+            'Backup' = @($bakName)
+        }
+        Set-PrismInstanceGroup -InstancesDir $prismInstancesDir -Assignments $assignments
+        Write-Ok "Prism groups updated ('$instName' -> Latest, '$bakName' -> Backup if present)"
     }
 }
 
