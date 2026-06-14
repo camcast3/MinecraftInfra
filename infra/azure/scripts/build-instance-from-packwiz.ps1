@@ -266,7 +266,17 @@ Write-Information "Wrote mmc-pack.json (MC $minecraftVersion / Forge $forgeVersi
 # per .gitattributes' `* -text` (no EOL normalization). The CI symptom was
 # `[FATAL] pack.toml URI to install from must be specified!` — the bootstrap
 # only saw the bootstrap flags and lost both `-s client` and the URI.
-$packTomlUri = ([System.Uri](Resolve-AbsolutePath $packToml)).AbsoluteUri
+#
+# URI must be built via the two-arg Uri(base, path) constructor: a plain
+# `[System.Uri]"/linux/path"` cast yields `IsAbsoluteUri = $false` and
+# `.AbsoluteUri = ""` (no exception). PowerShell then silently drops the
+# empty-string arg during splat, leaving java with the bootstrap flags but
+# no URI — the exact same fatal as the backtick bug, so guard against both.
+$packTomlAbs = Resolve-AbsolutePath $packToml
+$packTomlUri = [System.Uri]::new([System.Uri]::new('file:///'), $packTomlAbs).AbsoluteUri
+if ([string]::IsNullOrWhiteSpace($packTomlUri)) {
+    throw "Failed to build a file:// URI for $packTomlAbs — would silently drop from java args."
+}
 $bootstrapArgs = @(
     '-jar', $BootstrapJar
     '--bootstrap-no-update'
