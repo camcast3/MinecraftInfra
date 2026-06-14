@@ -212,7 +212,7 @@ services:
   # container metrics still work; host network interface stats do not.
   mc-monitor-exporter:
     <<: *common-keys-apps
-    image: itzg/mc-monitor:0.16.6@sha256:1957e638f79280090a92bf7aaf90d60db566378e6485b25491c2b766e99ba832
+    image: itzg/mc-monitor:0.16.7@sha256:f316952cbd0e3d01143f666e232879afd2d3085d522ba6cf4540b4ec0b826892
     container_name: mc-monitor-exporter
     # Shares tailscale netns — Velocity is reachable at localhost:25577 here.
     network_mode: "service:tailscale"
