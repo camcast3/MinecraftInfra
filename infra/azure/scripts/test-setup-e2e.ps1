@@ -297,6 +297,15 @@ function Invoke-SetupPs1 {
     # and corrupts those bytes.
     $bootstrap = @"
 `$ProgressPreference = 'SilentlyContinue'
+# When the harness is launched from pwsh (PS 7), PS 7's PSModulePath leaks
+# into this powershell.exe child and prevents Microsoft.PowerShell.Utility
+# (Get-FileHash, ConvertFrom-Json, etc.) from autoloading. Reset to Windows
+# PowerShell 5.1's stock paths so module autoload behaves normally.
+`$env:PSModulePath = @(
+    "`$env:USERPROFILE\Documents\WindowsPowerShell\Modules",
+    "`$env:ProgramFiles\WindowsPowerShell\Modules",
+    "`$env:WINDIR\System32\WindowsPowerShell\v1.0\Modules"
+) -join ';'
 `$env:APPDATA = '$AppData'
 `$env:NEGATIVEZONE_NONINTERACTIVE = '1'
 `$env:NEGATIVEZONE_MANIFEST_URL = '$ManifestUrl'
