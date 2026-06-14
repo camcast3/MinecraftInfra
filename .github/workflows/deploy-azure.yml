@@ -122,5 +122,35 @@ jobs:
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
+              # ── Status-page stack (docker/azure/status/) ──────────────────
+              # Independent of the proxy stack above — its compose project,
+              # docker network, bind mounts, and secrets are all separate. A
+              # failure here MUST NOT roll back the proxy stack deploy.
+              #
+              # The "all four cloudflare_* files present" check is set by
+              # refresh-env.sh: it writes all four on success or removes any
+              # stale ones on the all-or-nothing branch. So this conditional
+              # is the authoritative gate for whether the status stack should
+              # exist at all on this VM.
+              STATUS_COMPOSE="docker/azure/status/docker-compose.yml"
+              if [ -f /opt/minecraft/secrets/cloudflare_tunnel_token ] \
+                  && [ -f /opt/minecraft/secrets/cloudflare_api_token ] \
+                  && [ -f /opt/minecraft/secrets/cloudflare_account_id ] \
+                  && [ -f /opt/minecraft/secrets/cloudflare_list_id ]; then
+                echo "▶ status stack: all CF secrets present, deploying"
+                docker compose -f "$STATUS_COMPOSE" pull || \
+                  echo "⚠ status stack: pull failed, continuing with cached images"
+                if ! docker compose -f "$STATUS_COMPOSE" up -d --remove-orphans; then
+                  echo "✗ status stack: docker compose up failed — proxy stack already deployed, continuing"
+                fi
+              else
+                echo "▶ status stack: CF secrets missing from KV — skipping deploy"
+                echo "  See docs/operations/status-page-setup.md for one-time setup"
+                # If the stack is currently running but secrets were intentionally
+                # removed from KV (e.g. operator pausing the status page),
+                # `down` stops it gracefully. `|| true` because the stack may
+                # have never been created — that is the common case.
+                docker compose -f "$STATUS_COMPOSE" down --remove-orphans || true
+              fi
             ' \
             --output json | jq -r '.value[0].message'

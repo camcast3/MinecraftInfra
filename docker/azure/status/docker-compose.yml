@@ -1,0 +1,356 @@
+---
+# Azure stack — PUBLIC STATUS PAGE (status.negativezone.cc).
+#
+# Separate from docker/azure/docker-compose.yml (the Minecraft proxy stack).
+# Two stacks run side-by-side on the same Azure VM with NO shared docker
+# network, NO shared netns, NO shared bind mounts. Compromise of anything
+# here cannot pivot to Velocity, the Tailscale sidecar's netns, or the
+# Proxmox backend; the only crossing point between the two stacks is the
+# public internet (Kuma probes mc.negativezone.cc:25565 over the same path
+# real players take).
+#
+# ── Topology ────────────────────────────────────────────────────────────────
+#
+#   ┌───────────────── PUBLIC INTERNET ─────────────────┐
+#   │                                                   │
+#   │  Browser ─https─→ Cloudflare edge (DDoS, BFM,     │
+#   │                   WAF Custom Rule = blocklist) ──┐│
+#   │                                                  ││
+#   │  Player MC client ──tcp/25565──→ Azure Public IP │
+#   │                              │                   │
+#   └──────────────────────────────┼───────────────────┘
+#                                  │
+#         ┌────────────────────────┴───────────────────────┐
+#         │  Azure VM (vm-minecraft-prod)                  │
+#         │                                                │
+#         │  ┌─[ proxy stack ]──────────────────────────┐  │
+#         │  │ tailscale netns ── velocity ── monitoring│  │
+#         │  │   bind: /data/minecraft/{velocity,...}   │  │
+#         │  └──────────────────────────────────────────┘  │
+#         │                                                │
+#         │  ┌─[ status stack — THIS FILE ]──────────────┐ │
+#         │  │                                           │ │
+#         │  │ cloudflared ←mTLS,outbound─→ CF edge      │ │
+#         │  │      │                                    │ │
+#         │  │      ↓ (status-net bridge, 172.31.42/24)  │ │
+#         │  │  traefik  ──→ uptime-kuma                 │ │
+#         │  │     │           │                         │ │
+#         │  │     │           └─ HTTP probe ─→ public   │ │
+#         │  │     │              mc.negativezone.cc:25565
+#         │  │     │              (outside-in via Azure  │ │
+#         │  │     │              hairpin NAT)           │ │
+#         │  │     ↓ JSON access log (bind mount)        │ │
+#         │  │  fail2ban ─→ CF API (add IP to blocklist) │ │
+#         │  │                                           │ │
+#         │  │  bind: /data/minecraft/{traefik,kuma,     │ │
+#         │  │                         fail2ban}         │ │
+#         │  │  secrets: /opt/minecraft/secrets/         │ │
+#         │  │           cloudflare_{tunnel_token,       │ │
+#         │  │                       api_token,          │ │
+#         │  │                       account_id,         │ │
+#         │  │                       list_id}            │ │
+#         │  └───────────────────────────────────────────┘ │
+#         └────────────────────────────────────────────────┘
+#
+# No NSG changes — cloudflared dials outbound to Cloudflare, so the origin
+# never opens 80/443 (or any new port). NSG remains: only TCP 25565 in,
+# SSH from internet denied.
+#
+# ── Cost ────────────────────────────────────────────────────────────────────
+# $0/month: Cloudflare Free + Zero Trust Free (Tunnel + DNS + DDoS + basic
+# Bot Fight + 5 WAF Custom Rules — we use 1 for the Fail2Ban blocklist). No
+# per-tunnel or per-bandwidth Tunnel cost. All four containers fit on the
+# existing Standard_B4s_v2 VM with headroom (~450 MB combined ceiling vs
+# ~14 GB free).
+#
+# ── Secrets handling (same pattern as the proxy stack) ─────────────────────
+# All four CF-related secret values live in Azure Key Vault and are written
+# to /opt/minecraft/secrets/cloudflare_* (0400, container-UID-owned) by
+# docker/azure/refresh-env.sh before this compose file is brought up. The
+# secrets are surfaced to containers via docker compose `secrets:` (file
+# backend) — never as env vars in the compose file, never on the command
+# line, never in an image layer.
+#
+# See docs/operations/status-page-setup.md for one-time bootstrap of
+# Cloudflare resources (tunnel, API token, IP list, firewall rule).
+
+x-common-keys: &common-keys
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+  cap_drop:
+    - ALL
+
+services:
+
+  ############################# CLOUDFLARED — outbound tunnel
+  # Dials outbound to Cloudflare's edge over mTLS, advertises one hostname
+  # (status.negativezone.cc), and forwards incoming requests to traefik
+  # on the status-net docker bridge. The origin VM never opens an inbound
+  # port for this stack — that's the entire point of the tunnel.
+  #
+  # Hardening:
+  #   - The image ships with USER nonroot (UID 65532) in its Dockerfile —
+  #     we inherit that. cap_drop ALL + no-new-privileges keeps escalation
+  #     blocked even if the binary were exploited.
+  #   - read_only:true root fs with a tiny tmpfs for /tmp (cloudflared writes
+  #     nothing else of consequence). No persistent volume — tunnel state is
+  #     held by Cloudflare's control plane; container restarts are free.
+  #   - Token read from a docker-secret file at /run/secrets/. Cannot be
+  #     observed via `docker inspect` or `ps`. The `env TUNNEL_TOKEN=$(cat)`
+  #     wrapper sets the env var in cloudflared's process only — never
+  #     persisted to the compose file or the image.
+  cloudflared:
+    <<: *common-keys
+    image: cloudflare/cloudflared:2026.6.0@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f
+    container_name: cloudflared
+    user: "65532:65532"
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    pids_limit: 100
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+          pids: 100
+    networks:
+      - status-net
+    # The cloudflared image entrypoint is `cloudflared --no-autoupdate`.
+    # We override with a tiny sh wrapper so we can populate TUNNEL_TOKEN
+    # from the docker-secret file without ever materializing the secret
+    # in this compose file or on the command line. `exec env ... cloudflared`
+    # replaces the shell with cloudflared as PID 1 inside the container so
+    # SIGTERM during `docker compose stop` is forwarded cleanly.
+    entrypoint: ["sh", "-c"]
+    command:
+      - 'exec env TUNNEL_TOKEN="$$(cat /run/secrets/cloudflare_tunnel_token)" cloudflared --no-autoupdate --metrics 127.0.0.1:2000 tunnel run'
+    secrets:
+      - cloudflare_tunnel_token
+    # cloudflared's metrics server returns 200 OK on /ready once the tunnel
+    # is connected. Use Python (only stdlib, no jq/curl/wget needed since
+    # the image is debian-slim-based and includes python3 via cloudflared's
+    # build deps...) — actually the image is pure binary + minimal Debian,
+    # no Python. Fall back to a TCP connect via bash, which Debian-slim has.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/2000' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  ############################# TRAEFIK — file-provider reverse proxy
+  # Single route (status.negativezone.cc → uptime-kuma:3001), no docker socket,
+  # no custom middlewares. Cloudflare handles all edge concerns (DDoS, WAF,
+  # rate-limit, headers, TLS); Fail2Ban handles active response by writing to
+  # the JSON access log this service emits.
+  traefik:
+    <<: *common-keys
+    image: traefik:v3.7.5@sha256:d6858791f9e74df44ca4014166647c41cdc2abd3bf2a71b832ca4e1c6a91b257
+    container_name: traefik
+    # Run as the same `nonroot` UID cloudflared uses. Traefik supports
+    # running unprivileged when binding to port 80 inside its container —
+    # we don't publish ports on the host, so no need for CAP_NET_BIND_SERVICE.
+    user: "65532:65532"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    pids_limit: 100
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+          pids: 100
+    networks:
+      - status-net
+    volumes:
+      # Static + dynamic config — ro into the container. Mounted from this
+      # compose stack's relative directory; on the VM that resolves to
+      # /opt/minecraft/docker/azure/status/traefik/.
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      # Access log directory — read-write for traefik (writes the log),
+      # read-only for fail2ban (separate container mount below). On the host:
+      # /data/minecraft/traefik (owned 65532:65532 by cloud-init).
+      - /data/minecraft/traefik:/var/log/traefik
+    healthcheck:
+      # Traefik's bundled healthcheck subcommand hits the internal /ping
+      # endpoint we expose on the `traefik` entry point (127.0.0.1:8082).
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  ############################# UPTIME KUMA — status page application
+  # Rootless variant runs as UID 1000:1000. Probes mc.negativezone.cc:25565
+  # over the public internet (NOT via docker-internal shortcuts) so a probe
+  # success genuinely reflects "a real player on the public internet could
+  # connect right now" — see plan.md / status-page-setup.md.
+  uptime-kuma:
+    <<: *common-keys
+    image: louislam/uptime-kuma:2.4.0-rootless@sha256:a23b9d0029e6f1bc4a0fea0f3ee306d51f43216cd9f8115f8d84d146e9411e4c
+    container_name: uptime-kuma
+    user: "1000:1000"
+    # Not read_only — Kuma writes its sqlite DB, uploads, and Chromium cache
+    # under /app/data and /tmp at runtime, and the rootless image's
+    # entrypoint touches several runtime paths under /app. Bind mount below
+    # persists everything that matters.
+    pids_limit: 256
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+          pids: 256
+    networks:
+      - status-net
+    volumes:
+      # SQLite DB + Kuma config. Owned 1000:1000 by cloud-init.
+      - /data/minecraft/kuma:/app/data
+    environment:
+      # Bind Kuma to 0.0.0.0 inside its netns so traefik (on the same docker
+      # bridge) can reach it at uptime-kuma:3001. Kuma's default port.
+      UPTIME_KUMA_PORT: "3001"
+      UPTIME_KUMA_HOST: "0.0.0.0"
+      # Disable the initial-setup wizard's fallback admin login after first
+      # bootstrap. The operator creates the admin account on first visit
+      # (one-time, documented in status-page-setup.md) — once the DB has an
+      # admin user, the wizard is no longer reachable.
+      TZ: "America/Los_Angeles"
+    healthcheck:
+      # Kuma ships /app/extra/healthcheck which probes the local HTTP port
+      # and returns non-zero on failure. Available in both regular and
+      # rootless images.
+      test: ["CMD", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ############################# FAIL2BAN — active-response sidecar
+  # Tails traefik's JSON access log (read-only mount of the same volume
+  # traefik writes), evaluates against the three filters in filter.d/, and
+  # bans offenders by calling Cloudflare's API to mutate an IP List wired
+  # to a Block firewall rule. No iptables, no NET_ADMIN/NET_RAW capabilities
+  # required — see action.d/cloudflare-api.conf for rationale.
+  #
+  # The crazymax/fail2ban image runs as root inside its userns (needed by
+  # fail2ban-server for /var/run/fail2ban socket + jail state). Hardening
+  # is `cap_drop: ALL + no-new-privileges + read_only + pids_limit + tight
+  # resource ceiling + non-shared network` — the container has no path to
+  # privileged host resources even with UID 0 inside.
+  fail2ban:
+    <<: *common-keys
+    image: crazymax/fail2ban:latest@sha256:7cd8a427a44675397398a8dace2a3d755e62c72527f8730e4fd37697731a9321
+    container_name: fail2ban
+    read_only: true
+    tmpfs:
+      - /var/run/fail2ban:size=8m
+      - /tmp:size=8m
+    pids_limit: 100
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+          pids: 100
+    networks:
+      - status-net
+    environment:
+      TZ: "America/Los_Angeles"
+      # Log to stdout (default is a file under /var/log inside the container;
+      # stdout is friendlier for `docker logs` + promtail tailing).
+      F2B_LOG_TARGET: "STDOUT"
+      F2B_LOG_LEVEL: "INFO"
+      # Purge the in-memory ban DB entries older than 1 day. Bans themselves
+      # are durable at CF (until cloudflare-ban-helper.py removes them on
+      # unban or an operator removes the IP from the dashboard).
+      F2B_DB_PURGE_AGE: "1d"
+      # The crazymax image sets a default iptables-multiport action chain.
+      # Disable it — our jails reference the cloudflare-api action only, but
+      # belt-and-suspenders so a misconfigured jail can never try to apt-get
+      # iptables / load nf_tables / drop legitimate traffic on the host.
+      F2B_IPTABLES_AUTOSTART: "false"
+    volumes:
+      # Read-only view of the traefik access log directory (traefik writes
+      # the log; fail2ban tails it). Same on-host path mounted r/w into
+      # traefik above.
+      - /data/minecraft/traefik:/var/log/traefik:ro
+      # Persist fail2ban's sqlite state (jail db, ban history) across
+      # container recreations so we don't repeatedly re-ban the same
+      # scanner. Host: /data/minecraft/fail2ban (0:0 0755 from cloud-init).
+      - /data/minecraft/fail2ban:/var/lib/fail2ban
+      # Jails + filters + actions — bind-mounted ro. Edits to these files
+      # require `docker compose restart fail2ban` (no hot-reload).
+      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - ./fail2ban/action.d:/etc/fail2ban/action.d:ro
+      # Python helper invoked by action.d/cloudflare-api.conf. Mounted at
+      # the exact path the actionban/actionunban shell commands reference.
+      - ./fail2ban/scripts:/usr/local/lib/fail2ban-cf:ro
+    secrets:
+      - cloudflare_api_token
+      - cloudflare_account_id
+      - cloudflare_list_id
+    depends_on:
+      traefik:
+        # fail2ban needs the access log file to exist before starting;
+        # traefik creates the file on first listener bind.
+        condition: service_healthy
+    healthcheck:
+      # fail2ban-client ping returns "Server replied: pong" if fail2ban-server
+      # is responsive on the socket. Catches the case where the server has
+      # crashed but the container is still alive.
+      test: ["CMD", "fail2ban-client", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networks
+# ─────────────────────────────────────────────────────────────────────────────
+# status-net is a dedicated user-defined bridge for this stack only. NOT
+# `internal: true` — Kuma needs outbound for the public MC probe, fail2ban
+# for the CF API, cloudflared for the tunnel mTLS connection. Isolation
+# comes from being a separate docker network than the proxy stack's
+# `default` network, plus the per-container hardening above. Compromised
+# Kuma cannot reach Velocity by name (different bridge, no shared DNS),
+# cannot reach the Tailscale sidecar's netns (separate kernel namespace
+# altogether), and cannot reach Azure Key Vault from inside the container
+# (no Managed Identity surface area inside compose).
+#
+# Subnet is pinned (172.31.42.0/24) so traefik.yml's forwardedHeaders.trustedIPs
+# allowlist for cloudflared's source IP doesn't drift when docker assigns
+# subnets dynamically.
+networks:
+  status-net:
+    name: status-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.42.0/24
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets (file-backed Compose secrets — same pattern as the proxy stack)
+# ─────────────────────────────────────────────────────────────────────────────
+# All four files written by docker/azure/refresh-env.sh from Azure Key Vault.
+# Mode 0400 on each; owner matches the consuming container's UID:
+#   - cloudflare_tunnel_token  → 65532:65532 (cloudflared)
+#   - cloudflare_api_token     → 0:0         (fail2ban, runs as root in userns)
+#   - cloudflare_account_id    → 0:0         (fail2ban)
+#   - cloudflare_list_id       → 0:0         (fail2ban)
+# Anyone with shell access to the VM as root can already read /opt/minecraft/secrets/;
+# the per-file ownership is purely for in-container isolation.
+secrets:
+  cloudflare_tunnel_token:
+    file: /opt/minecraft/secrets/cloudflare_tunnel_token
+  cloudflare_api_token:
+    file: /opt/minecraft/secrets/cloudflare_api_token
+  cloudflare_account_id:
+    file: /opt/minecraft/secrets/cloudflare_account_id
+  cloudflare_list_id:
+    file: /opt/minecraft/secrets/cloudflare_list_id
