@@ -1,4 +1,4 @@
-﻿# NegativeZone Minecraft setup script
+# NegativeZone Minecraft setup script
 #
 # Run from PowerShell (no admin needed):
 #   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
@@ -28,10 +28,6 @@ function Write-Step($msg) {
 
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow }
-
-# Pulled from main so re-running setup picks up the latest update.ps1 even
-# when the player is already on the current modpack version.
-$UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1'
 
 # Pulled from main so re-running setup picks up the latest update.ps1 even
 # when the player is already on the current modpack version.
@@ -242,6 +238,21 @@ if ($manifest) {
             $srcInstanceCfg = Join-Path $srcInstance 'instance.cfg'
             if (-not (Test-Path -LiteralPath $srcInstanceCfg)) {
                 throw "Modpack zip is missing '$($manifest.instance)/instance.cfg' — refusing to install."
+            }
+
+            # Structural sanity check — refuse to install a zip with no mods.
+            # v0.4.0 shipped as a 30 KB empty pack (Get-ChildItem on Linux
+            # silently skipped .minecraft/ as a dot-prefix hidden dir), and
+            # without this guard setup.ps1 happily installed bare Forge,
+            # producing FML handshake errors on every server connect because
+            # the server had the full mod set and the client had none.
+            $srcModsDir = Join-Path $srcInstance '.minecraft/mods'
+            if (-not (Test-Path -LiteralPath $srcModsDir)) {
+                throw "Modpack zip is missing '$($manifest.instance)/.minecraft/mods/' — refusing to install (this would launch bare Forge against a modded server). Tell the admin: the published v$($manifest.version) blob looks empty."
+            }
+            $srcModJars = @(Get-ChildItem -LiteralPath $srcModsDir -Filter '*.jar' -File -Force -ErrorAction SilentlyContinue)
+            if ($srcModJars.Count -lt 1) {
+                throw "Modpack zip has 0 mod JARs in '$($manifest.instance)/.minecraft/mods/' — refusing to install (this would launch bare Forge against a modded server). Tell the admin: the published v$($manifest.version) blob looks empty."
             }
 
             if (-not (Test-Path $prismInstancesDir)) {

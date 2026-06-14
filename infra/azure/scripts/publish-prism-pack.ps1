@@ -1,4 +1,4 @@
-﻿#requires -Version 7.0
+#requires -Version 7.0
 <#
 .SYNOPSIS
     Export a Prism Launcher instance and publish it to Azure Blob storage so
@@ -523,7 +523,14 @@ $sanitizedCfg = Get-SanitizedInstanceCfg $instanceCfgPath $IconKey $InstanceName
 $zip = [System.IO.Compression.ZipFile]::Open($tempZip, 'Create')
 try {
     $basePath = Split-Path $instancePath -Parent
-    $files = Get-ChildItem -Path $instancePath -Recurse -File
+    # -Force is load-bearing on Linux runners: pwsh treats dot-prefix
+    # directories (.minecraft/) as hidden and Get-ChildItem silently
+    # skips them without -Force. That's how v0.4.0 shipped as a 30 KB
+    # zip containing just instance.cfg + mmc-pack.json — the 8844-file
+    # packwiz install under .minecraft/ was never enumerated. Windows
+    # pwsh doesn't filter by dot-prefix (only by Hidden attribute), so
+    # local admin publishes hid the bug for every version up to v0.3.0.
+    $files = Get-ChildItem -Path $instancePath -Recurse -File -Force
     foreach ($file in $files) {
         $relativePath = $file.FullName.Substring($basePath.Length + 1)
         if (ShouldExclude $relativePath) { continue }
@@ -601,6 +608,30 @@ try {
 
 $sizeMb = [math]::Round((Get-Item $tempZip).Length / 1MB, 1)
 Write-Ok "Zip size: ${sizeMb} MB"
+
+# ─── Post-zip structural sanity check ──────────────────────────────────────
+# Belt-and-suspenders on top of the Get-ChildItem -Force fix above: open
+# the freshly-built zip and confirm it actually contains mod JARs under
+# <InstanceName>/.minecraft/mods/. v0.4.0 logged "Zip size: 0 MB" (30 KB
+# in reality) and uploaded anyway, then the empty zip propagated to every
+# player who ran setup.ps1. The auto-merged PR even rewrote modpack.yml
+# to point at the broken blob. Refuse to ship anything that can't carry
+# the modpack — the deliberately loud throw here is far less painful than
+# the FML handshake errors players hit on first connect.
+$verifyZip = [System.IO.Compression.ZipFile]::OpenRead($tempZip)
+try {
+    $modEntryPrefix = "$InstanceName/.minecraft/mods/"
+    $modEntries = @($verifyZip.Entries | Where-Object {
+        $_.FullName.StartsWith($modEntryPrefix) -and $_.FullName.EndsWith('.jar')
+    })
+} finally { $verifyZip.Dispose() }
+if ($modEntries.Count -lt 1) {
+    throw ("Built zip '$tempZip' contains 0 entries matching '$modEntryPrefix*.jar'. " +
+           "Aborting — refusing to upload an empty pack. " +
+           "Did build-instance-from-packwiz.ps1 actually populate .minecraft/mods/, " +
+           "and is Get-ChildItem -Force still in the export loop above?")
+}
+Write-Ok ("Verified: zip carries {0} mod JARs under {1}" -f $modEntries.Count, $modEntryPrefix)
 
 # ─── SHA-256 ───────────────────────────────────────────────────────────────
 Write-Step "Computing SHA-256"
