@@ -48,32 +48,4 @@ they're inert once `latest.json` no longer points at them.
 | Stuck on "Waiting for concurrency group" | Another publish is in-flight; wait for it. |
 | PR merged but C2E2 didn't redeploy | Wait 5 min for the Portainer GitOps poll, then check the C2E2 stack logs in Portainer. |
 | `gh pr create` says PR already exists | A previous run left a `modpack/v<ver>` branch. Delete the branch + close the PR, then re-run. |
-| Azure login / 403 on blob upload | See [Azure setup](#azure-setup). |
-
-## Azure setup
-
-One-time, admin only. Required for the OIDC login step.
-
-**Federated credential** on the publish managed identity:
-
-| Subject | Purpose |
-|---|---|
-| `repo:camcast3/MinecraftInfra:environment:production` | Required — the workflow uses `environment: production` |
-
-**Role assignment** — `Storage Blob Data Contributor` scoped to the
-`minecraft-modpack` container:
-
-```bash
-az role assignment create \
-  --role "Storage Blob Data Contributor" \
-  --assignee <client-id> \
-  --scope "/subscriptions/<sub>/resourceGroups/rg-minecraft-prod/providers/Microsoft.Storage/storageAccounts/stmcminecraftprod/blobServices/default/containers/minecraft-modpack"
-```
-
-**Repo secrets** (already configured, shared with `deploy-azure.yml`):
-`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
-
-**Repo settings** (toggled once):
-- Settings → Actions → General → Workflow permissions → "Allow GitHub Actions
-  to create and approve pull requests"
-- Settings → General → Pull Requests → "Allow auto-merge"
+| Azure login / 403 on blob upload | Federated credential or role assignment on the publish identity is missing — ping an infra admin. |
