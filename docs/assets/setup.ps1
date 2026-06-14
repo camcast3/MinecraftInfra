@@ -37,14 +37,19 @@ $UpdateScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/ma
 # players pick up the periodic snapshot hook on an already-installed instance.
 $BackupScriptUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/backup.ps1'
 
-# Single-quoted so PS doesn't expand `$INST_DIR` — Prism does substitution
-# at launch time. Outer double quotes are part of the string Prism parses
-# (QProcess::splitCommand respects quoted segments containing spaces).
-$PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\update.ps1"'
-
-# Same quoting rules as PreLaunchCommand. backup.ps1 fast-paths on the cadence
-# check so the typical post-exit delay is ~100ms.
-$PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "$INST_DIR\.negativezone\backup.ps1"'
+# Encoding-tolerant Pre/Post commands: PS 5.1's `-File` reads .ps1 as the
+# system ANSI codepage (CP1252 on US Windows) unless the file has a UTF-8
+# BOM, which silently mangles em-dashes inside double-quoted string
+# literals (byte 0x94 of the em-dash's UTF-8 encoding reads as a closing
+# smart-quote). The `-Command` form below uses .NET's UTF-8 decoder
+# explicitly so the script parses correctly regardless of file encoding.
+# See publish-prism-pack.ps1's Get-SanitizedInstanceCfg for the full
+# quoting-layers explanation (Qt INI -> QProcess::splitCommand -> PS).
+# Single-quoted so $INST_DIR survives — Prism substitutes it at launch.
+$updateInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\update.ps1'', [System.Text.Encoding]::UTF8)))'
+$backupInvoke = '& ([scriptblock]::Create([System.IO.File]::ReadAllText(''$INST_DIR\.negativezone\backup.ps1'', [System.Text.Encoding]::UTF8)))'
+$PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
+$PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
 
 # Idempotently wires OverrideCommands=true + the given command line into the
 # instance.cfg and downloads the named script into <instanceDir>\.negativezone\.
@@ -68,17 +73,24 @@ function Set-PrismCommandHook {
     }
 
     # Download the hook script before writing the cfg line so a missing script
-    # doesn't fail every launch (PreLaunch) or every exit (PostExit).
+    # doesn't fail every launch (PreLaunch) or every exit (PostExit). Always
+    # re-fetch (overwrite) so re-running setup.ps1 also heals a corrupted /
+    # outdated on-disk script — the previous Test-Path skip would have left
+    # broken update.ps1 files in place forever (e.g. after the CP1252 em-dash
+    # parse-crash regression: players can't auto-update past it because the
+    # broken script can't run, so setup.ps1 is the only escape hatch).
     $negDir = Join-Path $InstanceDir '.negativezone'
     $scriptPath = Join-Path $negDir $ScriptFilename
-    if (-not (Test-Path -LiteralPath $scriptPath)) {
-        if (-not (Test-Path $negDir)) {
-            New-Item -ItemType Directory -Path $negDir -Force | Out-Null
-        }
-        try {
-            Invoke-WebRequest -Uri $ScriptUrl -OutFile $scriptPath -UseBasicParsing -ErrorAction Stop
-            Write-Ok "Downloaded $ScriptFilename to $scriptPath"
-        } catch {
+    if (-not (Test-Path $negDir)) {
+        New-Item -ItemType Directory -Path $negDir -Force | Out-Null
+    }
+    try {
+        Invoke-WebRequest -Uri $ScriptUrl -OutFile $scriptPath -UseBasicParsing -ErrorAction Stop
+        Write-Ok "Downloaded $ScriptFilename to $scriptPath"
+    } catch {
+        if (Test-Path -LiteralPath $scriptPath) {
+            Write-Warn "Could not refresh $ScriptFilename from $ScriptUrl ($($_.Exception.Message)) -- keeping existing copy at $scriptPath."
+        } else {
             Write-Warn "Could not download $ScriptFilename from $ScriptUrl — $FriendlyName will NOT be enabled."
             Write-Warn "  Re-run this setup script once you have internet access to enable it."
             return
