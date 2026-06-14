@@ -138,6 +138,11 @@ resource backupsContainerScope 'Microsoft.Storage/storageAccounts/blobServices/c
   parent: blobServiceScope
 }
 
+resource modpackContainerScope 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-08-01' existing = {
+  name: 'minecraft-modpack'
+  parent: blobServiceScope
+}
+
 // VM MI → Key Vault Secrets User
 // Allows the VM to read KV secrets at runtime (e.g., emergency key rotation without CI/CD)
 resource vmMiKvSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -175,6 +180,22 @@ resource proxmoxSpStorageBlobContributor 'Microsoft.Authorization/roleAssignment
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: proxmoxSpObjectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// GitHub Actions OIDC SP → Storage Blob Data Contributor (minecraft-modpack container only)
+// Required by publish-prism-pack.ps1 (`az storage blob exists/upload --auth-mode login`).
+// Contributor at RG scope is control-plane only and does NOT grant blob data access; with
+// allowSharedKeyAccess=false on the storage account, a data-plane role is mandatory.
+// Scoped to minecraft-modpack so the publish workflow can't read/write backups.
+resource githubActionsModpackBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storageAccountName, githubActionsObjectId, 'gha-modpack-blob-contributor')
+  scope: modpackContainerScope
+  dependsOn: [storage]
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
+    principalId: githubActionsObjectId
     principalType: 'ServicePrincipal'
   }
 }
