@@ -260,15 +260,26 @@ Write-Information "Wrote mmc-pack.json (MC $minecraftVersion / Forge $forgeVersi
 # Flags: --bootstrap-no-update + --bootstrap-main-jar skip api.github.com;
 # -g disables bootstrap's Swing UI (installer still shows per-mod progress);
 # -s client skips `side = "server"` overlays (PCF, spark, prom-exporter).
+#
+# Args are splatted (not backtick-continued) because PowerShell on Linux
+# silently drops args after backtick+CRLF, which is what the file ships as
+# per .gitattributes' `* -text` (no EOL normalization). The CI symptom was
+# `[FATAL] pack.toml URI to install from must be specified!` — the bootstrap
+# only saw the bootstrap flags and lost both `-s client` and the URI.
 $packTomlUri = ([System.Uri](Resolve-AbsolutePath $packToml)).AbsoluteUri
+$bootstrapArgs = @(
+    '-jar', $BootstrapJar
+    '--bootstrap-no-update'
+    '--bootstrap-main-jar', $InstallerJar
+    '-g'
+    '-s', 'client'
+    $packTomlUri
+)
 Write-Information ''
 Write-Information '── packwiz-installer-bootstrap (--side client) ──'
 Push-Location $dotMinecraft
 try {
-    & java -jar $BootstrapJar `
-        --bootstrap-no-update `
-        --bootstrap-main-jar $InstallerJar `
-        -g -s client $packTomlUri
+    & java @bootstrapArgs
     if ($LASTEXITCODE -ne 0) {
         throw "packwiz-installer-bootstrap failed (exit $LASTEXITCODE). See output above for the offending mod or URL."
     }
