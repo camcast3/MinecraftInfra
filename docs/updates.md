@@ -131,6 +131,76 @@ and how big the version delta is.
 
 ---
 
+## Restoring settings from your old instance (manual)
+
+If you upgraded and a config, keybind, or map you'd tuned didn't carry
+over, you can copy it back from the previous version's instance. Every
+upgrade leaves two recovery sources alongside the live install:
+
+- **`Craft to Exile 2 (old)`** — a launchable copy of the previous
+  version, visible in Prism under the **Backup** group.
+- **`%LOCALAPPDATA%\NegativeZone\archives\Craft to Exile 2_v<prev>_<timestamp>.zip`** —
+  a permanent zip of the previous version, outside Prism's instances dir
+  so it's never overwritten by future upgrades.
+
+The simplest path is to copy from the **(old)** instance. Do this with
+Prism's main window closed (file locks otherwise).
+
+### Steps
+
+1. In Prism, right-click **`Craft to Exile 2 (old)`** → **Folder**. A
+   File Explorer window opens at the old instance's root.
+2. Double-click into **`.minecraft\`**.
+3. Select these items (only the ones that exist):
+   - **`config\`** — every mod config (graphics, keybinds, HUD layout,
+     recipe-viewer prefs, etc.)
+   - **`options.txt`** — vanilla keybinds + video settings
+   - **`optionsof.txt`** — OptiFine settings (if installed)
+   - **`XaeroWaypoints\`** + **`XaeroWorldMap\`** — Xaero map data
+   - **`journeymap\`** — JourneyMap waypoints + tile cache (if installed)
+   - **`hotbar.nbt`** — creative-mode hotbar saves (if you use them)
+4. Copy them (`Ctrl+C`).
+5. Switch back to Prism, right-click **`Craft to Exile 2`** (the new
+   live instance) → **Folder**, then double-click into **`.minecraft\`**.
+6. Paste (`Ctrl+V`). When prompted to overwrite, click **Replace the
+   files in the destination**.
+7. Close both File Explorer windows. Launch the live instance.
+
+> **Do NOT copy `mods\`, `libraries\`, or `versions\`** from the old
+> instance — those are the modpack itself, and overwriting them puts
+> you back on the previous version's mods (the server will kick you at
+> the FML handshake). Stick to the list above.
+
+### If you don't see a `(old)` instance
+
+You installed before the side-by-side restore was added. Try in order:
+
+1. **`%APPDATA%\PrismLauncher\instances\Craft to Exile 2.bak\`** — the
+   immediate pre-upgrade snapshot. Same `.minecraft\` layout inside;
+   copy the same items as above.
+2. **`%LOCALAPPDATA%\NegativeZone\archives\*.zip`** — extract the
+   newest zip and copy from `<extracted>\Craft to Exile 2\.minecraft\`.
+3. **`%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\<timestamp>\`** —
+   a periodic snapshot (every 3 days; one is forced just before each
+   update). Smaller scope than the above two but always present after
+   a few launches.
+
+### Or: use the migrate helper
+
+The `migrate-settings.ps1` script automates this whole flow with a
+confirm-before-overwrite prompt, including auto-detecting Prism and
+CurseForge instances. Run it from a new PowerShell window:
+
+```powershell
+irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/migrate-settings.ps1 | iex
+```
+
+It asks for the **source** (old instance) and **destination** (new
+instance), previews what will be copied, and backs up anything it
+overwrites to a timestamped folder so the operation is reversible.
+
+---
+
 ## Bypassing the check (offline play)
 
 If you want to launch a known-mismatched client (e.g. the server is down
