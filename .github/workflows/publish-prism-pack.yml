@@ -138,7 +138,7 @@ jobs:
 
       - name: Cache packwiz-installer-bootstrap.jar
         if: steps.noop_check.outputs.noop != 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: infra/azure/scripts/cache/
           # Bump this key when build-instance-from-packwiz.ps1's
