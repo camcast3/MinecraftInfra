@@ -181,8 +181,8 @@ services:
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
       RCLONE_DEST_DIR: minecraft-backups/c2e2
-      PRUNE_BACKUPS_DAYS: "60"
-      # 1/day × 60d × ~349 MB ≈ ~20 GB @ Cold GRS ≈ ~$0.40/mo.
+      PRUNE_BACKUPS_DAYS: "90"
+      # 1/day × 90d × ~10 GB ≈ 900 GB @ Cold GRS ≈ ~$18/mo.
       CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
       RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
