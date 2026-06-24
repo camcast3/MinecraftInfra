@@ -162,9 +162,6 @@ services:
   backup-nas:
     <<: *backup-common
     container_name: mc-c2e2-backup-nas
-    # YAML merge replaces sequences (doesn't concatenate), so the c2e2 ro mount
-    # from x-backup-common is re-listed here alongside the /backups mount.
-    # /mnt/nas-backups is an SMB host mount to TrueNAS — see /etc/fstab on the host.
     volumes:
       - /data/minecraft/c2e2:/data:ro
       - /mnt/nas-backups:/backups
