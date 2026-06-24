@@ -65,7 +65,7 @@ services:
 
   craft-to-exile-2:
     <<: *common-keys-apps
-    image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
+    image: itzg/minecraft-server:2026.6.1-java17@sha256:4b5a558827a7f68cee2333fdbd2eee654ad92c9c907079fa7fdb5e4521dbb67f
     container_name: mc-c2e2
     network_mode: "service:tailscale"
     tty: true
@@ -161,21 +161,16 @@ services:
   backup-nas:
     <<: *backup-common
     container_name: mc-c2e2-backup-nas
+    volumes:
+      - /data/minecraft/c2e2:/data:ro
+      - /mnt/nas-backups:/backups
     environment:
       <<: *backup-env-common
-      BACKUP_METHOD: rclone
-      RCLONE_REMOTE: NAS
-      RCLONE_DEST_DIR: ${NAS_BACKUP_PATH}
-      PRUNE_BACKUPS_DAYS: "31"
-      # 4/day × 31d × ~349 MB ≈ ~43 GB on the NAS.
+      BACKUP_METHOD: tar
+      DEST_DIR: /backups
+      PRUNE_BACKUPS_DAYS: "7"
+      # 4/day × 7d × ~10 GB ≈ 280 GB on the NAS (500 GB quota).
       CRON_SCHEDULE: "15 */6 * * *"
-      RCLONE_CONFIG_NAS_TYPE: smb
-      RCLONE_CONFIG_NAS_HOST: ${NAS_HOST}
-      RCLONE_CONFIG_NAS_USER: ${NAS_USER}
-      # rclone's SMB backend rejects unobscured passwords; value must be
-      # the output of `rclone obscure '<plaintext>'`.
-      RCLONE_CONFIG_NAS_PASS: ${NAS_PASS_OBSCURED}
-      # RCLONE_CONFIG_NAS_DOMAIN: ${NAS_DOMAIN}  # only if non-default workgroup
 
   backup-azure:
     <<: *backup-common
@@ -185,8 +180,8 @@ services:
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
       RCLONE_DEST_DIR: minecraft-backups/c2e2
-      PRUNE_BACKUPS_DAYS: "60"
-      # 1/day × 60d × ~349 MB ≈ ~20 GB @ Cold GRS ≈ ~$0.40/mo.
+      PRUNE_BACKUPS_DAYS: "90"
+      # 1/day × 90d × ~10 GB ≈ 900 GB @ Cold GRS ≈ ~$18/mo.
       CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
       RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
@@ -202,7 +197,7 @@ services:
     <<: *common-keys-apps
     # Reuses the MC image — rcon-cli already installed. Every 6h: warn at
     # 1h/30m/5m/1m/10s, then `stop`; restart: unless-stopped brings it back.
-    image: itzg/minecraft-server:2026.6.0-java17@sha256:3fb55b2c2bf1f5fcef9c2665f4844b654bf5e3207e7ed51fb0f5d7a420ef403b
+    image: itzg/minecraft-server:2026.6.1-java17@sha256:4b5a558827a7f68cee2333fdbd2eee654ad92c9c907079fa7fdb5e4521dbb67f
     container_name: mc-restarter
     network_mode: "service:tailscale"
     depends_on:
