@@ -5,7 +5,6 @@
 # rewritten in place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
 # MC 1.20.1 ⇒ all server images MUST stay on java17 variants.
 # Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups}
-# NAS mount: /mnt/nas-backups (SMB/CIFS to TrueNAS — see /etc/fstab on the host)
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
