@@ -28,7 +28,7 @@ jobs:
     name: No UTF-8 BOM in .ps1
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
 

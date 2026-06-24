@@ -75,7 +75,7 @@ jobs:
         # ref: main is critical — the publish script reads `git rev-parse HEAD`
         # after `git checkout -B publishBranch origin/main` for the SHA pin.
         # fetch-depth: 0 so git log / branch ops have full history.
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: main
           fetch-depth: 0
