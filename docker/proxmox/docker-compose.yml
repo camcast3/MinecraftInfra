@@ -27,7 +27,9 @@ x-backup-common: &backup-common
     - /data/minecraft/c2e2:/data:ro
 
 x-backup-env-common: &backup-env-common
-  RCON_HOST: localhost
+  # 127.0.0.1 is explicit — rcon-cli (Go) resolves "localhost" to [::1] on
+  # dual-stack systems but the MC server only binds RCON on IPv4.
+  RCON_HOST: 127.0.0.1
   RCON_PORT: "25575"
   RCON_PASSWORD: ${RCON_PASSWORD}
   BACKUP_NAME: c2e2
@@ -219,7 +221,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        rcon() { rcon-cli --host localhost --port 25575 --password "$RCON_PASSWORD" "$1"; }
+        rcon() { rcon-cli --host 127.0.0.1 --port 25575 --password "$RCON_PASSWORD" "$1"; }
         while true; do
           sleep 18000
           rcon "say §e[Server] Scheduled restart in 1 hour. Finish what you're doing!"
