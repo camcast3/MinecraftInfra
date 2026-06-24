@@ -5,6 +5,7 @@
 # rewritten in place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
 # MC 1.20.1 ⇒ all server images MUST stay on java17 variants.
 # Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups}
+# NAS mount: /mnt/nas-backups (SMB/CIFS to TrueNAS — see /etc/fstab on the host)
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -161,21 +162,19 @@ services:
   backup-nas:
     <<: *backup-common
     container_name: mc-c2e2-backup-nas
+    # YAML merge replaces sequences (doesn't concatenate), so the c2e2 ro mount
+    # from x-backup-common is re-listed here alongside the /backups mount.
+    # /mnt/nas-backups is an SMB host mount to TrueNAS — see /etc/fstab on the host.
+    volumes:
+      - /data/minecraft/c2e2:/data:ro
+      - /mnt/nas-backups:/backups
     environment:
       <<: *backup-env-common
-      BACKUP_METHOD: rclone
-      RCLONE_REMOTE: NAS
-      RCLONE_DEST_DIR: ${NAS_BACKUP_PATH}
-      PRUNE_BACKUPS_DAYS: "31"
-      # 4/day × 31d × ~349 MB ≈ ~43 GB on the NAS.
+      BACKUP_METHOD: tar
+      DEST_DIR: /backups
+      PRUNE_BACKUPS_DAYS: "7"
+      # 4/day × 7d × ~10 GB ≈ 280 GB on the NAS (500 GB quota).
       CRON_SCHEDULE: "15 */6 * * *"
-      RCLONE_CONFIG_NAS_TYPE: smb
-      RCLONE_CONFIG_NAS_HOST: ${NAS_HOST}
-      RCLONE_CONFIG_NAS_USER: ${NAS_USER}
-      # rclone's SMB backend rejects unobscured passwords; value must be
-      # the output of `rclone obscure '<plaintext>'`.
-      RCLONE_CONFIG_NAS_PASS: ${NAS_PASS_OBSCURED}
-      # RCLONE_CONFIG_NAS_DOMAIN: ${NAS_DOMAIN}  # only if non-default workgroup
 
   backup-azure:
     <<: *backup-common
