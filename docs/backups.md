@@ -122,9 +122,19 @@ Example — keep 5 weekly snapshots that include single-player worlds:
 ## Backup instance (frozen rollback)
 
 When `setup.ps1` runs an upgrade (finds an existing instance with a
-different version), it renames the old instance to `<name>.bak` before
-installing the new version. The renamed instance ends up in a **Backup**
-group in Prism's grid, sitting alongside the current **Latest**.
+different version), it leaves you with **three** parallel safety nets
+before installing the new version:
+
+1. **`Craft to Exile 2 (old)`** — a launchable Prism instance sitting
+   alongside the live one under the **Backup** group. Same `.minecraft`
+   layout as the original; you can click Play on it directly.
+2. **`Craft to Exile 2.bak`** — the same on-disk content as `(old)`,
+   but with the trailing-dot folder name Prism doesn't render cleanly.
+   Filesystem-only fallback.
+3. **`%LOCALAPPDATA%\NegativeZone\archives\Craft to Exile 2_v<prev>_<timestamp>.zip`** —
+   a permanent zip of the previous instance, written **outside** Prism's
+   instances dir so future upgrades cannot overwrite it. One zip per
+   upgrade you've ever run, kept forever until you delete them manually.
 
 ### What it's for
 
@@ -137,6 +147,12 @@ A safety raft for two narrow cases:
    UI/config behaviour between versions, or replay a single-player world
    built on the old mod set.
 
+For copying individual files (a keybind, a config, your map data) back
+to the live instance, see
+[Updates → Restoring settings from your old instance]({% link updates.md %}#restoring-settings-from-your-old-instance-manual).
+You don't have to launch the old instance to do that — just open its
+folder and copy.
+
 ### What it's *not* for
 
 - **Joining the live server with a version mismatch.** If you click Play
@@ -145,13 +161,14 @@ A safety raft for two narrow cases:
   for multiplayer if the admin has also rolled the server back to that
   version.
 - **A long-term archive.** Each new upgrade overwrites the previous
-  Backup — there is no `Backup.bak.bak` deep history. If you want to keep
-  an old version forever, copy the `Craft to Exile 2 v0.X.Y` folder under
-  `%APPDATA%\PrismLauncher\instances\` somewhere off-instance.
+  **`(old)`** and **`.bak`** — there is no `Backup.bak.bak` deep history
+  for those two. The **archive zip** under `%LOCALAPPDATA%\NegativeZone\archives\`
+  *is* the long-term archive — one per upgrade, never overwritten. Keep
+  or delete those on your own schedule.
 
 ### Why it has no launch hooks
 
-The Backup instance has its `PreLaunchCommand` and `PostExitCommand`
+The **`(old)`** instance has its `PreLaunchCommand` and `PostExitCommand`
 deliberately left empty:
 
 - **No version check** — the whole point is launching a known-mismatched
@@ -165,7 +182,7 @@ runs.
 ### Using it
 
 1. In Prism, expand the **Backup** group in the instance grid.
-2. Click **Craft to Exile 2 v0.X.Y** (the version below your current one).
+2. Click **Craft to Exile 2 (old)**.
 3. **Play** as normal. If the server is still on a different version, expect
    an FML-handshake kick on join — that's fine, you're not breaking anything.
 
@@ -179,9 +196,11 @@ runs.
 | All my Xaero waypoints + explored map are gone | Snapshot files | Copy back `XaeroWaypoints\` and `XaeroWorldMap\` from the newest snapshot |
 | Keybinds reset | Snapshot files | Copy `options.txt` back |
 | Server list cleared / lost the entry | Snapshot files | Copy `servers.dat` back |
-| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | Backup instance | Click Play on the Backup instance. Only works for the multiplayer server if admin also rolled back. |
-| I want yesterday's modpack *and* my latest waypoints | Both | Click Play on Backup once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into the Backup instance's `.minecraft\` |
+| A bunch of mod configs reverted after a recent upgrade | **(old)** instance | Copy `config\`, `options.txt`, `XaeroWaypoints\`, etc. from the **(old)** instance to the live one — full walk-through in [Updates → Restoring settings from your old instance]({% link updates.md %}#restoring-settings-from-your-old-instance-manual). |
+| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | (old) instance | Click Play on the **(old)** instance. Only works for the multiplayer server if admin also rolled back. |
+| I want yesterday's modpack *and* my latest waypoints | Both | Click Play on **(old)** once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into the **(old)** instance's `.minecraft\` |
 | Something deleted my whole `.minecraft\config\` directory | Snapshot files (partial) + re-run setup (full) | Restore the pack-author preserve-list files from snapshot for your tunings, then re-run the Path A one-liner to repopulate the rest of the configs from the pack defaults |
+| Need a version from two or more upgrades ago (older than `(old)`) | Archive zip | Extract the relevant `Craft to Exile 2_v<version>_<timestamp>.zip` from `%LOCALAPPDATA%\NegativeZone\archives\` and copy from `<extracted>\Craft to Exile 2\.minecraft\` |
 
 ---
 
@@ -190,8 +209,15 @@ runs.
 Worst-case footprint of the safety net (without `NEGATIVEZONE_BACKUP_INCLUDE_SAVES`):
 
 - 3 snapshot folders × up to ~2 GB each = ~6 GB
-- 1 Backup instance ≈ 3–6 GB
-- **Total ≈ 9–12 GB** under `%APPDATA%\PrismLauncher\instances\`
+- 1 **(old)** instance ≈ 3–6 GB (inside Prism instances dir)
+- 1 `.bak` folder ≈ 3–6 GB (same content as **(old)**, redundant on disk)
+- N archive zips × ~2–4 GB each ≈ grows with every upgrade (under `%LOCALAPPDATA%\NegativeZone\archives\`)
+- **Total ≈ 12–18 GB after the first upgrade**, plus ~3 GB per archived upgrade you keep
 
 If you turn on single-player saves in snapshots, multiply the snapshot
 portion by however large your `saves/` directory is.
+
+The archive zips are the only piece that grows unbounded. They're a few
+GB each and a clear name (`Craft to Exile 2_v0.4.1_20260614-152857.zip`),
+so you can prune the oldest ones from File Explorer once you're confident
+the upgrade landed cleanly.
