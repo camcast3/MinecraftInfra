@@ -1,0 +1,66 @@
+# Fail2Ban jails for Traefik's JSON access log.
+#
+# All three jails ban offending IPs at Cloudflare's edge (not iptables on the
+# origin), because the tunnel topology makes origin iptables cosmetic — by the
+# time Fail2Ban sees a log entry, the request has already completed. Banning at
+# CF means follow-up requests don't even hit the tunnel.
+#
+# The cloudflare-api action calls a small Python helper (see action.d/) that
+# mutates a CF IP List wired to a single CF firewall rule (block-on-list).
+# Tokens / IDs are docker-secret files at /run/secrets/.
+
+[DEFAULT]
+# Log file all three jails tail. Mounted read-only from the host at
+# /data/minecraft/traefik/access.log (Traefik on this same host writes it
+# via its own bind mount with write perms).
+logpath = /var/log/traefik/access.log
+
+# State backend — sqlite (fail2ban default) persisted under
+# /var/lib/fail2ban (host: /data/minecraft/fail2ban), so bans survive
+# container restarts and we don't repeatedly re-ban the same scanner.
+backend = polling
+
+# Don't ban Cloudflare's own egress IPs by mistake. Cloudflare's published
+# IPv4 ranges (https://www.cloudflare.com/ips-v4/) — these IPs appear as
+# ClientHost in the access log ONLY if the X-Forwarded-For trust setup in
+# traefik.yml ever fails (e.g. someone misconfigures the trustedIPs subnet).
+# Defense in depth — a bug that caused us to ban CF itself would take the
+# whole site down for everyone.
+ignoreip = 127.0.0.1/8 ::1 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22
+
+# Action shared by all jails. <name> is the jail name, used as the CF list-item
+# comment so we can trace bans back to the rule that fired.
+banaction = cloudflare-api
+action = %(banaction)s[name=%(__name__)s]
+
+[traefik-4xx-spam]
+# Generic 4xx scraper / scanner detection. Real users rarely accumulate 50
+# 4xx responses in 5 minutes (Kuma's UI is mostly 200/304/websocket traffic).
+# Aimed at the constant background noise of vulnerability scanners and at
+# brute-force tools that probe with slightly mangled paths.
+enabled = true
+filter = traefik-4xx
+findtime = 5m
+maxretry = 50
+bantime = 24h
+
+[traefik-auth-bruteforce]
+# 401/403 on Kuma's admin paths. Tight threshold because legitimate failed
+# logins by the operator should be a handful at most, while a brute-force
+# script can produce thousands per minute.
+enabled = true
+filter = traefik-auth
+findtime = 10m
+maxretry = 5
+bantime = 7d
+
+[traefik-bad-paths]
+# Instant-ban scanners hitting paths that have ZERO legitimate use on a
+# Minecraft status page: WordPress probes, .env exfiltration, phpMyAdmin
+# bruteforce, Spring Boot Actuator info leaks, AWS metadata, etc. Single
+# request is enough — there's no plausible false-positive path for these.
+enabled = true
+filter = traefik-bad-paths
+findtime = 5m
+maxretry = 1
+bantime = 30d

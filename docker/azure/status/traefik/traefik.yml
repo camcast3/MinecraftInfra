@@ -1,0 +1,91 @@
+# Traefik v3 static configuration for the public status-page stack.
+#
+# Read once at process start. Dynamic routing config (the actual routes) lives
+# in /etc/traefik/dynamic/*.yml via the file provider declared below.
+#
+# Deliberately minimal:
+#   - Single HTTP entry point on :80 (TLS terminates at Cloudflare's edge —
+#     the cloudflared tunnel sidecar dials outbound to Cloudflare with mTLS,
+#     and the request that reaches Traefik is already plaintext HTTP over
+#     the docker bridge network. No certs to manage on the origin.)
+#   - File provider only. NO docker socket. Mounting /var/run/docker.sock into
+#     Traefik is a well-known privilege-escalation surface (compromise of Traefik
+#     grants root on the host via the Docker daemon). Routes live in
+#     dynamic/*.yml under version control — reviewable, auditable, no runtime
+#     auto-discovery.
+#   - JSON access logs to /var/log/traefik/access.log (bind-mounted from
+#     /data/minecraft/traefik on the host). Fail2Ban tails this file via the
+#     same bind mount mounted read-only.
+#   - Internal ping endpoint on an isolated entry point (127.0.0.1:8082)
+#     so `traefik healthcheck --ping` works inside the container without
+#     exposing anything externally.
+#   - No custom middlewares. Cloudflare's Free plan provides unlimited DDoS,
+#     basic Bot Fight Mode, 5 WAF Custom Rules (we use 1 for the Fail2Ban
+#     blocklist), basic rate-limit via firewall rules, and free SSL. The
+#     active-response loop (4xx spam / auth brute force / bad-path scans →
+#     CF blocklist) is implemented by Fail2Ban's cloudflare-api action.
+#
+# Forwarded-headers trust: cloudflared connects to Traefik over the
+# status-net docker bridge (subnet 172.31.42.0/24 in docker-compose.yml).
+# We trust X-Forwarded-For from that subnet only, so ClientHost in the
+# access log is the real public client IP (the one Fail2Ban needs to ban
+# at Cloudflare's edge), not the cloudflared container IP.
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: ":80"
+    forwardedHeaders:
+      # Only cloudflared (on the same docker network) is allowed to set
+      # X-Forwarded-For / X-Real-IP. Anyone else reaching Traefik (no
+      # other path exists with this network topology, but defense-in-depth)
+      # would have their forwarded headers stripped.
+      trustedIPs:
+        - "172.31.42.0/24"
+
+  # Internal-only entry point for the /ping handler used by the container
+  # healthcheck. Bound to 127.0.0.1 inside the container's netns so it's
+  # invisible to anything else on the docker network.
+  traefik:
+    address: "127.0.0.1:8082"
+
+ping:
+  entryPoint: traefik
+
+providers:
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+api:
+  # API is enabled (required for `traefik healthcheck --ping`) but never
+  # exposed externally — it only listens on the `traefik` entry point above.
+  insecure: false
+  dashboard: false
+
+log:
+  # Container logs (stdout). JSON for easier filtering in Loki / journald.
+  level: INFO
+  format: json
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: json
+  # Don't log the /ping healthcheck — it'd spam the log and Fail2Ban's
+  # 4xx/auth jails don't care about 127.0.0.1 traffic anyway.
+  filters:
+    statusCodes:
+      - "100-599"
+  fields:
+    headers:
+      defaultMode: drop
+      names:
+        # Keep User-Agent for fail2ban filters that key off scanner UAs,
+        # and CF-Connecting-IP / CF-Ray for cross-referencing with CF
+        # logs during incident response.
+        User-Agent: keep
+        Cf-Connecting-Ip: keep
+        Cf-Ray: keep
