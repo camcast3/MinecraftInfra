@@ -217,6 +217,7 @@ $env_ps1 = @"
 `$env:NEGATIVEZONE_LATEST_VERSION_URL = 'http://127.0.0.1:$Port/latest-version.txt'
 `$env:NEGATIVEZONE_SKIP_PRISM_CHECK   = '1'   # sandbox has no real Prism
 `$env:NEGATIVEZONE_BACKUP_DAYS        = '0'   # always snapshot (skip 3-day cadence)
+`$env:NEGATIVEZONE_LOG_DIR            = '$sandbox\globallog'   # keep the global fallback nz.log in the sandbox
 $fakePackwizLine
 
 function nz { & '$nzExe' @args }

@@ -190,6 +190,7 @@ $env_ps1 = @"
 `$env:NEGATIVEZONE_LATEST_VERSION_URL = 'http://127.0.0.1:$Port/latest-version.txt'
 `$env:NEGATIVEZONE_BACKUP_DAYS        = '0'    # always snapshot
 `$env:NEGATIVEZONE_BACKUP_RETAIN      = '50'   # don't prune your existing snapshots
+`$env:NEGATIVEZONE_LOG_DIR            = '$state\globallog'   # keep the global fallback nz.log out of %LOCALAPPDATA%
 # Prism-running guard left ON. Close Prism before 'update'.
 
 function nz { & '$nzExe' @args }
