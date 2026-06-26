@@ -1,0 +1,105 @@
+---
+name: Release nz client
+
+# Builds the `nz` Go client (Windows amd64) and publishes it as a GitHub
+# Release asset whenever client code changes on main.
+#
+# IMPORTANT: this uses a FIXED, PRERELEASE tag `nz-latest`. Prerelease means it
+# never becomes the repo's "latest release", so the existing
+# `releases/latest/download/setup.ps1` URL (player onboarding) keeps resolving
+# to the setup-v* releases. Consumers fetch nz via the explicit, stable URL:
+#   https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/nz.exe
+#   https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "client/cmd/**"
+      - "client/internal/**"
+      - "client/go.mod"
+      - "client/go.sum"
+      - "client/scripts/install.ps1"
+      - ".github/workflows/release-nz.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-nz
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: client/go.mod
+          cache-dependency-path: client/go.sum
+
+      - name: Build nz.exe (windows/amd64)
+        working-directory: client
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: "0"
+        run: |
+          go build -trimpath -o ../nz.exe ./cmd/nz/
+          ls -l ../nz.exe
+
+      - name: Compute SHA-256
+        id: meta
+        run: |
+          sha256=$(sha256sum nz.exe | awk '{print $1}')
+          short_sha=$(git rev-parse --short HEAD)
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Replace the rolling nz-latest prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Move the fixed tag to this commit by deleting + recreating the
+          # release (and its tag). Keeps the download URL stable.
+          gh release delete nz-latest --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+
+      - name: Publish nz-latest (prerelease)
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: nz-latest
+          name: "nz client (rolling)"
+          prerelease: true
+          files: |
+            nz.exe
+            client/scripts/install.ps1
+          body: |
+            Rolling build of the `nz` Minecraft client (Windows amd64).
+
+            Built from `${{ steps.meta.outputs.short_sha }}` on `main`.
+
+            > Prerelease on purpose — does NOT shadow the player onboarding
+            > `releases/latest/download/setup.ps1` URL.
+
+            ## First install (one line)
+
+            ```powershell
+            irm https://github.com/${{ github.repository }}/releases/download/nz-latest/install.ps1 | iex
+            ```
+
+            ## Direct binary
+
+            ```
+            https://github.com/${{ github.repository }}/releases/download/nz-latest/nz.exe
+            ```
+
+            ## nz.exe SHA-256
+
+            ```
+            ${{ steps.meta.outputs.sha256 }}
+            ```
