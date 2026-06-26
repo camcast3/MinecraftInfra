@@ -14,7 +14,6 @@ import (
 	"github.com/camcast3/MinecraftInfra/client/internal/lock"
 	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 	"github.com/camcast3/MinecraftInfra/client/internal/scope"
-	"github.com/camcast3/MinecraftInfra/client/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -51,33 +50,29 @@ func runBackup(cmd *cobra.Command, args []string) error {
 		instanceDir = instance.DefaultC2E2Path()
 	}
 	if instanceDir == "" {
-		ui.PrintWarn("INST_DIR not set and no default instance found; skipping backup.")
+		logging.Warn("INST_DIR not set and no default instance found; skipping backup.")
 		return nil
 	}
 	if _, err := os.Stat(instanceDir); os.IsNotExist(err) {
-		ui.PrintWarn(fmt.Sprintf("Instance directory does not exist: %s; skipping backup.", instanceDir))
+		logging.Warnf("Instance directory does not exist: %s; skipping backup.", instanceDir)
 		return nil
 	}
 
 	// Opt-out
 	if os.Getenv("NEGATIVEZONE_BACKUP_DISABLE") == "1" {
-		ui.PrintDim("NEGATIVEZONE_BACKUP_DISABLE=1; skipping backup.")
+		logging.Dim("NEGATIVEZONE_BACKUP_DISABLE=1; skipping backup.")
 		return nil
 	}
 
 	paths := instance.ResolvePaths(instanceDir)
 
 	if _, err := os.Stat(paths.DotMC); os.IsNotExist(err) {
-		ui.PrintWarn(".minecraft missing; nothing to back up.")
+		logging.Warn(".minecraft missing; nothing to back up.")
 		return nil
 	}
 	_ = os.MkdirAll(paths.NZDir, 0o755)
 
-	log, err := logging.New(filepath.Join(paths.NZDir, "backup.log"), "nz-backup")
-	if err != nil {
-		ui.PrintWarn(fmt.Sprintf("Could not init log: %v", err))
-		// Continue without file logging
-	}
+	logging.UseInstance(paths.NZDir)
 
 	// Config
 	intervalDays := getIntEnv("NEGATIVEZONE_BACKUP_DAYS", 3, 0, 90)
@@ -92,8 +87,8 @@ func runBackup(cmd *cobra.Command, args []string) error {
 				age := time.Since(info.ModTime())
 				if age.Hours() < float64(intervalDays)*24 {
 					remaining := float64(intervalDays)*24 - age.Hours()
-					ui.PrintDim(fmt.Sprintf("Last backup %.1f day(s) ago; next due in %.1f day(s).",
-						age.Hours()/24, remaining/24))
+					logging.Dimf("Last backup %.1f day(s) ago; next due in %.1f day(s).",
+						age.Hours()/24, remaining/24)
 					return nil
 				}
 			}
@@ -107,10 +102,7 @@ func runBackup(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("lock error: %w", err)
 	}
 	if lk == nil {
-		if log != nil {
-			log.Info("Another backup is running (lock held); skipping.")
-		}
-		ui.PrintDim("Another backup is running; skipping.")
+		logging.Info("Another backup is running (lock held); skipping.")
 		return nil
 	}
 	defer lk.Release()
@@ -126,10 +118,8 @@ func runBackup(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("creating snapshot dir: %w", err)
 	}
 
-	if log != nil {
-		log.Infof("Starting backup -> %s", snapshotDir)
-	}
-	ui.PrintStep("Creating backup snapshot")
+	logging.Infof("Starting backup -> %s", snapshotDir)
+	logging.Step("Creating backup snapshot")
 	start := time.Now()
 
 	// Get scope + pack-author manifest extension
@@ -154,9 +144,7 @@ func runBackup(cmd *cobra.Command, args []string) error {
 				files = append(files, t)
 			}
 		}
-		if log != nil {
-			log.Infof("Added %d pack-author file(s) from preserve-list.json", len(manifest.Preserve))
-		}
+		logging.Infof("Added %d pack-author file(s) from preserve-list.json", len(manifest.Preserve))
 	}
 
 	copiedAny := false
@@ -173,9 +161,7 @@ func runBackup(cmd *cobra.Command, args []string) error {
 
 		rc := robocopy(src, dst)
 		if rc >= 8 {
-			if log != nil {
-				log.Warnf("robocopy '%s' failed (exit %d); skipping.", rel, rc)
-			}
+			logging.Warnf("robocopy '%s' failed (exit %d); skipping.", rel, rc)
 		} else {
 			copiedAny = true
 		}
@@ -193,9 +179,7 @@ func runBackup(cmd *cobra.Command, args []string) error {
 		_ = os.MkdirAll(parent, 0o755)
 
 		if err := copyFile(src, dst); err != nil {
-			if log != nil {
-				log.Warnf("Could not back up file '%s': %v", rel, err)
-			}
+			logging.Warnf("Could not back up file '%s': %v", rel, err)
 		} else {
 			copiedAny = true
 		}
@@ -204,29 +188,27 @@ func runBackup(cmd *cobra.Command, args []string) error {
 	elapsed := time.Since(start)
 
 	if !copiedAny {
-		if log != nil {
-			log.Info("No items matched scope; removing empty snapshot.")
-		}
+		logging.Info("No items matched scope; removing empty snapshot.")
 		_ = os.RemoveAll(snapshotDir)
-		ui.PrintDim("No items matched scope; nothing backed up.")
+		logging.Dim("No items matched scope; nothing backed up.")
 	} else {
 		sizeMB := dirSizeMB(snapshotDir)
 		msg := fmt.Sprintf("Backup complete in %.1fs, %.1f MB", elapsed.Seconds(), sizeMB)
-		if log != nil {
-			log.Info(msg)
-		}
-		ui.PrintOK(msg)
+		logging.OK(msg)
 	}
 
 	// Prune old snapshots
-	pruneSnapshots(paths.BackupsDir, retainCount, log)
+	pruneSnapshots(paths.BackupsDir, retainCount)
 
 	return nil
 }
 
-// robocopy mirrors src to dst using robocopy. Returns the exit code.
+// robocopy mirrors src to dst using robocopy. Returns the exit code. Any
+// robocopy output is captured into nz.log at DEBUG.
 func robocopy(src, dst string) int {
 	cmd := exec.Command("robocopy", src, dst, "/MIR", "/MT:8", "/R:1", "/W:1", "/NP", "/NFL", "/NDL", "/NJH", "/NJS")
+	cmd.Stdout = logging.Writer(logging.LevelDebug)
+	cmd.Stderr = logging.Writer(logging.LevelDebug)
 	_ = cmd.Run()
 	return cmd.ProcessState.ExitCode()
 }
@@ -295,7 +277,7 @@ func isTimestampName(name string) bool {
 }
 
 // pruneSnapshots keeps only the newest `retain` snapshots.
-func pruneSnapshots(backupsDir string, retain int, log *logging.Logger) {
+func pruneSnapshots(backupsDir string, retain int) {
 	entries, err := os.ReadDir(backupsDir)
 	if err != nil {
 		return
@@ -313,13 +295,9 @@ func pruneSnapshots(backupsDir string, retain int, log *logging.Logger) {
 	for _, name := range names[retain:] {
 		path := filepath.Join(backupsDir, name)
 		if err := os.RemoveAll(path); err != nil {
-			if log != nil {
-				log.Warnf("Could not prune '%s': %v", name, err)
-			}
+			logging.Warnf("Could not prune '%s': %v", name, err)
 		} else {
-			if log != nil {
-				log.Infof("Pruned old backup: %s", name)
-			}
+			logging.Infof("Pruned old backup: %s", name)
 		}
 	}
 }

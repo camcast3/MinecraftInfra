@@ -269,6 +269,9 @@ func (e *testEnv) runNZ(extraEnv map[string]string, args ...string) (int, string
 		"NEGATIVEZONE_SKIP_PRISM_CHECK":   "1",
 		"NEGATIVEZONE_MANIFEST_URL":       e.srv.URL + "/latest.json",
 		"NEGATIVEZONE_LATEST_VERSION_URL": e.srv.URL + "/latest-version.txt",
+		// Keep the global log fallback inside the sandbox so tests never write
+		// to the real %LOCALAPPDATA%\NegativeZone.
+		"NEGATIVEZONE_LOG_DIR": filepath.Join(e.appdata, "nzlogs"),
 	}
 	for k, v := range extraEnv {
 		overrides[k] = v
@@ -462,6 +465,42 @@ func TestFreshInstall(t *testing.T) {
 	assertExists(t, filepath.Join(inst, "Update Craft to Exile 2.cmd"), "update launcher created")
 	assertContains(t, filepath.Join(inst, "Update Craft to Exile 2.cmd"), "update", "launcher runs nz update")
 	assertNotExists(t, inst+".bak", "no .bak on fresh install")
+	// The unified logger persists the setup run to <instance>/.negativezone/nz.log.
+	assertExists(t, filepath.Join(inst, ".negativezone", "nz.log"), "nz.log written by setup")
+}
+
+// 1b. support-bundle: nz support zips logs + context into the requested file.
+func TestSupportBundle(t *testing.T) {
+	e := newTestEnv(t)
+
+	if code, out := e.runNZ(nil, "setup"); code != 0 {
+		t.Fatalf("setup exit %d:\n%s", code, out)
+	}
+
+	inst := e.instanceDir()
+	outZip := filepath.Join(t.TempDir(), "nz-support.zip")
+	code, out := e.runNZ(map[string]string{"INST_DIR": inst}, "support", "--out", outZip)
+	if code != 0 {
+		t.Fatalf("support exit %d:\n%s", code, out)
+	}
+
+	assertExists(t, outZip, "support bundle zip created")
+
+	r, err := zip.OpenReader(outZip)
+	if err != nil {
+		t.Fatalf("open support zip: %v", err)
+	}
+	defer r.Close()
+	have := map[string]bool{}
+	for _, f := range r.File {
+		have[f.Name] = true
+	}
+	if !have["summary.txt"] {
+		t.Errorf("support bundle missing summary.txt; entries: %v", have)
+	}
+	if !have["nz.log"] {
+		t.Errorf("support bundle missing nz.log; entries: %v", have)
+	}
 }
 
 // 2. heal-broken-install: re-run nz setup same version re-installs cleanly.

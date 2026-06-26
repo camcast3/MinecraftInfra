@@ -70,7 +70,23 @@ step you got stuck on.
 
 | Problem | Fix |
 |---|---|
-| Prism takes a long time to show "Stopped" after quitting the game | A backup snapshot is in progress (runs at most every 3 days; takes ~10–60 s depending on explored-map size). Check `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backup.log` to confirm. To disable, see [Backups → Tuning or disabling]({% link backups.md %}#tuning-or-disabling). |
+| Prism takes a long time to show "Stopped" after quitting the game | A backup snapshot is in progress (runs at most every 3 days; takes ~10–60 s depending on explored-map size). Check `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\nz.log` to confirm. To disable, see [Backups → Tuning or disabling]({% link backups.md %}#tuning-or-disabling). |
 | Lost a waypoint / world / setting after a recent update | Restore from a snapshot under `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\` — see [Backups → Restoring user state from a snapshot]({% link backups.md %}#restoring-user-state-from-a-snapshot). The update step forces a snapshot just before every upgrade, so there's always a fresh restore point. |
-| Empty / 0-byte snapshots in `.negativezone\backups\<ts>\` | Should be fixed in v0.4.2+; if you see one in a freshly created snapshot, screenshot `backup.log` and DM the admin. |
+| Empty / 0-byte snapshots in `.negativezone\backups\<ts>\` | Should be fixed in v0.4.2+; if you see one in a freshly created snapshot, run `nz support` and DM the admin the resulting zip (it includes `nz.log`). |
 | Old `Craft to Exile 2.bak` instance I want to delete | Right-click → **Delete instance** in Prism (or delete the `.bak` folder). The next upgrade creates a fresh one. |
+
+---
+
+## Collecting logs for the admin
+
+Every `nz` command writes a full-detail record to **`nz.log`** inside the
+instance's `.negativezone\` folder
+(`%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\nz.log`).
+First-install logs (before the instance exists) land in the global fallback at
+`%LOCALAPPDATA%\NegativeZone\nz.log`.
+
+| Need | Do this |
+|---|---|
+| Send everything the admin needs in one file | Double-click the **Update Craft to Exile 2** launcher's folder and run `nz support` (or `"…\.negativezone\nz.exe" support`). It writes `nz-support-<timestamp>.zip` to your Desktop — DM that to the admin. |
+| See more detail on the console while a command runs | Add `--verbose` (e.g. `nz update --verbose`). `nz.log` always contains the full detail regardless. |
+| Quieter console (errors only) | Add `--quiet` (e.g. `nz check --quiet`). |

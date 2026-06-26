@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/camcast3/MinecraftInfra/client/internal/instance"
+	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 	"github.com/camcast3/MinecraftInfra/client/internal/scope"
 	"github.com/camcast3/MinecraftInfra/client/internal/ui"
 	"github.com/spf13/cobra"
@@ -48,21 +49,27 @@ type setupManifest struct {
 }
 
 func runSetup(cmd *cobra.Command, args []string) error {
-	ui.PrintBrand("NegativeZone Minecraft setup")
-	ui.Separator()
-	fmt.Println()
+	logging.Brand("NegativeZone Minecraft setup")
+	logging.Separator()
+	logging.Blank()
+
+	// Setup mutates the instance directory itself (move-into-place / .bak swap),
+	// so it must NOT create a log file inside instanceTarget before the instance
+	// is in place. Persist to the global nz.log first (open-per-write, failure
+	// safe even on os.Exit); switch to the instance log after placement below.
+	logging.UseGlobal()
 
 	// Check Prism not running
 	if os.Getenv("NEGATIVEZONE_SKIP_PRISM_CHECK") != "1" && isPrismRunning() {
-		ui.PrintError("Prism Launcher is currently running.")
-		ui.PrintInfo("Close Prism completely before running setup.")
+		logging.Error("Prism Launcher is currently running.")
+		logging.Info("Close Prism completely before running setup.")
 		os.Exit(1)
 	}
 
 	// Locate Prism instances dir
 	appdata := os.Getenv("APPDATA")
 	if appdata == "" {
-		ui.PrintError("APPDATA not set — are you on Windows?")
+		logging.Error("APPDATA not set — are you on Windows?")
 		os.Exit(1)
 	}
 	prismDir := filepath.Join(appdata, "PrismLauncher", "instances")
@@ -73,11 +80,11 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		// open. Warn only if PrismLauncher itself is absent (likely uninstalled).
 		prismRoot := filepath.Join(appdata, "PrismLauncher")
 		if !dirExists(prismRoot) {
-			ui.PrintWarn("Prism Launcher data folder not found — is Prism installed?")
-			ui.PrintInfo("If the instance doesn't appear, install Prism: https://prismlauncher.org/download/")
+			logging.Warn("Prism Launcher data folder not found — is Prism installed?")
+			logging.Info("If the instance doesn't appear, install Prism: https://prismlauncher.org/download/")
 		}
 		if err := os.MkdirAll(prismDir, 0o755); err != nil {
-			ui.PrintError(fmt.Sprintf("Could not create Prism instances folder: %v", err))
+			logging.Errorf("Could not create Prism instances folder: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -94,61 +101,63 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	spin.Stop()
 
 	if err != nil {
-		ui.PrintError(fmt.Sprintf("Could not fetch manifest: %v", err))
+		logging.Errorf("Could not fetch manifest: %v", err)
 		os.Exit(1)
 	}
 
-	ui.PrintOK(fmt.Sprintf("Modpack: %s v%s (%.1f MB)",
-		manifest.Instance, manifest.Version, float64(manifest.SizeBytes)/(1024*1024)))
+	logging.OKf("Modpack: %s v%s (%.1f MB)",
+		manifest.Instance, manifest.Version, float64(manifest.SizeBytes)/(1024*1024))
 
 	instanceTarget := filepath.Join(prismDir, manifest.Instance)
 	paths := instance.ResolvePaths(instanceTarget)
 
-	// Check existing install
+	// Check existing install. Evaluated before any directory is created under
+	// instanceTarget so a fresh install isn't mistaken for an upgrade.
 	isUpgrade := dirExists(instanceTarget)
+
 	if isUpgrade {
 		// Read existing version
 		existingVer := ""
 		if data, err := os.ReadFile(paths.VersionFile); err == nil {
 			existingVer = strings.TrimSpace(string(data))
 		}
-		ui.PrintInfo(fmt.Sprintf("Existing install found: v%s → upgrading to v%s", existingVer, manifest.Version))
+		logging.Infof("Existing install found: v%s → upgrading to v%s", existingVer, manifest.Version)
 	} else {
-		ui.PrintInfo("Fresh install — no existing instance found.")
+		logging.Info("Fresh install — no existing instance found.")
 	}
 
 	// Confirm
-	fmt.Println()
+	logging.Blank()
 	if os.Getenv("NEGATIVEZONE_NONINTERACTIVE") != "1" {
 		fmt.Print("  Continue? (y/N): ")
 		reader := bufio.NewReader(os.Stdin)
 		answer, _ := reader.ReadString('\n')
 		if !strings.HasPrefix(strings.TrimSpace(strings.ToLower(answer)), "y") {
-			ui.PrintWarn("Aborted.")
+			logging.Warn("Aborted.")
 			return nil
 		}
 	}
 
 	// Download
-	ui.PrintStep("Downloading modpack")
+	logging.Step("Downloading modpack")
 	tempZip := filepath.Join(os.TempDir(), fmt.Sprintf("negativezone-setup-%s.zip", manifest.Version))
 	defer os.Remove(tempZip)
 
 	actualSHA, err := downloadWithProgress(manifest.URL, tempZip, manifest.SizeBytes)
 	if err != nil {
-		ui.PrintError(fmt.Sprintf("Download failed: %v", err))
+		logging.Errorf("Download failed: %v", err)
 		os.Exit(1)
 	}
 
 	expectedSHA := strings.ToLower(manifest.SHA256)
 	if actualSHA != expectedSHA {
-		ui.PrintError("Download corrupted (SHA-256 mismatch). Try again.")
+		logging.Error("Download corrupted (SHA-256 mismatch). Try again.")
 		os.Exit(1)
 	}
-	ui.PrintOK("SHA-256 verified")
+	logging.OK("SHA-256 verified")
 
 	// Extract
-	ui.PrintStep("Extracting")
+	logging.Step("Extracting")
 	extractDir := filepath.Join(os.TempDir(), fmt.Sprintf("negativezone-setup-extract-%d", time.Now().UnixNano()))
 	defer os.RemoveAll(extractDir)
 
@@ -158,19 +167,19 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	spin.Stop()
 
 	if err != nil {
-		ui.PrintError(fmt.Sprintf("Extraction failed: %v", err))
+		logging.Errorf("Extraction failed: %v", err)
 		os.Exit(1)
 	}
 
 	srcInstance := filepath.Join(extractDir, manifest.Instance)
 	if !dirExists(srcInstance) {
-		ui.PrintError("Extracted zip doesn't contain expected instance folder.")
+		logging.Error("Extracted zip doesn't contain expected instance folder.")
 		os.Exit(1)
 	}
 
 	// Pre-swap backup if upgrading
 	if isUpgrade {
-		ui.PrintStep("Backing up existing instance")
+		logging.Step("Backing up existing instance")
 		backupPath := instanceTarget + ".bak"
 		if dirExists(backupPath) {
 			_ = os.RemoveAll(backupPath)
@@ -184,9 +193,9 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		backupForce = backupForceOld
 
 		// Move existing instance to .bak
-		ui.PrintInfo("Moving existing instance to .bak...")
+		logging.Info("Moving existing instance to .bak...")
 		if err := os.Rename(instanceTarget, backupPath); err != nil {
-			ui.PrintError(fmt.Sprintf("Could not back up existing instance: %v", err))
+			logging.Errorf("Could not back up existing instance: %v", err)
 			os.Exit(1)
 		}
 
@@ -194,12 +203,12 @@ func runSetup(cmd *cobra.Command, args []string) error {
 		if err := os.Rename(srcInstance, instanceTarget); err != nil {
 			// Rollback
 			_ = os.Rename(backupPath, instanceTarget)
-			ui.PrintError(fmt.Sprintf("Install failed (rolled back): %v", err))
+			logging.Errorf("Install failed (rolled back): %v", err)
 			os.Exit(1)
 		}
 
 		// Carry user state from .bak
-		ui.PrintStep("Restoring user state")
+		logging.Step("Restoring user state")
 		preserveSet := scope.MergePreserve(
 			scope.FullPreserveSet(),
 			filepath.Join(instanceTarget, ".negativezone", "preserve-list.json"),
@@ -236,12 +245,12 @@ func runSetup(cmd *cobra.Command, args []string) error {
 			_ = copyDir(oldBackups, filepath.Join(newNZDir, "backups"))
 		}
 
-		ui.PrintOK(fmt.Sprintf("Restored %d user-state item(s)", restored))
-		ui.PrintDim(fmt.Sprintf("Old instance backup: %s", backupPath))
+		logging.OKf("Restored %d user-state item(s)", restored)
+		logging.Dimf("Old instance backup: %s", backupPath)
 	} else {
 		// Fresh install — just move into place
 		if err := os.Rename(srcInstance, instanceTarget); err != nil {
-			ui.PrintError(fmt.Sprintf("Install failed: %v", err))
+			logging.Errorf("Install failed: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -250,23 +259,27 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	_ = os.MkdirAll(filepath.Join(instanceTarget, ".negativezone"), 0o755)
 	_ = os.WriteFile(paths.VersionFile, []byte(manifest.Version), 0o644)
 
+	// Instance is now in place: switch logging into the instance's nz.log so
+	// the completion record (and future update/check/backup runs) live with it.
+	logging.UseInstance(paths.NZDir)
+
 	// Configure Prism hooks (instance.cfg)
-	ui.PrintStep("Configuring Prism hooks")
+	logging.Step("Configuring Prism hooks")
 	configurePrismHooks(paths.InstanceCfg)
 
 	// Install nz binary into .negativezone/
-	ui.PrintStep("Installing nz binary")
+	logging.Step("Installing nz binary")
 	installNZBinary(filepath.Join(instanceTarget, ".negativezone"))
 
 	// Drop a double-click "Update" launcher so players never type a path.
-	ui.PrintStep("Creating update launcher")
+	logging.Step("Creating update launcher")
 	installUpdateLauncher(instanceTarget)
 
-	ui.PrintStep("Setup complete!")
-	ui.PrintOK(fmt.Sprintf("Installed %s v%s", manifest.Instance, manifest.Version))
-	fmt.Println()
-	ui.PrintInfo("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
-	fmt.Println()
+	logging.Step("Setup complete!")
+	logging.OKf("Installed %s v%s", manifest.Instance, manifest.Version)
+	logging.Blank()
+	logging.Info("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
+	logging.Blank()
 
 	return nil
 }
@@ -292,10 +305,10 @@ func installUpdateLauncher(instanceDir string) {
 
 	inInstance := filepath.Join(instanceDir, updateLauncherName)
 	if err := os.WriteFile(inInstance, []byte(content), 0o644); err != nil {
-		ui.PrintWarn(fmt.Sprintf("Could not write update launcher: %v", err))
+		logging.Warnf("Could not write update launcher: %v", err)
 		return
 	}
-	ui.PrintOK(fmt.Sprintf("Update launcher: %s", inInstance))
+	logging.OKf("Update launcher: %s", inInstance)
 
 	// Best-effort Desktop copy on real player runs only (tests set
 	// NEGATIVEZONE_NONINTERACTIVE=1, and we must not pollute the real Desktop
@@ -308,7 +321,7 @@ func installUpdateLauncher(instanceDir string) {
 		if info, err := os.Stat(desktop); err == nil && info.IsDir() {
 			dst := filepath.Join(desktop, updateLauncherName)
 			if err := os.WriteFile(dst, []byte(content), 0o644); err == nil {
-				ui.PrintOK("Added 'Update Craft to Exile 2' to your Desktop")
+				logging.OK("Added 'Update Craft to Exile 2' to your Desktop")
 			}
 		}
 	}
@@ -367,23 +380,23 @@ func configurePrismHooks(cfgPath string) {
 	}
 
 	_ = os.WriteFile(cfgPath, []byte(strings.Join(lines, "\n")), 0o644)
-	ui.PrintOK("Prism PreLaunch (version check) and PostExit (backup) hooks configured")
+	logging.OK("Prism PreLaunch (version check) and PostExit (backup) hooks configured")
 }
 
 // installNZBinary copies the running executable into the .negativezone dir.
 func installNZBinary(nzDir string) {
 	self, err := os.Executable()
 	if err != nil {
-		ui.PrintWarn("Could not determine own path; skipping binary install.")
+		logging.Warn("Could not determine own path; skipping binary install.")
 		return
 	}
 
 	dst := filepath.Join(nzDir, nzBinaryName)
 	if err := copyFileLarge(self, dst); err != nil {
-		ui.PrintWarn(fmt.Sprintf("Could not install binary: %v", err))
+		logging.Warnf("Could not install binary: %v", err)
 		return
 	}
-	ui.PrintOK(fmt.Sprintf("Installed %s into %s", nzBinaryName, nzDir))
+	logging.OKf("Installed %s into %s", nzBinaryName, nzDir)
 }
 
 // copyFileLarge copies a file using streaming (suitable for large binaries).

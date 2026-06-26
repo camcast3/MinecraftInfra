@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 )
 
 const (
@@ -20,17 +22,13 @@ const (
 	installerURL = "https://github.com/packwiz/packwiz-installer/releases/download/v0.5.14/packwiz-installer.jar"
 )
 
-// Logger is the logging surface used by Sync.
-type Logger interface {
-	Info(string)
-	Warn(string)
-	Error(string)
-}
+// Logger surface removed: packwiz now emits via the central logging package.
 
 // Sync runs packwiz-installer against packTomlURL with mcDir as CWD, side "client".
-func Sync(mcDir, nzDir, packTomlURL string, log Logger) error {
+// All subprocess stdout/stderr is captured into nz.log via the logging package.
+func Sync(mcDir, nzDir, packTomlURL string) error {
 	if override := strings.TrimSpace(os.Getenv("NEGATIVEZONE_PACKWIZ_CMD")); override != "" {
-		return runOverride(mcDir, override, log)
+		return runOverride(mcDir, override)
 	}
 
 	java, err := findJava()
@@ -38,11 +36,11 @@ func Sync(mcDir, nzDir, packTomlURL string, log Logger) error {
 		return err
 	}
 
-	bootstrapJar, err := resolveJar(mcDir, nzDir, bootstrapJarName, bootstrapURL, log)
+	bootstrapJar, err := resolveJar(mcDir, nzDir, bootstrapJarName, bootstrapURL)
 	if err != nil {
 		return err
 	}
-	installerJar, err := resolveJar(mcDir, nzDir, installerJarName, installerURL, log)
+	installerJar, err := resolveJar(mcDir, nzDir, installerJarName, installerURL)
 	if err != nil {
 		return err
 	}
@@ -55,23 +53,19 @@ func Sync(mcDir, nzDir, packTomlURL string, log Logger) error {
 		"-s", "client",
 		packTomlURL,
 	}
-	if log != nil {
-		log.Info("Running packwiz-installer-bootstrap (--side client)")
-	}
+	logging.Info("Running packwiz-installer-bootstrap (--side client)")
 	cmd := exec.Command(java, args...)
 	cmd.Dir = mcDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = logging.Writer(logging.LevelDebug)
+	cmd.Stderr = logging.Writer(logging.LevelDebug)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("packwiz-installer-bootstrap failed: %w", err)
 	}
 	return nil
 }
 
-func runOverride(mcDir, override string, log Logger) error {
-	if log != nil {
-		log.Warn("Using NEGATIVEZONE_PACKWIZ_CMD override")
-	}
+func runOverride(mcDir, override string) error {
+	logging.Warn("Using NEGATIVEZONE_PACKWIZ_CMD override")
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", override)
@@ -79,8 +73,8 @@ func runOverride(mcDir, override string, log Logger) error {
 		cmd = exec.Command("sh", "-c", override)
 	}
 	cmd.Dir = mcDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stdout = logging.Writer(logging.LevelDebug)
+	cmd.Stderr = logging.Writer(logging.LevelDebug)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("NEGATIVEZONE_PACKWIZ_CMD failed: %w", err)
 	}
@@ -103,12 +97,10 @@ func findJava() (string, error) {
 	return "", fmt.Errorf("Java 17+ required; install Temurin 17")
 }
 
-func resolveJar(mcDir, nzDir, name, url string, log Logger) (string, error) {
+func resolveJar(mcDir, nzDir, name, url string) (string, error) {
 	bundled := filepath.Join(mcDir, name)
 	if fileExists(bundled) {
-		if log != nil {
-			log.Info("Using bundled " + name)
-		}
+		logging.Debug("Using bundled " + name)
 		return bundled, nil
 	}
 
@@ -117,15 +109,11 @@ func resolveJar(mcDir, nzDir, name, url string, log Logger) (string, error) {
 	}
 	cached := filepath.Join(nzDir, name)
 	if fileExists(cached) {
-		if log != nil {
-			log.Info("Using cached " + name)
-		}
+		logging.Debug("Using cached " + name)
 		return cached, nil
 	}
 
-	if log != nil {
-		log.Info("Downloading " + name)
-	}
+	logging.Info("Downloading " + name)
 	if err := downloadFile(url, cached); err != nil {
 		return "", fmt.Errorf("downloading %s: %w", name, err)
 	}

@@ -240,6 +240,29 @@ value to an empty string and restarting Prism.
 
 ---
 
+## 7. Send logs to the admin (manual, when asked)
+
+**Why** — something went wrong and the admin asks for your logs.
+
+**How** — in PowerShell:
+
+```powershell
+& "$env:LOCALAPPDATA\NegativeZone\nz.exe" support
+```
+
+**What it does** — bundles `nz.log` (the full-detail record every `nz` command
+writes to `.negativezone\nz.log`), the installed-version marker, `instance.cfg`,
+and a short environment summary into `nz-support-<timestamp>.zip` on your
+**Desktop**. DM that single file to the admin.
+
+**Notes**
+
+- Want to watch a command in detail live? Add `--verbose` (e.g. `nz update
+  --verbose`). `nz.log` always has the full detail regardless of the flag.
+- `--quiet` shows errors only on the console.
+
+---
+
 ## Where to go deeper
 
 | Topic | Page |

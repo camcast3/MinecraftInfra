@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/camcast3/MinecraftInfra/client/internal/instance"
-	"github.com/camcast3/MinecraftInfra/client/internal/ui"
+	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -52,8 +52,8 @@ var migrateFolders = []string{
 }
 
 func runMigrate(cmd *cobra.Command, args []string) error {
-	ui.PrintBrand("NegativeZone settings migrator")
-	ui.Separator()
+	logging.Brand("NegativeZone settings migrator")
+	logging.Separator()
 
 	candidates := instance.FindAll()
 
@@ -71,7 +71,7 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	newMC := instance.ResolveMinecraftRoot(newPath)
 
 	if oldMC == newMC {
-		ui.PrintError("Old and new instance resolve to the same folder!")
+		logging.Error("Old and new instance resolve to the same folder!")
 		os.Exit(1)
 	}
 
@@ -108,31 +108,31 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(plan) == 0 {
-		ui.PrintWarn("Nothing to migrate — none of the expected items exist in the old instance.")
-		ui.PrintDim(fmt.Sprintf("Looked in: %s", oldMC))
-		fmt.Println()
+		logging.Warn("Nothing to migrate — none of the expected items exist in the old instance.")
+		logging.Dimf("Looked in: %s", oldMC)
+		logging.Blank()
 		for _, f := range migrateFiles {
-			ui.PrintDim(fmt.Sprintf("  file   %s", f))
+			logging.Dimf("  file   %s", f)
 		}
 		for _, d := range migrateFolders {
-			ui.PrintDim(fmt.Sprintf("  folder %s", d))
+			logging.Dimf("  folder %s", d)
 		}
 		return nil
 	}
 
 	// Preview
-	ui.PrintStep("Migration plan")
-	ui.PrintInfo(fmt.Sprintf("From: %s", oldMC))
-	ui.PrintInfo(fmt.Sprintf("To:   %s", newMC))
-	fmt.Println()
+	logging.Step("Migration plan")
+	logging.Infof("From: %s", oldMC)
+	logging.Infof("To:   %s", newMC)
+	logging.Blank()
 	for _, item := range plan {
 		overwrite := ""
 		if item.Overwrites {
 			overwrite = " (will overwrite existing)"
 		}
-		ui.PrintInfo(fmt.Sprintf("  %s: %s%s", item.Type, item.Name, overwrite))
+		logging.Infof("  %s: %s%s", item.Type, item.Name, overwrite)
 	}
-	fmt.Println()
+	logging.Blank()
 
 	// Confirm
 	fmt.Print("  Proceed? (y/N): ")
@@ -140,12 +140,12 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	answer, _ := reader.ReadString('\n')
 	answer = strings.TrimSpace(strings.ToLower(answer))
 	if answer != "y" && answer != "yes" {
-		ui.PrintWarn("Aborted.")
+		logging.Warn("Aborted.")
 		return nil
 	}
 
 	// Apply
-	ui.PrintStep("Applying")
+	logging.Step("Applying")
 	timestamp := fmt.Sprintf("_migration-backup-%s", timeStampNow())
 	backupDir := filepath.Join(newMC, timestamp)
 	backupCreated := false
@@ -157,10 +157,10 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 				_ = os.MkdirAll(backupDir, 0o755)
 				backupCreated = true
 			}
-			ui.PrintDim(fmt.Sprintf("  backup: %s", item.Name))
+			logging.Dimf("  backup: %s", item.Name)
 			_ = os.Rename(dst, filepath.Join(backupDir, item.Name))
 		}
-		ui.PrintOK(fmt.Sprintf("copy: %s", item.Name))
+		logging.OKf("copy: %s", item.Name)
 		if item.Type == "File" {
 			_ = copyFile(item.Source, dst)
 		} else {
@@ -169,27 +169,27 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Done
-	ui.PrintStep("Done")
+	logging.Step("Done")
 	if backupCreated {
-		ui.PrintInfo(fmt.Sprintf("Overwritten items backed up to: %s", backupDir))
+		logging.Infof("Overwritten items backed up to: %s", backupDir)
 	}
-	fmt.Println()
-	ui.PrintInfo("Next steps:")
-	ui.PrintInfo("  1. Launch the new instance and verify keybinds, video settings, waypoints.")
-	ui.PrintInfo("  2. Port mod configs manually (config/) one mod at a time.")
-	ui.PrintDim("     Bulk-copying config/ between modpack versions can crash the game.")
-	fmt.Println()
+	logging.Blank()
+	logging.Info("Next steps:")
+	logging.Info("  1. Launch the new instance and verify keybinds, video settings, waypoints.")
+	logging.Info("  2. Port mod configs manually (config/) one mod at a time.")
+	logging.Dim("     Bulk-copying config/ between modpack versions can crash the game.")
+	logging.Blank()
 
 	return nil
 }
 
 func promptInstance(prompt string, candidates []instance.Info) string {
-	fmt.Println()
-	ui.PrintInfo(prompt)
+	logging.Blank()
+	logging.Info(prompt)
 	if len(candidates) > 0 {
 		for i, c := range candidates {
 			fmt.Printf("  [%d] %-10s %s\n", i+1, c.Launcher, c.Name)
-			ui.PrintDim(fmt.Sprintf("       %s", c.Path))
+			logging.Dimf("       %s", c.Path)
 		}
 		fmt.Println("  [m]  Type a path manually")
 	}
@@ -210,7 +210,7 @@ func promptInstance(prompt string, candidates []instance.Info) string {
 			if idx >= 0 && idx < len(candidates) {
 				return candidates[idx].Path
 			}
-			ui.PrintWarn("Out of range")
+			logging.Warn("Out of range")
 			continue
 		}
 
@@ -221,7 +221,7 @@ func promptInstance(prompt string, candidates []instance.Info) string {
 			if dirExists(p) {
 				return p
 			}
-			ui.PrintWarn(fmt.Sprintf("Not found: %s", p))
+			logging.Warnf("Not found: %s", p)
 			continue
 		}
 
@@ -230,7 +230,7 @@ func promptInstance(prompt string, candidates []instance.Info) string {
 		if dirExists(cleaned) {
 			return cleaned
 		}
-		ui.PrintWarn("Enter a number, 'm' for manual, or paste a full path.")
+		logging.Warn("Enter a number, 'm' for manual, or paste a full path.")
 	}
 }
 
@@ -239,8 +239,11 @@ func timeStampNow() string {
 }
 
 // copyDir recursively copies a directory using robocopy for performance.
+// robocopy output is captured into nz.log at DEBUG.
 func copyDir(src, dst string) error {
 	cmd := exec.Command("robocopy", src, dst, "/MIR", "/MT:8", "/R:1", "/W:1", "/NP", "/NFL", "/NDL", "/NJH", "/NJS")
+	cmd.Stdout = logging.Writer(logging.LevelDebug)
+	cmd.Stderr = logging.Writer(logging.LevelDebug)
 	_ = cmd.Run()
 	rc := cmd.ProcessState.ExitCode()
 	if rc >= 8 {

@@ -363,6 +363,14 @@ launch-time version pointer — `nz check` reads it and `publish-prism-pack.ps1`
 keeps writing it. `protect-latest-release.yml` stays relevant while `setup-v*`
 releases still exist.
 
+> **Logs & diagnostics.** Every `nz` command writes a unified, full-detail
+> record to `nz.log` in the instance's `.negativezone\` folder (first-install
+> lines, before the instance exists, go to `%LOCALAPPDATA%\NegativeZone\nz.log`).
+> This replaces the old per-command `backup.log` / `update.log`. Ask players to
+> run `nz support` — it zips `nz.log`, the version marker, `instance.cfg`, and an
+> env summary to their Desktop. Global flags `--verbose` / `--quiet` only affect
+> the console; the file always captures DEBUG-level detail.
+
 > **Going live.** `release-nz.yml` hasn't run on `main` yet, so no
 > `nz-latest` prerelease exists and the docs above point at
 > `releases/download/nz-latest/…`. **Merging these changes is what goes live** —

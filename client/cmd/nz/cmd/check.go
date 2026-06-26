@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/camcast3/MinecraftInfra/client/internal/instance"
-	"github.com/camcast3/MinecraftInfra/client/internal/ui"
+	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +43,7 @@ Environment variables:
 func runCheck(cmd *cobra.Command, args []string) error {
 	// Bypass
 	if os.Getenv("NEGATIVEZONE_SKIP_VERSION_CHECK") == "1" {
-		ui.PrintDim("NEGATIVEZONE_SKIP_VERSION_CHECK=1; skipping version check.")
+		logging.Dim("NEGATIVEZONE_SKIP_VERSION_CHECK=1; skipping version check.")
 		return nil
 	}
 
@@ -52,15 +52,16 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		instanceDir = instance.DefaultC2E2Path()
 	}
 	if instanceDir == "" {
-		ui.PrintDim("INST_DIR not set; skipping version check.")
+		logging.Dim("INST_DIR not set; skipping version check.")
 		return nil
 	}
 	if _, err := os.Stat(instanceDir); os.IsNotExist(err) {
-		ui.PrintDim(fmt.Sprintf("Instance not found: %s; skipping version check.", instanceDir))
+		logging.Dimf("Instance not found: %s; skipping version check.", instanceDir)
 		return nil
 	}
 
 	paths := instance.ResolvePaths(instanceDir)
+	logging.UseInstance(paths.NZDir)
 
 	// Read installed version
 	installedVersion := ""
@@ -68,7 +69,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 		installedVersion = strings.TrimSpace(string(data))
 	}
 	if installedVersion == "" {
-		ui.PrintDim("No installed version marker; skipping version check.")
+		logging.Dim("No installed version marker; skipping version check.")
 		return nil
 	}
 
@@ -81,7 +82,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Get(versionURL)
 	if err != nil {
-		ui.PrintDim(fmt.Sprintf("Could not fetch latest version (%v); allowing launch.", err))
+		logging.Dimf("Could not fetch latest version (%v); allowing launch.", err)
 		return nil
 	}
 	defer resp.Body.Close()
@@ -90,23 +91,24 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	// the version string (raw.githubusercontent.com returns a "404: Not Found"
 	// body that would otherwise read as a bogus version and falsely block).
 	if resp.StatusCode != http.StatusOK {
-		ui.PrintDim(fmt.Sprintf("Latest version pointer returned HTTP %d; allowing launch.", resp.StatusCode))
+		logging.Dimf("Latest version pointer returned HTTP %d; allowing launch.", resp.StatusCode)
 		return nil
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 256))
 	if err != nil {
-		ui.PrintDim(fmt.Sprintf("Could not read latest version (%v); allowing launch.", err))
+		logging.Dimf("Could not read latest version (%v); allowing launch.", err)
 		return nil
 	}
 	latestVersion := strings.TrimSpace(string(body))
 	if latestVersion == "" {
-		ui.PrintDim("Latest version pointer was empty; allowing launch.")
+		logging.Dim("Latest version pointer was empty; allowing launch.")
 		return nil
 	}
 
 	// Compare
 	if installedVersion == latestVersion {
+		logging.Debugf("Version OK: installed v%s matches server.", installedVersion)
 		return nil
 	}
 
@@ -119,28 +121,28 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	// Block launch
-	fmt.Println()
-	ui.PrintError("════════════════════════════════════════════════════════════")
-	ui.PrintError("  MODPACK VERSION MISMATCH")
-	ui.PrintError(fmt.Sprintf("  installed: v%s", installedVersion))
-	ui.PrintError(fmt.Sprintf("  server:    v%s  (%s)", latestVersion, direction))
-	ui.PrintError("════════════════════════════════════════════════════════════")
-	fmt.Println()
-	ui.PrintInfo("The server is pinned to a specific modpack version.")
-	ui.PrintInfo("Joining with a different client version would fail at the FML handshake.")
-	fmt.Println()
-	ui.PrintInfo("Run this to update:")
-	fmt.Println()
-	ui.PrintStep(updateOneLiner)
-	fmt.Println()
+	logging.Blank()
+	logging.Error("════════════════════════════════════════════════════════════")
+	logging.Error("  MODPACK VERSION MISMATCH")
+	logging.Errorf("  installed: v%s", installedVersion)
+	logging.Errorf("  server:    v%s  (%s)", latestVersion, direction)
+	logging.Error("════════════════════════════════════════════════════════════")
+	logging.Blank()
+	logging.Info("The server is pinned to a specific modpack version.")
+	logging.Info("Joining with a different client version would fail at the FML handshake.")
+	logging.Blank()
+	logging.Info("Run this to update:")
+	logging.Blank()
+	logging.Step(updateOneLiner)
+	logging.Blank()
 	if direction == "ahead" {
-		ui.PrintWarn("Your client is AHEAD of the server. Contact the admin if you")
-		ui.PrintWarn("need a rollback (allowDowngrade must be set in the manifest).")
-		fmt.Println()
+		logging.Warn("Your client is AHEAD of the server. Contact the admin if you")
+		logging.Warn("need a rollback (allowDowngrade must be set in the manifest).")
+		logging.Blank()
 	}
-	ui.PrintDim(fmt.Sprintf("Walk-through: %s", wikiURL))
-	ui.PrintDim("(Set NEGATIVEZONE_SKIP_VERSION_CHECK=1 to bypass for offline play.)")
-	fmt.Println()
+	logging.Dimf("Walk-through: %s", wikiURL)
+	logging.Dim("(Set NEGATIVEZONE_SKIP_VERSION_CHECK=1 to bypass for offline play.)")
+	logging.Blank()
 
 	os.Exit(1)
 	return nil

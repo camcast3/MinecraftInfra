@@ -58,35 +58,35 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	userRunMode := instanceDir == ""
 
 	if userRunMode {
-		ui.PrintBrand("NegativeZone Minecraft client update")
-		ui.Separator()
+		logging.Brand("NegativeZone Minecraft client update")
+		logging.Separator()
 
 		instanceDir = instance.DefaultC2E2Path()
 		if instanceDir == "" || !dirExists(instanceDir) {
-			ui.PrintError("No Craft to Exile 2 instance found.")
-			ui.PrintInfo("Run 'nz setup' first to install the modpack.")
+			logging.Error("No Craft to Exile 2 instance found.")
+			logging.Info("Run 'nz setup' first to install the modpack.")
 			os.Exit(1)
 		}
-		ui.PrintDim(fmt.Sprintf("Instance: %s", instanceDir))
+		logging.Dimf("Instance: %s", instanceDir)
 
 		// Check Prism not running
 		if os.Getenv("NEGATIVEZONE_SKIP_PRISM_CHECK") != "1" && isPrismRunning() {
-			fmt.Println()
-			ui.PrintError("Prism Launcher is currently running.")
-			ui.PrintInfo("Close Prism completely and re-run this update.")
+			logging.Blank()
+			logging.Error("Prism Launcher is currently running.")
+			logging.Info("Close Prism completely and re-run this update.")
 			os.Exit(1)
 		}
 	}
 
 	if instanceDir == "" || !dirExists(instanceDir) {
-		ui.PrintDim("INST_DIR not set or missing; skipping auto-update.")
+		logging.Dim("INST_DIR not set or missing; skipping auto-update.")
 		return nil
 	}
 
 	paths := instance.ResolvePaths(instanceDir)
 	_ = os.MkdirAll(paths.NZDir, 0o755)
 
-	log, _ := logging.New(filepath.Join(paths.NZDir, "update.log"), "nz-update")
+	logging.UseInstance(paths.NZDir)
 
 	// Acquire lock
 	lockPath := filepath.Join(paths.NZDir, "update.lock")
@@ -95,8 +95,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("lock error: %w", err)
 	}
 	if lk == nil {
-		log.Info("Another update is running (lock held); skipping.")
-		ui.PrintDim("Another update is running; skipping.")
+		logging.Info("Another update is running (lock held); skipping.")
 		return nil
 	}
 	defer lk.Release()
@@ -106,7 +105,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	if data, err := os.ReadFile(paths.VersionFile); err == nil {
 		installedVersion = strings.TrimSpace(string(data))
 	}
-	log.Infof("Installed version: '%s'", installedVersion)
+	logging.Infof("Installed version: '%s'", installedVersion)
 
 	// Fetch manifest
 	manifestURL := os.Getenv("NEGATIVEZONE_MANIFEST_URL")
@@ -114,7 +113,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		manifestURL = defaultManifestURL
 	}
 	if manifestURL != defaultManifestURL {
-		log.Warnf("Using OVERRIDE manifest URL: %s", manifestURL)
+		logging.Warnf("Using OVERRIDE manifest URL: %s", manifestURL)
 	}
 
 	spin := ui.NewSpinner("Checking for updates...")
@@ -123,19 +122,19 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	spin.Stop()
 
 	if err != nil {
-		log.Warnf("Could not fetch manifest: %v. Launching with current install.", err)
-		ui.PrintDim("Could not reach update server; continuing with current version.")
+		logging.Warnf("Could not fetch manifest: %v. Launching with current install.", err)
+		logging.Dim("Could not reach update server; continuing with current version.")
 		return nil
 	}
 	if manifest.Version == "" {
-		log.Error("Manifest missing 'version' field.")
-		ui.PrintError("Manifest is malformed (missing version). Contact admin.")
+		logging.Error("Manifest missing 'version' field.")
+		logging.Error("Manifest is malformed (missing version). Contact admin.")
 		os.Exit(1)
 	}
 	if manifest.Version == installedVersion {
-		log.Infof("Already on v%s; nothing to do.", manifest.Version)
+		logging.Infof("Already on v%s; nothing to do.", manifest.Version)
 		if userRunMode {
-			ui.PrintOK(fmt.Sprintf("Already on latest version (v%s)", manifest.Version))
+			logging.OKf("Already on latest version (v%s)", manifest.Version)
 		}
 		return nil
 	}
@@ -143,23 +142,23 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	// Downgrade check
 	if installedVersion != "" && compareVersions(installedVersion, manifest.Version) > 0 {
 		if manifest.AllowDowngrade {
-			log.Warnf("Manifest opts into downgrade: v%s -> v%s", installedVersion, manifest.Version)
+			logging.Warnf("Manifest opts into downgrade: v%s -> v%s", installedVersion, manifest.Version)
 		} else {
-			log.Infof("Installed v%s is newer than manifest v%s; refusing to downgrade.", installedVersion, manifest.Version)
+			logging.Infof("Installed v%s is newer than manifest v%s; refusing to downgrade.", installedVersion, manifest.Version)
 			if userRunMode {
-				ui.PrintWarn(fmt.Sprintf("Your install (v%s) is newer than server (v%s). Skipping.", installedVersion, manifest.Version))
+				logging.Warnf("Your install (v%s) is newer than server (v%s). Skipping.", installedVersion, manifest.Version)
 			}
 			return nil
 		}
 	}
 
-	log.Infof("Updating: %s -> %s", installedVersion, manifest.Version)
+	logging.Infof("Updating: %s -> %s", installedVersion, manifest.Version)
 	if userRunMode {
-		ui.PrintStep(fmt.Sprintf("Updating v%s → v%s", installedVersion, manifest.Version))
+		logging.Stepf("Updating v%s → v%s", installedVersion, manifest.Version)
 	}
 
 	// Pre-update backup
-	ui.PrintInfo("Creating pre-update safety snapshot...")
+	logging.Info("Creating pre-update safety snapshot...")
 	oldInstDir, hadInstDir := os.LookupEnv("INST_DIR")
 	_ = os.Setenv("INST_DIR", instanceDir)
 	backupForceOld := backupForce
@@ -176,21 +175,21 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 	if packTomlURL == "" {
 		packTomlURL = defaultPackwizURL
 	}
-	log.Infof("Packwiz URL: %s", packTomlURL)
-	ui.PrintStep("Syncing modpack with packwiz")
+	logging.Infof("Packwiz URL: %s", packTomlURL)
+	logging.Step("Syncing modpack with packwiz")
 
-	if err := packwiz.Sync(paths.DotMC, paths.NZDir, packTomlURL, log); err != nil {
-		log.Errorf("Packwiz sync failed: %v", err)
-		ui.PrintError(fmt.Sprintf("Update failed: %v", err))
+	if err := packwiz.Sync(paths.DotMC, paths.NZDir, packTomlURL); err != nil {
+		logging.Errorf("Packwiz sync failed: %v", err)
+		logging.Errorf("Update failed: %v", err)
 		return err
 	}
 
 	if err := os.WriteFile(paths.VersionFile, []byte(manifest.Version), 0o644); err != nil {
-		log.Errorf("Could not write version marker: %v", err)
+		logging.Errorf("Could not write version marker: %v", err)
 		return err
 	}
-	log.Infof("Update complete: now on v%s", manifest.Version)
-	ui.PrintOK(fmt.Sprintf("Updated to v%s", manifest.Version))
+	logging.Infof("Update complete: now on v%s", manifest.Version)
+	logging.OKf("Updated to v%s", manifest.Version)
 
 	return nil
 }
