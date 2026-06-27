@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Backups
-nav_order: 4
+nav_order: 5
 ---
 
 # Backups & restore
@@ -22,32 +22,31 @@ to restore something.
 
 ## The two mechanisms at a glance
 
-|  | **Snapshot files** | **Backup instance** |
+|  | **Snapshot files** | **Previous-version backup (`.bak`)** |
 |---|---|---|
-| **What it is** | Timestamped folders of your personal state files | A full second Prism instance (entire copy of the modpack at the *previous* version) |
-| **Where** | `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\<yyyyMMdd-HHmmss>\` | Prism's main grid, under the **Backup** group, named like `Craft to Exile 2 v0.4.1` |
+| **What it is** | Timestamped folders of your personal state files | A full copy of your previous-version install (the whole instance at the *previous* version) |
+| **Where** | `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\<yyyyMMdd-HHmmss>\` | `%APPDATA%\PrismLauncher\instances\Craft to Exile 2.bak\` (shows in Prism's grid as a separate instance) |
 | **Contains** | Waypoints, world map cache, shaders, resourcepacks, options, recipe bookmarks, plus pack-author-flagged config files (graphics, shaders, HUD, sound prefs, keybinds) | Mods, configs, resourcepacks, libraries — the whole game install at the prior version |
 | **Does *not* contain** | Single-player worlds (opt-in), mods, configs not in the pack-author preserve list | — (it's a complete instance) |
-| **Created by** | `backup.ps1` PostExit hook (every Prism close) | `setup.ps1` when it detects an upgrade (existing instance, different version) |
-| **Cadence** | At most once per `NEGATIVEZONE_BACKUP_DAYS` (default 3 days) of play; one is also forced just before `update.ps1` swaps files | One per modpack upgrade you go through |
-| **Retention** | `NEGATIVEZONE_BACKUP_RETAIN` newest (default 3) | Latest only — each new upgrade overwrites the previous Backup |
+| **Created by** | `nz backup` PostExit hook (every Prism close) | `nz setup` when it detects an upgrade (existing instance, different version) |
+| **Cadence** | At most once per `NEGATIVEZONE_BACKUP_DAYS` (default 3 days) of play; one is also forced just before `nz update` touches tracked pack files | One per modpack upgrade you go through |
+| **Retention** | `NEGATIVEZONE_BACKUP_RETAIN` newest (default 3) | Latest only — each new upgrade overwrites the previous `.bak` |
 | **Size** | 100 MB – 2 GB each, depending on how much you've explored | 3 – 6 GB |
-| **Restore = ?** | Manual file copy back into `.minecraft\` | Click **Play** on the Backup instance |
-| **Has launch hooks?** | (file collection, no scripts) | **No, intentionally frozen** — no version check, no PostExit snapshot. It's the recovery raft. |
+| **Restore = ?** | Manual file copy back into `.minecraft\` | Launch the `.bak` instance in Prism (or copy the folder back) |
+| **Has launch hooks?** | (file collection, no scripts) | It's a raw copy — for a clean multiplayer rollback the admin must also roll the server back |
 
 ---
 
 ## Snapshot files (periodic state backups)
 
-Every Prism session end runs `backup.ps1` which snapshots a curated set of
-your personal client state. This catches accidents that the modpack-update
-preserve list doesn't handle: world corruption from a mod crash, files
-deleted by mistake, modpack updates that wipe a directory we didn't think
-to preserve, etc.
+Every Prism session end runs `nz backup` which snapshots a curated set of
+your personal client state. This catches accidents that packwiz-managed
+updates don't handle: world corruption from a mod crash, files deleted by
+mistake, unexpected pack changes, etc.
 
 ### How it works
 
-When the game closes, Prism runs `backup.ps1` which:
+When the game closes, Prism runs `nz backup` (its PostExitCommand) which:
 
 1. Checks the timestamp of your newest snapshot. If it's less than
    **3 days old** (configurable), the script exits in ~100 ms — no
@@ -60,7 +59,7 @@ When the game closes, Prism runs `backup.ps1` which:
 Each snapshot is a self-contained tree mirroring the original layout under
 `.minecraft\`, so restore is just **copy back**.
 
-The update script also forces one snapshot **right before every modpack
+The update step also forces one snapshot **right before every modpack
 update**, so update day always has a fresh restore point even if your last
 periodic snapshot was 2 days ago.
 
@@ -119,12 +118,13 @@ Example — keep 5 weekly snapshots that include single-player worlds:
 
 ---
 
-## Backup instance (frozen rollback)
+## Previous-version backup (`.bak` rollback)
 
-When `setup.ps1` runs an upgrade (finds an existing instance with a
-different version), it renames the old instance to `<name>.bak` before
-installing the new version. The renamed instance ends up in a **Backup**
-group in Prism's grid, sitting alongside the current **Latest**.
+When `nz setup` runs an upgrade (finds an existing instance with a
+different version), it renames the old instance to `Craft to Exile 2.bak`
+before installing the new version, then copies your user state forward into
+the new install. The `.bak` folder is a complete copy of your previous-version
+install, sitting alongside the current one in Prism's instance grid.
 
 ### What it's for
 
@@ -139,35 +139,35 @@ A safety raft for two narrow cases:
 
 ### What it's *not* for
 
-- **Joining the live server with a version mismatch.** If you click Play
-  on the Backup instance while the server is already on the new version,
-  the server will kick you at the FML handshake. The Backup is only useful
-  for multiplayer if the admin has also rolled the server back to that
-  version.
+- **Joining the live server with a version mismatch.** If you launch the
+  `.bak` instance while the server is already on the new version, the server
+  will kick you at the FML handshake. The `.bak` is only useful for multiplayer
+  if the admin has also rolled the server back to that version.
 - **A long-term archive.** Each new upgrade overwrites the previous
-  Backup — there is no `Backup.bak.bak` deep history. If you want to keep
-  an old version forever, copy the `Craft to Exile 2 v0.X.Y` folder under
-  `%APPDATA%\PrismLauncher\instances\` somewhere off-instance.
+  `.bak` — there is no `.bak.bak` deep history. If you want to keep
+  an old version forever, copy the `Craft to Exile 2.bak` folder under
+  `%APPDATA%\PrismLauncher\instances\` somewhere off-instance before your next
+  upgrade.
 
-### Why it has no launch hooks
+### Heads-up: it's a raw copy, not a frozen instance
 
-The Backup instance has its `PreLaunchCommand` and `PostExitCommand`
-deliberately left empty:
+The `.bak` is a byte-for-byte copy of your old instance, including its launch
+hooks. Those hooks reference an absolute path that now points at your *current*
+instance's `nz.exe`, so launching `.bak` doesn't give a cleanly "frozen"
+experience (the version check reads your current marker). Treat `.bak` as a cold
+rollback copy:
 
-- **No version check** — the whole point is launching a known-mismatched
-  client. Blocking it would defeat the purpose.
-- **No PostExit backup** — we don't want the recovery raft to snapshot
-  itself; that would mix old-version state into the snapshot history.
-
-It is genuinely frozen. Click Play, do what you need, exit, no automation
-runs.
+- For a **real multiplayer rollback**, the admin rolls the server back and you
+  re-run `nz update` (the admin sets `allowDowngrade` in the manifest).
+- For **offline single-player** on the old mod set, just launch it.
 
 ### Using it
 
-1. In Prism, expand the **Backup** group in the instance grid.
-2. Click **Craft to Exile 2 v0.X.Y** (the version below your current one).
-3. **Play** as normal. If the server is still on a different version, expect
-   an FML-handshake kick on join — that's fine, you're not breaking anything.
+1. In Prism's instance grid, find the separate **Craft to Exile 2.bak** entry
+   (it carries the previous version's label).
+2. Click it, then **Play** as normal. If the server is still on a different
+   version, expect an FML-handshake kick on join — that's fine, you're not
+   breaking anything.
 
 ---
 
@@ -179,9 +179,9 @@ runs.
 | All my Xaero waypoints + explored map are gone | Snapshot files | Copy back `XaeroWaypoints\` and `XaeroWorldMap\` from the newest snapshot |
 | Keybinds reset | Snapshot files | Copy `options.txt` back |
 | Server list cleared / lost the entry | Snapshot files | Copy `servers.dat` back |
-| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | Backup instance | Click Play on the Backup instance. Only works for the multiplayer server if admin also rolled back. |
-| I want yesterday's modpack *and* my latest waypoints | Both | Click Play on Backup once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into the Backup instance's `.minecraft\` |
-| Something deleted my whole `.minecraft\config\` directory | Snapshot files (partial) + re-run setup (full) | Restore the pack-author preserve-list files from snapshot for your tunings, then re-run the Path A one-liner to repopulate the rest of the configs from the pack defaults |
+| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | `.bak` copy | Launch the `Craft to Exile 2.bak` instance. Only works for the multiplayer server if admin also rolled back. |
+| I want yesterday's modpack *and* my latest waypoints | Both | Launch the `.bak` instance once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into the `.bak` instance's `.minecraft\` |
+| Something deleted my whole `.minecraft\config\` directory | Snapshot files (partial) + re-run install (full) | Restore the pack-author preserve-list files from snapshot for your tunings, then re-run the Path A one-liner to repopulate the rest of the configs from the pack defaults |
 
 ---
 
@@ -190,7 +190,7 @@ runs.
 Worst-case footprint of the safety net (without `NEGATIVEZONE_BACKUP_INCLUDE_SAVES`):
 
 - 3 snapshot folders × up to ~2 GB each = ~6 GB
-- 1 Backup instance ≈ 3–6 GB
+- 1 `.bak` copy ≈ 3–6 GB
 - **Total ≈ 9–12 GB** under `%APPDATA%\PrismLauncher\instances\`
 
 If you turn on single-player saves in snapshots, multiply the snapshot

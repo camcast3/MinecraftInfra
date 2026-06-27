@@ -1,0 +1,42 @@
+name: nz CLI E2E tests
+
+on:
+  pull_request:
+    paths:
+      - "client/**"
+      - ".github/workflows/test-nz-e2e.yml"
+  push:
+    branches: [main]
+    paths:
+      - "client/**"
+      - ".github/workflows/test-nz-e2e.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nz-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Run 16-test e2e harness
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: client/go.mod
+          cache-dependency-path: client/go.sum
+
+      - name: Show toolchain
+        run: go version
+        working-directory: client
+
+      - name: Run e2e harness
+        run: go test -tags e2e -v -timeout 10m ./tests/e2e/
+        working-directory: client

@@ -16,8 +16,10 @@
     (launch-time version pointer polled by prelaunch-check.ps1) on a fresh
     modpack/v<Version> branch, opens a PR with auto-merge. Portainer GitOps
     redeploys C2E2 within ~5 min — server + client + fallback-proxy MOTD +
-    launch-time pointer all move in lockstep. Compose YAML is rewritten
-    directly (not .env) because Portainer ignores .env files in git.
+    launch-time pointer all move in lockstep. latest.json includes a
+    packwizUrl pinned to the same commit SHA as the server PACKWIZ_URL so
+    client-side packwiz delta updates use the matching manifest. Compose YAML
+    is rewritten directly (not .env) because Portainer ignores .env files in git.
     latest.json is uploaded AFTER PR succeeds so the audit trail is always
     present before any player can download.
 
@@ -195,9 +197,9 @@ if (-not $repoRoot) {
 # In CI ($env:CI='true'), actions/checkout produces a clean tree from
 # origin/main so these checks are vacuous. In local runs, drift between
 # the working packwiz/ tree and origin/main would cause the client zip
-# (built from disk) to diverge from the SHA pin written into
-# docker-compose.yml (resolved via `git rev-parse HEAD` after a fresh
-# `git checkout -B publishBranch origin/main`).
+# (built from disk) to diverge from the SHA pin written into latest.json
+# packwizUrl and docker-compose.yml (resolved once via `git rev-parse HEAD`
+# before the manifest is built).
 if ($env:CI -eq 'true') {
     Write-Step "CI mode detected (`$env:CI='true'`); skipping local drift checks."
 } elseif ($SkipDriftCheck) {
@@ -761,10 +763,21 @@ az storage blob upload `
 # push succeeded and the push then failed, players would download a version
 # with no corresponding committed modpack.yml.
 Write-Step "Building latest.json manifest"
+Push-Location $repoRoot
+try {
+    $packwizSha = (git rev-parse HEAD | Out-String).Trim()
+} finally {
+    Pop-Location
+}
+if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
+    throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
+}
+$packwizUrl = "https://raw.githubusercontent.com/camcast3/MinecraftInfra/$packwizSha/packwiz/pack.toml"
 $manifest = [ordered]@{
     version    = $Version
     blob       = $blobName
     url        = "https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+    packwizUrl = $packwizUrl
     sha256     = $sha
     sizeBytes  = (Get-Item $tempZip).Length
     instance   = $InstanceName
@@ -781,9 +794,8 @@ $manifestPath = Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
 # ─── Update modpack.yml + .env + open PR ───────────────────────────────────
-# Skipped in test-publish mode — the SHA pin would resolve against origin/main
-# which by definition lacks the local packwiz/ changes the test publish is
-# validating, silently coupling the test publish to a wrong server snapshot.
+# Skipped in test-publish mode — latest-test.json still gets packwizUrl from
+# the current HEAD, but no server-side compose rewrite or PR is created.
 if ($SkipDriftCheck) {
     Write-Step "Test-publish mode; skipping modpack.yml + docker-compose.yml rewrite + PR creation."
 } else {
@@ -796,13 +808,8 @@ if ($SkipDriftCheck) {
         # silently stacked the new commit on stale history.
         git checkout -B $publishBranch "origin/main"
 
-        # SHA we just checked out = the packwiz/ snapshot the staging instance
-        # was materialized from. Pinning PACKWIZ_URL to this locks the server
-        # side to exactly the manifest the client zip ships.
-        $packwizSha = (git rev-parse HEAD | Out-String).Trim()
-        if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
-            throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
-        }
+        # Reuse the manifest SHA so client packwizUrl and server PACKWIZ_URL
+        # stay pinned to one validated packwiz/ snapshot.
 
         # Write modpack.yml AFTER the branch reset so the new content survives.
         $modpackYml = Join-Path $repoRoot 'modpack.yml'
