@@ -566,12 +566,21 @@ try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativ
     # (fail-open on network, fail-closed on SHA mismatch). PostExitCommand
     # wires the periodic-backup hook (always fail-open; cadence-skips in ~100ms
     # when no snapshot is due).
+    # JVM tuning flags from the Craft to Exile 2 install guide
+    # (https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation). Kept in
+    # lockstep with c2e2JvmArgs in client/cmd/nz/cmd/setup.go, which re-asserts
+    # the same value via configurePrismHooks on every `nz setup`. No backslashes
+    # or quotes, so it needs no Qt escaping (stored verbatim like name=/notes=).
+    $jvmArgs = '-XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions -XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+UseNUMA -XX:NmethodSweepActivity=1 -XX:ReservedCodeCacheSize=400M -XX:NonNMethodCodeHeapSize=12M -XX:ProfiledCodeHeapSize=194M -XX:NonProfiledCodeHeapSize=194M -XX:-DontCompileHugeMethods -XX:MaxNodeLimit=240000 -XX:NodeLimitFudgeFactor=8000 -XX:+UseVectorCmov -XX:+PerfDisableSharedMem -XX:+UseFastUnorderedTimeStamps -XX:+UseCriticalJavaThreadPriority -XX:ThreadPriorityPolicy=1 -XX:AllocatePrefetchStyle=3 -XX:+UseG1GC -XX:MaxGCPauseMillis=37 -XX:+PerfDisableSharedMem -XX:G1HeapRegionSize=16M -XX:G1NewSizePercent=23 -XX:G1ReservePercent=20 -XX:SurvivorRatio=32 -XX:G1MixedGCCountTarget=3 -XX:G1HeapWastePercent=20 -XX:InitiatingHeapOccupancyPercent=10 -XX:G1RSetUpdatingPauseTimePercent=0 -XX:MaxTenuringThreshold=1 -XX:G1SATBBufferEnqueueingThresholdPercent=30 -XX:G1ConcMarkStepDurationMillis=5.0 -XX:G1ConcRSHotCardLimit=16 -XX:G1ConcRefinementServiceIntervalMillis=150 -XX:GCTimeRatio=99 -XX:+UseLargePages -XX:LargePageSizeInBytes=2m'
+
     $overrides = [ordered]@{
         'AutomaticJava'         = 'true'
         'OverrideJavaLocation'  = 'false'
         'OverrideMemory'        = 'true'
         'MinMemAlloc'           = '512'
         'MaxMemAlloc'           = '8192'
+        'OverrideJavaArgs'      = 'true'
+        'JvmArgs'               = $jvmArgs
         'iconKey'               = $iconKey
         'name'                  = "$instanceName v$version"
         'OverrideCommands'      = 'true'

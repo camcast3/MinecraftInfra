@@ -357,8 +357,16 @@ func configurePrismHooks(cfgPath string) {
 	// accepts them in the executable path.
 	nzBinSlash := filepath.ToSlash(nzBin)
 
-	preLaunch := fmt.Sprintf(`"%s" check`, nzBinSlash)
-	postExit := fmt.Sprintf(`"%s" backup`, nzBinSlash)
+	// Forward slashes alone are not enough: the command still needs the binary
+	// path wrapped in quotes (the path contains spaces, e.g. "Craft to Exile 2"),
+	// and Qt's INI reader treats an unwrapped `"..."` run as a quoted segment
+	// whose trailing whitespace is stripped — so on Prism's first round-trip
+	// rewrite of instance.cfg (every launch updates lastLaunchTime, triggering a
+	// full file save) `"<path>" check` collapses to `<path>check`, gluing the
+	// subcommand onto the executable. formatQtINIValue emits the canonical Qt
+	// escaped+wrapped form so the value survives the round-trip unchanged.
+	preLaunch := formatQtINIValue(fmt.Sprintf(`"%s" check`, nzBinSlash))
+	postExit := formatQtINIValue(fmt.Sprintf(`"%s" backup`, nzBinSlash))
 
 	// Read existing cfg or start fresh
 	var lines []string
@@ -366,11 +374,15 @@ func configurePrismHooks(cfgPath string) {
 		lines = strings.Split(string(data), "\n")
 	}
 
-	// Update/add required keys
+	// Update/add required keys. Command values are already Qt-escaped above;
+	// JvmArgs and the Override* flags contain no backslashes or quotes, so they
+	// are written verbatim (matching how Prism itself stores plain values).
 	keys := map[string]string{
-		"OverrideCommands":  "true",
-		"PreLaunchCommand":  preLaunch,
-		"PostExitCommand":   postExit,
+		"OverrideCommands": "true",
+		"PreLaunchCommand": preLaunch,
+		"PostExitCommand":  postExit,
+		"OverrideJavaArgs": "true",
+		"JvmArgs":          c2e2JvmArgs,
 	}
 
 	for key, val := range keys {
@@ -388,7 +400,43 @@ func configurePrismHooks(cfgPath string) {
 	}
 
 	_ = os.WriteFile(cfgPath, []byte(strings.Join(lines, "\n")), 0o644)
-	logging.OK("Prism PreLaunch (version check) and PostExit (backup) hooks configured")
+	logging.OK("Prism PreLaunch (version check), PostExit (backup), and Java args configured")
+}
+
+// c2e2JvmArgs are the JVM tuning flags from the Craft to Exile 2 install guide
+// (https://github.com/mahjerion/Craft-to-Exile-2/wiki/Installation). Written
+// into Prism's JvmArgs (with OverrideJavaArgs=true) so every install launches
+// with the pack's expected G1GC / code-cache / large-page configuration instead
+// of an empty Java Arguments field. Memory is configured separately via Prism's
+// MinMemAlloc/MaxMemAlloc (left untouched here), so no -Xmx/-Xms is included.
+const c2e2JvmArgs = "-XX:+UnlockExperimentalVMOptions -XX:+UnlockDiagnosticVMOptions " +
+	"-XX:+AlwaysPreTouch -XX:+DisableExplicitGC -XX:+UseNUMA -XX:NmethodSweepActivity=1 " +
+	"-XX:ReservedCodeCacheSize=400M -XX:NonNMethodCodeHeapSize=12M -XX:ProfiledCodeHeapSize=194M " +
+	"-XX:NonProfiledCodeHeapSize=194M -XX:-DontCompileHugeMethods -XX:MaxNodeLimit=240000 " +
+	"-XX:NodeLimitFudgeFactor=8000 -XX:+UseVectorCmov -XX:+PerfDisableSharedMem " +
+	"-XX:+UseFastUnorderedTimeStamps -XX:+UseCriticalJavaThreadPriority -XX:ThreadPriorityPolicy=1 " +
+	"-XX:AllocatePrefetchStyle=3 -XX:+UseG1GC -XX:MaxGCPauseMillis=37 -XX:+PerfDisableSharedMem " +
+	"-XX:G1HeapRegionSize=16M -XX:G1NewSizePercent=23 -XX:G1ReservePercent=20 -XX:SurvivorRatio=32 " +
+	"-XX:G1MixedGCCountTarget=3 -XX:G1HeapWastePercent=20 -XX:InitiatingHeapOccupancyPercent=10 " +
+	"-XX:G1RSetUpdatingPauseTimePercent=0 -XX:MaxTenuringThreshold=1 " +
+	"-XX:G1SATBBufferEnqueueingThresholdPercent=30 -XX:G1ConcMarkStepDurationMillis=5.0 " +
+	"-XX:G1ConcRSHotCardLimit=16 -XX:G1ConcRefinementServiceIntervalMillis=150 -XX:GCTimeRatio=99 " +
+	"-XX:+UseLargePages -XX:LargePageSizeInBytes=2m"
+
+// formatQtINIValue encodes a string the way Qt's QSettings IniFormat writer
+// does, so the value survives Prism's round-trip rewrite of instance.cfg. Prism
+// reads/writes the file via Qt, which treats backslash as an escape introducer
+// and an unwrapped `"..."` run as a quoted segment whose surrounding whitespace
+// is stripped. A raw value like `"C:/x/nz.exe" check` is therefore corrupted on
+// the first save (the closing quote + space are eaten, yielding `nz.execheck`).
+// Escaping `\`->`\\` and `"`->`\"` then wrapping the whole value in quotes is
+// the canonical Qt form: Qt unescapes it back to the exact original bytes and
+// re-emits it identically, making the round-trip idempotent. Mirrors
+// Format-QtIniValue in docs/assets/setup.ps1 and publish-prism-pack.ps1.
+func formatQtINIValue(v string) string {
+	v = strings.ReplaceAll(v, `\`, `\\`)
+	v = strings.ReplaceAll(v, `"`, `\"`)
+	return `"` + v + `"`
 }
 
 // installNZBinary copies the running executable into the .negativezone dir.
