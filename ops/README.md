@@ -13,6 +13,7 @@ player guides under operator noise. Read these files directly in the repo.
 | File | Topic |
 |---|---|
 | [`publish-runbook.md`](publish-runbook.md) | Cutting a new modpack version: publish workflow, release cadence, rollback, Azure one-time setup |
+| [`luckperms-runbook.md`](luckperms-runbook.md) | Player ranks & mod permissions: the Forge op/LuckPerms split, group hierarchy, applying the permission bootstrap, discovering mod nodes |
 
 ## Layout convention
 

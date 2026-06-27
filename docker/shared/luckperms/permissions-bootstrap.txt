@@ -1,0 +1,58 @@
+# LuckPerms permission bootstrap for Craft to Exile 2
+# =============================================================================
+# Translates docker/shared/{ops.json,whitelist.json} (the "user list") into a
+# LuckPerms group hierarchy. This is the SINGLE SOURCE OF TRUTH for ranks —
+# edit it here, then re-run it (see ops/luckperms-runbook.md) to reconcile.
+#
+# Format: one rcon-cli command per line, NO leading slash. Apply with:
+#   docker exec -i mc-c2e2 rcon-cli < docker/shared/luckperms/permissions-bootstrap.txt
+# (rcon-cli reads RCON_PASSWORD/RCON_PORT from the container env automatically.)
+#
+# IMPORTANT — Forge permission model (why op + LuckPerms coexist):
+#   On Forge, LuckPerms ONLY governs mods that register named nodes via Forge's
+#   PermissionAPI. It does NOT intercept the integer op-level check
+#   (source.hasPermission(int)) that vanilla commands and MOST mods use
+#   (e.g. flan permissionLevel=2, lightmanscurrency placementPermissionLevel=2).
+#   => Op-gated commands stay controlled by ops.json (already git-synced).
+#   => LuckPerms layers chat prefixes + the handful of node-aware mods on top.
+#   Keep camcast (L4) and Anti_Good (L3) opped in ops.json.
+#
+# Lines are idempotent: re-running re-asserts the same state. "parent set"
+# replaces existing parents, so demotions/promotions are handled by editing
+# the user's line below and re-running.
+# =============================================================================
+
+# --- groups + inheritance ladder -------------------------------------------
+creategroup admin
+creategroup owner
+group default setweight 0
+group admin setweight 50
+group owner setweight 100
+group admin parent add default
+group owner parent add admin
+
+# --- chat prefixes (cosmetic) ----------------------------------------------
+# NOTE: prefixes store fine but need a chat mod that renders LuckPerms meta to
+# be visible in chat. Verify with chat-plus / ftb-placeholders in this pack.
+group owner meta setprefix 100 "&c[Owner] "
+group admin meta setprefix 50 "&b[Admin] "
+group default meta setprefix 0 "&7"
+
+# --- node grants -----------------------------------------------------------
+# owner = all nodes. admin = spark diagnostics + FTB quest editor.
+# Add newly DISCOVERED nodes here (see runbook: /lp verbose workflow).
+group owner permission set * true
+group admin permission set spark true
+group admin permission set ftbquests.edit true
+
+# --- user assignments (must match whitelist.json / ops.json) ---------------
+# Ops (also kept opped in ops.json for op-level-gated commands):
+user camcast parent set owner
+user Anti_Good parent set admin
+# Members:
+user FishMody parent set default
+user DiamondShears parent set default
+user EvOParth parent set default
+user DohWhoopsieDaisy parent set default
+user FoxtheSamurai parent set default
+user trickybat7908 parent set default

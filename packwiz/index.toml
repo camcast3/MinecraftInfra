@@ -2705,7 +2705,7 @@ hash = "9ab025c53b154a997c51b33d0502ef69ec050542a707f3743633a2e044702fc1"
 
 [[files]]
 file = "config/luckperms.conf"
-hash = "0de9ebc01daa801ff5c59ccd226d8711b59ae8214f80623fe00e43329d8b93f6"
+hash = "03759f1487681d5f6bfe8da4d8a358a7f967f15653ecd5660674a144d648b11c"
 
 [[files]]
 file = "config/mca.json"
