@@ -349,8 +349,16 @@ func configurePrismHooks(cfgPath string) {
 	nzPath := filepath.Dir(cfgPath)
 	nzBin := filepath.Join(nzPath, ".negativezone", nzBinaryName)
 
-	preLaunch := fmt.Sprintf(`"%s" check`, nzBin)
-	postExit := fmt.Sprintf(`"%s" backup`, nzBin)
+	// instance.cfg is read by Prism via Qt's INI parser (QSettings IniFormat),
+	// which treats backslash as an escape character. Raw Windows backslashes get
+	// mangled on read (e.g. "\Users" -> "sers", "\nz.exe" -> a literal newline),
+	// breaking the command path. Forward slashes round-trip cleanly and are what
+	// Prism itself stores for JavaPath/instance paths; Windows CreateProcess
+	// accepts them in the executable path.
+	nzBinSlash := filepath.ToSlash(nzBin)
+
+	preLaunch := fmt.Sprintf(`"%s" check`, nzBinSlash)
+	postExit := fmt.Sprintf(`"%s" backup`, nzBinSlash)
 
 	// Read existing cfg or start fresh
 	var lines []string
