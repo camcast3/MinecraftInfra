@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Updates
-nav_order: 3
+nav_order: 4
 ---
 
 # Modpack updates
@@ -24,24 +24,58 @@ How new modpack versions reach your client, and what to do when you see a
 - Every time you click **Play**, a ~1-second check compares your installed
   modpack version to the server's current version.
 - **If you match:** the game launches normally, no extra delay.
-- **If you don't match:** Prism shows a hard block with on-screen instructions
-  telling you to run a one-line update command. Re-launch after running it.
+- **If you don't match:** Prism shows a hard block with on-screen instructions.
+  Close Prism, **double-click the `Update Craft to Exile 2` launcher** on your
+  Desktop, then relaunch.
+- First install still downloads one prebuilt zip from Azure Blob Storage. Updates
+  now delta-sync with `packwiz-installer`, so only changed modpack files are
+  downloaded.
 - **If GitHub is unreachable:** the check fails open so offline play still works.
 
-You're never auto-updated *during* launch any more — the update is a
-**deliberate action you take from a separate PowerShell window**, so you're
-never surprised by a multi-minute "Running pre-launch command" delay with no
-progress bar.
+You're never auto-updated *during* launch any more — updating is a
+**deliberate action** (double-click the Desktop launcher, or run `nz update`),
+so you're never surprised by a multi-minute "Running pre-launch command" delay
+with no progress bar.
+
+---
+
+## Setup vs update delivery
+
+The client uses a split delivery model:
+
+- **First install (`nz setup`)** downloads a prebuilt modpack zip from
+  `https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/`. This
+  stays fast because Azure serves it from CDN (~2 min) and avoids the slow
+  CurseForge cold-install path.
+- **Updates (`nz update`)** no longer download the whole zip. They fetch
+  `latest.json`, then delta-sync `.minecraft` with `packwiz-installer` against a
+  SHA-pinned `pack.toml` URL such as
+  `https://raw.githubusercontent.com/camcast3/MinecraftInfra/<SHA>/packwiz/pack.toml`.
+  This is the same mechanism the server uses via `PACKWIZ_URL`, and usually
+  downloads only 10–50 MB instead of ~1 GB — especially helpful for AUS or
+  high-latency players.
+
+The published `latest.json` manifest includes:
+
+- `version`
+- `url` (first-install zip)
+- `sha256`
+- `sizeBytes`
+- `instance`
+- `publishedAt`
+- `packwizUrl` (SHA-pinned raw `pack.toml`)
+- optional `allowDowngrade`
 
 ---
 
 ## How the launch-time check works
 
-When you click **Play**, Prism runs `prelaunch-check.ps1`. The script:
+When you click **Play**, Prism runs the `nz check` hook (its PreLaunchCommand).
+It:
 
 1. Reads your installed version from
    `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone-version`.
-2. Fetches a ~10-byte pointer file from `raw.githubusercontent.com`
+2. Fetches `latest-version.txt` from `raw.githubusercontent.com`
    (CDN-cached, free, ~100 ms).
 3. Compares the two as strict equality.
 
@@ -54,7 +88,7 @@ being warm.
 | Installed | Server | Result |
 |---|---|---|
 | `0.4.2` | `0.4.2` | Silent pass — game launches |
-| `0.4.1` | `0.4.2` | Hard block, "behind" — run the update one-liner |
+| `0.4.1` | `0.4.2` | Hard block, "behind" — update via the launcher |
 | `0.5.0` | `0.4.2` | Hard block, "ahead" — usually means a rollback is needed |
 | anything | unreachable (no internet, 404, 5xx) | Pass with `allowing launch` notice; offline play works |
 
@@ -66,28 +100,33 @@ When your version doesn't match, you'll see this in Prism's pre-launch
 console window:
 
 ```
-[negativezone] ============================================================
-[negativezone]   MODPACK VERSION MISMATCH
-[negativezone]   installed: v0.4.1
-[negativezone]   server:    v0.4.2  (behind)
-[negativezone] ============================================================
-[negativezone]
-[negativezone] The server is pinned to a specific modpack version. Joining
-[negativezone] with a different client version would fail at the FML handshake.
-[negativezone]
-[negativezone] Run this in a NEW PowerShell window (close Prism first):
-[negativezone]
-[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1 | iex
-[negativezone]
-[negativezone] (Set $env:NEGATIVEZONE_SKIP_VERSION_CHECK=1 to bypass for offline play.)
+════════════════════════════════════════════════════════════
+  MODPACK VERSION MISMATCH
+  installed: v0.4.1
+  server:    v0.4.2  (behind)
+════════════════════════════════════════════════════════════
+
+The server is pinned to a specific modpack version.
+Joining with a different client version would fail at the FML handshake.
+
+Run this to update:
+
+  nz update
+
+Walk-through: https://wiki.negativezone.cc/updating
+(Set NEGATIVEZONE_SKIP_VERSION_CHECK=1 to bypass for offline play.)
 ```
+
+The block says `nz update`, but `nz` isn't on your PATH — the no-typing way is
+to **double-click the `Update Craft to Exile 2` launcher** on your Desktop
+(see below).
 
 The direction hint (`behind` or `ahead`) tells you what's going on:
 
-- **`behind`** — you're on an older version. Run the update one-liner.
+- **`behind`** — you're on an older version. Update via the **Update Craft to Exile 2** launcher.
 - **`ahead`** — you're on a newer version than the server. This usually means
   you tested a pre-release and the server hasn't moved up to it yet, or the
-  admin rolled the server back to fix a bug. Re-run the update one-liner —
+  admin rolled the server back to fix a bug. Re-run the update —
   by default it refuses to "downgrade" you, so the admin will need to set
   `allowDowngrade: true` in the manifest. Reach out and they'll do it.
 
@@ -98,29 +137,46 @@ The direction hint (`behind` or `ahead`) tells you what's going on:
 When you see the block:
 
 1. **Close Prism completely** (file → quit, or close the window). The update
-   script swaps files in your instance and can't do that while Prism has them
-   open.
-2. **Open a NEW PowerShell window** (Windows key → `powershell` → Enter).
-3. **Paste and run:**
+   touches files in your instance and can't do that while Prism has them open.
+2. **Double-click `Update Craft to Exile 2`** on your Desktop. A console window
+   opens, runs the update, and tells you when it's done.
+
+   Prefer a terminal? Open a **new** PowerShell window and run:
 
    ```powershell
-   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1 | iex
+   & "$env:LOCALAPPDATA\NegativeZone\nz.exe" update
    ```
 
-4. The script:
-   - Snapshots your current state first (waypoints, options, etc. — see [Backups]({% link backups.md %})).
-   - Downloads the new modpack zip from our Azure storage, verifies the SHA-256.
-   - Atomically swaps in the new mods, configs, and resourcepacks.
-   - Preserves the pack-author-flagged user prefs (graphics tuning, shader
-     choice, recipe-viewer bookmarks, keybinds, HUD layout, etc.) — those
-     don't get reset by the update.
+3. `nz update`:
+   - Auto-detects the Craft to Exile 2 instance and refuses to run while Prism
+     is open.
+   - Fetches `latest.json` from Azure Blob Storage.
+   - Compares your `.negativezone-version` to `manifest.version` and skips if
+     they already match.
+   - Refuses downgrades unless the manifest has `allowDowngrade: true`.
+   - Forces a safety snapshot first (waypoints, options, etc. — see [Backups]({% link backups.md %})).
+   - Runs `packwiz-installer` with CWD set to `.minecraft`:
+     ```text
+     java -jar packwiz-installer-bootstrap.jar --bootstrap-no-update --bootstrap-main-jar packwiz-installer.jar -g -s client <packwizUrl>
+     ```
    - Bumps your `.negativezone-version` marker to match the server.
 
-5. **Reopen Prism, click Play.** The version check now silent-passes, the
+   The packwiz jars (`packwiz-installer-bootstrap` v0.0.3 and
+   `packwiz-installer` v0.5.14) ship inside the modpack zip under `.minecraft\`
+   (and `nz` caches them under `.negativezone\` as a fallback), so update doesn't
+   re-download those tools each time. They need Java 17+, which Path A installs
+   via Temurin 17 during onboarding.
+
+   `packwiz-installer` only touches tracked modpack files, so personal state
+   like saves, options, Xaero maps, shaderpacks, and preserve-list configs stays
+   in place. The old atomic `.minecraft` swap/restore logic was only for the
+   first-install zip path.
+
+4. **Reopen Prism, click Play.** The version check now silent-passes, the
    game launches normally.
 
-A typical update takes **30–90 seconds** depending on your internet speed
-and how big the version delta is.
+A typical update downloads **10–50 MB** and takes **30–90 seconds** depending
+on your internet speed and how big the version delta is.
 
 > **Resetting a tuned setting back to pack defaults:** Just delete the
 > relevant config file from `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.minecraft\config\`
@@ -153,28 +209,43 @@ disables the periodic backup hook, so prefer the env var.
 
 ---
 
-## Migration note (existing v0.4.x players)
+## Upgrading to v0.5.0 — the nz client cutover
+{: #upgrading-to-v050 }
 
-If you installed before the launch-time version-check system shipped, your
-instance doesn't have `prelaunch-check.ps1` yet — it only lands during a
-re-run of the setup one-liner. Until you've re-run it once:
+**v0.5.0 adds new mods, so every player has to upgrade to keep playing.** Until
+your client matches the server's mod list, you'll be kicked at the FML
+handshake when you try to join. Upgrading also moves you onto the new **nz**
+client — a single `nz.exe` that replaces the old PowerShell scripts
+(`prelaunch-check.ps1`, `update.ps1`, `backup.ps1`).
 
-- You **won't** see the hard block above.
-- You **will** see the server's current version in Prism's server-list MOTD —
-  it shows `Craft to Exile 2 v0.4.X` next to the green status dot. When you
-  notice that number is different from your installed version (visible in
-  the instance name in Prism's grid), that's your cue to upgrade.
+### Do this once
 
-**To opt in to the launch-time check**, re-run the Path A one-liner once:
+1. **Close Prism completely.**
+2. Open PowerShell (Windows key → `powershell` → **Enter**) and run:
 
-```powershell
-irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
-```
+   ```powershell
+   irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex
+   ```
 
-It preserves your worlds, waypoints, options, and any other user state.
-From your next launch onward, the version check runs automatically and the
-MOTD version label becomes redundant (we'll likely drop it from the MOTD
-once everyone has migrated).
+That single command installs the nz client and the v0.5.0 modpack in one pass.
+It **preserves your worlds, waypoints, options, and tuned settings**, and saves
+your previous install as a `Craft to Exile 2.bak` folder you can roll back to.
+
+### What changes after you upgrade
+
+- **Launch check & backups run through nz.** Your Prism hooks are rewritten
+  from the old `prelaunch-check.ps1` / `backup.ps1` to `nz check` / `nz backup`
+  automatically — nothing for you to wire up.
+- **Updating is a double-click.** A new **Update Craft to Exile 2** launcher
+  lands on your Desktop. From now on you update by double-clicking it (or
+  running `nz update`) — **not** the old `irm …/update.ps1 | iex` command.
+- **Your settings carry over.** Same `NEGATIVEZONE_*` environment variables and
+  the same `.negativezone-version` marker — no reconfiguration needed.
+
+> **Coming from an even older, non-version-checked install?** Same fix: run the
+> one-liner above once. You'll get the launch-time check, the auto-backups, and
+> the Desktop update launcher all in one step. It preserves your worlds,
+> waypoints, options, and any other user state.
 
 ---
 
@@ -184,7 +255,7 @@ What you can expect from each version bump:
 
 | Bump | Example | What it means for you |
 |---|---|---|
-| **PATCH** | `0.4.1` → `0.4.2` | Client-only change (config tweak, single-mod swap, performance fix). Server keeps running. Re-run the update one-liner from the block banner, you're good. |
+| **PATCH** | `0.4.1` → `0.4.2` | Client-only change (config tweak, single-mod swap, performance fix). Server keeps running. Update via the launcher from the block banner, you're good. |
 | **MINOR** | `0.4.x` → `0.5.0` | Client + server in sync — usually a new mod or a major mod upgrade that needs the server-side too. The server briefly restarts on publish (~30 sec); you might see "Server unavailable" for a moment. |
 | **MAJOR** | `0.x.y` → `1.0.0` | Reserved for "we've gone a full month without management-caused downtime" — a stability milestone, not a content gate. |
 

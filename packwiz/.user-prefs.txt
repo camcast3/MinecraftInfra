@@ -118,3 +118,46 @@ config/gesture_store.json
 
 # ─── VR (ViveCraft) — VR player setup is per-user ────────────────────────
 config/vivecraft-client-config.json
+
+# ─── Combat / movement ───────────────────────────────────────────────────────
+config/betterthirdperson-common.toml
+config/combatroll/client.json5
+config/combatroll/hud_config.json
+config/bettercombat/client.json5
+config/combat_music-client.toml
+
+# ─── Animations / visuals ────────────────────────────────────────────────────
+config/animation_overhaul/animations.json5
+config/animation_overhaul/local_player.json5
+config/cull-less-leaves.json
+config/footprintparticle.json
+config/supplementaries-client.toml
+
+# ─── HUD / UI extras ─────────────────────────────────────────────────────────
+config/mine_and_slash-client.toml
+config/globalxp-client.toml
+config/travelerstitles-forge-1_20.toml
+config/betteradvancements-client.toml
+config/questsadditions-client.toml
+config/beautifiedchatclient.json5
+config/chimes-client.toml
+
+# ─── Inventory / item display ─────────────────────────────────────────────────
+config/curios-client.toml
+config/easymagic-client.toml
+config/highlighter-common.toml
+config/itemborders-common.toml
+config/legendarytooltips-common.toml
+config/lootr-client.toml
+config/trashslot-common.toml
+config/simplehats-client.toml
+config/simplehats.json
+config/doggytalents-client.toml
+
+# ─── Navigation ──────────────────────────────────────────────────────────────
+config/explorerscompass-client.toml
+config/naturescompass-client.toml
+
+# ─── Pickup / immersive interactions ─────────────────────────────────────────
+config/pickupnotifier/pickupnotifier-client.toml
+config/immersive_mc-client.json

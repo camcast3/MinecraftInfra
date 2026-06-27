@@ -20,10 +20,11 @@ Two install paths: a **one-line automated setup** (recommended) or
 {:toc}
 </details>
 
-> **Already playing on an older client?** Re-run the **Path A** one-liner
-> once. It will preserve your worlds, waypoints, and tuned settings while
-> upgrading you onto the new launch-time version-check system. After that,
-> future updates are explained in [Updates]({% link updates.md %}).
+> **Already playing on an older client?** **v0.5.0 is the cutover to the new
+> nz client**, and its new mods mean you must upgrade to keep playing. Re-run
+> the **Path A** one-liner once — it preserves your worlds, waypoints, and tuned
+> settings while moving you onto nz. Full details:
+> [Upgrading to v0.5.0]({% link updates.md %}#upgrading-to-v050).
 
 ---
 
@@ -48,21 +49,20 @@ only 8 GB total, giving Minecraft 8 GB will starve Windows and crash the game.
 | CPU | 4 cores | 4+ cores, 3 GHz+ |
 | Storage | 10 GB free | 20+ GB on SSD |
 
-> The automated setup (Path A) **detects your installed RAM and allocates
-> half to Minecraft, capped at 12 GB** (per C2E2's "don't over-allocate"
-> warning) — you don't need to touch Prism's Java or memory settings.
-> Setup refuses to install if you have less than 8 GB total system RAM,
-> because the modpack won't run reliably below that.
+> The published modpack instance ships **pinned to an 8 GB allocation** with
+> automatic Java detection, so you normally don't need to touch Prism's Java or
+> memory settings. On a PC with only 8 GB total RAM, lower it to **4096** (4 GB)
+> in Prism → **Settings → Java → Memory** so Windows isn't starved.
 
 ---
 
 ## Path A — Automated setup (recommended)
 
-A single PowerShell command installs **Java 17**, **Prism Launcher**, the
+A single PowerShell command installs **Java 17**, **Prism Launcher**, and the
 **Craft to Exile 2 modpack** (pulled directly from our Azure storage — much
-faster than CurseForge), **auto-tunes the memory allocation** to fit your
-PC, looks up your **UUID**, and copies the allowlist info to your clipboard.
-~3 minutes.
+faster than CurseForge), then wires Prism's launch-time version check and
+auto-backup hooks and drops an **Update Craft to Exile 2** launcher on your
+Desktop. ~3 minutes.
 
 ### Run it
 
@@ -70,26 +70,22 @@ PC, looks up your **UUID**, and copies the allowlist info to your clipboard.
 2. Copy-paste this command and press **Enter**:
 
    ```powershell
-   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
+   irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex
    ```
 
 3. Approve any winget prompts (press **Y** + Enter if asked)
-4. When prompted, type your **Minecraft Java username** and press **Enter**
-5. The script copies `Username: ... / UUID: ...` to your clipboard
+4. Wait ~2–3 minutes while it installs Java, Prism, and the modpack
 
-> **Cautious? Verify before running.** The script is published as a GitHub
-> Release asset with a SHA-256 hash you can check. See
-> [Releases](https://github.com/camcast3/MinecraftInfra/releases?q=setup-v) —
-> each release shows the install command and a copy-paste verification
-> one-liner that refuses to run if the file has been tampered with.
-
-> **What about the modpack zip?** The script also verifies the SHA-256 of
-> the modpack zip pulled from our storage before installing it. If anything
-> tampers with it, the install aborts.
+> **Cautious? Verify before running.** The installer and `nz.exe` are published
+> as assets on the
+> [`nz-latest` release](https://github.com/camcast3/MinecraftInfra/releases/tag/nz-latest),
+> which lists the `nz.exe` SHA-256. `nz setup` also verifies the SHA-256 of the
+> modpack zip pulled from our storage before installing it — if anything tampers
+> with it, the install aborts.
 
 ### After the script finishes
 
-1. **DM the admin** — paste with **Ctrl+V** to send your username + UUID. Wait for confirmation you're allowlisted.
+1. **DM the admin your Minecraft Java username** so they can allowlist you. Wait for confirmation. (If they ask for your UUID too, look it up at [minecraftuuid.com](https://minecraftuuid.com/).)
 2. Open **Prism Launcher** from the Start menu
 3. **Sign in with your Microsoft account** (the one that owns Minecraft Java)
 4. Launch the **Craft to Exile 2** instance (already installed by the script)
@@ -99,9 +95,9 @@ PC, looks up your **UUID**, and copies the allowlist info to your clipboard.
 That's it. The remaining sections below are only needed if the automated
 script didn't work or you want manual control.
 
-**Next:** see [Updates]({% link updates.md %}) for how new modpack versions
-reach you, and [Backups]({% link backups.md %}) for how your personal state
-is protected.
+**Next:** see [Updates]({% link updates.md %}) for how first install uses the
+zip and later updates use packwiz delta-sync, and [Backups]({% link backups.md %})
+for how your personal state is protected.
 
 ---
 
@@ -209,8 +205,8 @@ is restarting, you'll get a "Server unavailable" message — wait a minute and
 try again.
 
 > **Heads up — manual installs don't get the launch-time version check.**
-> Path B leaves you on a vanilla Prism instance with no `prelaunch-check.ps1`
-> or `backup.ps1` hooks installed. You'll still see the server's MOTD update
+> Path B leaves you on a vanilla Prism instance with no `nz check` (version
+> gate) or `nz backup` (auto-snapshot) hooks installed. You'll still see the server's MOTD update
 > in your server list when a new version ships (that's your cue to upgrade),
 > but you won't get the hard launch-time block or the automatic 3-day
 > snapshots. To enable those, re-run the Path A one-liner once after Path B —

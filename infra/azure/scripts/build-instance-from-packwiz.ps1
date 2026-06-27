@@ -442,6 +442,10 @@ if ($installedMods -lt 1) {
 Write-Information ''
 Write-Information "Materialized $installedMods mod JAR(s) into $modsDir"
 
+# Ship packwiz jars for client-side delta updates without re-downloading them.
+Copy-Item -LiteralPath $BootstrapJar -Destination (Join-Path $dotMinecraft 'packwiz-installer-bootstrap.jar') -Force
+Copy-Item -LiteralPath $InstallerJar -Destination (Join-Path $dotMinecraft 'packwiz-installer.jar') -Force
+
 # Seed .minecraft/servers.dat with just our Velocity proxy. Must happen
 # after packwiz install (packwiz would otherwise overwrite/conflict) and
 # before publish-prism-pack.ps1 zips the staging dir.
