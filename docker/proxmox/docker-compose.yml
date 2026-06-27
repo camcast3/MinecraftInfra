@@ -112,9 +112,11 @@ services:
       EXISTING_WHITELIST_FILE: SYNCHRONIZE
       EXISTING_OPS_FILE: SYNCHRONIZE
       ENFORCE_WHITELIST: "TRUE"
-      # Admin overlay (PCF + spark + prom-exporter) ships via packwiz with
-      # side = "server"; configs come from docker/shared/config/ here. The mod
-      # binds :19565 in onServerStarted, so prom scrapes will fail during boot
+      # Admin overlay (PCF + spark + prom-exporter + LuckPerms) ships via packwiz
+      # with side = "server". PCF + prom-exporter configs come from
+      # docker/shared/config/ here; LuckPerms' config rides along in packwiz
+      # (packwiz/config/luckperms.conf). The prom-exporter mod binds :19565 in
+      # onServerStarted, so prom scrapes will fail during boot
       # and restart windows — pair the alert with the mc-monitor SLP probe.
       APPLY_EXTRA_FILES: |-
         config<https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docker/shared/config/proxy-compatible-forge.toml

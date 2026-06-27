@@ -2704,6 +2704,10 @@ file = "config/lootr-common.toml"
 hash = "9ab025c53b154a997c51b33d0502ef69ec050542a707f3743633a2e044702fc1"
 
 [[files]]
+file = "config/luckperms.conf"
+hash = "0de9ebc01daa801ff5c59ccd226d8711b59ae8214f80623fe00e43329d8b93f6"
+
+[[files]]
 file = "config/mca.json"
 hash = "179af9cb80c10820a6a122f40e723d83aed5be37e1537d5fbfbc06e23ffdf7b2"
 
@@ -30492,6 +30496,11 @@ metafile = true
 [[files]]
 file = "mods/lootr.pw.toml"
 hash = "b500ccc37090c11729d8d835058b8d7f0dbdd98ec83a75924ea84d8860587176"
+metafile = true
+
+[[files]]
+file = "mods/luckperms.pw.toml"
+hash = "f8b4210300a8f2ce76a2329de37f2e671ac5dfeca17018528cadb333b019a814"
 metafile = true
 
 [[files]]
