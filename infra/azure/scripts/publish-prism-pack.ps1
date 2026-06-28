@@ -124,7 +124,22 @@ param(
     [string]$IconKey = 'cte2',
     [switch]$Force,
     [switch]$SkipDriftCheck,
-    [switch]$AllowDowngrade
+    [switch]$AllowDowngrade,
+    # ─── Local-publish mode ──────────────────────────────────────────────────
+    # When -LocalOutDir is set, the script runs the IDENTICAL packaging path
+    # (sanitize instance.cfg, bundle icon + update.ps1 + backup.ps1 +
+    # preserve-list.json, apply exclusions, structural mod-JAR sanity check,
+    # compute SHA-256, build the manifest) but writes the versioned zip and a
+    # latest.json into -LocalOutDir instead of uploading to Azure. ALL Azure,
+    # git, PR, and docker-compose side effects are skipped. This is how you
+    # replicate a real publish locally and target arbitrary local version tags
+    # (e.g. for test-upgrade-real.ps1's loopback server) without touching
+    # production storage or origin/main.
+    [string]$LocalOutDir,
+    # Base URL the local manifest's `url` points at (so `nz setup` can fetch the
+    # zip over http). Defaults to a loopback server on port 8788. The zip is
+    # served as <LocalBaseUrl>/<blobName>.
+    [string]$LocalBaseUrl = 'http://127.0.0.1:8788'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -132,6 +147,29 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 function Write-Step($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-Ok($msg)   { Write-Host "    [ok] $msg" -ForegroundColor Green }
+
+# ─── Local-publish mode setup ───────────────────────────────────────────────
+# $LocalMode gates every Azure / git / PR side effect below to a no-op so the
+# same packaging code produces a local zip + manifest. Production publishes
+# (no -LocalOutDir) are unaffected — every guard is false.
+$LocalMode = [bool]$LocalOutDir
+if ($LocalMode) {
+    if ($SkipDriftCheck) {
+        throw "-LocalOutDir and -SkipDriftCheck are mutually exclusive (LocalOutDir is already fully local; it never touches Azure or git)."
+    }
+    New-Item -ItemType Directory -Path $LocalOutDir -Force | Out-Null
+    $LocalOutDir = (Resolve-Path -LiteralPath $LocalOutDir).Path
+    Write-Host ""
+    Write-Host "==============================================================" -ForegroundColor Magenta
+    Write-Host " LOCAL-PUBLISH MODE (-LocalOutDir)" -ForegroundColor Magenta
+    Write-Host "==============================================================" -ForegroundColor Magenta
+    Write-Host " - Same packaging as a real publish (sanitize + bundle + verify)" -ForegroundColor Magenta
+    Write-Host " - az upload / git / PR / docker-compose rewrite: SKIPPED" -ForegroundColor Magenta
+    Write-Host " - Output dir : $LocalOutDir" -ForegroundColor Magenta
+    Write-Host " - Manifest url: $LocalBaseUrl/c2e2-v$Version.zip" -ForegroundColor Magenta
+    Write-Host "==============================================================" -ForegroundColor Magenta
+    Write-Host ""
+}
 
 # IconKey becomes a filename on disk + an in-zip path — restrict to safe
 # chars to prevent path traversal or breaking Prism's lookup.
@@ -168,12 +206,14 @@ Example: -Version test-1   -SkipDriftCheck
 }
 
 # ─── Preflight ──────────────────────────────────────────────────────────────
-if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
-    throw "Azure CLI ('az') is required. Install from https://aka.ms/installazurecli"
-}
+if (-not $LocalMode) {
+    if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+        throw "Azure CLI ('az') is required. Install from https://aka.ms/installazurecli"
+    }
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-    throw "GitHub CLI ('gh') is required. Install from https://cli.github.com/"
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        throw "GitHub CLI ('gh') is required. Install from https://cli.github.com/"
+    }
 }
 
 if (-not (Test-Path -LiteralPath $IconPath)) {
@@ -204,6 +244,8 @@ if ($env:CI -eq 'true') {
     Write-Step "CI mode detected (`$env:CI='true'`); skipping local drift checks."
 } elseif ($SkipDriftCheck) {
     Write-Step "Test-publish mode (-SkipDriftCheck); skipping local drift checks."
+} elseif ($LocalMode) {
+    Write-Step "Local-publish mode (-LocalOutDir); skipping drift checks (no server-side SHA pin)."
 } else {
     Write-Step "Local mode; checking packwiz/ for drift vs origin/main..."
 
@@ -327,6 +369,9 @@ if (Test-Path -LiteralPath $UserPrefsPath) {
 #   2. Existing origin/modpack/v<Version> → would silently stack on stale state.
 $publishBranch = "modpack/v$Version"
 
+if ($LocalMode) {
+    Write-Step "Local-publish mode; skipping git preflight (no branch/PR will be created)."
+} else {
 Push-Location $repoRoot
 try {
     if ($SkipDriftCheck) {
@@ -373,14 +418,19 @@ Pick a different -Version, or re-run with -Force to overwrite it (force-push + r
 } finally {
     Pop-Location
 }
+}
 
 # Blob preflight: versioned zip lives at an immutable URL (CDN cached),
 # so overwriting with different bytes is a player-visible correctness
 # hazard. -SkipDriftCheck loosens this for iterative test runs at the
 # same -Version (safe: test blobs only consumed by boxes that explicitly
-# set NEGATIVEZONE_MANIFEST_URL).
-Write-Step "Checking for existing blob 'c2e2-v$Version.zip'"
-$blobExistsJson = (az storage blob exists `
+# set NEGATIVEZONE_MANIFEST_URL). Local mode writes to a directory, so there
+# is no immutable-URL hazard — always overwrites.
+if ($LocalMode) {
+    Write-Step "Local-publish mode; skipping Azure blob existence check."
+} else {
+    Write-Step "Checking for existing blob 'c2e2-v$Version.zip'"
+    $blobExistsJson = (az storage blob exists `
     --account-name $StorageAccount `
     --container-name $Container `
     --name "c2e2-v$Version.zip" `
@@ -395,6 +445,7 @@ if ($blobAlreadyExists) {
     } else {
         Write-Host "    [warn] Blob 'c2e2-v$Version.zip' already exists; -Force will overwrite it" -ForegroundColor Yellow
     }
+}
 }
 
 # ─── Export ────────────────────────────────────────────────────────────────
@@ -740,22 +791,29 @@ Write-Step "Computing SHA-256"
 $sha = (Get-FileHash $tempZip -Algorithm SHA256).Hash.ToLower()
 Write-Ok "sha256 = $sha"
 
-# ─── Upload ────────────────────────────────────────────────────────────────
-# --overwrite gated by -Force OR -SkipDriftCheck. Blob preflight already
-# refused without -Force; this is defense-in-depth against a concurrent
-# publisher creating the blob in the meantime. Test mode always overwrites
-# so iterative runs at the same test version don't need -Force.
-$overwriteFlag = if ($Force -or $SkipDriftCheck) { 'true' } else { 'false' }
-Write-Step "Uploading to $StorageAccount/$Container/$blobName (overwrite=$overwriteFlag)"
-az storage blob upload `
-    --account-name $StorageAccount `
-    --container-name $Container `
-    --name $blobName `
-    --file $tempZip `
-    --auth-mode login `
-    --overwrite $overwriteFlag `
-    --content-cache-control "public, max-age=2592000, immutable" `
-    --output none
+# ─── Upload (or local copy) ─────────────────────────────────────────────────
+if ($LocalMode) {
+    $localZipPath = Join-Path $LocalOutDir $blobName
+    Write-Step "Copying zip -> $localZipPath"
+    Copy-Item -LiteralPath $tempZip -Destination $localZipPath -Force
+    Write-Ok "Local zip written"
+} else {
+    # --overwrite gated by -Force OR -SkipDriftCheck. Blob preflight already
+    # refused without -Force; this is defense-in-depth against a concurrent
+    # publisher creating the blob in the meantime. Test mode always overwrites
+    # so iterative runs at the same test version don't need -Force.
+    $overwriteFlag = if ($Force -or $SkipDriftCheck) { 'true' } else { 'false' }
+    Write-Step "Uploading to $StorageAccount/$Container/$blobName (overwrite=$overwriteFlag)"
+    az storage blob upload `
+        --account-name $StorageAccount `
+        --container-name $Container `
+        --name $blobName `
+        --file $tempZip `
+        --auth-mode login `
+        --overwrite $overwriteFlag `
+        --content-cache-control "public, max-age=2592000, immutable" `
+        --output none
+}
 
 # ─── Build latest.json manifest (upload happens AFTER git/PR succeeds) ─────
 # Upload last so the audit trail (committed modpack.yml) is always present
@@ -773,10 +831,11 @@ if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
     throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
 }
 $packwizUrl = "https://raw.githubusercontent.com/camcast3/MinecraftInfra/$packwizSha/packwiz/pack.toml"
+$manifestUrl = if ($LocalMode) { "$LocalBaseUrl/$blobName" } else { "https://$StorageAccount.blob.core.windows.net/$Container/$blobName" }
 $manifest = [ordered]@{
     version    = $Version
     blob       = $blobName
-    url        = "https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+    url        = $manifestUrl
     packwizUrl = $packwizUrl
     sha256     = $sha
     sizeBytes  = (Get-Item $tempZip).Length
@@ -790,14 +849,23 @@ if ($AllowDowngrade) {
     Write-Host "    [warn] AllowDowngrade=true: players on newer versions WILL roll back to v$Version" -ForegroundColor Yellow
 }
 
-$manifestPath = Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
+# Local mode writes the manifest straight into the output dir (this IS the
+# deliverable); production writes a temp file uploaded after the audit PR.
+$manifestPath = if ($LocalMode) {
+    Join-Path $LocalOutDir 'latest.json'
+} else {
+    Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
+}
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
 
 # ─── Update modpack.yml + .env + open PR ───────────────────────────────────
 # Skipped in test-publish mode — latest-test.json still gets packwizUrl from
 # the current HEAD, but no server-side compose rewrite or PR is created.
+# Skipped entirely in local-publish mode (no server-side mutation at all).
 if ($SkipDriftCheck) {
     Write-Step "Test-publish mode; skipping modpack.yml + docker-compose.yml rewrite + PR creation."
+} elseif ($LocalMode) {
+    Write-Step "Local-publish mode; skipping modpack.yml + docker-compose.yml rewrite + PR creation."
 } else {
     Write-Step "Creating branch '$publishBranch' from origin/main"
     Push-Location $repoRoot
@@ -994,7 +1062,25 @@ and finally upload latest.json).
 # ─── Publish latest.json (LAST — only after the audit-trail PR exists) ─────
 # Until this point no player-visible state has flipped (versioned zip is
 # uploaded but unreferenced). Test mode writes to latest-test.json so
-# production setup.ps1 is untouched.
+# production setup.ps1 is untouched. Local mode already wrote latest.json into
+# LocalOutDir above and never touches Azure.
+if ($LocalMode) {
+    Write-Host ""
+    Write-Host "Local publish complete (nothing uploaded; no git/PR)." -ForegroundColor Green
+    Write-Host "  Output dir : $LocalOutDir"
+    Write-Host "  Manifest   : $(Join-Path $LocalOutDir 'latest.json')  (url -> $manifestUrl)"
+    Write-Host "  Zip        : $(Join-Path $LocalOutDir $blobName)"
+    Write-Host ""
+    Write-Host "Serve $LocalOutDir over HTTP at $LocalBaseUrl, then point setup at it:" -ForegroundColor Cyan
+    Write-Host "  `$env:NEGATIVEZONE_MANIFEST_URL = '$LocalBaseUrl/latest.json'" -ForegroundColor Cyan
+    Write-Host "  & nz.exe setup" -ForegroundColor Cyan
+    Write-Host ""
+    # Keep the LocalOutDir zip + manifest (they ARE the deliverable); only the
+    # temp build artifact is removed.
+    Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
+    return
+}
+
 $manifestBlobName = if ($SkipDriftCheck) { 'latest-test.json' } else { 'latest.json' }
 Write-Step "Uploading $manifestBlobName"
 az storage blob upload `

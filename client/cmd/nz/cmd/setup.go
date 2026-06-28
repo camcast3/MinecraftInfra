@@ -39,6 +39,35 @@ Environment variables:
 	RunE: runSetup,
 }
 
+// setupForce, when set via --force, makes `nz setup` reinstall the modpack even
+// when the installed version already matches the manifest (the default skips the
+// download and only re-asserts the Prism hooks + helper files).
+var setupForce bool
+
+func init() {
+	setupCmd.Flags().BoolVarP(&setupForce, "force", "f", false,
+		"Reinstall the modpack even if already up to date (default: skip download, just re-assert hooks)")
+}
+
+// readVersionFileResilient reads the .negativezone-version file, retrying a few
+// times on transient read failures (Windows AV/indexer file locks). Returns the
+// trimmed version, or "" if the file is genuinely absent/unreadable. Distinguishes
+// a non-existent file (no retry — a real fresh/partial install) from an existing
+// file that briefly can't be opened (retry — don't trigger a needless re-download).
+func readVersionFileResilient(path string) string {
+	for attempt := 0; attempt < 5; attempt++ {
+		data, err := os.ReadFile(path)
+		if err == nil {
+			return strings.TrimSpace(string(data))
+		}
+		if os.IsNotExist(err) {
+			return ""
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return ""
+}
+
 // setupManifest extends the update manifest with setup-specific fields.
 type setupManifest struct {
 	Version   string `json:"version"`
@@ -116,11 +145,29 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	isUpgrade := dirExists(instanceTarget)
 
 	if isUpgrade {
-		// Read existing version
-		existingVer := ""
-		if data, err := os.ReadFile(paths.VersionFile); err == nil {
-			existingVer = strings.TrimSpace(string(data))
+		// Read existing version. Retry on transient failure: on Windows a freshly
+		// written version file can be briefly locked by AV/indexing, and a single
+		// failed read here would wrongly fall through to a full (paid, ~1 GB)
+		// re-download instead of the cheap skip path below.
+		existingVer := readVersionFileResilient(paths.VersionFile)
+
+		// Already up to date: skip the (paid, bandwidth-heavy) Azure modpack
+		// download entirely and just re-assert the per-instance wiring. This is
+		// also the cheap repair path for a mangled instance.cfg — re-running
+		// `nz setup` rewrites the Prism hooks without touching the modpack.
+		// Pass --force to reinstall the modpack anyway.
+		if existingVer == manifest.Version && !setupForce {
+			logging.OKf("Already up to date (v%s) — skipping modpack download.", manifest.Version)
+			logging.Info("Re-asserting Prism hooks + helper files (use --force to reinstall the modpack).")
+			logging.Blank()
+			logging.UseInstance(paths.NZDir)
+			ensureInstanceWiring(instanceTarget, paths)
+			logging.Step("Done!")
+			logging.OK("Prism hooks and helper files re-asserted.")
+			logging.Blank()
+			return nil
 		}
+
 		logging.Infof("Existing install found: v%s → upgrading to v%s", existingVer, manifest.Version)
 	} else {
 		logging.Info("Fresh install — no existing instance found.")
@@ -247,6 +294,11 @@ func runSetup(cmd *cobra.Command, args []string) error {
 
 		logging.OKf("Restored %d user-state item(s)", restored)
 		logging.Dimf("Old instance backup: %s", backupPath)
+
+		// Side-by-side "(old)" instance for one-click rollback in Prism. The
+		// prev version label comes from the .bak's marker (now at backupPath).
+		prevVersion := readVersionFileResilient(filepath.Join(backupPath, ".negativezone-version"))
+		createOldInstance(prismDir, manifest.Instance, backupPath, prevVersion)
 	} else {
 		// Fresh install — just move into place
 		if err := os.Rename(srcInstance, instanceTarget); err != nil {
@@ -263,6 +315,21 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	// the completion record (and future update/check/backup runs) live with it.
 	logging.UseInstance(paths.NZDir)
 
+	ensureInstanceWiring(instanceTarget, paths)
+
+	logging.Step("Setup complete!")
+	logging.OKf("Installed %s v%s", manifest.Instance, manifest.Version)
+	logging.Blank()
+	logging.Info("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
+	logging.Blank()
+
+	return nil
+}
+
+// ensureInstanceWiring (re-)installs the per-instance helper files: the Prism
+// PreLaunch/PostExit hooks, the nz binary, and the double-click update launcher.
+// Idempotent — safe to call on a fresh install or to repair an existing one.
+func ensureInstanceWiring(instanceTarget string, paths instance.Paths) {
 	// Configure Prism hooks (instance.cfg)
 	logging.Step("Configuring Prism hooks")
 	configurePrismHooks(paths.InstanceCfg)
@@ -275,13 +342,160 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	logging.Step("Creating update launcher")
 	installUpdateLauncher(instanceTarget)
 
-	logging.Step("Setup complete!")
-	logging.OKf("Installed %s v%s", manifest.Instance, manifest.Version)
-	logging.Blank()
-	logging.Info("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
-	logging.Blank()
+	// Sort instances into Prism groups so the live install ("Latest") is
+	// visually separated from upgrade leftovers (the .bak + side-by-side
+	// "(old)") under "Backup". Self-heals on every run; absent dirs are skipped.
+	logging.Step("Updating Prism instance groups")
+	instancesDir := filepath.Dir(instanceTarget)
+	name := filepath.Base(instanceTarget)
+	setPrismInstanceGroup(instancesDir, map[string][]string{
+		"Latest": {name},
+		"Backup": {name + ".bak", name + " (old)"},
+	})
+}
 
-	return nil
+// prismGroup is one entry in instgroups.json's "groups" object.
+type prismGroup struct {
+	Hidden    bool     `json:"hidden"`
+	Instances []string `json:"instances"`
+}
+
+// prismInstGroups mirrors Prism's instances/instgroups.json on-disk shape.
+type prismInstGroups struct {
+	FormatVersion string                `json:"formatVersion"`
+	Groups        map[string]prismGroup `json:"groups"`
+}
+
+// setPrismInstanceGroup writes instances/instgroups.json to assign managed
+// instances to named groups (e.g. "Latest", "Backup"). Idempotent and additive,
+// mirroring Set-PrismInstanceGroup in docs/assets/setup.ps1: it preserves any
+// groups the player created, strips our managed instances out of every existing
+// group before re-assigning (so an instance can't end up in two groups), and
+// skips instances whose folder is absent (so a missing .bak/(old) doesn't leave
+// an empty "Backup" group). Written as BOM-less UTF-8 to match Prism's own file.
+func setPrismInstanceGroup(instancesDir string, assignments map[string][]string) {
+	if !dirExists(instancesDir) {
+		logging.Warnf("Instances dir not found at %s; skipping group update", instancesDir)
+		return
+	}
+	groupsFile := filepath.Join(instancesDir, "instgroups.json")
+
+	// Every instance we manage, so we can strip them from pre-existing groups.
+	managed := map[string]bool{}
+	for _, insts := range assignments {
+		for _, in := range insts {
+			managed[in] = true
+		}
+	}
+
+	final := map[string]prismGroup{}
+
+	// Preserve player-created groups, minus any managed instances we're about to
+	// re-assign below.
+	if data, err := os.ReadFile(groupsFile); err == nil {
+		var existing prismInstGroups
+		if json.Unmarshal(data, &existing) == nil {
+			for groupName, g := range existing.Groups {
+				if _, isOurs := assignments[groupName]; isOurs {
+					continue
+				}
+				var kept []string
+				for _, in := range g.Instances {
+					if !managed[in] {
+						kept = append(kept, in)
+					}
+				}
+				if len(kept) == 0 {
+					continue
+				}
+				final[groupName] = prismGroup{Hidden: g.Hidden, Instances: kept}
+			}
+		} else {
+			logging.Warnf("Could not parse %s; rewriting from scratch", groupsFile)
+		}
+	}
+
+	// Assign our managed instances, skipping any whose folder doesn't exist.
+	for groupName, insts := range assignments {
+		present := []string{}
+		for _, in := range insts {
+			if dirExists(filepath.Join(instancesDir, in)) {
+				present = append(present, in)
+			}
+		}
+		if len(present) == 0 {
+			continue
+		}
+		final[groupName] = prismGroup{Hidden: false, Instances: present}
+	}
+
+	payload := prismInstGroups{FormatVersion: "1", Groups: final}
+	out, err := json.MarshalIndent(payload, "", "    ")
+	if err != nil {
+		logging.Warnf("Could not encode instgroups.json: %v", err)
+		return
+	}
+	if err := os.WriteFile(groupsFile, out, 0o644); err != nil {
+		logging.Warnf("Could not write instgroups.json: %v", err)
+		return
+	}
+	logging.OK("Prism groups updated (live -> Latest; .bak / (old) -> Backup if present)")
+}
+
+// createOldInstance copies the just-made .bak into a clean side-by-side
+// "<instance> (old)" instance with its launch hooks disabled, so a player can
+// one-click launch the previous version from Prism if the upgrade misbehaves.
+// The raw .bak folder (trailing ".bak") confuses Prism's UI and still has the
+// active PreLaunch version-check that would block its launch; this copy fixes
+// both. Best-effort: on failure the .bak remains as the filesystem rollback.
+// Mirrors the side-by-side block in docs/assets/setup.ps1.
+func createOldInstance(instancesDir, instanceName, backupPath, prevVersion string) {
+	oldName := instanceName + " (old)"
+	oldPath := filepath.Join(instancesDir, oldName)
+
+	logging.Step("Creating side-by-side 'old' instance for one-click rollback")
+	if dirExists(oldPath) {
+		_ = os.RemoveAll(oldPath)
+	}
+	if err := copyDir(backupPath, oldPath); err != nil {
+		logging.Warnf("Could not create side-by-side old instance (%v). Your .bak at %s is still intact for rollback.", err, backupPath)
+		return
+	}
+
+	display := fmt.Sprintf("%s v%s (old)", instanceName, prevVersion)
+	if prevVersion == "" {
+		display = instanceName + " (old)"
+	}
+	disableHooksAndRename(filepath.Join(oldPath, "instance.cfg"), display)
+	logging.OKf("Old instance available in Prism as '%s' (auto-update hook disabled)", oldName)
+}
+
+// disableHooksAndRename sets OverrideCommands=false (kill switch that leaves the
+// command lines intact but inert) and rewrites name= to displayName in an
+// instance.cfg. Used for the side-by-side "(old)" rollback instance.
+func disableHooksAndRename(cfgPath, displayName string) {
+	data, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	sawOverride, sawName := false, false
+	for i, line := range lines {
+		if strings.HasPrefix(line, "OverrideCommands=") {
+			lines[i] = "OverrideCommands=false"
+			sawOverride = true
+		} else if strings.HasPrefix(line, "name=") {
+			lines[i] = "name=" + displayName
+			sawName = true
+		}
+	}
+	if !sawOverride {
+		lines = append(lines, "OverrideCommands=false")
+	}
+	if !sawName {
+		lines = append(lines, "name="+displayName)
+	}
+	_ = os.WriteFile(cfgPath, []byte(strings.Join(lines, "\n")), 0o644)
 }
 
 // updateLauncherName is the double-click launcher players use to update.
@@ -344,13 +558,54 @@ func fetchSetupManifest(url string) (*setupManifest, error) {
 	return &m, nil
 }
 
+// formatQtINIValue emits Qt's canonical escaped form for an instance.cfg value:
+// escape `\` -> `\\` and `"` -> `\"`, then wrap the whole value in `"..."`.
+//
+// Prism stores instance.cfg as a Qt QSettings INI file. Qt's reader treats a
+// backslash as an escape character (\\, \", \n, \r, \t, \uXXXX, \xXX) and treats
+// unwrapped `"..."` segments as quoted runs that get concatenated with the
+// surrounding whitespace stripped. Our PreLaunch/PostExit commands are full of
+// literal quotes and backslashes (e.g. `"C:\Users\...\nz.exe" backup`), so a raw
+// write gets mangled the very first time Prism rewrites the cfg (just clicking
+// Launch updates lastLaunchTime and resaves): `\U`, `\c`, `\A`, ... are eaten as
+// escape sequences and the command collapses to garbage like
+// `C:sersarltppData...z.exebackup`, then fails to launch.
+//
+// The escaped form round-trips idempotently: Qt's reader undoes the escapes and
+// Qt's writer re-emits the identical bytes. Mirrors Format-QtIniValue in
+// docs/assets/setup.ps1 and infra/azure/scripts/publish-prism-pack.ps1 — keep in
+// sync.
+func formatQtINIValue(value string) string {
+	escaped := strings.ReplaceAll(value, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+	return `"` + escaped + `"`
+}
+
 // configurePrismHooks writes the PreLaunch and PostExit commands into instance.cfg.
 func configurePrismHooks(cfgPath string) {
 	nzPath := filepath.Dir(cfgPath)
-	nzBin := filepath.Join(nzPath, ".negativezone", nzBinaryName)
 
-	preLaunch := fmt.Sprintf(`"%s" check`, nzBin)
-	postExit := fmt.Sprintf(`"%s" backup`, nzBin)
+	// Use FORWARD slashes for the exe path. Prism stores instance.cfg as a Qt
+	// QSettings INI where backslash is an escape char, so a raw Windows path
+	// (C:\Users\...) gets its letters eaten on Prism's first resave — the
+	// `C:sersarltppData...` bug. Even correct `\\`-escaping is one missed
+	// round-trip away from re-mangling. Forward slashes have NO escape meaning in
+	// Qt's INI reader or in QProcess::splitCommand, and Windows CreateProcess
+	// (which Prism's QProcess uses) launches a forward-slash absolute path fine
+	// — verified empirically on Windows. formatQtINIValue still wraps + escapes
+	// the surrounding quotes so the space in "Craft to Exile 2" survives.
+	//
+	// We deliberately do NOT use a bare `nz` + PATH command: QProcess bare-name
+	// resolution depends on the PATH Prism captured at *its* startup (stale until
+	// Prism restarts), and a PreLaunchCommand that fails to start is FATAL in
+	// Prism — it blocks the game from launching. A fixed absolute path has no
+	// PATH dependency and can never be mangled.
+	nzBin := filepath.ToSlash(filepath.Join(nzPath, ".negativezone", nzBinaryName))
+
+	// Build the raw commands (real path + quotes), then Qt-escape so Prism's
+	// round-trip resave doesn't eat the quotes. See formatQtINIValue.
+	preLaunch := formatQtINIValue(fmt.Sprintf(`"%s" check`, nzBin))
+	postExit := formatQtINIValue(fmt.Sprintf(`"%s" backup`, nzBin))
 
 	// Read existing cfg or start fresh
 	var lines []string
@@ -358,11 +613,12 @@ func configurePrismHooks(cfgPath string) {
 		lines = strings.Split(string(data), "\n")
 	}
 
-	// Update/add required keys
+	// Update/add required keys. OverrideCommands is a bare bool (not Qt-escaped);
+	// the two command values are already escaped above.
 	keys := map[string]string{
-		"OverrideCommands":  "true",
-		"PreLaunchCommand":  preLaunch,
-		"PostExitCommand":   postExit,
+		"OverrideCommands": "true",
+		"PreLaunchCommand": preLaunch,
+		"PostExitCommand":  postExit,
 	}
 
 	for key, val := range keys {
@@ -392,11 +648,37 @@ func installNZBinary(nzDir string) {
 	}
 
 	dst := filepath.Join(nzDir, nzBinaryName)
+
+	// If we're already running as the installed binary (e.g. a user re-ran
+	// `nz setup` from inside .negativezone to repair hooks), copying the file
+	// onto itself would fail with a sharing-violation. It's already in place, so
+	// just skip — nothing to do.
+	if sameFile(self, dst) {
+		logging.OKf("%s already installed in %s", nzBinaryName, nzDir)
+		return
+	}
+
 	if err := copyFileLarge(self, dst); err != nil {
 		logging.Warnf("Could not install binary: %v", err)
 		return
 	}
 	logging.OKf("Installed %s into %s", nzBinaryName, nzDir)
+}
+
+// sameFile reports whether two paths refer to the same on-disk file, comparing
+// resolved absolute paths and (when both exist) os.SameFile identity.
+func sameFile(a, b string) bool {
+	absA, errA := filepath.Abs(a)
+	absB, errB := filepath.Abs(b)
+	if errA == nil && errB == nil && strings.EqualFold(absA, absB) {
+		return true
+	}
+	ia, errA := os.Stat(a)
+	ib, errB := os.Stat(b)
+	if errA == nil && errB == nil {
+		return os.SameFile(ia, ib)
+	}
+	return false
 }
 
 // copyFileLarge copies a file using streaming (suitable for large binaries).

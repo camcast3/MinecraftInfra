@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,6 +35,51 @@ func TestEmitWritesLeveledLines(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("log missing %q; got:\n%s", want, got)
 		}
+	}
+}
+
+func TestEmitStripsAnsiForNonTTY(t *testing.T) {
+	colored := "\x1b[38;2;102;102;102m  hi\x1b[m"
+	if !strings.Contains(colored, "\x1b[") {
+		t.Fatal("test input must contain ANSI SGR escapes")
+	}
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("pipe: %v", err)
+	}
+	defer r.Close()
+
+	l := &Logger{consoleLevel: LevelInfo}
+	l.emit(LevelInfo, "hi", colored, w)
+	if err := w.Close(); err != nil {
+		t.Fatalf("close pipe writer: %v", err)
+	}
+
+	data, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("read pipe: %v", err)
+	}
+	got := string(data)
+	if strings.Contains(got, "\x1b[") {
+		t.Fatalf("console output contains ANSI escape: %q", got)
+	}
+	if strings.TrimRight(got, "\r\n") != "  hi" {
+		t.Fatalf("console output = %q, want stripped text", got)
+	}
+}
+
+func TestANSISGRStripsColorSequences(t *testing.T) {
+	input := "plain \x1b[38;2;102;102;102mhi\x1b[m \x1b[1;32mthere\x1b[0m"
+	if got, want := ansiSGR.ReplaceAllString(input, ""), "plain hi there"; got != want {
+		t.Fatalf("ansiSGR.ReplaceAllString() = %q, want %q", got, want)
+	}
+}
+
+func TestStreamSupportsColorHonorsNoColor(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
+	if streamSupportsColor(os.Stdout) {
+		t.Fatal("streamSupportsColor returned true with NO_COLOR set")
 	}
 }
 

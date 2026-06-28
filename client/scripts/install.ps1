@@ -13,6 +13,9 @@
 # preserves your worlds, waypoints, and tuned settings.
 #
 # Test/override env vars (admins only):
+#   NEGATIVEZONE_NZ_EXE_PATH  - use a LOCAL nz.exe (copied, not downloaded). Lets
+#                               you test a freshly-built binary end-to-end without
+#                               publishing to GitHub. Takes precedence over the URL.
 #   NEGATIVEZONE_NZ_EXE_URL   - override the nz.exe download URL
 #   NEGATIVEZONE_MANIFEST_URL - override the modpack manifest (test channel)
 #   NEGATIVEZONE_SKIP_WINGET  - '1' to skip Java/Prism winget installs
@@ -26,6 +29,7 @@ function Write-Warn($msg) { Write-Host "    [warn] $msg" -ForegroundColor Yellow
 
 $DefaultNzExeUrl = 'https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/nz.exe'
 $NzExeUrl = if ($env:NEGATIVEZONE_NZ_EXE_URL) { $env:NEGATIVEZONE_NZ_EXE_URL } else { $DefaultNzExeUrl }
+$NzExeLocalPath = $env:NEGATIVEZONE_NZ_EXE_PATH
 
 Write-Host ''
 Write-Host 'NegativeZone Minecraft installer' -ForegroundColor Magenta
@@ -82,19 +86,37 @@ if ($env:NEGATIVEZONE_SKIP_WINGET -eq '1') {
     }
 }
 
-# ─── 2. Download nz.exe to a stable location ─────────────────────────────────
-Write-Step 'Downloading the nz client'
+# ─── 2. Obtain nz.exe into a stable location ─────────────────────────────────
 $nzDir = Join-Path $env:LOCALAPPDATA 'NegativeZone'
 New-Item -ItemType Directory -Path $nzDir -Force | Out-Null
 $nzExe = Join-Path $nzDir 'nz.exe'
-if ($NzExeUrl -ne $DefaultNzExeUrl) {
-    Write-Warn "Using OVERRIDE nz.exe URL: $NzExeUrl"
-}
-try {
-    Invoke-WebRequest -Uri $NzExeUrl -OutFile $nzExe -UseBasicParsing
-    Write-Ok "nz client saved to $nzExe"
-} catch {
-    throw "Failed to download nz client from $NzExeUrl : $($_.Exception.Message)"
+
+if ($NzExeLocalPath) {
+    # Local-binary mode: copy a freshly-built nz.exe instead of downloading.
+    # Lets you test the full install.ps1 flow end-to-end against an unreleased
+    # build (e.g. `go build -o nz.exe ./cmd/nz`) without publishing to GitHub.
+    Write-Step 'Installing the nz client (LOCAL build)'
+    Write-Warn "Using LOCAL nz.exe: $NzExeLocalPath"
+    if (-not (Test-Path -LiteralPath $NzExeLocalPath)) {
+        throw "NEGATIVEZONE_NZ_EXE_PATH points at a file that doesn't exist: $NzExeLocalPath"
+    }
+    try {
+        Copy-Item -LiteralPath $NzExeLocalPath -Destination $nzExe -Force
+        Write-Ok "nz client copied to $nzExe"
+    } catch {
+        throw "Failed to copy local nz client from $NzExeLocalPath : $($_.Exception.Message)"
+    }
+} else {
+    Write-Step 'Downloading the nz client'
+    if ($NzExeUrl -ne $DefaultNzExeUrl) {
+        Write-Warn "Using OVERRIDE nz.exe URL: $NzExeUrl"
+    }
+    try {
+        Invoke-WebRequest -Uri $NzExeUrl -OutFile $nzExe -UseBasicParsing
+        Write-Ok "nz client saved to $nzExe"
+    } catch {
+        throw "Failed to download nz client from $NzExeUrl : $($_.Exception.Message)"
+    }
 }
 
 # ─── 3. Run the install ──────────────────────────────────────────────────────

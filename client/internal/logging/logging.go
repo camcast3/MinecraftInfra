@@ -38,12 +38,50 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/camcast3/MinecraftInfra/client/internal/ui"
 )
+
+// ansiSGR matches ANSI SGR (color/style) escape sequences, e.g. the truecolor
+// `\x1b[38;2;102;102;102m` and reset `\x1b[m` that lipgloss emits.
+var ansiSGR = regexp.MustCompile("\x1b\\[[0-9;]*m")
+
+// streamSupportsColor reports whether f is an interactive terminal that can
+// render ANSI color. False when f is a pipe/file — notably when Prism runs the
+// PreLaunch/PostExit hooks via QProcess and captures their output, where raw
+// `\x1b[..m` codes would otherwise leak into the launch console as literal text.
+// Honors the NO_COLOR convention. Uses os.ModeCharDevice (stdlib, cross-platform)
+// so no terminal dependency is needed.
+func streamSupportsColor(f *os.File) bool {
+	if f == nil || os.Getenv("NO_COLOR") != "" {
+		return false
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.Mode()&os.ModeCharDevice != 0
+}
+
+var (
+	stdoutColor = streamSupportsColor(os.Stdout)
+	stderrColor = streamSupportsColor(os.Stderr)
+)
+
+func consoleStreamSupportsColor(stream *os.File) bool {
+	switch stream {
+	case os.Stdout:
+		return stdoutColor
+	case os.Stderr:
+		return stderrColor
+	default:
+		return streamSupportsColor(stream)
+	}
+}
 
 // Level controls both the file record tag and console filtering.
 type Level int
@@ -195,6 +233,12 @@ func (l *Logger) emit(level Level, fileText, consoleText string, stream *os.File
 	line := time.Now().Format(time.RFC3339) + " [" + level.tag() + "] " + fileText
 	l.append(line)
 	if level >= l.consoleLevel && consoleText != "" {
+		// Strip ANSI color when the stream isn't an interactive terminal (e.g.
+		// Prism captures hook output via a pipe) so raw escape codes don't leak
+		// into the console as literal `\x1b[..m` text.
+		if !consoleStreamSupportsColor(stream) {
+			consoleText = ansiSGR.ReplaceAllString(consoleText, "")
+		}
 		fmt.Fprintln(stream, consoleText)
 	}
 }

@@ -107,6 +107,25 @@ Every task below uses the same template:
   workflow is serialized (`concurrency: publish-prism-pack`). To run the whole
   thing locally you need `az login` (Storage Blob Data Contributor on the
   container) and `gh` auth.
+- **Local-publish mode (no Azure, no git).** Pass `-LocalOutDir <dir>` to run the
+  **identical** packaging path (sanitize `instance.cfg`, bundle icon + update.ps1
+  + backup.ps1 + preserve-list.json, apply exclusions, structural mod-JAR sanity
+  check, compute SHA-256, build `latest.json`) but write the versioned zip +
+  manifest to a local directory instead of uploading to Azure / opening a PR.
+  Targets any version tag, needs neither `az` nor `gh`. This is how you stage a
+  publish-faithful local zip (e.g. for the upgrade mock below) without touching
+  production storage:
+
+  ```powershell
+  ./infra/azure/scripts/publish-prism-pack.ps1 `
+    -Version 0.4.3 -InstancePath "<a Prism instance>" `
+    -LocalOutDir "$env:TEMP\nzpub" -LocalBaseUrl "http://127.0.0.1:8788"
+  # -> $env:TEMP\nzpub\c2e2-v0.4.3.zip + latest.json (url -> the loopback base)
+  ```
+
+  `-LocalOutDir` is mutually exclusive with `-SkipDriftCheck` (it's already fully
+  local) and never mutates the source instance (the sanitized cfg is written only
+  into the zip).
 
 ### Build a staging / hotfix instance
 
@@ -238,6 +257,77 @@ All commands run from the `client/` directory unless noted.
   go build -o nz.exe ./cmd/nz/
   ```
 
+### Install / repair on a real machine (`install.ps1` + `nz setup` levers)
+
+- **Why** — drive the real installer end-to-end, test an **unreleased** build
+  without publishing to GitHub, repair a mangled Prism `instance.cfg`, or re-wire
+  hooks — all without paying for a full ~1 GB Azure modpack re-download.
+- **Key behaviours**:
+  - **Version-skip (default).** `nz setup` reads the installed
+    `.negativezone-version`; if it already equals the manifest version it
+    **skips the modpack download** and only re-asserts the Prism hooks, the
+    bundled `nz.exe`, and the Update launcher. This is the cheap repair path for
+    a corrupted/mangled `instance.cfg` — just re-run `nz setup`.
+  - **`--force`** reinstalls the modpack even when the version matches (full
+    download + user-state-preserving swap).
+  - The Prism hook paths are written with **forward slashes**
+    (`C:/Users/…/nz.exe`) so Qt's `instance.cfg` INI parser can't eat the
+    backslashes — the historical `C:sersarlt…` mangling bug.
+- **Levers** — environment variables, all admin/test only:
+
+  | Lever | Read by | Effect |
+  |---|---|---|
+  | `NEGATIVEZONE_NZ_EXE_PATH` | `install.ps1` | **Copy** a local `nz.exe` instead of downloading from `nz-latest`. Test an unreleased build end-to-end. Takes precedence over the URL. |
+  | `NEGATIVEZONE_NZ_EXE_URL` | `install.ps1` | Override the `nz.exe` download URL (e.g. a fork/test release). |
+  | `NEGATIVEZONE_MANIFEST_URL` | `install.ps1`, `nz setup` | Point setup at a test modpack manifest instead of the prod `latest.json`. |
+  | `NEGATIVEZONE_SKIP_WINGET` | `install.ps1` | `1` skips the Java 17 + Prism winget installs. |
+  | `NEGATIVEZONE_NONINTERACTIVE` | `nz setup` | `1` skips the confirm prompt (set automatically by `install.ps1`). |
+  | `NEGATIVEZONE_SKIP_PRISM_CHECK` | `nz setup` | `1` bypasses the "Prism is running" guard (tests only — Prism rewrites `instance.cfg` on exit, so never skip this on a live machine). |
+
+- **How** — test the full installer against a freshly-built binary, offline:
+
+  ```powershell
+  cd client
+  go build -o "$env:TEMP\nz.exe" ./cmd/nz/
+
+  $env:NEGATIVEZONE_NZ_EXE_PATH = "$env:TEMP\nz.exe"   # use the local build
+  $env:NEGATIVEZONE_SKIP_WINGET = '1'                   # skip Java/Prism installs
+  irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/client/scripts/install.ps1 | iex
+  # …or run the local copy directly:
+  pwsh client/scripts/install.ps1
+  ```
+
+  Repair a mangled `instance.cfg` / re-wire hooks on a live machine (no download
+  when already up to date — close Prism first):
+
+  ```powershell
+  & "$env:LOCALAPPDATA\NegativeZone\nz.exe" setup          # version-skip → re-asserts hooks only
+  & "$env:LOCALAPPDATA\NegativeZone\nz.exe" setup --force  # force a full modpack reinstall
+  ```
+
+- **What it does** — `install.ps1` installs Java 17 + Prism (unless skipped),
+  places `nz.exe` in `%LOCALAPPDATA%\NegativeZone\`, then runs `nz setup`, which
+  installs/updates the Prism instance and wires `PreLaunchCommand=… check` /
+  `PostExitCommand=… backup` into `instance.cfg` (paths written with **forward
+  slashes** so Qt's INI parser can't mangle them). On an **upgrade** it also
+  keeps the previous install as `…\.bak`, creates a one-click-rollback
+  `Craft to Exile 2 (old)` instance (launch hooks disabled), and rewrites
+  `instances\instgroups.json` to sort the grid into **Latest** (live) and
+  **Backup** (`.bak` + `(old)`) groups. The grouping self-heals on every run.
+- **Backups.** The `PostExitCommand` (`nz backup`) snapshots curated user-state
+  (configs, shaderpacks, resourcepacks, waypoints, options, `servers.dat`, etc.
+  per `preserve-list.json`) into `.negativezone\backups\<timestamp>\` — **not**
+  the whole modpack. It runs on a **3-day cadence**, so most game exits print
+  `Last backup N day(s) ago; next due in …` and skip — that's expected, not a
+  failure. Force one to verify: `& "$env:LOCALAPPDATA\NegativeZone\nz.exe" backup --force`
+  (set `INST_DIR` to the instance, or run from its `.negativezone\nz.exe`).
+- **Notes** — safe to re-run. The version-skip path never touches `.minecraft`,
+  so it can't disturb worlds/settings. To preview the full upgrade experience
+  (`.bak` + `(old)` + groups) without paying for an Azure download, use the
+  [local-zip upgrade mock](#mock-a-full-modpack-upgrade-end-to-end-local-043-zip).
+  For a zero-risk full lifecycle test against a fake Azure, use the
+  [sandbox harness](#manual-harness--sandbox-zero-risk).
+
 ### Vet
 
 - **Why** — static checks before pushing.
@@ -293,22 +383,128 @@ All commands run from the `client/` directory unless noted.
   ```powershell
   pwsh client/scripts/manual-e2e.ps1 up
   . $env:TEMP\nz-manual-e2e\env.ps1    # loads $nz + sandbox APPDATA + helpers
-  # ... nz setup / nz check / nz backup / nzPublish 1.0.1 / nz update / nz migrate ...
+  # ... nz setup / nz check / nz backup / nzPublishReal 0.4.3 / nz update / nz migrate ...
   pwsh client/scripts/manual-e2e.ps1 down
   ```
 
 - **Notes** — defaults to the fake-packwiz seam (instant, offline). Pass
   `-RealPackwiz` to exercise the real `packwiz-installer` (needs Java 17 +
-  network).
-- **Validate a specific version (e.g. 0.4.3).** The sandbox seeds `1.0.0` →
-  `1.0.1`. `nzPublish <ver>` republishes the "latest" manifest to any version,
-  but mind the **downgrade gotcha**: `nz update` refuses to move from the seeded
-  `1.0.0` *down* to `0.4.x` unless you pass `-AllowDowngrade` to `nzPublish`
-  (which exercises the downgrade path, not a clean forward update). For a clean
-  **forward** test like `0.4.2 → 0.4.3`, change the two seed versions near the
-  top of `manual-e2e.ps1` (the `New-FakeZip` / `Write-LocalManifest` calls) to
-  your base version, then drive `setup → check → backup → nzPublish 0.4.3 →
-  check → update`.
+  network). The sandbox sets `NEGATIVEZONE_SKIP_PRISM_CHECK=1` and a temp
+  `%APPDATA%`, so it can never touch your real Prism instance.
+- **Helpers loaded by `env.ps1`:**
+
+  | Helper | Use |
+  |---|---|
+  | `nzStageZip <ver>` | Build a **real** local modpack zip for `<ver>` (valid `instance.cfg` / `mmc-pack.json` / `.minecraft` / preserve-list) into the loopback blob dir. |
+  | `nzPublishReal <ver> [-AllowDowngrade]` | Stage the zip (if needed) **and** publish a manifest with a real SHA-256 + size, so `nz setup`'s zip verification passes. Use this to drive `nz setup` from a local zip. |
+  | `nzPublish <ver> [-AllowDowngrade]` | Publish a manifest with a **placeholder** SHA (fine for the packwiz-only `nz update` path, which doesn't download the zip). |
+  | `nzReset` | Wipe the installed instance + `.bak` for a clean `setup`. |
+
+### Mock a full modpack **upgrade** end-to-end (local 0.4.3 zip)
+
+- **Why** — see exactly what a player experiences on a version bump: the new
+  instance installed from a **local** 0.4.3 zip (no Azure egress), the previous
+  install preserved as a `.bak`, a one-click-rollback `Craft to Exile 2 (old)`
+  instance, and Prism's grid sorted into **Latest** / **Backup** groups (the same
+  grouping the legacy `setup.ps1` produced). This is the stable, repeatable way
+  to validate an upgrade before publishing.
+- **Prerequisites** — `pwsh` (PowerShell 7). The sandbox builds `nz.exe` and a
+  loopback file server itself; nothing hits production.
+- **How** — brand-new install from a local 0.4.3 zip:
+
+  ```powershell
+  pwsh client/scripts/manual-e2e.ps1 up
+  . $env:TEMP\nz-manual-e2e\env.ps1
+  $env:NEGATIVEZONE_NONINTERACTIVE = '1'        # skip the y/N prompt
+  nzReset ; nzPublishReal 0.4.3 ; & $nz setup   # installs v0.4.3 from the LOCAL zip
+  ```
+
+  Full **upgrade** (base 0.4.2 → 0.4.3), which is what produces the `.bak`,
+  `(old)`, and groups:
+
+  ```powershell
+  nzReset ; nzPublishReal 0.4.2 ; & $nz setup   # base install
+  nzPublishReal 0.4.3 ; & $nz setup             # upgrade from the LOCAL 0.4.3 zip
+  pwsh client/scripts/manual-e2e.ps1 down        # tear down when done
+  ```
+
+- **What to verify** (against the sandbox `%APPDATA%`):
+
+  ```powershell
+  $inst = "$env:APPDATA\PrismLauncher\instances"
+  Get-Content "$inst\Craft to Exile 2\.negativezone-version"      # -> 0.4.3
+  Test-Path "$inst\Craft to Exile 2.bak"                          # -> True
+  Test-Path "$inst\Craft to Exile 2 (old)"                        # -> True (OverrideCommands=false)
+  Get-Content "$inst\instgroups.json"                            # Latest -> live; Backup -> .bak + (old)
+  ```
+
+- **Notes** — `nz setup` is **version-aware**: if the installed
+  `.negativezone-version` already equals the manifest version it **skips the
+  download** and only re-asserts hooks/groups. So an upgrade test must bump the
+  published version (0.4.2 → 0.4.3) or pass `nz setup --force`. The side-by-side
+  `(old)` instance has its launch hooks disabled (`OverrideCommands=false`) so
+  Prism's pre-launch version check won't block rolling back to it. The sandbox
+  also pre-stages a separate `(old)` fixture for `nz migrate`; on a real upgrade
+  the `(old)` instance is the rollback copy created from the `.bak`.
+
+### Mock the upgrade against your REAL Prism instance
+
+- **Why** — the sandbox above proves the mechanics in isolation; this drives the
+  **same upgrade on your live Prism instance** so you can see the Latest/Backup
+  groups, the `(old)` rollback instance, and the wired hooks in the real Prism
+  UI. Useful as a final confidence check before publishing a real version.
+- **Safe by construction** — the "new" zip is built **from your current install**
+  by invoking the real `publish-prism-pack.ps1` in `-LocalOutDir` mode (same
+  sanitize + bundle + structural-sanity-check packaging as a production publish,
+  just written locally instead of to Azure), so the upgraded instance keeps the
+  identical real mods/config and stays fully playable. Your previous install is
+  preserved twice (as `…\.bak` and the `Craft to Exile 2 (old)` instance), and
+  `-Action rollback` restores it.
+- **Prerequisites** — Prism **and** the game fully closed (the script refuses
+  otherwise — Prism rewrites `instance.cfg` on exit). Go toolchain for the
+  one-shot `nz.exe` + loopback-server build. ~1.3 GB of free temp space.
+- **How**:
+
+  ```powershell
+  # Build a local v0.4.3 zip from your current install, serve it on loopback,
+  # and run the REAL nz setup upgrade + verify (no Azure egress):
+  pwsh client/scripts/test-upgrade-real.ps1                 # 0.4.2 -> 0.4.3
+
+  # When finished inspecting, restore your real install (matches production).
+  # Close Prism first — rollback/clean also refuse while Prism is open:
+  pwsh client/scripts/test-upgrade-real.ps1 -Action rollback
+  pwsh client/scripts/test-upgrade-real.ps1 -Action clean   # remove temp + leftovers
+  ```
+
+- **What it verifies** — live instance is now v0.4.3; `.bak` of the previous
+  version exists; `Craft to Exile 2 (old)` exists with launch hooks disabled;
+  `instgroups.json` has Latest→live and Backup→`.bak`+`(old)`; the PreLaunch hook
+  uses forward slashes (no Qt mangling); a backup snapshot was taken; the
+  upgraded `.minecraft` still has its mods.
+- **Rollback / cleanup** — `-Action rollback` moves the current (mock) instance
+  aside to `Craft to Exile 2.rolledback-<timestamp>` (kept for inspection, not
+  deleted), restores the previous install from `.bak`, removes the `(old)` copy,
+  and resets `instgroups.json`. It requires Prism closed (same `instance.cfg`
+  rewrite hazard). `-Action clean` then removes the temp staging **and** sweeps
+  up any `*.rolledback-*` leftovers so they don't linger as multi-GB junk
+  instances in Prism's grid.
+- **Launch gotcha (important)** — the mock v0.4.3 is intentionally **ahead** of
+  the published version pointer, so `nz check` (the PreLaunch hook) will
+  **block launching the v0.4.3 instance** with a "version mismatch / ahead"
+  message — that's the version gate working correctly. Two ways to launch-test:
+  - Launch the **`Craft to Exile 2 (old)`** instance instead — it's a real
+    playable copy with hooks disabled, so it launches the previous version with
+    no gate.
+  - Or bypass the gate for the v0.4.3 instance by exporting the skip var in the
+    shell **before** starting Prism (so the hook child inherits it):
+
+    ```powershell
+    $env:NEGATIVEZONE_SKIP_VERSION_CHECK = '1'
+    & "$env:LOCALAPPDATA\Programs\PrismLauncher\prismlauncher.exe"
+    ```
+
+  When done, run `-Action rollback` so your real instance matches the published
+  version again.
 
 ### Legacy setup e2e (deprecated path)
 
