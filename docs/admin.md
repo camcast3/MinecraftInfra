@@ -238,6 +238,63 @@ All commands run from the `client/` directory unless noted.
   go build -o nz.exe ./cmd/nz/
   ```
 
+### Install / repair on a real machine (`install.ps1` + `nz setup` levers)
+
+- **Why** — drive the real installer end-to-end, test an **unreleased** build
+  without publishing to GitHub, repair a mangled Prism `instance.cfg`, or re-wire
+  hooks — all without paying for a full ~1 GB Azure modpack re-download.
+- **Key behaviours**:
+  - **Version-skip (default).** `nz setup` reads the installed
+    `.negativezone-version`; if it already equals the manifest version it
+    **skips the modpack download** and only re-asserts the Prism hooks, the
+    bundled `nz.exe`, and the Update launcher. This is the cheap repair path for
+    a corrupted/mangled `instance.cfg` — just re-run `nz setup`.
+  - **`--force`** reinstalls the modpack even when the version matches (full
+    download + user-state-preserving swap).
+  - The Prism hook paths are written with **forward slashes**
+    (`C:/Users/…/nz.exe`) so Qt's `instance.cfg` INI parser can't eat the
+    backslashes — the historical `C:sersarlt…` mangling bug.
+- **Levers** — environment variables, all admin/test only:
+
+  | Lever | Read by | Effect |
+  |---|---|---|
+  | `NEGATIVEZONE_NZ_EXE_PATH` | `install.ps1` | **Copy** a local `nz.exe` instead of downloading from `nz-latest`. Test an unreleased build end-to-end. Takes precedence over the URL. |
+  | `NEGATIVEZONE_NZ_EXE_URL` | `install.ps1` | Override the `nz.exe` download URL (e.g. a fork/test release). |
+  | `NEGATIVEZONE_MANIFEST_URL` | `install.ps1`, `nz setup` | Point setup at a test modpack manifest instead of the prod `latest.json`. |
+  | `NEGATIVEZONE_SKIP_WINGET` | `install.ps1` | `1` skips the Java 17 + Prism winget installs. |
+  | `NEGATIVEZONE_NONINTERACTIVE` | `nz setup` | `1` skips the confirm prompt (set automatically by `install.ps1`). |
+  | `NEGATIVEZONE_SKIP_PRISM_CHECK` | `nz setup` | `1` bypasses the "Prism is running" guard (tests only — Prism rewrites `instance.cfg` on exit, so never skip this on a live machine). |
+
+- **How** — test the full installer against a freshly-built binary, offline:
+
+  ```powershell
+  cd client
+  go build -o "$env:TEMP\nz.exe" ./cmd/nz/
+
+  $env:NEGATIVEZONE_NZ_EXE_PATH = "$env:TEMP\nz.exe"   # use the local build
+  $env:NEGATIVEZONE_SKIP_WINGET = '1'                   # skip Java/Prism installs
+  irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/client/scripts/install.ps1 | iex
+  # …or run the local copy directly:
+  pwsh client/scripts/install.ps1
+  ```
+
+  Repair a mangled `instance.cfg` / re-wire hooks on a live machine (no download
+  when already up to date — close Prism first):
+
+  ```powershell
+  & "$env:LOCALAPPDATA\NegativeZone\nz.exe" setup          # version-skip → re-asserts hooks only
+  & "$env:LOCALAPPDATA\NegativeZone\nz.exe" setup --force  # force a full modpack reinstall
+  ```
+
+- **What it does** — `install.ps1` installs Java 17 + Prism (unless skipped),
+  places `nz.exe` in `%LOCALAPPDATA%\NegativeZone\`, then runs `nz setup`, which
+  installs/updates the Prism instance and wires `PreLaunchCommand=… check` /
+  `PostExitCommand=… backup` into `instance.cfg`.
+- **Notes** — safe to re-run. The version-skip path never touches `.minecraft`,
+  so it can't disturb worlds/settings. For a zero-risk full lifecycle test
+  (including a fresh `setup`) against a fake Azure, use the
+  [sandbox harness](#manual-harness--sandbox-zero-risk) instead.
+
 ### Vet
 
 - **Why** — static checks before pushing.
