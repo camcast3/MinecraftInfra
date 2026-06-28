@@ -428,6 +428,54 @@ All commands run from the `client/` directory unless noted.
   also pre-stages a separate `(old)` fixture for `nz migrate`; on a real upgrade
   the `(old)` instance is the rollback copy created from the `.bak`.
 
+### Mock the upgrade against your REAL Prism instance
+
+- **Why** — the sandbox above proves the mechanics in isolation; this drives the
+  **same upgrade on your live Prism instance** so you can see the Latest/Backup
+  groups, the `(old)` rollback instance, and the wired hooks in the real Prism
+  UI. Useful as a final confidence check before publishing a real version.
+- **Safe by construction** — the "new" zip is built **from your current install**,
+  so the upgraded instance keeps the identical real mods/config and stays fully
+  playable. Your previous install is preserved twice (as `…\.bak` and the
+  `Craft to Exile 2 (old)` instance), and `-Action rollback` restores it.
+- **Prerequisites** — Prism **and** the game fully closed (the script refuses
+  otherwise — Prism rewrites `instance.cfg` on exit). Go toolchain for the
+  one-shot `nz.exe` + loopback-server build. ~1.3 GB of free temp space.
+- **How**:
+
+  ```powershell
+  # Build a local v0.4.3 zip from your current install, serve it on loopback,
+  # and run the REAL nz setup upgrade + verify (no Azure egress):
+  pwsh client/scripts/test-upgrade-real.ps1                 # 0.4.2 -> 0.4.3
+
+  # When finished inspecting, restore your real install (matches production):
+  pwsh client/scripts/test-upgrade-real.ps1 -Action rollback
+  pwsh client/scripts/test-upgrade-real.ps1 -Action clean   # remove temp staging
+  ```
+
+- **What it verifies** — live instance is now v0.4.3; `.bak` of the previous
+  version exists; `Craft to Exile 2 (old)` exists with launch hooks disabled;
+  `instgroups.json` has Latest→live and Backup→`.bak`+`(old)`; the PreLaunch hook
+  uses forward slashes (no Qt mangling); a backup snapshot was taken; the
+  upgraded `.minecraft` still has its mods.
+- **Launch gotcha (important)** — the mock v0.4.3 is intentionally **ahead** of
+  the published version pointer, so `nz check` (the PreLaunch hook) will
+  **block launching the v0.4.3 instance** with a "version mismatch / ahead"
+  message — that's the version gate working correctly. Two ways to launch-test:
+  - Launch the **`Craft to Exile 2 (old)`** instance instead — it's a real
+    playable copy with hooks disabled, so it launches the previous version with
+    no gate.
+  - Or bypass the gate for the v0.4.3 instance by exporting the skip var in the
+    shell **before** starting Prism (so the hook child inherits it):
+
+    ```powershell
+    $env:NEGATIVEZONE_SKIP_VERSION_CHECK = '1'
+    & "$env:LOCALAPPDATA\Programs\PrismLauncher\prismlauncher.exe"
+    ```
+
+  When done, run `-Action rollback` so your real instance matches the published
+  version again.
+
 ### Legacy setup e2e (deprecated path)
 
 - **Why** — exercise the **legacy** PowerShell `setup.ps1` / `update.ps1` /
