@@ -448,9 +448,10 @@ All commands run from the `client/` directory unless noted.
   # and run the REAL nz setup upgrade + verify (no Azure egress):
   pwsh client/scripts/test-upgrade-real.ps1                 # 0.4.2 -> 0.4.3
 
-  # When finished inspecting, restore your real install (matches production):
+  # When finished inspecting, restore your real install (matches production).
+  # Close Prism first — rollback/clean also refuse while Prism is open:
   pwsh client/scripts/test-upgrade-real.ps1 -Action rollback
-  pwsh client/scripts/test-upgrade-real.ps1 -Action clean   # remove temp staging
+  pwsh client/scripts/test-upgrade-real.ps1 -Action clean   # remove temp + leftovers
   ```
 
 - **What it verifies** — live instance is now v0.4.3; `.bak` of the previous
@@ -458,6 +459,13 @@ All commands run from the `client/` directory unless noted.
   `instgroups.json` has Latest→live and Backup→`.bak`+`(old)`; the PreLaunch hook
   uses forward slashes (no Qt mangling); a backup snapshot was taken; the
   upgraded `.minecraft` still has its mods.
+- **Rollback / cleanup** — `-Action rollback` moves the current (mock) instance
+  aside to `Craft to Exile 2.rolledback-<timestamp>` (kept for inspection, not
+  deleted), restores the previous install from `.bak`, removes the `(old)` copy,
+  and resets `instgroups.json`. It requires Prism closed (same `instance.cfg`
+  rewrite hazard). `-Action clean` then removes the temp staging **and** sweeps
+  up any `*.rolledback-*` leftovers so they don't linger as multi-GB junk
+  instances in Prism's grid.
 - **Launch gotcha (important)** — the mock v0.4.3 is intentionally **ahead** of
   the published version pointer, so `nz check` (the PreLaunch hook) will
   **block launching the v0.4.3 instance** with a "version mismatch / ahead"
