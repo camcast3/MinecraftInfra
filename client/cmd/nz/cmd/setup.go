@@ -39,6 +39,35 @@ Environment variables:
 	RunE: runSetup,
 }
 
+// setupForce, when set via --force, makes `nz setup` reinstall the modpack even
+// when the installed version already matches the manifest (the default skips the
+// download and only re-asserts the Prism hooks + helper files).
+var setupForce bool
+
+func init() {
+	setupCmd.Flags().BoolVarP(&setupForce, "force", "f", false,
+		"Reinstall the modpack even if already up to date (default: skip download, just re-assert hooks)")
+}
+
+// readVersionFileResilient reads the .negativezone-version file, retrying a few
+// times on transient read failures (Windows AV/indexer file locks). Returns the
+// trimmed version, or "" if the file is genuinely absent/unreadable. Distinguishes
+// a non-existent file (no retry — a real fresh/partial install) from an existing
+// file that briefly can't be opened (retry — don't trigger a needless re-download).
+func readVersionFileResilient(path string) string {
+	for attempt := 0; attempt < 5; attempt++ {
+		data, err := os.ReadFile(path)
+		if err == nil {
+			return strings.TrimSpace(string(data))
+		}
+		if os.IsNotExist(err) {
+			return ""
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return ""
+}
+
 // setupManifest extends the update manifest with setup-specific fields.
 type setupManifest struct {
 	Version   string `json:"version"`
@@ -116,11 +145,29 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	isUpgrade := dirExists(instanceTarget)
 
 	if isUpgrade {
-		// Read existing version
-		existingVer := ""
-		if data, err := os.ReadFile(paths.VersionFile); err == nil {
-			existingVer = strings.TrimSpace(string(data))
+		// Read existing version. Retry on transient failure: on Windows a freshly
+		// written version file can be briefly locked by AV/indexing, and a single
+		// failed read here would wrongly fall through to a full (paid, ~1 GB)
+		// re-download instead of the cheap skip path below.
+		existingVer := readVersionFileResilient(paths.VersionFile)
+
+		// Already up to date: skip the (paid, bandwidth-heavy) Azure modpack
+		// download entirely and just re-assert the per-instance wiring. This is
+		// also the cheap repair path for a mangled instance.cfg — re-running
+		// `nz setup` rewrites the Prism hooks without touching the modpack.
+		// Pass --force to reinstall the modpack anyway.
+		if existingVer == manifest.Version && !setupForce {
+			logging.OKf("Already up to date (v%s) — skipping modpack download.", manifest.Version)
+			logging.Info("Re-asserting Prism hooks + helper files (use --force to reinstall the modpack).")
+			logging.Blank()
+			logging.UseInstance(paths.NZDir)
+			ensureInstanceWiring(instanceTarget, paths)
+			logging.Step("Done!")
+			logging.OK("Prism hooks and helper files re-asserted.")
+			logging.Blank()
+			return nil
 		}
+
 		logging.Infof("Existing install found: v%s → upgrading to v%s", existingVer, manifest.Version)
 	} else {
 		logging.Info("Fresh install — no existing instance found.")
@@ -263,6 +310,21 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	// the completion record (and future update/check/backup runs) live with it.
 	logging.UseInstance(paths.NZDir)
 
+	ensureInstanceWiring(instanceTarget, paths)
+
+	logging.Step("Setup complete!")
+	logging.OKf("Installed %s v%s", manifest.Instance, manifest.Version)
+	logging.Blank()
+	logging.Info("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
+	logging.Blank()
+
+	return nil
+}
+
+// ensureInstanceWiring (re-)installs the per-instance helper files: the Prism
+// PreLaunch/PostExit hooks, the nz binary, and the double-click update launcher.
+// Idempotent — safe to call on a fresh install or to repair an existing one.
+func ensureInstanceWiring(instanceTarget string, paths instance.Paths) {
 	// Configure Prism hooks (instance.cfg)
 	logging.Step("Configuring Prism hooks")
 	configurePrismHooks(paths.InstanceCfg)
@@ -274,14 +336,6 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	// Drop a double-click "Update" launcher so players never type a path.
 	logging.Step("Creating update launcher")
 	installUpdateLauncher(instanceTarget)
-
-	logging.Step("Setup complete!")
-	logging.OKf("Installed %s v%s", manifest.Instance, manifest.Version)
-	logging.Blank()
-	logging.Info("Launch Prism Launcher and play! The modpack will auto-update on each launch.")
-	logging.Blank()
-
-	return nil
 }
 
 // updateLauncherName is the double-click launcher players use to update.
@@ -344,13 +398,54 @@ func fetchSetupManifest(url string) (*setupManifest, error) {
 	return &m, nil
 }
 
+// formatQtINIValue emits Qt's canonical escaped form for an instance.cfg value:
+// escape `\` -> `\\` and `"` -> `\"`, then wrap the whole value in `"..."`.
+//
+// Prism stores instance.cfg as a Qt QSettings INI file. Qt's reader treats a
+// backslash as an escape character (\\, \", \n, \r, \t, \uXXXX, \xXX) and treats
+// unwrapped `"..."` segments as quoted runs that get concatenated with the
+// surrounding whitespace stripped. Our PreLaunch/PostExit commands are full of
+// literal quotes and backslashes (e.g. `"C:\Users\...\nz.exe" backup`), so a raw
+// write gets mangled the very first time Prism rewrites the cfg (just clicking
+// Launch updates lastLaunchTime and resaves): `\U`, `\c`, `\A`, ... are eaten as
+// escape sequences and the command collapses to garbage like
+// `C:sersarltppData...z.exebackup`, then fails to launch.
+//
+// The escaped form round-trips idempotently: Qt's reader undoes the escapes and
+// Qt's writer re-emits the identical bytes. Mirrors Format-QtIniValue in
+// docs/assets/setup.ps1 and infra/azure/scripts/publish-prism-pack.ps1 — keep in
+// sync.
+func formatQtINIValue(value string) string {
+	escaped := strings.ReplaceAll(value, `\`, `\\`)
+	escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+	return `"` + escaped + `"`
+}
+
 // configurePrismHooks writes the PreLaunch and PostExit commands into instance.cfg.
 func configurePrismHooks(cfgPath string) {
 	nzPath := filepath.Dir(cfgPath)
-	nzBin := filepath.Join(nzPath, ".negativezone", nzBinaryName)
 
-	preLaunch := fmt.Sprintf(`"%s" check`, nzBin)
-	postExit := fmt.Sprintf(`"%s" backup`, nzBin)
+	// Use FORWARD slashes for the exe path. Prism stores instance.cfg as a Qt
+	// QSettings INI where backslash is an escape char, so a raw Windows path
+	// (C:\Users\...) gets its letters eaten on Prism's first resave — the
+	// `C:sersarltppData...` bug. Even correct `\\`-escaping is one missed
+	// round-trip away from re-mangling. Forward slashes have NO escape meaning in
+	// Qt's INI reader or in QProcess::splitCommand, and Windows CreateProcess
+	// (which Prism's QProcess uses) launches a forward-slash absolute path fine
+	// — verified empirically on Windows. formatQtINIValue still wraps + escapes
+	// the surrounding quotes so the space in "Craft to Exile 2" survives.
+	//
+	// We deliberately do NOT use a bare `nz` + PATH command: QProcess bare-name
+	// resolution depends on the PATH Prism captured at *its* startup (stale until
+	// Prism restarts), and a PreLaunchCommand that fails to start is FATAL in
+	// Prism — it blocks the game from launching. A fixed absolute path has no
+	// PATH dependency and can never be mangled.
+	nzBin := filepath.ToSlash(filepath.Join(nzPath, ".negativezone", nzBinaryName))
+
+	// Build the raw commands (real path + quotes), then Qt-escape so Prism's
+	// round-trip resave doesn't eat the quotes. See formatQtINIValue.
+	preLaunch := formatQtINIValue(fmt.Sprintf(`"%s" check`, nzBin))
+	postExit := formatQtINIValue(fmt.Sprintf(`"%s" backup`, nzBin))
 
 	// Read existing cfg or start fresh
 	var lines []string
@@ -358,11 +453,12 @@ func configurePrismHooks(cfgPath string) {
 		lines = strings.Split(string(data), "\n")
 	}
 
-	// Update/add required keys
+	// Update/add required keys. OverrideCommands is a bare bool (not Qt-escaped);
+	// the two command values are already escaped above.
 	keys := map[string]string{
-		"OverrideCommands":  "true",
-		"PreLaunchCommand":  preLaunch,
-		"PostExitCommand":   postExit,
+		"OverrideCommands": "true",
+		"PreLaunchCommand": preLaunch,
+		"PostExitCommand":  postExit,
 	}
 
 	for key, val := range keys {
@@ -392,11 +488,37 @@ func installNZBinary(nzDir string) {
 	}
 
 	dst := filepath.Join(nzDir, nzBinaryName)
+
+	// If we're already running as the installed binary (e.g. a user re-ran
+	// `nz setup` from inside .negativezone to repair hooks), copying the file
+	// onto itself would fail with a sharing-violation. It's already in place, so
+	// just skip — nothing to do.
+	if sameFile(self, dst) {
+		logging.OKf("%s already installed in %s", nzBinaryName, nzDir)
+		return
+	}
+
 	if err := copyFileLarge(self, dst); err != nil {
 		logging.Warnf("Could not install binary: %v", err)
 		return
 	}
 	logging.OKf("Installed %s into %s", nzBinaryName, nzDir)
+}
+
+// sameFile reports whether two paths refer to the same on-disk file, comparing
+// resolved absolute paths and (when both exist) os.SameFile identity.
+func sameFile(a, b string) bool {
+	absA, errA := filepath.Abs(a)
+	absB, errB := filepath.Abs(b)
+	if errA == nil && errB == nil && strings.EqualFold(absA, absB) {
+		return true
+	}
+	ia, errA := os.Stat(a)
+	ib, errB := os.Stat(b)
+	if errA == nil && errB == nil {
+		return os.SameFile(ia, ib)
+	}
+	return false
 }
 
 // copyFileLarge copies a file using streaming (suitable for large binaries).
