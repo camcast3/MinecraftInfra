@@ -294,6 +294,11 @@ func runSetup(cmd *cobra.Command, args []string) error {
 
 		logging.OKf("Restored %d user-state item(s)", restored)
 		logging.Dimf("Old instance backup: %s", backupPath)
+
+		// Side-by-side "(old)" instance for one-click rollback in Prism. The
+		// prev version label comes from the .bak's marker (now at backupPath).
+		prevVersion := readVersionFileResilient(filepath.Join(backupPath, ".negativezone-version"))
+		createOldInstance(prismDir, manifest.Instance, backupPath, prevVersion)
 	} else {
 		// Fresh install — just move into place
 		if err := os.Rename(srcInstance, instanceTarget); err != nil {
@@ -336,6 +341,161 @@ func ensureInstanceWiring(instanceTarget string, paths instance.Paths) {
 	// Drop a double-click "Update" launcher so players never type a path.
 	logging.Step("Creating update launcher")
 	installUpdateLauncher(instanceTarget)
+
+	// Sort instances into Prism groups so the live install ("Latest") is
+	// visually separated from upgrade leftovers (the .bak + side-by-side
+	// "(old)") under "Backup". Self-heals on every run; absent dirs are skipped.
+	logging.Step("Updating Prism instance groups")
+	instancesDir := filepath.Dir(instanceTarget)
+	name := filepath.Base(instanceTarget)
+	setPrismInstanceGroup(instancesDir, map[string][]string{
+		"Latest": {name},
+		"Backup": {name + ".bak", name + " (old)"},
+	})
+}
+
+// prismGroup is one entry in instgroups.json's "groups" object.
+type prismGroup struct {
+	Hidden    bool     `json:"hidden"`
+	Instances []string `json:"instances"`
+}
+
+// prismInstGroups mirrors Prism's instances/instgroups.json on-disk shape.
+type prismInstGroups struct {
+	FormatVersion string                `json:"formatVersion"`
+	Groups        map[string]prismGroup `json:"groups"`
+}
+
+// setPrismInstanceGroup writes instances/instgroups.json to assign managed
+// instances to named groups (e.g. "Latest", "Backup"). Idempotent and additive,
+// mirroring Set-PrismInstanceGroup in docs/assets/setup.ps1: it preserves any
+// groups the player created, strips our managed instances out of every existing
+// group before re-assigning (so an instance can't end up in two groups), and
+// skips instances whose folder is absent (so a missing .bak/(old) doesn't leave
+// an empty "Backup" group). Written as BOM-less UTF-8 to match Prism's own file.
+func setPrismInstanceGroup(instancesDir string, assignments map[string][]string) {
+	if !dirExists(instancesDir) {
+		logging.Warnf("Instances dir not found at %s; skipping group update", instancesDir)
+		return
+	}
+	groupsFile := filepath.Join(instancesDir, "instgroups.json")
+
+	// Every instance we manage, so we can strip them from pre-existing groups.
+	managed := map[string]bool{}
+	for _, insts := range assignments {
+		for _, in := range insts {
+			managed[in] = true
+		}
+	}
+
+	final := map[string]prismGroup{}
+
+	// Preserve player-created groups, minus any managed instances we're about to
+	// re-assign below.
+	if data, err := os.ReadFile(groupsFile); err == nil {
+		var existing prismInstGroups
+		if json.Unmarshal(data, &existing) == nil {
+			for groupName, g := range existing.Groups {
+				if _, isOurs := assignments[groupName]; isOurs {
+					continue
+				}
+				var kept []string
+				for _, in := range g.Instances {
+					if !managed[in] {
+						kept = append(kept, in)
+					}
+				}
+				if len(kept) == 0 {
+					continue
+				}
+				final[groupName] = prismGroup{Hidden: g.Hidden, Instances: kept}
+			}
+		} else {
+			logging.Warnf("Could not parse %s; rewriting from scratch", groupsFile)
+		}
+	}
+
+	// Assign our managed instances, skipping any whose folder doesn't exist.
+	for groupName, insts := range assignments {
+		present := []string{}
+		for _, in := range insts {
+			if dirExists(filepath.Join(instancesDir, in)) {
+				present = append(present, in)
+			}
+		}
+		if len(present) == 0 {
+			continue
+		}
+		final[groupName] = prismGroup{Hidden: false, Instances: present}
+	}
+
+	payload := prismInstGroups{FormatVersion: "1", Groups: final}
+	out, err := json.MarshalIndent(payload, "", "    ")
+	if err != nil {
+		logging.Warnf("Could not encode instgroups.json: %v", err)
+		return
+	}
+	if err := os.WriteFile(groupsFile, out, 0o644); err != nil {
+		logging.Warnf("Could not write instgroups.json: %v", err)
+		return
+	}
+	logging.OK("Prism groups updated (live -> Latest; .bak / (old) -> Backup if present)")
+}
+
+// createOldInstance copies the just-made .bak into a clean side-by-side
+// "<instance> (old)" instance with its launch hooks disabled, so a player can
+// one-click launch the previous version from Prism if the upgrade misbehaves.
+// The raw .bak folder (trailing ".bak") confuses Prism's UI and still has the
+// active PreLaunch version-check that would block its launch; this copy fixes
+// both. Best-effort: on failure the .bak remains as the filesystem rollback.
+// Mirrors the side-by-side block in docs/assets/setup.ps1.
+func createOldInstance(instancesDir, instanceName, backupPath, prevVersion string) {
+	oldName := instanceName + " (old)"
+	oldPath := filepath.Join(instancesDir, oldName)
+
+	logging.Step("Creating side-by-side 'old' instance for one-click rollback")
+	if dirExists(oldPath) {
+		_ = os.RemoveAll(oldPath)
+	}
+	if err := copyDir(backupPath, oldPath); err != nil {
+		logging.Warnf("Could not create side-by-side old instance (%v). Your .bak at %s is still intact for rollback.", err, backupPath)
+		return
+	}
+
+	display := fmt.Sprintf("%s v%s (old)", instanceName, prevVersion)
+	if prevVersion == "" {
+		display = instanceName + " (old)"
+	}
+	disableHooksAndRename(filepath.Join(oldPath, "instance.cfg"), display)
+	logging.OKf("Old instance available in Prism as '%s' (auto-update hook disabled)", oldName)
+}
+
+// disableHooksAndRename sets OverrideCommands=false (kill switch that leaves the
+// command lines intact but inert) and rewrites name= to displayName in an
+// instance.cfg. Used for the side-by-side "(old)" rollback instance.
+func disableHooksAndRename(cfgPath, displayName string) {
+	data, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
+	sawOverride, sawName := false, false
+	for i, line := range lines {
+		if strings.HasPrefix(line, "OverrideCommands=") {
+			lines[i] = "OverrideCommands=false"
+			sawOverride = true
+		} else if strings.HasPrefix(line, "name=") {
+			lines[i] = "name=" + displayName
+			sawName = true
+		}
+	}
+	if !sawOverride {
+		lines = append(lines, "OverrideCommands=false")
+	}
+	if !sawName {
+		lines = append(lines, "name="+displayName)
+	}
+	_ = os.WriteFile(cfgPath, []byte(strings.Join(lines, "\n")), 0o644)
 }
 
 // updateLauncherName is the double-click launcher players use to update.

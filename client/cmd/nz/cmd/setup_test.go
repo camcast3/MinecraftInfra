@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -153,4 +154,107 @@ func cfgValue(t *testing.T, content, key string) string {
 	}
 	t.Fatalf("key %s not found in cfg:\n%s", key, content)
 	return ""
+}
+
+func TestSetPrismInstanceGroupSkipsAbsentAndWritesNoBOM(t *testing.T) {
+	dir := t.TempDir()
+	mustMkdir(t, filepath.Join(dir, "Craft to Exile 2"))
+	mustMkdir(t, filepath.Join(dir, "Craft to Exile 2.bak"))
+
+	setPrismInstanceGroup(dir, map[string][]string{
+		"Latest": {"Craft to Exile 2"},
+		"Backup": {"Craft to Exile 2.bak", "Craft to Exile 2 (old)"},
+	})
+
+	data := readInstGroupsFile(t, dir)
+	if hasUTF8BOM(data) {
+		t.Fatalf("instgroups.json has UTF-8 BOM")
+	}
+	got := unmarshalInstGroups(t, data)
+	if got.FormatVersion != "1" {
+		t.Fatalf("formatVersion = %q, want 1", got.FormatVersion)
+	}
+	assertGroupInstances(t, got, "Latest", []string{"Craft to Exile 2"})
+	assertGroupInstances(t, got, "Backup", []string{"Craft to Exile 2.bak"})
+}
+
+func TestSetPrismInstanceGroupPreservesPlayerGroupsAndReplacesManaged(t *testing.T) {
+	dir := t.TempDir()
+	mustMkdir(t, filepath.Join(dir, "Craft to Exile 2"))
+	mustMkdir(t, filepath.Join(dir, "SomeOtherPack"))
+
+	seed := `{"formatVersion":"1","groups":{"MyStuff":{"hidden":false,"instances":["SomeOtherPack","Craft to Exile 2"]},"Latest":{"hidden":false,"instances":["StaleEntry"]}}}`
+	if err := os.WriteFile(filepath.Join(dir, "instgroups.json"), []byte(seed), 0o644); err != nil {
+		t.Fatalf("seed instgroups.json: %v", err)
+	}
+
+	setPrismInstanceGroup(dir, map[string][]string{
+		"Latest": {"Craft to Exile 2"},
+	})
+
+	got := unmarshalInstGroups(t, readInstGroupsFile(t, dir))
+	assertGroupInstances(t, got, "MyStuff", []string{"SomeOtherPack"})
+	assertGroupInstances(t, got, "Latest", []string{"Craft to Exile 2"})
+
+	count := 0
+	for _, group := range got.Groups {
+		for _, inst := range group.Instances {
+			if inst == "Craft to Exile 2" {
+				count++
+			}
+		}
+	}
+	if count != 1 {
+		t.Fatalf("managed instance appears in %d groups, want exactly 1", count)
+	}
+}
+
+func mustMkdir(t *testing.T, path string) {
+	t.Helper()
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		t.Fatalf("mkdir %s: %v", path, err)
+	}
+}
+
+func readInstGroupsFile(t *testing.T, instancesDir string) []byte {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(instancesDir, "instgroups.json"))
+	if err != nil {
+		t.Fatalf("read instgroups.json: %v", err)
+	}
+	return data
+}
+
+func unmarshalInstGroups(t *testing.T, data []byte) prismInstGroups {
+	t.Helper()
+	var got prismInstGroups
+	if err := json.Unmarshal(data, &got); err != nil {
+		t.Fatalf("unmarshal instgroups.json: %v\n%s", err, data)
+	}
+	return got
+}
+
+func hasUTF8BOM(data []byte) bool {
+	return len(data) >= 3 && data[0] == 0xef && data[1] == 0xbb && data[2] == 0xbf
+}
+
+func assertGroupInstances(t *testing.T, groups prismInstGroups, groupName string, want []string) {
+	t.Helper()
+	group, ok := groups.Groups[groupName]
+	if !ok {
+		t.Fatalf("group %q missing from %#v", groupName, groups.Groups)
+	}
+	assertStringSlice(t, group.Instances, want)
+}
+
+func assertStringSlice(t *testing.T, got, want []string) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Fatalf("instances = %#v, want %#v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("instances = %#v, want %#v", got, want)
+		}
+	}
 }

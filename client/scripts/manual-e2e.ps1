@@ -2,14 +2,15 @@
 <#
 .SYNOPSIS
     Provision a self-contained LOCAL sandbox for manually driving the `nz`
-    client end-to-end (setup / check / backup / update / migrate) without
-    touching your real Prism instance or production Azure.
+    client end-to-end, including a local 0.4.3 zip setup-upgrade flow,
+    without touching your real Prism instance or production Azure.
 
 .DESCRIPTION
     `up`   builds nz.exe, stages a fake "Azure" (local HTTP server serving a
-           manifest + modpack zips), creates a sandbox %APPDATA% with a second
-           "old" instance for migrate, and writes an env.ps1 you dot-source to
-           load everything (env vars + `nz`, `nzPublish`, `nzReset` helpers).
+           manifest + real local 0.4.2/0.4.3 modpack zips), creates a sandbox
+           %APPDATA% with a second "old" instance for migrate, and writes an
+           env.ps1 you dot-source to load everything (env vars + `nz`,
+           `nzPublish`, `nzPublishReal`, `nzStageZip`, `nzReset` helpers).
     `down` stops the server and removes the sandbox.
 
     Nothing here hits production Azure, the real CurseForge, or your real
@@ -23,12 +24,27 @@
 .EXAMPLE
     pwsh client/scripts/manual-e2e.ps1 up
     . $env:TEMP\nz-manual-e2e\env.ps1
-    nz setup        # answer y
+    $env:NEGATIVEZONE_NONINTERACTIVE='1'
+    nzPublishReal 0.4.3 ; nz setup  # brand-new v0.4.3 from the local zip
+
+.EXAMPLE
+    pwsh client/scripts/manual-e2e.ps1 up
+    . $env:TEMP\nz-manual-e2e\env.ps1
+    $env:NEGATIVEZONE_NONINTERACTIVE='1'
+    nzReset
+    nzPublishReal 0.4.2 ; nz setup  # fresh install base v0.4.2 local zip
+    nzPublishReal 0.4.3 ; nz setup  # upgrade via local v0.4.3 zip
+
+.EXAMPLE
+    pwsh client/scripts/manual-e2e.ps1 up
+    . $env:TEMP\nz-manual-e2e\env.ps1
+    $env:NEGATIVEZONE_NONINTERACTIVE='1'
+    nz setup        # fresh install v0.4.2 from the local zip
     nz check
     nz backup
-    nzPublish 1.0.1 # bump the "published" version
+    nzPublish 0.4.3 # bump the "published" version for packwiz update testing
     nz check        # now reports behind
-    nz update       # packwiz delta-sync (fake), version -> 1.0.1
+    nz update       # packwiz delta-sync (fake), version -> 0.4.3
     nz migrate      # pick the "(old)" instance as source
 
 .EXAMPLE
@@ -145,10 +161,10 @@ function Write-LocalManifest {
         "$Version`n", [Text.UTF8Encoding]::new($false))
 }
 
-Write-Head 'Staging fake modpack zips + manifest (v1.0.0, v1.0.1)...'
-[void](New-FakeZip -Version '1.0.0')
-[void](New-FakeZip -Version '1.0.1')
-Write-LocalManifest -Version '1.0.0'
+Write-Head 'Staging real local modpack zips + manifest (v0.4.2, v0.4.3)...'
+[void](New-FakeZip -Version '0.4.2')
+[void](New-FakeZip -Version '0.4.3')
+Write-LocalManifest -Version '0.4.2'
 # Minimal pack.toml so a curious -RealPackwiz run doesn't 404 on the placeholder.
 'name = "Craft to Exile 2"' | Set-Content -LiteralPath (Join-Path $blobDir 'pack.toml') -Encoding UTF8
 Write-Host "  -> $blobDir"
@@ -222,6 +238,62 @@ $fakePackwizLine
 
 function nz { & '$nzExe' @args }
 
+# Build/replace a real local modpack zip with the same layout nz setup expects.
+function nzStageZip {
+    param([Parameter(Mandatory)][string] `$Version)
+    `$blob = '$blobDir'
+    `$sandbox = '$sandbox'
+    `$instance = '$instanceName'
+    `$stage = Join-Path `$sandbox ("stage-{0}" -f `$Version)
+    if (Test-Path -LiteralPath `$stage) { Remove-Item -LiteralPath `$stage -Recurse -Force }
+    `$instDir = Join-Path `$stage `$instance
+    `$mcDir = Join-Path `$instDir '.minecraft'
+    `$nzDir = Join-Path `$instDir '.negativezone'
+    New-Item -ItemType Directory -Path (Join-Path `$mcDir 'mods'), `$nzDir -Force | Out-Null
+
+    Set-Content -LiteralPath (Join-Path `$mcDir "mods\stub-v`$Version.jar") -Value "stub-mod-`$Version" -Encoding ASCII
+    @(
+        '[General]'
+        'ConfigVersion=1.2'
+        'iconKey=cte2'
+        'InstanceType=OneSix'
+        "name=`$instance v`$Version"
+        'OverrideCommands=true'
+    ) | Set-Content -LiteralPath (Join-Path `$instDir 'instance.cfg') -Encoding UTF8
+    '{"components":[{"uid":"net.minecraft","version":"1.20.1"}],"formatVersion":1}' |
+        Set-Content -LiteralPath (Join-Path `$instDir 'mmc-pack.json') -Encoding UTF8
+    '{"preserve":["config/test-mod-prefs.json"],"version":1}' |
+        Set-Content -LiteralPath (Join-Path `$nzDir 'preserve-list.json') -Encoding UTF8
+
+    `$zipPath = Join-Path `$blob "c2e2-v`$Version.zip"
+    if (Test-Path -LiteralPath `$zipPath) { Remove-Item -LiteralPath `$zipPath -Force }
+    Compress-Archive -Path `$instDir -DestinationPath `$zipPath -CompressionLevel Fastest -Force
+    Remove-Item -LiteralPath `$stage -Recurse -Force
+    Write-Host "staged real local zip v`$Version -> `$zipPath" -ForegroundColor Green
+    return `$zipPath
+}
+
+# Publish a manifest that points at a real local zip with real sha256 + size, so
+# nz setup downloads and verifies the loopback zip instead of Azure storage.
+function nzPublishReal {
+    param([Parameter(Mandatory)][string] `$Version, [switch] `$AllowDowngrade)
+    `$blob = '$blobDir'
+    `$zip = Join-Path `$blob "c2e2-v`$Version.zip"
+    if (-not (Test-Path -LiteralPath `$zip)) { `$zip = nzStageZip `$Version }
+    `$sha = (Get-FileHash -LiteralPath `$zip -Algorithm SHA256).Hash.ToLower()
+    `$size = (Get-Item -LiteralPath `$zip).Length
+    `$m = [ordered]@{
+        version=`$Version; instance='$instanceName'
+        url="http://127.0.0.1:$Port/c2e2-v`$Version.zip"
+        sha256=`$sha; sizeBytes=`$size
+        packwizUrl="http://127.0.0.1:$Port/pack.toml"
+    }
+    if (`$AllowDowngrade) { `$m['allowDowngrade'] = `$true }
+    [IO.File]::WriteAllText((Join-Path `$blob 'latest.json'), (`$m | ConvertTo-Json), [Text.UTF8Encoding]::new(`$false))
+    [IO.File]::WriteAllText((Join-Path `$blob 'latest-version.txt'), "`$Version``n", [Text.UTF8Encoding]::new(`$false))
+    Write-Host "published real local zip v`$Version (sha256 `$(`$sha.Substring(0, 12))..., `$size bytes)" -ForegroundColor Green
+}
+
 # Re-publish a different "latest" version to trigger an update/downgrade.
 # Note: sha256 is a placeholder here (fine for the packwiz update path, which
 # does not download the zip). Re-run with -RealPackwiz off for instant updates.
@@ -252,7 +324,7 @@ Write-Host ''
 Write-Host 'Sandbox loaded. Run commands as:  & `$nz setup   (or: nz setup)' -ForegroundColor Magenta
 Write-Host ("  `$nz     = " + `$nz)
 Write-Host ("  APPDATA = " + `$env:APPDATA)
-Write-Host 'Helpers:  nzPublish <ver> [-AllowDowngrade] | nzReset'
+Write-Host 'Helpers:  nzPublish <ver> [-AllowDowngrade] | nzPublishReal <ver> [-AllowDowngrade] | nzStageZip <ver> | nzReset'
 "@
 Set-Content -LiteralPath $envFile -Value $env_ps1 -Encoding UTF8
 
@@ -264,27 +336,37 @@ Write-Host ' nz manual end-to-end sandbox is READY' -ForegroundColor Green
 Write-Host '════════════════════════════════════════════════════════════════' -ForegroundColor DarkGray
 Write-Host "  sandbox : $sandbox"
 Write-Host "  nz.exe  : $nzExe"
-Write-Host "  server  : http://127.0.0.1:$Port  (PID $($proc.Id))  <- serves the fake manifest"
+Write-Host "  server  : http://127.0.0.1:$Port  (PID $($proc.Id))  <- serves the local manifest + zips"
 Write-Host "  update  : $mode"
 Write-Host ''
 Write-Host ' STEP 1 (REQUIRED — sets sandbox APPDATA + helpers for THIS shell):' -ForegroundColor Yellow
 Write-Host "      . '$envFile'"
 Write-Host '   Without this, the commands below do nothing / target the wrong place.' -ForegroundColor DarkGray
 Write-Host ''
-Write-Host ' STEP 2 — drive the commands (full exe path shown; `nz` also works after step 1):' -ForegroundColor Cyan
-Write-Host "      & `$nz setup          # installs v1.0.0 (answer y at the prompt)"
-Write-Host "      & `$nz check          # in-sync -> exits 0 silently"
-Write-Host "      & `$nz backup         # snapshots user-state into .negativezone\backups"
-Write-Host '      nzPublish 1.0.1       # bump the "published" version'
-Write-Host "      & `$nz check          # now reports BEHIND (exit 1)"
-Write-Host "      & `$nz update         # delta-sync -> version becomes 1.0.1"
-Write-Host "      & `$nz migrate        # copy settings from the `"(old)`" instance"
+Write-Host ' STEP 2A — local-zip setup scenarios:' -ForegroundColor Cyan
+Write-Host "      `$env:NEGATIVEZONE_NONINTERACTIVE='1'"
+Write-Host '      nzReset ; nzPublishReal 0.4.3 ; & $nz setup  # brand-new instance from LOCAL v0.4.3 zip'
+Write-Host ''
+Write-Host '      # Full upgrade flow that creates .bak, "(old)", and Prism groups:'
+Write-Host '      nzReset ; nzPublishReal 0.4.2 ; & $nz setup  # installs base v0.4.2 local zip'
+Write-Host '      nzPublishReal 0.4.3 ; & $nz setup            # upgrades from LOCAL v0.4.3 zip'
+Write-Host ''
+Write-Host ' STEP 2B — existing packwiz update/migrate path (use after nzReset for a clean run):' -ForegroundColor Cyan
+Write-Host '      nzReset                              # keeps the staged "(old)" migrate fixture'
+Write-Host "      & `$nz setup                         # installs v0.4.2 (answer y or keep NONINTERACTIVE=1)"
+Write-Host "      & `$nz check                         # in-sync -> exits 0 silently"
+Write-Host "      & `$nz backup                        # snapshots user-state into .negativezone\backups"
+Write-Host '      nzPublish 0.4.3                      # bump the "published" version for packwiz update'
+Write-Host "      & `$nz check                         # now reports BEHIND (exit 1)"
+Write-Host "      & `$nz update                        # delta-sync -> version becomes 0.4.3"
+Write-Host "      & `$nz migrate                       # copy settings from the `"(old)`" instance"
 Write-Host ''
 Write-Host '    Extra scenarios:' -ForegroundColor Cyan
-Write-Host '      nzReset ; & $nz setup                        # fresh install again'
-Write-Host '      nzPublish 0.9.0 ; & $nz update               # refused (no downgrade)'
-Write-Host '      nzPublish 0.9.0 -AllowDowngrade ; & $nz update   # downgrade allowed'
-Write-Host '      $env:NEGATIVEZONE_SKIP_VERSION_CHECK=1 ; & $nz check  # bypass gate'
+Write-Host '      nzStageZip 0.4.4 ; nzPublishReal 0.4.4 ; & $nz setup  # another local-zip setup upgrade'
+Write-Host '      nzReset ; & $nz setup                                  # fresh install again'
+Write-Host '      nzPublish 0.4.1 ; & $nz update                         # refused (no downgrade)'
+Write-Host '      nzPublish 0.4.1 -AllowDowngrade ; & $nz update         # downgrade allowed'
+Write-Host '      $env:NEGATIVEZONE_SKIP_VERSION_CHECK=1 ; & $nz check   # bypass gate'
 Write-Host ''
 Write-Host ' STEP 3 — tear down when done:' -ForegroundColor Cyan
 Write-Host "      pwsh '$($PSCommandPath)' down"
