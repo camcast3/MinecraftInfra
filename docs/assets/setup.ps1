@@ -329,16 +329,37 @@ if ($totalGB -lt 8) {
 Write-Ok "${totalGB} GB system RAM detected"
 
 # ─── Install Java 17 ────────────────────────────────────────────────────────
-Write-Step "Installing Eclipse Temurin 17 (Java)"
+# Java detection mirrors client/scripts/install.ps1: probe `java -version` for a
+# 17.x runtime already on PATH (any vendor) rather than only checking winget for
+# Temurin, so an existing JDK isn't reinstalled. Keep the two scripts in sync.
+Write-Step "Checking Java 17"
 if ($SkipWinget) {
     Write-Ok "Skipped (NEGATIVEZONE_SKIP_WINGET=1; test mode)"
 } else {
-    $javaInstalled = winget list --id EclipseAdoptium.Temurin.17.JDK -e --accept-source-agreements 2>$null | Select-String 'EclipseAdoptium.Temurin.17.JDK'
-    if ($javaInstalled) {
-        Write-Ok "Already installed"
+    $java = Get-Command java -ErrorAction SilentlyContinue
+    $haveJava17 = $false
+    if ($java) {
+        # `java -version` prints to STDERR. Under $ErrorActionPreference='Stop',
+        # Windows PowerShell 5.1 promotes that native stderr write to a
+        # terminating NativeCommandError, so relax the preference locally.
+        $verText = ''
+        $prevEap = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            $verText = (& java -version 2>&1 | ForEach-Object { "$_" }) -join ' '
+        } catch {
+            $verText = ''
+        } finally {
+            $ErrorActionPreference = $prevEap
+        }
+        if ($verText -match 'version "17\.') { $haveJava17 = $true }
+    }
+    if ($haveJava17) {
+        Write-Ok "Java 17 already installed."
     } else {
+        Write-Step "Installing Java 17 (Temurin) via winget"
         winget install --id EclipseAdoptium.Temurin.17.JDK -e --source winget --accept-package-agreements --accept-source-agreements
-        Write-Ok "Installed"
+        Write-Ok "Java 17 installed."
     }
 }
 

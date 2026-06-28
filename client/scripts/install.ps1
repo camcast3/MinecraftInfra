@@ -33,7 +33,7 @@ Write-Host '--------------------------------'
 
 # ─── 1. Java 17 + Prism Launcher (winget) ────────────────────────────────────
 if ($env:NEGATIVEZONE_SKIP_WINGET -eq '1') {
-    Write-Warn 'NEGATIVEZONE_SKIP_WINGET=1 — skipping Java/Prism installation.'
+    Write-Warn 'NEGATIVEZONE_SKIP_WINGET=1 - skipping Java/Prism installation.'
 } else {
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if (-not $winget) {
@@ -44,7 +44,19 @@ if ($env:NEGATIVEZONE_SKIP_WINGET -eq '1') {
         $java = Get-Command java -ErrorAction SilentlyContinue
         $haveJava17 = $false
         if ($java) {
-            $verText = (& java -version 2>&1) -join ' '
+            # `java -version` prints to STDERR. Under $ErrorActionPreference='Stop',
+            # Windows PowerShell 5.1 promotes that native stderr write to a
+            # terminating NativeCommandError, so relax the preference locally.
+            $verText = ''
+            $prevEap = $ErrorActionPreference
+            try {
+                $ErrorActionPreference = 'Continue'
+                $verText = (& java -version 2>&1 | ForEach-Object { "$_" }) -join ' '
+            } catch {
+                $verText = ''
+            } finally {
+                $ErrorActionPreference = $prevEap
+            }
             if ($verText -match 'version "17\.') { $haveJava17 = $true }
         }
         if ($haveJava17) {
