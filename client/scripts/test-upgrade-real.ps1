@@ -97,6 +97,13 @@ if ($Action -eq 'clean') {
     Stop-Server
     if (Test-Path -LiteralPath $work) { Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue }
     Write-Ok "Removed temp staging + stopped server: $work"
+    # Sweep up any post-rollback leftovers ("<instance>.rolledback-<timestamp>")
+    # so they don't linger as 1+ GB junk instances in Prism's grid.
+    $leftovers = Get-ChildItem -LiteralPath $prismInstances -Directory -Filter "$instanceName.rolledback-*" -ErrorAction SilentlyContinue
+    foreach ($lo in $leftovers) {
+        Remove-Item -LiteralPath $lo.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Ok "Removed rollback leftover: $($lo.Name)"
+    }
     return
 }
 
@@ -128,7 +135,9 @@ if ($Action -eq 'rollback') {
     $ver = (Get-Content (Join-Path $instance '.negativezone-version') -Raw -EA SilentlyContinue).Trim()
     Write-Host ''
     Write-Host "Rollback complete. Installed version is now: $ver" -ForegroundColor Green
-    Write-Host "The discarded 0.4.3 copy (if any) is kept alongside for inspection; delete it when happy." -ForegroundColor DarkGray
+    Write-Host "The pre-rollback (mock) copy is kept as '$instanceName.rolledback-*' for" -ForegroundColor DarkGray
+    Write-Host "inspection. Remove it (and any temp) when happy:" -ForegroundColor DarkGray
+    Write-Host "      pwsh client/scripts/test-upgrade-real.ps1 -Action clean" -ForegroundColor DarkGray
     return
 }
 
