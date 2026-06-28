@@ -61,7 +61,6 @@ $bak        = "$instance.bak"
 $old        = Join-Path $prismInstances "$instanceName (old)"
 
 $work     = Join-Path $env:TEMP 'nz-test-upgrade'
-$stageInst = Join-Path $work $instanceName        # zipped with includeBaseDirectory
 $blobDir  = Join-Path $work 'blob'
 $zipPath  = Join-Path $blobDir "c2e2-v$Version.zip"
 $pidFile  = Join-Path $work 'server.pid'
@@ -153,7 +152,7 @@ if ($installedVer -eq $Version) {
 
 Stop-Server
 if (Test-Path -LiteralPath $work) { Remove-Item -LiteralPath $work -Recurse -Force }
-New-Item -ItemType Directory -Path $blobDir, $stageInst -Force | Out-Null
+New-Item -ItemType Directory -Path $blobDir -Force | Out-Null
 
 # 1. Build a fresh nz.exe from source so the test exercises the latest code.
 Write-Head "Building nz.exe from source"
@@ -165,55 +164,27 @@ try {
 } finally { Pop-Location }
 Write-Ok $nzExe
 
-# 2. Stage a copy of the current install as the "new" version. Exclude transient
-#    /heavy-but-regenerated dirs so the zip is lean; keep mods/config/etc. so the
-#    upgraded instance is genuinely playable.
-Write-Head "Staging a local v$Version zip from your current v$installedVer install"
-$rc = & robocopy $instance $stageInst /E /COPY:DAT /R:1 /W:1 /NFL /NDL /NJH /NJS /NP `
-        /XD logs crash-reports .mixin.out screenshots backups `
-        /XF nz.log nz.log.1 2>&1
-if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE)`n$($rc -join "`n")" }
-
-# Bump the staged instance.cfg display name so Prism's grid shows the new version.
-$stageCfg = Join-Path $stageInst 'instance.cfg'
-if (Test-Path -LiteralPath $stageCfg) {
-    $lines = Get-Content -LiteralPath $stageCfg
-    $sawName = $false
-    $lines = $lines | ForEach-Object {
-        if ($_ -match '^name=') { $sawName = $true; "name=$instanceName v$Version" } else { $_ }
-    }
-    if (-not $sawName) { $lines += "name=$instanceName v$Version" }
-    Set-Content -LiteralPath $stageCfg -Value $lines -Encoding UTF8
-}
-# Ensure a preserve-list exists in the staged .negativezone (setup reads it for
-# the new instance's user-state restore scope).
-$stageNz = Join-Path $stageInst '.negativezone'
-New-Item -ItemType Directory -Path $stageNz -Force | Out-Null
-
-# 3. Zip with the instance folder as the root entry ("Craft to Exile 2/...").
-Write-Head "Compressing v$Version zip"
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
-[System.IO.Compression.ZipFile]::CreateFromDirectory(
-    $stageInst, $zipPath,
-    [System.IO.Compression.CompressionLevel]::Fastest,
-    $true)   # includeBaseDirectory -> root entry is "Craft to Exile 2/"
-$sha  = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLower()
+# 2. Build the local v$Version zip by REPLICATING THE REAL PUBLISH. We invoke the
+#    production publish-prism-pack.ps1 in its -LocalOutDir mode, which runs the
+#    identical packaging path (sanitize instance.cfg, bundle icon + update.ps1 +
+#    backup.ps1 + preserve-list.json, apply exclusions, structural mod-JAR sanity
+#    check, compute SHA-256, build latest.json) but writes the zip + manifest to a
+#    local dir instead of uploading to Azure / opening a PR. Source instance is
+#    your current install, so the zip carries the real mods and the upgraded
+#    instance stays playable. This guarantees the staged zip matches a real
+#    publish — no separate, drift-prone packaging logic in this test harness.
+Write-Head "Staging local v$Version (replicating publish-prism-pack.ps1) from your v$installedVer install"
+$publishScript = Join-Path $repoRoot 'infra\azure\scripts\publish-prism-pack.ps1'
+& $publishScript `
+    -Version $Version `
+    -InstancePath $instance `
+    -LocalOutDir $blobDir `
+    -LocalBaseUrl "http://127.0.0.1:$Port"
+if ($LASTEXITCODE -ne 0) { Stop-Server; throw "publish-prism-pack.ps1 (LocalOutDir) failed ($LASTEXITCODE)" }
+if (-not (Test-Path -LiteralPath $zipPath)) { throw "Expected local zip not found at $zipPath" }
+if (-not (Test-Path -LiteralPath (Join-Path $blobDir 'latest.json'))) { throw "Expected local latest.json not found in $blobDir" }
 $size = (Get-Item -LiteralPath $zipPath).Length
-Write-Ok ("zip {0:N1} MB  sha256={1}" -f ($size / 1MB), $sha.Substring(0, 12))
-
-# 4. Manifest (real sha/size so setup's verification passes).
-$manifest = [ordered]@{
-    version    = $Version
-    instance   = $instanceName
-    url        = "http://127.0.0.1:$Port/c2e2-v$Version.zip"
-    sha256     = $sha
-    sizeBytes  = $size
-    packwizUrl = "http://127.0.0.1:$Port/pack.toml"
-}
-[IO.File]::WriteAllText((Join-Path $blobDir 'latest.json'),
-    ($manifest | ConvertTo-Json), [Text.UTF8Encoding]::new($false))
-'name = "Craft to Exile 2"' | Set-Content -LiteralPath (Join-Path $blobDir 'pack.toml') -Encoding UTF8
+Write-Ok ("Published locally: {0:N1} MB zip + latest.json (url -> loopback)" -f ($size / 1MB))
 
 # 5. Compiled static file server (streams the large zip with correct
 #    Content-Length, matching what nz's downloadWithProgress expects).

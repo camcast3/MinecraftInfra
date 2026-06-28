@@ -107,6 +107,25 @@ Every task below uses the same template:
   workflow is serialized (`concurrency: publish-prism-pack`). To run the whole
   thing locally you need `az login` (Storage Blob Data Contributor on the
   container) and `gh` auth.
+- **Local-publish mode (no Azure, no git).** Pass `-LocalOutDir <dir>` to run the
+  **identical** packaging path (sanitize `instance.cfg`, bundle icon + update.ps1
+  + backup.ps1 + preserve-list.json, apply exclusions, structural mod-JAR sanity
+  check, compute SHA-256, build `latest.json`) but write the versioned zip +
+  manifest to a local directory instead of uploading to Azure / opening a PR.
+  Targets any version tag, needs neither `az` nor `gh`. This is how you stage a
+  publish-faithful local zip (e.g. for the upgrade mock below) without touching
+  production storage:
+
+  ```powershell
+  ./infra/azure/scripts/publish-prism-pack.ps1 `
+    -Version 0.4.3 -InstancePath "<a Prism instance>" `
+    -LocalOutDir "$env:TEMP\nzpub" -LocalBaseUrl "http://127.0.0.1:8788"
+  # -> $env:TEMP\nzpub\c2e2-v0.4.3.zip + latest.json (url -> the loopback base)
+  ```
+
+  `-LocalOutDir` is mutually exclusive with `-SkipDriftCheck` (it's already fully
+  local) and never mutates the source instance (the sanitized cfg is written only
+  into the zip).
 
 ### Build a staging / hotfix instance
 
@@ -434,10 +453,13 @@ All commands run from the `client/` directory unless noted.
   **same upgrade on your live Prism instance** so you can see the Latest/Backup
   groups, the `(old)` rollback instance, and the wired hooks in the real Prism
   UI. Useful as a final confidence check before publishing a real version.
-- **Safe by construction** — the "new" zip is built **from your current install**,
-  so the upgraded instance keeps the identical real mods/config and stays fully
-  playable. Your previous install is preserved twice (as `…\.bak` and the
-  `Craft to Exile 2 (old)` instance), and `-Action rollback` restores it.
+- **Safe by construction** — the "new" zip is built **from your current install**
+  by invoking the real `publish-prism-pack.ps1` in `-LocalOutDir` mode (same
+  sanitize + bundle + structural-sanity-check packaging as a production publish,
+  just written locally instead of to Azure), so the upgraded instance keeps the
+  identical real mods/config and stays fully playable. Your previous install is
+  preserved twice (as `…\.bak` and the `Craft to Exile 2 (old)` instance), and
+  `-Action rollback` restores it.
 - **Prerequisites** — Prism **and** the game fully closed (the script refuses
   otherwise — Prism rewrites `instance.cfg` on exit). Go toolchain for the
   one-shot `nz.exe` + loopback-server build. ~1.3 GB of free temp space.
