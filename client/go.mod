@@ -3,7 +3,7 @@ module github.com/camcast3/MinecraftInfra/client
 go 1.26.4
 
 require (
-	charm.land/lipgloss/v2 v2.0.4
+	charm.land/lipgloss/v2 v2.0.5
 	github.com/spf13/cobra v1.10.2
 )
 
