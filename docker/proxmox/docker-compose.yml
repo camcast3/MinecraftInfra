@@ -237,7 +237,7 @@ services:
 
   mc-monitor-exporter:
     <<: *common-keys-apps
-    image: itzg/mc-monitor:0.16.8@sha256:18dfad124615561ac86eff32d5ea151144ce8319bbee3859ee101dac23a9f2eb
+    image: itzg/mc-monitor:0.16.11@sha256:2ffab87864ad6c9838f7f4f70c17df71dcb7bb9782b0d31a2eaa0d712f44e8ce
     container_name: mc-monitor-exporter
     network_mode: "service:tailscale"
     depends_on:
