@@ -37,7 +37,7 @@ services:
 
   tailscale:
     <<: *common-keys-apps
-    image: tailscale/tailscale:v1.98.4@sha256:6146dfe83373a68b57379f8a748676971f036c418d8bc8f4ed3b6ba3f7cc04dc
+    image: tailscale/tailscale:v1.98.8@sha256:2f4584ddb5b8254868f1e2874efa11e7ef1fc554a824ff36e0ab538382e42a8e
     container_name: tailscale-minecraft
     deploy:
       resources:
@@ -258,7 +258,7 @@ services:
 
   node-exporter:
     <<: *common-keys-apps
-    image: prom/node-exporter:v1.11.1@sha256:e9cff4fc67b1818f8c97adb115b9f12c9a54b533de86765d4a0effc01b357205
+    image: prom/node-exporter:v1.12.0@sha256:9b0ade5e607f9dbedb0a8e11151b6011ae5bd79304c261804cfdd2cadf200a80
     container_name: node-exporter
     network_mode: "service:tailscale"
     pid: host
