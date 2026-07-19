@@ -37,7 +37,7 @@ services:
 
   tailscale:
     <<: *common-keys-apps
-    image: tailscale/tailscale:v1.98.8@sha256:2f4584ddb5b8254868f1e2874efa11e7ef1fc554a824ff36e0ab538382e42a8e
+    image: tailscale/tailscale:v1.98.9@sha256:6dba149843cfd9171bbd602b17a71b0fb7955c13f96f534877075c915abbc072
     container_name: tailscale-minecraft
     deploy:
       resources:

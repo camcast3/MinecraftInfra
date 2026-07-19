@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: client/go.mod
           cache-dependency-path: client/go.sum
