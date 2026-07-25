@@ -65,7 +65,7 @@ services:
 
   craft-to-exile-2:
     <<: *common-keys-apps
-    image: itzg/minecraft-server:2026.7.0-java17@sha256:5643840db211bfef38dde8bf4e752c34a7019664fd5c0e04a0f2e473a253c019
+    image: itzg/minecraft-server:2026.7.2-java17@sha256:a61978c9913f3a6b2d6e70f4303dba495e67076b144a93ca811221299a111d03
     container_name: mc-c2e2
     network_mode: "service:tailscale"
     tty: true
@@ -197,7 +197,7 @@ services:
     <<: *common-keys-apps
     # Reuses the MC image — rcon-cli already installed. Every 6h: warn at
     # 1h/30m/5m/1m/10s, then `stop`; restart: unless-stopped brings it back.
-    image: itzg/minecraft-server:2026.7.0-java17@sha256:5643840db211bfef38dde8bf4e752c34a7019664fd5c0e04a0f2e473a253c019
+    image: itzg/minecraft-server:2026.7.2-java17@sha256:a61978c9913f3a6b2d6e70f4303dba495e67076b144a93ca811221299a111d03
     container_name: mc-restarter
     network_mode: "service:tailscale"
     depends_on:
