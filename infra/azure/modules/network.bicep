@@ -79,7 +79,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-07-01' = {
   }
 }
 
-resource publicIp 'Microsoft.Network/publicIPAddresses@2025-07-01' = {
+resource publicIp 'Microsoft.Network/publicIPAddresses@2025-09-01' = {
   name: publicIpName
   location: location
   tags: { environment: environment }
