@@ -13,7 +13,7 @@ x-common-keys-apps: &common-keys-apps
 
 x-backup-common: &backup-common
   <<: *common-keys-apps
-  image: itzg/mc-backup:2026.8.0@sha256:554fcfc0825040556c7e04c83f17944f46611efc2ccd12c552e8ed0f561fb80d
+  image: itzg/mc-backup:2026.8.2@sha256:c5bccdd1714c2527c4299bab6a41ef2cfd5858d0ec3e905325025b12e3cb5021
   network_mode: "service:tailscale"
   depends_on:
     craft-to-exile-2:
