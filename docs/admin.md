@@ -35,7 +35,7 @@ ever *trigger* a handful by hand. Everything else is CI or polling.
 | Publish a new modpack version | `publish-prism-pack.yml` (dispatch + version, **or** push a `modpack/v*` tag) | per release |
 | Import/refresh CurseForge mods | `infra/azure/scripts/import-curseforge-pack.ps1` | per upstream bump |
 | Build a staging/hotfix instance | `infra/azure/scripts/build-instance-from-packwiz.ps1` | rare (usually CI) |
-| Manage allowlist / ops | edit `docker/shared/whitelist.json` + `ops.json`, push | per player |
+| Manage allowlist / ops | edit `docker/shared/whitelist.json`, run `scripts/sync-ops.ps1`, push | per player |
 | Bootstrap Azure infra | `infra/azure/scripts/bootstrap.ps1` | once |
 | Provision the Proxmox VM | `infra/proxmox/cloud-init.yaml` + Portainer | once |
 | Build / test the `nz` client | `go build` / `go test` / the manual harnesses | per change |
@@ -178,12 +178,20 @@ Every task below uses the same template:
 
 ### Manage allowlist / ops
 
-- **Why** — add or remove allowlisted players, or grant/revoke operator level.
+- **Why** — add or remove allowlisted players. Every allowlisted player is
+  generated as a level-3 operator.
 - **Prerequisites** — the player's Minecraft Java **UUID** (with dashes) + name.
-- **How** — edit the shared files and push to `main`:
+- **How** — edit the whitelist, regenerate the operator file, and push to `main`:
 
-  - `docker/shared/whitelist.json` — `{ "uuid": "...", "name": "..." }` entries.
-  - `docker/shared/ops.json` — adds `"level"` (1–4) and `"bypassesPlayerLimit"`.
+  ```powershell
+  .\scripts\sync-ops.ps1
+  ```
+
+  `docker/shared/ops.json` is generated from each whitelist entry by preserving
+  `uuid` and `name`, then adding `"level": 3` and
+  `"bypassesPlayerLimit": false`. Do not edit it by hand. CI runs the script in
+  check mode and fails if the committed output differs; publish and deploy also
+  regenerate it defensively.
 
 - **What it does** — the C2E2 backend reads `WHITELIST_FILE` / `OPS_FILE` from the
   raw GitHub URLs and runs with `EXISTING_WHITELIST_FILE=SYNCHRONIZE` /
