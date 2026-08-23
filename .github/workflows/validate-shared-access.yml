@@ -1,0 +1,33 @@
+---
+name: Validate shared access files
+
+on:
+  pull_request:
+    paths:
+      - "docker/shared/whitelist.json"
+      - "docker/shared/ops.json"
+      - "scripts/sync-ops.ps1"
+      - ".github/workflows/validate-shared-access.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker/shared/whitelist.json"
+      - "docker/shared/ops.json"
+      - "scripts/sync-ops.ps1"
+      - ".github/workflows/validate-shared-access.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  ops-match-whitelist:
+    name: ops.json matches whitelist.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Check generated operators
+        shell: pwsh
+        run: ./scripts/sync-ops.ps1 -Check
