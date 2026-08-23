@@ -10,7 +10,7 @@ var nsgName = 'nsg-minecraft-${environment}'
 var publicIpName = 'pip-minecraft-${environment}'
 var nicName = 'nic-minecraft-${environment}'
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2025-07-01' = {
+resource nsg 'Microsoft.Network/networkSecurityGroups@2025-09-01' = {
   name: nsgName
   location: location
   tags: { environment: environment }
