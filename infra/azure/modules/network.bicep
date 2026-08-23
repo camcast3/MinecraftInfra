@@ -92,7 +92,7 @@ resource publicIp 'Microsoft.Network/publicIPAddresses@2025-09-01' = {
   }
 }
 
-resource nic 'Microsoft.Network/networkInterfaces@2025-07-01' = {
+resource nic 'Microsoft.Network/networkInterfaces@2025-09-01' = {
   name: nicName
   location: location
   tags: { environment: environment }
