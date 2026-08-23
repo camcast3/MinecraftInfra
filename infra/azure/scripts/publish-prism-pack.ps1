@@ -965,7 +965,12 @@ publishedAt: "$publishedAt"
         [System.IO.File]::WriteAllText($latestVersionFile, "$Version`n", $utf8NoBom)
         Write-Ok "Bumped docs/assets/latest-version.txt to $Version"
 
-        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl' 'docs/assets/latest-version.txt'
+        # Keep the generated operator list current in every publish PR so
+        # Portainer's ensuing redeploy applies the whitelist-derived list.
+        $syncOpsScript = Join-Path $repoRoot 'scripts/sync-ops.ps1'
+        & $syncOpsScript
+
+        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl' 'docker/shared/ops.json' 'docs/assets/latest-version.txt'
         git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
         Write-Step "Pushing $publishBranch to origin"
@@ -1000,6 +1005,8 @@ This PR atomically bumps:
   pinned to the new version. Surfaces the current version to players when the
   C2E2 backend is briefly unreachable (deploy-azure.yml redeploys the proxy on
   merge; refresh-env.sh restarts Velocity if velocity.toml content changed).
+- ``docker/shared/ops.json`` — regenerated from the whitelist with every player
+  set to operator level 3. Portainer applies it on the same backend redeploy.
 - ``docs/assets/latest-version.txt`` — single-line version pointer polled on
   every Prism launch by ``prelaunch-check.ps1``. Player launches start hard-
   blocking on the prior version as soon as this merges into ``main`` (served
