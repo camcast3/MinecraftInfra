@@ -24,6 +24,17 @@
             "automerge": false
         },
         {
+            "description": "Require a reviewed cold-backup Windrose update",
+            "matchFileNames": [
+                "docker/windrose/**"
+            ],
+            "matchPackageNames": [
+                "windroseserver/windroseserver"
+            ],
+            "groupName": "Windrose official server",
+            "automerge": false
+        },
+        {
             "groupName": "devDependencies (non-major)",
             "matchDepTypes": [
                 "devDependencies",

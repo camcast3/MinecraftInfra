@@ -1,0 +1,22 @@
+{
+  "displayName": "Windrose",
+  "gameSlug": "windrose",
+  "serviceUser": "windrosesvc",
+  "tailscaleHostname": "windrose-proxmox",
+  "dataRoot": "/data/windrose",
+  "azureBackupContainer": "windrose-backups",
+  "containerName": "windrose-server",
+  "backupSources": [
+    "data",
+    "config"
+  ],
+  "backupConsistency": "confirmed-cold-stop",
+  "backupStopMode": "hook",
+  "sshPort": 7822,
+  "rebootTime": "04:00",
+  "managementCidrs": [
+    "192.168.86.0/24",
+    "192.168.69.159/32"
+  ],
+  "publicPorts": []
+}

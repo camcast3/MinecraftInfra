@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+IFS=$'\n\t'
+
+container=${1:?container name is required}
+timeout=${2:?stop timeout is required}
+proc_root=${PROC_ROOT:-/proc}
+
+[[ "$container" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]] || {
+  echo "Invalid container name: $container" >&2
+  exit 78
+}
+[[ "$timeout" =~ ^[1-9][0-9]*$ ]] || {
+  echo "Stop timeout must be a positive integer" >&2
+  exit 78
+}
+
+docker stop --time "$timeout" "$container" >/dev/null
+
+if [[ "$(docker inspect -f '{{.State.Running}}' "$container")" != false ]] ||
+    [[ "$(docker inspect -f '{{.State.Pid}}' "$container")" != 0 ]]; then
+  echo "Windrose container did not reach a confirmed cold stop" >&2
+  exit 1
+fi
+for cmdline in "$proc_root"/[0-9]*/cmdline; do
+  if [[ -r "$cmdline" ]] &&
+      grep -aFq 'WindroseServer-Linux-Shipping' "$cmdline" 2>/dev/null; then
+    echo "Refusing to copy active Windrose RocksDB_v2 data" >&2
+    exit 1
+  fi
+done

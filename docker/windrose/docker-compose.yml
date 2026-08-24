@@ -1,0 +1,245 @@
+# Windrose native Linux dedicated server.
+# Portainer CE deploys this file as a GitOps stack. Secret values are supplied
+# through the stack environment UI and are never committed.
+
+x-cold-backup-contract:
+  game: windrose
+  mode: cold
+  scheduler: game-backup@windrose.timer
+  restore: /usr/local/sbin/game-restore
+  container: windrose-server
+  stop_timeout: 120s
+  sources:
+    - /data/windrose/data
+    - /data/windrose/config
+  local: /data/windrose/backups/local
+  health: /data/windrose/backups/health
+  nas: /mnt/nas-backups/windrose
+  azureContainer: windrose-backups
+  retentionDays:
+    local: 14
+    nas: 7
+    azureCold: 90
+  invariant: RocksDB_v2 is copied only after confirmed container stop
+
+x-common: &common
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  tailscale:
+    <<: *common
+    image: tailscale/tailscale:v1.102.2@sha256:4107a12b1a0466bb3f2c968d5fa35acf509cd7865a958ce1af36724e9f016342
+    container_name: windrose-tailscale
+    hostname: ${WINDROSE_TS_HOSTNAME:-windrose-game}
+    environment:
+      TS_AUTHKEY: ${WINDROSE_TS_AUTHKEY}
+      TS_HOSTNAME: ${WINDROSE_TS_HOSTNAME:-windrose-game}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TZ: America/Los_Angeles
+    volumes:
+      - /data/windrose/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "tailscale", "status", "--peers=false"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  windrose:
+    <<: *common
+    image: windroseserver/windroseserver:0.10.0.8.10-dd411cfd@sha256:90a8bb141043df0d659773f6cc7535400e3866df2ed1f1565be9b6778fd47168
+    container_name: windrose-server
+    network_mode: "service:tailscale"
+    init: true
+    stop_signal: SIGTERM
+    stop_grace_period: 2m
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    environment:
+      WINDROSE_SERVER_DESCRIPTION_JSON: ${WINDROSE_SERVER_DESCRIPTION_JSON}
+      WINDROSE_RESEED_SERVER_DESCRIPTION: ${WINDROSE_RESEED_SERVER_DESCRIPTION:-false}
+    labels:
+      cc.negativezone.backup.scheduler: game-backup@windrose.timer
+      cc.negativezone.backup.mode: confirmed-cold-stop
+      cc.negativezone.backup.local-host-path: /data/windrose/backups/local
+      cc.negativezone.backup.active-rocksdb-copy: forbidden
+    volumes:
+      - /data/windrose/data:/home/ue_user/app/R5/Saved
+      - /data/windrose/config:/config
+    configs:
+      - source: windrose_launch
+        target: /opt/windrose/launch.sh
+        mode: 0555
+      - source: windrose_healthcheck
+        target: /opt/windrose/healthcheck.sh
+        mode: 0555
+    # Compose configs may be mounted without executable mode support.
+    entrypoint: ["/bin/bash", "/opt/windrose/launch.sh"]
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          memory: 16G
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/opt/windrose/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 3m
+
+  alloy:
+    <<: *common
+    image: grafana/alloy:v1.11.3@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669
+    container_name: windrose-alloy
+    user: "0:0"
+    read_only: true
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /data/windrose/monitoring/alloy:/var/lib/alloy
+      - /data/windrose/backups/health:/var/log/game-backup:ro
+    tmpfs:
+      - /tmp
+    configs:
+      - source: alloy_config
+        target: /etc/alloy/config.alloy
+        mode: 0444
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=127.0.0.1:12345
+      - /etc/alloy/config.alloy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+# Inline configs are compatible with Portainer CE GitOps, which cannot mount
+# files from the checked-out repository into a stack.
+configs:
+  windrose_launch:
+    content: |
+      #!/bin/bash
+      set -Eeuo pipefail
+
+      config=/config/ServerDescription.json
+      candidate=/config/.ServerDescription.json.new
+      reseed=$${WINDROSE_RESEED_SERVER_DESCRIPTION:-false}
+      umask 077
+
+      if [[ ! -s "$${config}" || "$${reseed}" == "true" ]]; then
+        if [[ -z "$${WINDROSE_SERVER_DESCRIPTION_JSON:-}" ]]; then
+          echo "WINDROSE_SERVER_DESCRIPTION_JSON is required to bootstrap ServerDescription.json" >&2
+          exit 1
+        fi
+        printf '%s\n' "$${WINDROSE_SERVER_DESCRIPTION_JSON}" > "$${candidate}"
+        mv -f "$${candidate}" "$${config}"
+      fi
+
+      if ! grep -Eq '"UseDirectConnection"[[:space:]]*:[[:space:]]*true' "$${config}" ||
+         ! grep -Eq '"DirectConnectionServerPort"[[:space:]]*:[[:space:]]*7777' "$${config}"; then
+        echo "ServerDescription.json must enable direct connection on port 7777" >&2
+        exit 1
+      fi
+
+      rm -f /home/ue_user/app/R5/ServerDescription.json
+      ln -s "$${config}" /home/ue_user/app/R5/ServerDescription.json
+      unset WINDROSE_SERVER_DESCRIPTION_JSON
+      exec ./R5/Binaries/Linux/WindroseServer-Linux-Shipping R5 -log
+
+  windrose_healthcheck:
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+
+      pgrep -f '/R5/Binaries/Linux/WindroseServer-Linux-Shipping R5' >/dev/null
+      awk '$$2 ~ /:1E61$$/ && $$4 == "0A" { found=1 } END { exit !found }' \
+        /proc/net/tcp /proc/net/tcp6
+      awk '$$2 ~ /:1E61$$/ { found=1 } END { exit !found }' \
+        /proc/net/udp /proc/net/udp6
+
+  alloy_config:
+    content: |
+      logging {
+        level  = "info"
+        format = "logfmt"
+      }
+
+      local.file_match "docker_logs" {
+        path_targets = [{
+          __path__ = "/var/lib/docker/containers/*/*.log",
+          instance = "windrose-proxmox",
+          game     = "windrose",
+          job      = "docker",
+        }]
+        sync_period = "10s"
+      }
+
+      loki.source.file "docker_logs" {
+        targets       = local.file_match.docker_logs.targets
+        forward_to    = [loki.process.docker_logs.receiver]
+        tail_from_end = true
+      }
+
+      local.file_match "backup_logs" {
+        path_targets = [{
+          __path__ = "/var/log/game-backup/events.log",
+          instance = "windrose-proxmox",
+          game     = "windrose",
+          job      = "game-backup",
+        }]
+        sync_period = "10s"
+      }
+
+      loki.source.file "backup_logs" {
+        targets       = local.file_match.backup_logs.targets
+        forward_to    = [loki.process.backup_logs.receiver]
+        tail_from_end = true
+      }
+
+      loki.process "docker_logs" {
+        stage.docker { }
+        forward_to = [loki.write.central.receiver]
+      }
+
+      loki.process "backup_logs" {
+        stage.regex {
+          expression = "^(?P<backup_signal>game_backup_(?:result|health)) game=(?P<backup_game>[a-z0-9-]+) destination=(?P<backup_destination>[a-z0-9-]+) status=(?P<backup_status>[a-z]+).*$"
+        }
+        stage.labels {
+          values = {
+            backup_signal      = "",
+            backup_game        = "",
+            backup_destination = "",
+            backup_status      = "",
+          }
+        }
+        forward_to = [loki.write.central.receiver]
+      }
+
+      loki.write "central" {
+        endpoint {
+          url = "http://loki-k8s.tail042ec7.ts.net:3100/loki/api/v1/push"
+        }
+      }

@@ -16,12 +16,13 @@ provision a VM, attach vendor data, enable a timer, or modify an existing host.
 
 Tailscale authentication, Portainer enrollment, and rclone credentials are
 deliberately post-boot steps. Secrets must not be included in a profile or
-rendered vendor data. The versioned Palworld REST quiesce hook contains no
-credential; it expands the runtime password only inside the game container.
+rendered vendor data. The versioned game hooks contain no credentials. Palworld expands its runtime
+password only inside the game container; Windrose confirms a cold stop before
+the framework can archive `RocksDB_v2`.
 
 ## Profile schema
 
-The production Palworld profile is committed at `profiles/palworld.json`.
+The production Palworld and Windrose profiles are committed under `profiles/`.
 Other profiles may be supplied locally with the following fields:
 
 ```json
@@ -66,8 +67,8 @@ pwsh .\infra\proxmox\game-node\Render-CloudInit.ps1 `
 
 The renderer validates identifiers, CIDRs, ports, source paths, and backup
 settings, embeds the versioned scripts and systemd units, rejects unresolved
-tokens, and writes UTF-8 without a BOM. The checked-in Palworld vendor data is
-equality-tested against its profile and template.
+tokens, and writes UTF-8 without a BOM. The checked-in Palworld and Windrose vendor data are equality-tested against
+their profiles and template.
 
 Attach the output to a new Debian 13 VM as Proxmox vendor data. Use the
 Proxmox Cloud-Init UI for the matching service user and administrator SSH key:

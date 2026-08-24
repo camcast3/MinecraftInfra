@@ -1,0 +1,91 @@
+---
+name: Validate Windrose stack
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "docker/windrose/**"
+      - "infra/proxmox/game-node/README.md"
+      - "infra/proxmox/game-node/Render-CloudInit.ps1"
+      - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
+      - "infra/proxmox/game-node/backup/windrose"
+      - "infra/proxmox/game-node/profiles/windrose.json"
+      - "infra/proxmox/game-node/generated/windrose-cloud-init.yaml"
+      - "ops/windrose.md"
+      - "ops/readiness-windrose.md"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-WindroseBackup.sh"
+      - "scripts/tests/Test-WindroseStartup.ps1"
+      - "renovate.json"
+      - ".github/workflows/validate-windrose.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker/windrose/**"
+      - "infra/proxmox/game-node/README.md"
+      - "infra/proxmox/game-node/Render-CloudInit.ps1"
+      - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
+      - "infra/proxmox/game-node/backup/windrose"
+      - "infra/proxmox/game-node/profiles/windrose.json"
+      - "infra/proxmox/game-node/generated/windrose-cloud-init.yaml"
+      - "ops/windrose.md"
+      - "ops/readiness-windrose.md"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-WindroseBackup.sh"
+      - "scripts/tests/Test-WindroseStartup.ps1"
+      - "renovate.json"
+      - ".github/workflows/validate-windrose.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Compose, native startup, cloud-init, and backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install validators
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloud-init shellcheck
+
+      - name: Validate production Compose
+        env:
+          WINDROSE_TS_AUTHKEY: tskey-auth-validation-placeholder
+          WINDROSE_SERVER_DESCRIPTION_JSON: >-
+            {"UseDirectConnection":true,"DirectConnectionServerPort":7777,
+            "PersistentServerId":"validation","WorldIslandId":"validation"}
+        run: docker compose --file docker/windrose/docker-compose.yml config --quiet
+
+      - name: Check Windrose backup shell
+        run: |
+          bash -n infra/proxmox/game-node/backup/windrose \
+            scripts/tests/Test-WindroseBackup.sh
+          shellcheck infra/proxmox/game-node/backup/windrose \
+            scripts/tests/Test-WindroseBackup.sh
+          bash scripts/tests/Test-WindroseBackup.sh
+
+      - name: Test native image, bootstrap, update, and rollback
+        shell: pwsh
+        run: ./scripts/tests/Test-WindroseStartup.ps1
+
+      - name: Test Windrose cloud-init rendering
+        shell: pwsh
+        run: ./scripts/tests/Test-GameNodeCloudInit.ps1
+
+      - name: Validate generated cloud-init schema
+        run: >-
+          cloud-init schema
+          --config-file infra/proxmox/game-node/generated/windrose-cloud-init.yaml
+
+      - name: Lint focused workflow
+        run: |
+          docker run --rm \
+            --volume "$PWD:/repo" \
+            --workdir /repo \
+            rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
+            .github/workflows/validate-windrose.yml

@@ -7,9 +7,12 @@ $renderer = Join-Path $repositoryRoot 'infra\proxmox\game-node\Render-CloudInit.
 $fixture = Join-Path $PSScriptRoot 'fixtures\game-node\generic.json'
 $palworldProfile = Join-Path $repositoryRoot 'infra\proxmox\game-node\profiles\palworld.json'
 $palworldCheckedIn = Join-Path $repositoryRoot 'infra\proxmox\game-node\generated\palworld-cloud-init.yaml'
+$windroseProfile = Join-Path $repositoryRoot 'infra\proxmox\game-node\profiles\windrose.json'
+$windroseCheckedIn = Join-Path $repositoryRoot 'infra\proxmox\game-node\generated\windrose-cloud-init.yaml'
 $testRoot = Join-Path $repositoryRoot 'build\game-node-cloud-init-tests'
 $output = Join-Path $testRoot 'fixture-game-cloud-init.yaml'
 $palworldOutput = Join-Path $testRoot 'palworld-cloud-init.yaml'
+$windroseOutput = Join-Path $testRoot 'windrose-cloud-init.yaml'
 
 Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $testRoot | Out-Null
@@ -18,6 +21,7 @@ $parseTargets = @(
     $renderer
     $PSCommandPath
     (Join-Path $repositoryRoot 'scripts\tests\Test-PalworldStartup.ps1')
+    (Join-Path $repositoryRoot 'scripts\tests\Test-WindroseStartup.ps1')
 )
 foreach ($target in $parseTargets) {
     $tokens = $null
@@ -110,4 +114,39 @@ if ($palworldRendered -match '(?m)^\s*-\s+ufw allow 8211/udp') {
     throw 'Palworld cloud-init must not open a public player port.'
 }
 
-Write-Output "Cloud-init renderer tests passed: $output and $palworldOutput"
+$renderedWindrosePath = & $renderer -ProfilePath $windroseProfile `
+    -OutputPath $windroseOutput
+if ((Resolve-Path $renderedWindrosePath).Path -ne
+    (Resolve-Path $windroseOutput).Path) {
+    throw 'Renderer returned an unexpected Windrose output path.'
+}
+
+$windroseRendered = Get-Content -LiteralPath $windroseOutput -Raw
+$windroseCommitted = Get-Content -LiteralPath $windroseCheckedIn -Raw
+if ($windroseRendered -ne $windroseCommitted) {
+    throw 'Checked-in Windrose cloud-init is stale; re-render it from the profile.'
+}
+foreach ($text in @(
+    '# Profile: Windrose (windrose)'
+    'CONTAINER_NAME=windrose-server'
+    'BACKUP_SOURCE_NAMES="data:config"'
+    'BACKUP_CONSISTENCY=confirmed-cold-stop'
+    'BACKUP_STOP_MODE=hook'
+    'AZURE_CONTAINER=windrose-backups'
+    '/usr/local/libexec/game-backup/windrose'
+    'Refusing to copy active Windrose RocksDB_v2 data'
+    'game-backup@windrose.timer'
+)) {
+    if (-not $windroseRendered.Contains($text)) {
+        throw "Rendered Windrose cloud-init is missing expected text: $text"
+    }
+}
+if ($windroseRendered -match
+    '(?m)^\s*-\s+ufw allow 7777/(?:tcp|udp)') {
+    throw 'Windrose cloud-init must not open a public player port.'
+}
+
+Write-Output (
+    "Cloud-init renderer tests passed: $output, $palworldOutput, and " +
+    $windroseOutput
+)

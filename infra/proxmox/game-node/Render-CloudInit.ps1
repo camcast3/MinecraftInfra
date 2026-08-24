@@ -136,6 +136,17 @@ function ConvertTo-CloudInitBlock {
 }
 
 $backupAssetRoot = Join-Path $PSScriptRoot 'backup'
+$backupHookPath = Join-Path $backupAssetRoot ([string] $configuration.gameSlug)
+if (Test-Path -LiteralPath $backupHookPath -PathType Leaf) {
+    $backupHook = Get-Content -LiteralPath $backupHookPath -Raw -Encoding UTF8
+}
+else {
+    $backupHook = @'
+#!/usr/bin/env bash
+echo "No game-specific backup hook is installed for this profile" >&2
+exit 78
+'@
+}
 $backupAssets = [ordered] @{
     '@@BACKUP_SCRIPT@@' = 'game-backup.sh'
     '@@BACKUP_HEALTH_SCRIPT@@' = 'game-backup-health.sh'
@@ -147,7 +158,6 @@ $backupAssets = [ordered] @{
     '@@BACKUP_HEALTH_TIMER@@' = 'game-backup-health@.timer'
     '@@BACKUP_RECOVER_SERVICE@@' = 'game-backup-recover@.service'
     '@@RCLONE_EXAMPLE@@' = 'rclone.conf.example'
-    '@@PALWORLD_BACKUP_HOOK@@' = 'palworld'
 }
 
 $tokens = [ordered] @{
@@ -163,6 +173,7 @@ $tokens = [ordered] @{
     '@@BACKUP_SOURCES@@' = @($configuration.backupSources) -join ':'
     '@@BACKUP_CONSISTENCY@@' = [string] $configuration.backupConsistency
     '@@BACKUP_STOP_MODE@@' = $backupStopMode
+    '@@GAME_BACKUP_HOOK@@' = ConvertTo-CloudInitBlock $backupHook
     '@@MANAGEMENT_UFW_RULES@@' = $managementRules -join "`n"
     '@@PUBLIC_UFW_RULES@@' = $publicRules -join "`n"
 }
