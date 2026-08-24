@@ -2,26 +2,24 @@
 <#
 .SYNOPSIS
     Export a Prism Launcher instance and publish it to Azure Blob storage so
-    setup.ps1 can pull it in ~2 min instead of waiting through CurseForge.
-    Bundles update.ps1 + wires the PreLaunchCommand so installed instances
-    auto-update against the latest published manifest.
+    nz setup can pull it in ~2 min instead of waiting through CurseForge.
 
     Sanitizes instance.cfg (strips local Java fields, forces AutomaticJava,
-    pins memory + iconKey + version label, wires PreLaunchCommand). Bundles
-    icon + update.ps1 into the zip. Uploads versioned blob with immutable
-    cache headers. Atomically commits modpack.yml + rewrites
+    pins memory + iconKey + version label, and disables source-instance custom
+    commands). Bundles the icon and preservation manifest; nz setup installs
+    nz.exe and writes the production launch/backup hooks transactionally.
+    Uploads a versioned zip and manifest with immutable cache headers.
+    Atomically commits modpack.yml + rewrites
     docker/proxmox/docker-compose.yml (PACKWIZ_URL pinned to current HEAD
     SHA, MOTD pinned to new version) + docker/azure/velocity/velocity.toml.tmpl
-    (Velocity fallback MOTD pinned to new version) + docs/assets/latest-version.txt
-    (launch-time version pointer polled by prelaunch-check.ps1) on a fresh
-    modpack/v<Version> branch, opens a PR with auto-merge. Portainer GitOps
-    redeploys C2E2 within ~5 min — server + client + fallback-proxy MOTD +
-    launch-time pointer all move in lockstep. latest.json includes a
-    packwizUrl pinned to the same commit SHA as the server PACKWIZ_URL so
-    client-side packwiz delta updates use the matching manifest. Compose YAML
-    is rewritten directly (not .env) because Portainer ignores .env files in git.
-    latest.json is uploaded AFTER PR succeeds so the audit trail is always
-    present before any player can download.
+    (Velocity fallback MOTD pinned to new version) on a fresh
+    modpack/v<Version> branch, then opens a PR with auto-merge. Portainer GitOps
+    redeploys C2E2 within ~5 min. Stable client and launch-time pointers are
+    promoted separately only after merge and the public server health gate.
+    The immutable manifest includes a packwizUrl pinned to the
+    same commit SHA as the server PACKWIZ_URL so client-side packwiz delta
+    updates use the matching manifest. Compose YAML is rewritten directly
+    (not .env) because Portainer ignores .env files in git.
 
     Authenticates via existing `az login`. Requires Storage Blob Data
     Contributor on the container.
@@ -50,17 +48,6 @@
     Legacy fallback only — used when neither -InstancePath nor staging dir
     exists. OS-canonical Prism instances path by default.
 
-.PARAMETER UpdateScriptPath
-    update.ps1 to bundle into the zip. Default: docs/assets/update.ps1.
-
-.PARAMETER BackupScriptPath
-    Path to the player-side `backup.ps1` to bundle into the zip at
-    <InstanceName>/.negativezone/backup.ps1. Defaults to
-    docs/assets/backup.ps1 from the repo root. Wired into instance.cfg's
-    PostExitCommand by the sanitizer so periodic snapshots of player state
-    (Xaero map cache, shaderpacks, options, etc.) happen after every game
-    session — see backup.ps1 for the cadence (default 3 days) and scope.
-
 .PARAMETER IconPath
     Instance icon. Default cte2-icon.png next to this script. Bundled at
     icons/<IconKey>.<ext>.
@@ -73,20 +60,20 @@
     Allow re-publishing over an existing `modpack/v<Version>` branch on
     origin. Without this, the script refuses (PR #121 root cause). With
     -Force, local branch resets to origin/main and force-pushes with lease.
-    Also the recovery mode for resuming a publish that failed at the
-    auto-merge step (PR #147 root cause): re-running with -Force after
-    enabling `allow_auto_merge` on the repo will reuse the existing PR,
-    enable auto-merge, and finally upload latest.json.
+    Also the recovery mode for resuming a publish that failed after immutable
+    assets were staged. Existing assets are reused only when their checksums
+    and compatibility metadata match; immutable production assets are never
+    overwritten.
 
 .PARAMETER SkipDriftCheck
     Test-publish escape hatch — bypasses drift check AND server-side
     coupling (compose-rewrite + PR + auto-merge). -Version MUST start
     with "test-". Manifest goes to latest-test.json, not latest.json.
-    Players using setup.ps1 stay on production unless they set
+    Production nz clients stay on production unless they set
 
 .PARAMETER AllowDowngrade
     Set "allowDowngrade": true in the published manifest so the player-side
-    update.ps1 / setup.ps1 will accept rolling back from a newer installed
+    nz update / nz setup commands will accept rolling back from a newer installed
     build to this older -Version. Default is omitted (false) — the
     player-side guard refuses downgrades by default to defend against a
     typo'd manifest version silently rolling everyone back. Use this flag
@@ -117,8 +104,6 @@ param(
         elseif ($IsMacOS) { Join-Path $env:HOME 'Library/Application Support/PrismLauncher/instances' }
         else            { "$env:APPDATA\PrismLauncher\instances" }
     ),
-    [string]$UpdateScriptPath,
-    [string]$BackupScriptPath,
     [string]$UserPrefsPath,
     [string]$IconPath = (Join-Path $PSScriptRoot 'cte2-icon.png'),
     [string]$IconKey = 'cte2',
@@ -127,8 +112,8 @@ param(
     [switch]$AllowDowngrade,
     # ─── Local-publish mode ──────────────────────────────────────────────────
     # When -LocalOutDir is set, the script runs the IDENTICAL packaging path
-    # (sanitize instance.cfg, bundle icon + update.ps1 + backup.ps1 +
-    # preserve-list.json, apply exclusions, structural mod-JAR sanity check,
+    # (sanitize instance.cfg, bundle icon + preserve-list.json, apply
+    # exclusions, structural mod-JAR sanity check,
     # compute SHA-256, build the manifest) but writes the versioned zip and a
     # latest.json into -LocalOutDir instead of uploading to Azure. ALL Azure,
     # git, PR, and docker-compose side effects are skipped. This is how you
@@ -200,7 +185,7 @@ Example: -Version test-1   -SkipDriftCheck
     Write-Host " - docker-compose.yml rewrite: SKIPPED (no server-side mutation)" -ForegroundColor Yellow
     Write-Host " - git push + PR + auto-merge: SKIPPED" -ForegroundColor Yellow
     Write-Host " - Manifest will be uploaded to 'latest-test.json' (NOT latest.json)" -ForegroundColor Yellow
-    Write-Host " - Production setup.ps1 will keep reading latest.json untouched" -ForegroundColor Yellow
+    Write-Host " - Production nz clients will keep reading latest.json untouched" -ForegroundColor Yellow
     Write-Host "==============================================================" -ForegroundColor Yellow
     Write-Host ""
 }
@@ -231,6 +216,16 @@ try {
 }
 if (-not $repoRoot) {
     throw "Could not resolve repo root via 'git rev-parse --show-toplevel'."
+}
+$artifactWorkRoot = Join-Path $repoRoot '.artifacts\publish'
+New-Item -ItemType Directory -Path $artifactWorkRoot -Force | Out-Null
+
+# Production publishes must never proceed with a stale generated operator file.
+# Test and local-publish modes do not release or deploy repository access files.
+if (-not $SkipDriftCheck -and -not $LocalMode) {
+    Write-Step "Validating operators match the whitelist..."
+    $syncOpsScript = Join-Path $repoRoot 'scripts/sync-ops.ps1'
+    & $syncOpsScript -Check
 }
 
 # ─── CI vs local drift detection ────────────────────────────────────────────
@@ -323,30 +318,12 @@ if (-not (Test-Path (Join-Path $instancePath 'instance.cfg'))) {
     throw "Path '$instancePath' doesn't look like a Prism instance (no instance.cfg)."
 }
 
-# ─── update.ps1 resolution ──────────────────────────────────────────────────
-if (-not $UpdateScriptPath) {
-    $UpdateScriptPath = Join-Path $repoRoot 'docs/assets/update.ps1'
-}
-if (-not (Test-Path -LiteralPath $UpdateScriptPath)) {
-    throw "update.ps1 not found at: $UpdateScriptPath`nPass -UpdateScriptPath to override."
-}
-$UpdateScriptPath = (Resolve-Path -LiteralPath $UpdateScriptPath).Path
-
-# ─── backup.ps1 resolution ──────────────────────────────────────────────────
-if (-not $BackupScriptPath) {
-    $BackupScriptPath = Join-Path $repoRoot 'docs/assets/backup.ps1'
-}
-if (-not (Test-Path -LiteralPath $BackupScriptPath)) {
-    throw "backup.ps1 not found at: $BackupScriptPath`nPass -BackupScriptPath to override."
-}
-$BackupScriptPath = (Resolve-Path -LiteralPath $BackupScriptPath).Path
-
 # ─── user-prefs manifest resolution ────────────────────────────────────────
 # packwiz/.user-prefs.txt is the curated list of pack-shipped files that
 # players typically tune (mod graphics, shaders, map style, etc.). We
 # transform it into a JSON blob bundled at <InstanceName>/.negativezone/
-# preserve-list.json so update.ps1 can restore them across the atomic
-# .minecraft swap and backup.ps1 can widen snapshot scope to match.
+# preserve-list.json so nz setup/update preserve them transactionally and
+# nz backup can widen snapshot scope to match.
 #
 # Optional: if the manifest is missing, the publish still succeeds and
 # the client falls back to its hardcoded $PreserveRelative (player-state
@@ -441,20 +418,16 @@ if ($blobAlreadyExists) {
     if ($SkipDriftCheck) {
         Write-Host "    [info] Test blob 'c2e2-v$Version.zip' already exists; will overwrite (test-publish mode)" -ForegroundColor Yellow
     } elseif (-not $Force) {
-        throw "Blob 'c2e2-v$Version.zip' already exists in '$StorageAccount/$Container'. Pick a new -Version or re-run with -Force to overwrite."
+        throw "Immutable blob 'c2e2-v$Version.zip' already exists in '$StorageAccount/$Container'. Pick a new -Version or use -Force only to resume with identical bytes."
     } else {
-        Write-Host "    [warn] Blob 'c2e2-v$Version.zip' already exists; -Force will overwrite it" -ForegroundColor Yellow
+        Write-Host "    [warn] Blob exists; -Force will verify and reuse it, never overwrite it" -ForegroundColor Yellow
     }
 }
 }
 
 # ─── Export ────────────────────────────────────────────────────────────────
-# [System.IO.Path]::GetTempPath() instead of $env:TEMP — the latter is
-# unset on Linux/macOS PowerShell, so the GitHub Actions ubuntu-latest
-# runner hit "Cannot bind argument to parameter 'Path' because it is null"
-# when Join-Path got a null first argument.
 $blobName = "c2e2-v$Version.zip"
-$tempZip  = Join-Path ([System.IO.Path]::GetTempPath()) $blobName
+$tempZip  = Join-Path $artifactWorkRoot $blobName
 
 Write-Step "Exporting Prism instance '$InstanceName' -> $tempZip"
 if (Test-Path $tempZip) { Remove-Item $tempZip -Force }
@@ -474,39 +447,14 @@ $excludePatterns = @(
     '*/usercache.json'
     '*/usernamecache.json'
     '*/.lck'
-    # Skip the whole .negativezone/ subtree. The canonical update.ps1 +
-    # backup.ps1 are added via CreateEntryFromFile below; this exclude
-    # prevents (a) snapshot dirs at .negativezone/backups/<ts>/ from leaking
-    # into a published zip if -InstancePath points at an admin's local
-    # Prism instance, and (b) duplicate zip entries that would otherwise
-    # collide with the explicit bundle of update.ps1 / backup.ps1.
+    # Skip the whole .negativezone/ subtree. Only the generated preservation
+    # manifest is added below. This prevents local nz binaries, logs, journals,
+    # and snapshots from leaking into a published zip.
     '*/.negativezone/*'
 )
 
 # Compress-Archive doesn't support exclusions, so we use .NET ZipFile directly.
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-# Re-encodes a player-side .ps1 file as UTF-8 *with* BOM and writes it into
-# the zip. Required because PowerShell 5.1 (the Windows default; what Prism
-# launches via "powershell.exe") reads unsigned .ps1 files as Windows-1252
-# unless a BOM is present. Our scripts contain U+2014 em-dash ("—") in both
-# comments and string literals; its UTF-8 encoding is the byte sequence
-# E2 80 94, and 0x94 is CP1252's RIGHT DOUBLE QUOTATION MARK ("). Without a
-# BOM, PS 5.1 silently closes the surrounding string literal at the em-dash
-# and the parser cascades into "Unexpected token ... refusing" / "Missing
-# closing ')'" errors that crash the PreLaunchCommand at first launch.
-# Source files on disk may or may not have a BOM — File.ReadAllText auto-
-# detects and strips it, so this is safe to call on either.
-function Add-Ps1ZipEntry(
-    [System.IO.Compression.ZipArchive] $zip,
-    [string] $sourcePath,
-    [string] $entryName
-) {
-    $text = [System.IO.File]::ReadAllText($sourcePath)
-    $entry = $zip.CreateEntry($entryName, 'Optimal')
-    $writer = New-Object System.IO.StreamWriter($entry.Open(), [System.Text.UTF8Encoding]::new($true))
-    try { $writer.Write($text) } finally { $writer.Dispose() }
-}
 
 function ShouldExclude([string]$relativePath) {
     $normalized = $relativePath -replace '\\', '/'
@@ -516,30 +464,9 @@ function ShouldExclude([string]$relativePath) {
     return $false
 }
 
-# Escapes a string for safe storage in a Qt INI value (the format Prism uses
-# for instance.cfg). Prism re-writes the cfg via QSettings on every launch
-# (lastLaunchTime, lastTimePlayed). On read, Qt processes `\<letter>` escapes
-# and concatenates adjacent `"..."` segments with whitespace stripped — so
-# an unescaped raw `"powershell.exe" -NoProfile ... $INST_DIR\.negativezone\update.ps1`
-# value becomes `powershell.exe-NoProfile ... $INST_DIRnegativezonepdate.ps1`
-# the very first time the player clicks Launch (the closing quote + space
-# get eaten; `\.` collapses to `.`; `\u` is interpreted as the start of a
-# Unicode escape and silently eats `update`'s `u`). The hook then fails with
-# "process failed to start".
-#
-# Format-QtIniValue emits Qt's canonical escaped form (backslashes -> `\\`,
-# double-quotes -> `\"`, whole value wrapped in `"..."`). The round-trip is
-# idempotent: Qt's reader undoes the escapes and the writer re-emits the
-# same bytes, so subsequent launches don't progressively mangle the value.
-# Mirrored verbatim in docs/assets/setup.ps1 — keep in sync.
-function Format-QtIniValue {
-    param([Parameter(Mandatory)][string] $Value)
-    $escaped = $Value.Replace('\', '\\').Replace('"', '\"')
-    return '"' + $escaped + '"'
-}
-
 # Removes machine-specific Java fields, user state, [UI] section. Pins
-# memory + iconKey + version label. Wires PreLaunchCommand for auto-update.
+# memory + iconKey + version label. Source-instance custom commands are stripped;
+# nz setup writes the absolute nz check/backup hooks into the staged instance.
 function Get-SanitizedInstanceCfg(
     [string]$path,
     [string]$iconKey,
@@ -557,66 +484,14 @@ function Get-SanitizedInstanceCfg(
         'lastLaunchTime', 'lastTimePlayed', 'totalTimePlayed',
         'LastLaunchTime', 'LastTimePlayed', 'TotalTimePlayed',
         'ExportAuthor', 'ExportName', 'ExportSummary', 'ExportVersion',
-        'ExportOptionalFiles'
+        'ExportOptionalFiles', 'PreLaunchCommand', 'PostExitCommand'
     )
-
-    # Two layers of defense for the Pre/Post launch hooks:
-    #
-    # 1. Encoding-tolerant invocation: PS 5.1's `-File` reads .ps1 as the
-    #    system ANSI codepage (CP1252 on US Windows) unless the file has a
-    #    UTF-8 BOM, which mangles em-dashes (U+2014 -> bytes E2 80 94; 0x94
-    #    reads as a closing smart-quote and silently terminates string
-    #    literals). We publish .ps1 entries WITH BOM, but defense-in-depth:
-    #    the `-Command` form uses .NET's UTF-8 decoder explicitly via
-    #    File::ReadAllText, so the script parses correctly regardless of
-    #    BOM presence or any future editor/tool that strips it.
-    #
-    # 2. try/catch wrapper: a stale or corrupted update.ps1/backup.ps1
-    #    (missing file, parse error, runtime throw) surfaces a clear
-    #    "re-run setup.ps1" message in Prism's launch console instead of a
-    #    PowerShell stack trace. Without this, the original em-dash parse
-    #    crash showed players tokenizer errors with no actionable guidance.
-    #
-    # Quoting layers (outermost -> innermost):
-    #   * Qt INI value wrap: the entire command is the value after `=`.
-    #     Backslashes inside "..." are kept literal (no \u/\n escapes).
-    #   * QProcess::splitCommand: splits on whitespace; "..." segments stay
-    #     intact (handles paths with spaces like "Craft to Exile 2").
-    #   * PowerShell `-Command` parser: the value is parsed as a script.
-    #     Single quotes inside wrap the path/messages so backslashes,
-    #     spaces, and special chars are literal.
-    # Here-strings used because the runtime payload contains many literal
-    # single quotes — '' escaping inside a single-quoted PS literal would
-    # make this near-unreadable. `$INST_DIR` survives unexpanded — Prism
-    # substitutes it at launch time.
-    $updateInvoke = @'
-try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\update.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
-'@
-    # PostExit fails OPEN (exit 0) — player already finished playing; a
-    # blocking popup here adds friction with no recovery benefit. The next
-    # PreLaunch will surface the same condition loudly and block until fixed.
-    $backupInvoke = @'
-try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
-'@
-    $preLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
-    $postExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'
-
-    # Apply Qt INI value escape — Prism re-writes instance.cfg via QSettings
-    # on every launch (lastLaunchTime update), and without escaping the raw
-    # `"..."` segments + `\.` / `\u` sequences get mangled (closing quotes
-    # eaten, backslashes dropped, `\u` interpreted as Unicode escape). See
-    # the matching Format-QtIniValue in docs/assets/setup.ps1 for the full
-    # story. Inlined here so this script stays standalone (used in CI).
-    $preLaunchCommand = Format-QtIniValue -Value $preLaunchCommand
-    $postExitCommand  = Format-QtIniValue -Value $postExitCommand
 
     # 8192 MB matches C2E2's recommended ceiling (players on 8 GB systems
     # should lower to 4096 after install). name= carries the version suffix
-    # so Prism's instance grid shows it (update.ps1 patches on swap).
-    # OverrideCommands + PreLaunchCommand wire the auto-update hook
-    # (fail-open on network, fail-closed on SHA mismatch). PostExitCommand
-    # wires the periodic-backup hook (always fail-open; cadence-skips in ~100ms
-    # when no snapshot is due).
+    # so Prism's instance grid shows it. Custom commands are deliberately off in
+    # the distribution zip; nz setup installs nz.exe and enables its hooks before
+    # the staged instance is promoted.
     $overrides = [ordered]@{
         'AutomaticJava'         = 'true'
         'OverrideJavaLocation'  = 'false'
@@ -625,9 +500,7 @@ try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativ
         'MaxMemAlloc'           = '8192'
         'iconKey'               = $iconKey
         'name'                  = "$instanceName v$version"
-        'OverrideCommands'      = 'true'
-        'PreLaunchCommand'      = $preLaunchCommand
-        'PostExitCommand'       = $postExitCommand
+        'OverrideCommands'      = 'false'
     }
 
     $out = New-Object System.Collections.Generic.List[string]
@@ -701,33 +574,16 @@ try {
     }
 
     # Bundle the icon at icons/<IconKey>.<ext> — basename MUST equal the
-    # iconKey or Prism won't find it after setup.ps1 copies icons/* to
+    # iconKey or Prism won't find it after nz setup copies icons/* to
     # %APPDATA%\PrismLauncher\icons\.
     $iconEntry = "icons/$IconKey$($iconFile.Extension.ToLower())"
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
         $zip, $iconFile.FullName, $iconEntry, 'Optimal') | Out-Null
     Write-Ok "Bundled icon: $($iconFile.Name) -> $iconEntry"
 
-    # Bundle update.ps1 so the PreLaunchCommand has something to run on
-    # first launch. Add-Ps1ZipEntry (not CreateEntryFromFile) re-encodes with
-    # a UTF-8 BOM so PS 5.1 on the player's machine reads the em-dashes
-    # correctly instead of parse-crashing on byte 0x94 — see the helper's
-    # comment block for the full encoding-foot-gun explanation.
-    $updateEntry = "$InstanceName/.negativezone/update.ps1"
-    Add-Ps1ZipEntry -zip $zip -sourcePath $UpdateScriptPath -entryName $updateEntry
-    Write-Ok "Bundled update.ps1 -> $updateEntry"
-
-    # Same pattern for backup.ps1, invoked by PostExitCommand. Bundling it
-    # alongside update.ps1 keeps the install-time and update-time bits
-    # version-locked together — a player can't end up with a fresh backup.ps1
-    # against an older update.ps1 or vice versa.
-    $backupEntry = "$InstanceName/.negativezone/backup.ps1"
-    Add-Ps1ZipEntry -zip $zip -sourcePath $BackupScriptPath -entryName $backupEntry
-    Write-Ok "Bundled backup.ps1 -> $backupEntry"
-
     # Bundle the curated user-prefs manifest as JSON at
-    # <InstanceName>/.negativezone/preserve-list.json so update.ps1 (post-
-    # swap) and backup.ps1 (snapshot scope) know which pack-shipped files
+    # <InstanceName>/.negativezone/preserve-list.json so nz setup/update and
+    # nz backup know which pack-shipped files
     # the player typically tunes. The source-of-truth is packwiz/.user-prefs.txt
     # (plain-text, # comments, one path per line); we transform to JSON here
     # so the client has a single-format payload that's trivial to parse with
@@ -741,7 +597,7 @@ try {
             version  = 1
             preserve = @($preserveLines)
         } -Depth 4 -Compress
-        $preserveTempPath = [System.IO.Path]::GetTempFileName()
+        $preserveTempPath = Join-Path $artifactWorkRoot ("preserve-{0}.json" -f [guid]::NewGuid().ToString('N'))
         try {
             # -NoNewline avoids a trailing newline that some strict JSON
             # parsers reject (PowerShell's ConvertFrom-Json is tolerant
@@ -767,7 +623,7 @@ Write-Ok "Zip size: ${sizeMb} MB"
 # the freshly-built zip and confirm it actually contains mod JARs under
 # <InstanceName>/.minecraft/mods/. v0.4.0 logged "Zip size: 0 MB" (30 KB
 # in reality) and uploaded anyway, then the empty zip propagated to every
-# player who ran setup.ps1. The auto-merged PR even rewrote modpack.yml
+# player who installed it. The auto-merged PR even rewrote modpack.yml
 # to point at the broken blob. Refuse to ship anything that can't carry
 # the modpack — the deliberately loud throw here is far less painful than
 # the FML handshake errors players hit on first connect.
@@ -777,6 +633,23 @@ try {
     $modEntries = @($verifyZip.Entries | Where-Object {
         $_.FullName.StartsWith($modEntryPrefix) -and $_.FullName.EndsWith('.jar')
     })
+    $legacyEntries = @($verifyZip.Entries | Where-Object {
+        $_.FullName -in @(
+            "$InstanceName/.negativezone/update.ps1",
+            "$InstanceName/.negativezone/backup.ps1",
+            "$InstanceName/.negativezone/prelaunch-check.ps1"
+        )
+    })
+    $cfgEntry = $verifyZip.GetEntry("$InstanceName/instance.cfg")
+    if (-not $cfgEntry) {
+        throw "Built zip is missing $InstanceName/instance.cfg."
+    }
+    $cfgReader = [IO.StreamReader]::new($cfgEntry.Open())
+    try {
+        $packagedCfg = $cfgReader.ReadToEnd()
+    } finally {
+        $cfgReader.Dispose()
+    }
 } finally { $verifyZip.Dispose() }
 if ($modEntries.Count -lt 1) {
     throw ("Built zip '$tempZip' contains 0 entries matching '$modEntryPrefix*.jar'. " +
@@ -784,7 +657,15 @@ if ($modEntries.Count -lt 1) {
            "Did build-instance-from-packwiz.ps1 actually populate .minecraft/mods/, " +
            "and is Get-ChildItem -Force still in the export loop above?")
 }
+if ($legacyEntries.Count -gt 0) {
+    throw "Built zip contains retired PowerShell client hooks: $($legacyEntries.FullName -join ', ')"
+}
+if ($packagedCfg -notmatch '(?m)^OverrideCommands=false\r?$' -or
+    $packagedCfg -match '(?m)^(PreLaunchCommand|PostExitCommand)=') {
+    throw 'Built zip instance.cfg does not defer client hook installation to nz setup.'
+}
 Write-Ok ("Verified: zip carries {0} mod JARs under {1}" -f $modEntries.Count, $modEntryPrefix)
+Write-Ok 'Verified: zip contains no legacy PowerShell client hooks'
 
 # ─── SHA-256 ───────────────────────────────────────────────────────────────
 Write-Step "Computing SHA-256"
@@ -797,12 +678,28 @@ if ($LocalMode) {
     Write-Step "Copying zip -> $localZipPath"
     Copy-Item -LiteralPath $tempZip -Destination $localZipPath -Force
     Write-Ok "Local zip written"
+} elseif ($blobAlreadyExists -and -not $SkipDriftCheck) {
+    $existingZip = Join-Path $artifactWorkRoot "existing-$blobName"
+    Remove-Item -LiteralPath $existingZip -Force -ErrorAction SilentlyContinue
+    Write-Step "Verifying existing immutable blob $blobName"
+    az storage blob download `
+        --account-name $StorageAccount `
+        --container-name $Container `
+        --name $blobName `
+        --file $existingZip `
+        --auth-mode login `
+        --overwrite true `
+        --output none
+    $existingSHA = (Get-FileHash -LiteralPath $existingZip -Algorithm SHA256).Hash.ToLowerInvariant()
+    Remove-Item -LiteralPath $existingZip -Force -ErrorAction SilentlyContinue
+    if ($existingSHA -ne $sha) {
+        throw "Immutable blob $blobName already exists with SHA-256 $existingSHA, but this build produced $sha. Use a new version."
+    }
+    Write-Ok "Existing immutable zip matches; reusing it"
 } else {
-    # --overwrite gated by -Force OR -SkipDriftCheck. Blob preflight already
-    # refused without -Force; this is defense-in-depth against a concurrent
-    # publisher creating the blob in the meantime. Test mode always overwrites
-    # so iterative runs at the same test version don't need -Force.
-    $overwriteFlag = if ($Force -or $SkipDriftCheck) { 'true' } else { 'false' }
+    # Production versioned assets are immutable. Test-mode assets are isolated
+    # behind latest-test.json and may be overwritten for iterative validation.
+    $overwriteFlag = if ($SkipDriftCheck) { 'true' } else { 'false' }
     Write-Step "Uploading to $StorageAccount/$Container/$blobName (overwrite=$overwriteFlag)"
     az storage blob upload `
         --account-name $StorageAccount `
@@ -815,12 +712,8 @@ if ($LocalMode) {
         --output none
 }
 
-# ─── Build latest.json manifest (upload happens AFTER git/PR succeeds) ─────
-# Upload last so the audit trail (committed modpack.yml) is always present
-# before any player can download. If we updated latest.json before the git
-# push succeeded and the push then failed, players would download a version
-# with no corresponding committed modpack.yml.
-Write-Step "Building latest.json manifest"
+# ─── Build immutable version manifest ───────────────────────────────────────
+Write-Step "Building immutable version manifest"
 Push-Location $repoRoot
 try {
     $packwizSha = (git rev-parse HEAD | Out-String).Trim()
@@ -830,33 +723,174 @@ try {
 if ($packwizSha -notmatch '^[0-9a-f]{40}$') {
     throw "Unexpected SHA from 'git rev-parse HEAD': '$packwizSha'"
 }
+$packTomlContent = Get-Content -LiteralPath (Join-Path $repoRoot 'packwiz\pack.toml') -Raw
+$minecraftMatch = [regex]::Match($packTomlContent, '(?m)^minecraft\s*=\s*"([^"]+)"')
+if (-not $minecraftMatch.Success) {
+    throw 'Could not read the Minecraft compatibility version from packwiz/pack.toml.'
+}
+$minecraftVersion = $minecraftMatch.Groups[1].Value
 $packwizUrl = "https://raw.githubusercontent.com/camcast3/MinecraftInfra/$packwizSha/packwiz/pack.toml"
 $manifestUrl = if ($LocalMode) { "$LocalBaseUrl/$blobName" } else { "https://$StorageAccount.blob.core.windows.net/$Container/$blobName" }
+$preserveListName = "c2e2-v$Version-preserve-list.json"
+$preserveListUrl = if ($LocalMode) {
+    "$LocalBaseUrl/$preserveListName"
+} else {
+    "https://$StorageAccount.blob.core.windows.net/$Container/$preserveListName"
+}
+$preserveLines = if ($UserPrefsPath) {
+    @(Get-Content -LiteralPath $UserPrefsPath -Encoding UTF8 |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -and $_ -notmatch '^\s*#' })
+} else {
+    @()
+}
+$preserveManifest = [ordered]@{
+    version = 1
+    preserve = $preserveLines
+}
+$preserveManifestPath = if ($LocalMode) {
+    Join-Path $LocalOutDir $preserveListName
+} else {
+    Join-Path $artifactWorkRoot $preserveListName
+}
+[IO.File]::WriteAllText(
+    $preserveManifestPath,
+    ($preserveManifest | ConvertTo-Json -Depth 4 -Compress),
+    [Text.UTF8Encoding]::new($false)
+)
 $manifest = [ordered]@{
+    schemaVersion = 1
     version    = $Version
     blob       = $blobName
     url        = $manifestUrl
     packwizUrl = $packwizUrl
+    preserveListUrl = $preserveListUrl
     sha256     = $sha
     sizeBytes  = (Get-Item $tempZip).Length
     instance   = $InstanceName
     publishedAt = (Get-Date).ToUniversalTime().ToString('o')
+    sourceCommit = $packwizSha
+    compatibility = [ordered]@{
+        minecraft = $minecraftVersion
+        javaMajor = 17
+        manifestSchema = 1
+        preserveListSchema = 1
+        transactionSchema = 1
+    }
 }
 if ($AllowDowngrade) {
     # Opt-in field — only emitted when the admin explicitly approves rollback.
-    # Player-side update.ps1 refuses downgrades unless this is true.
+    # nz update/setup refuse downgrades unless this is true.
     $manifest['allowDowngrade'] = $true
     Write-Host "    [warn] AllowDowngrade=true: players on newer versions WILL roll back to v$Version" -ForegroundColor Yellow
 }
 
-# Local mode writes the manifest straight into the output dir (this IS the
-# deliverable); production writes a temp file uploaded after the audit PR.
+# Local mode writes the immutable manifest straight into the output dir.
+# Production stages it under .artifacts before uploading it beside the zip.
+$versionManifestName = "c2e2-v$Version.json"
 $manifestPath = if ($LocalMode) {
-    Join-Path $LocalOutDir 'latest.json'
+    Join-Path $LocalOutDir $versionManifestName
 } else {
-    Join-Path ([System.IO.Path]::GetTempPath()) 'latest.json'
+    Join-Path $artifactWorkRoot $versionManifestName
 }
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -Path $manifestPath -Encoding UTF8
+
+if ($LocalMode) {
+    Copy-Item -LiteralPath $manifestPath -Destination (Join-Path $LocalOutDir 'latest.json') -Force
+} elseif (-not $SkipDriftCheck) {
+    $preserveExistsJson = (& az storage blob exists `
+        --account-name $StorageAccount `
+        --container-name $Container `
+        --name $preserveListName `
+        --auth-mode login `
+        --output json | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to query immutable preserve manifest (az exit code $LASTEXITCODE)."
+    }
+    if (-not ($preserveExistsJson | ConvertFrom-Json).exists) {
+        & az storage blob upload `
+            --account-name $StorageAccount `
+            --container-name $Container `
+            --name $preserveListName `
+            --file $preserveManifestPath `
+            --auth-mode login `
+            --overwrite false `
+            --content-type "application/json" `
+            --content-cache-control "public, max-age=31536000, immutable" `
+            --output none
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to upload immutable preserve manifest (az exit code $LASTEXITCODE)."
+        }
+    } elseif (-not $Force) {
+        throw "Immutable preserve manifest $preserveListName already exists. Pick a new version or use -Force only to resume an identical publish."
+    } else {
+        $existingPreservePath = Join-Path $artifactWorkRoot "existing-$preserveListName"
+        & az storage blob download `
+            --account-name $StorageAccount `
+            --container-name $Container `
+            --name $preserveListName `
+            --file $existingPreservePath `
+            --auth-mode login `
+            --overwrite true `
+            --output none
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download immutable preserve manifest (az exit code $LASTEXITCODE)."
+        }
+        try {
+            $existingPreserveHash = (Get-FileHash -LiteralPath $existingPreservePath -Algorithm SHA256).Hash
+            $newPreserveHash = (Get-FileHash -LiteralPath $preserveManifestPath -Algorithm SHA256).Hash
+            if ($existingPreserveHash -ne $newPreserveHash) {
+                throw "Existing immutable preserve manifest $preserveListName differs from this build."
+            }
+        } finally {
+            Remove-Item -LiteralPath $existingPreservePath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    $manifestExistsJson = (az storage blob exists `
+        --account-name $StorageAccount `
+        --container-name $Container `
+        --name $versionManifestName `
+        --auth-mode login `
+        --output json | Out-String).Trim()
+    if (($manifestExistsJson | ConvertFrom-Json).exists) {
+        if (-not $Force) {
+            throw "Immutable manifest $versionManifestName already exists. Pick a new version or use -Force only to resume an identical publish."
+        }
+        $existingManifestPath = Join-Path $artifactWorkRoot "existing-$versionManifestName"
+        az storage blob download `
+            --account-name $StorageAccount `
+            --container-name $Container `
+            --name $versionManifestName `
+            --file $existingManifestPath `
+            --auth-mode login `
+            --overwrite true `
+            --output none
+        $existingManifest = Get-Content -LiteralPath $existingManifestPath -Raw | ConvertFrom-Json
+        Remove-Item -LiteralPath $existingManifestPath -Force -ErrorAction SilentlyContinue
+        if ($existingManifest.version -ne $Version -or
+            $existingManifest.sha256 -ne $sha -or
+            $existingManifest.packwizUrl -ne $packwizUrl -or
+            $existingManifest.preserveListUrl -ne $preserveListUrl -or
+            $existingManifest.compatibility.transactionSchema -ne 1) {
+            throw "Existing immutable manifest $versionManifestName is not compatible with this build. Use a new version."
+        }
+        $manifest = $existingManifest
+        Write-Ok "Existing immutable manifest matches; reusing it"
+    } else {
+        Write-Step "Uploading immutable manifest $versionManifestName"
+        az storage blob upload `
+            --account-name $StorageAccount `
+            --container-name $Container `
+            --name $versionManifestName `
+            --file $manifestPath `
+            --auth-mode login `
+            --overwrite false `
+            --content-type "application/json" `
+            --content-cache-control "public, max-age=31536000, immutable" `
+            --output none
+    }
+}
 
 # ─── Update modpack.yml + .env + open PR ───────────────────────────────────
 # Skipped in test-publish mode — latest-test.json still gets packwizUrl from
@@ -881,7 +915,7 @@ if ($SkipDriftCheck) {
 
         # Write modpack.yml AFTER the branch reset so the new content survives.
         $modpackYml = Join-Path $repoRoot 'modpack.yml'
-        $publishedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        $publishedAt = ([DateTimeOffset]::Parse([string]$manifest.publishedAt)).UtcDateTime.ToString('yyyy-MM-ddTHH:mm:ssZ')
         $yamlContent = @"
 # Central modpack version record — updated by publish-prism-pack.ps1
 # This provides a committed, auditable record of the currently published pack.
@@ -891,14 +925,14 @@ sha256: $sha
 url: https://$StorageAccount.blob.core.windows.net/$Container/$blobName
 instance: $InstanceName
 publishedAt: "$publishedAt"
+manifest: https://$StorageAccount.blob.core.windows.net/$Container/$versionManifestName
 "@
         Set-Content -Path $modpackYml -Value $yamlContent -Encoding UTF8
 
         # Atomic SHA + version bump: rewriting PACKWIZ_URL + MOTD in the same
         # commit as modpack.yml means Portainer GitOps redeploys the server
-        # with the new MOTD and SHA-pinned mod set; players' next Prism launch
-        # fetches the new client zip via PreLaunchCommand. Server + client
-        # move together — no kicked-by-mod-mismatch window.
+        # with the new MOTD and SHA-pinned mod set; nz's launch check then
+        # directs players to the gated update. Server + client move together.
         #
         # We rewrite compose YAML (not .env) because Portainer's GitOps mode
         # polls compose changes and ignores .env files in git.
@@ -954,23 +988,9 @@ publishedAt: "$publishedAt"
         [System.IO.File]::WriteAllText($velocityTmpl, $velocityContent, $utf8NoBom)
         Write-Ok "Rewrote docker/azure/velocity/velocity.toml.tmpl: fallback motd pinned to v$Version"
 
-        # Bump docs/assets/latest-version.txt to the new version. This is the
-        # GitHub-hosted pointer file that prelaunch-check.ps1 polls every
-        # launch — when it's ahead of the player's installed version,
-        # PreLaunch hard-blocks the launch with an "update required" banner
-        # and the iex one-liner. Committing it in the SAME PR as the
-        # docker-compose.yml bump means server + client + fallback-proxy MOTD
-        # + version pointer all move atomically.
-        $latestVersionFile = Join-Path $repoRoot 'docs/assets/latest-version.txt'
-        [System.IO.File]::WriteAllText($latestVersionFile, "$Version`n", $utf8NoBom)
-        Write-Ok "Bumped docs/assets/latest-version.txt to $Version"
-
-        # Keep the generated operator list current in every publish PR so
-        # Portainer's ensuing redeploy applies the whitelist-derived list.
-        $syncOpsScript = Join-Path $repoRoot 'scripts/sync-ops.ps1'
-        & $syncOpsScript
-
-        git add modpack.yml 'docker/proxmox/docker-compose.yml' 'docker/azure/velocity/velocity.toml.tmpl' 'docker/shared/ops.json' 'docs/assets/latest-version.txt'
+        git add modpack.yml `
+            'docker/proxmox/docker-compose.yml' `
+            'docker/azure/velocity/velocity.toml.tmpl'
         git commit -m "chore(modpack): publish v$Version`n`nsha256: $sha`npackwiz_sha: $packwizSha"
 
         Write-Step "Pushing $publishBranch to origin"
@@ -996,7 +1016,7 @@ Automated modpack publish.
 - **packwiz SHA pin:** ``$packwizSha``
 
 This PR atomically bumps:
-- ``modpack.yml`` — the published-version audit record consumed by ``setup.ps1``.
+- ``modpack.yml`` — the published-version audit record consumed by ``nz setup``.
 - ``docker/proxmox/docker-compose.yml`` — ``PACKWIZ_URL`` pinned to the new
   packwiz SHA, ``MOTD`` pinned to the new version. Portainer GitOps redeploys
   C2E2 within ~5 min of merge, pulling the same packwiz snapshot that's bundled
@@ -1005,12 +1025,11 @@ This PR atomically bumps:
   pinned to the new version. Surfaces the current version to players when the
   C2E2 backend is briefly unreachable (deploy-azure.yml redeploys the proxy on
   merge; refresh-env.sh restarts Velocity if velocity.toml content changed).
-- ``docker/shared/ops.json`` — regenerated from the whitelist with every player
-  set to operator level 3. Portainer applies it on the same backend redeploy.
-- ``docs/assets/latest-version.txt`` — single-line version pointer polled on
-  every Prism launch by ``prelaunch-check.ps1``. Player launches start hard-
-  blocking on the prior version as soon as this merges into ``main`` (served
-  via raw.githubusercontent.com).
+
+The immutable client zip and manifest are staged but neither ``latest.json``
+nor the launch-time version pointers move in this workflow. After this PR
+merges, ``promote-prism-pack.yml`` waits for the public server to report
+v$Version, verifies the immutable manifest, and only then promotes stable.
 "@
         $prUrl = $null
         try {
@@ -1032,13 +1051,10 @@ This PR atomically bumps:
         # / checks pass. Shrinks the window where a second publish could race
         # and collide.
         #
-        # FAIL LOUD: a silent warn here strands the PR with no merge intent
-        # while latest.json (uploaded ~10 lines below) flips clients onto the
-        # new version → server keeps running the previous packwiz snapshot
-        # until someone notices and merges manually → "kicked by mod mismatch"
-        # window for every joining player. That was tonight's PR #147 root
-        # cause. Throwing here halts BEFORE latest.json upload, so player-
-        # visible state never gets ahead of a stranded PR. Recovery: enable
+        # FAIL LOUD: a silent warning here strands the PR with no merge intent.
+        # Stable pointers are now promoted by promote-prism-pack.yml only after
+        # merge and server health, so this workflow can stage candidates safely.
+        # Recovery: enable
         # `allow_auto_merge` on the repo (Settings → General → Pull Requests,
         # or `gh api -X PATCH /repos/<owner>/<repo> -F allow_auto_merge=true`)
         # then re-run with -Force.
@@ -1054,11 +1070,9 @@ Most likely cause: ``allow_auto_merge`` is disabled on this repo. Fix via
 GitHub UI (Settings → General → Pull Requests → "Allow auto-merge") or:
   gh api -X PATCH /repos/<owner>/<repo> -F allow_auto_merge=true
 
-Halting BEFORE uploading latest.json so player-visible state doesn't flip
-to a stranded PR. Branch + zip blob are already uploaded — once the repo
-setting is fixed, re-run this script with -Force to resume (it will
-force-push the same branch, reuse the existing PR, enable auto-merge,
-and finally upload latest.json).
+Branch + immutable candidate assets are already staged but no stable pointer
+has moved. Once the repo setting is fixed, re-run this script with -Force to
+verify/reuse the assets, reuse the existing PR, and enable auto-merge.
 "@
         }
     } finally {
@@ -1066,16 +1080,16 @@ and finally upload latest.json).
     }
 }
 
-# ─── Publish latest.json (LAST — only after the audit-trail PR exists) ─────
-# Until this point no player-visible state has flipped (versioned zip is
-# uploaded but unreferenced). Test mode writes to latest-test.json so
-# production setup.ps1 is untouched. Local mode already wrote latest.json into
-# LocalOutDir above and never touches Azure.
+# ─── Publish test pointer / leave production candidate staged ───────────────
+# Production stable pointers are promoted by promote-prism-pack.yml after the
+# PR merges and the public server reports the expected version. Test mode keeps
+# its isolated mutable pointer; local mode already wrote latest.json locally.
 if ($LocalMode) {
     Write-Host ""
     Write-Host "Local publish complete (nothing uploaded; no git/PR)." -ForegroundColor Green
     Write-Host "  Output dir : $LocalOutDir"
-    Write-Host "  Manifest   : $(Join-Path $LocalOutDir 'latest.json')  (url -> $manifestUrl)"
+    Write-Host "  Manifest   : $(Join-Path $LocalOutDir $versionManifestName)"
+    Write-Host "  Local alias: $(Join-Path $LocalOutDir 'latest.json')  (url -> $manifestUrl)"
     Write-Host "  Zip        : $(Join-Path $LocalOutDir $blobName)"
     Write-Host ""
     Write-Host "Serve $LocalOutDir over HTTP at $LocalBaseUrl, then point setup at it:" -ForegroundColor Cyan
@@ -1088,18 +1102,20 @@ if ($LocalMode) {
     return
 }
 
-$manifestBlobName = if ($SkipDriftCheck) { 'latest-test.json' } else { 'latest.json' }
-Write-Step "Uploading $manifestBlobName"
-az storage blob upload `
-    --account-name $StorageAccount `
-    --container-name $Container `
-    --name $manifestBlobName `
-    --file $manifestPath `
-    --auth-mode login `
-    --overwrite true `
-    --content-type "application/json" `
-    --content-cache-control "no-cache" `
-    --output none
+$manifestBlobName = if ($SkipDriftCheck) { 'latest-test.json' } else { $versionManifestName }
+if ($SkipDriftCheck) {
+    Write-Step "Uploading $manifestBlobName"
+    az storage blob upload `
+        --account-name $StorageAccount `
+        --container-name $Container `
+        --name $manifestBlobName `
+        --file $manifestPath `
+        --auth-mode login `
+        --overwrite true `
+        --content-type "application/json" `
+        --content-cache-control "no-cache" `
+        --output none
+}
 
 # ─── Cleanup ───────────────────────────────────────────────────────────────
 Remove-Item $tempZip -Force -ErrorAction SilentlyContinue
@@ -1111,12 +1127,13 @@ if ($SkipDriftCheck) {
     Write-Host "  Test manifest: https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName"
     Write-Host "  Test zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
     Write-Host ""
-    Write-Host "To install this test publish, set the manifest URL override before running setup.ps1:" -ForegroundColor Cyan
+    Write-Host "To install this test publish, set the manifest URL override before running nz setup:" -ForegroundColor Cyan
     Write-Host "  `$env:NEGATIVEZONE_MANIFEST_URL = 'https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName'" -ForegroundColor Cyan
-    Write-Host "  irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex" -ForegroundColor Cyan
+    Write-Host "  & `$env:LOCALAPPDATA\NegativeZone\nz.exe setup" -ForegroundColor Cyan
 } else {
-    Write-Host "Published successfully." -ForegroundColor Green
-    Write-Host "  Manifest: https://$StorageAccount.blob.core.windows.net/$Container/$manifestBlobName"
-    Write-Host "  Zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+    Write-Host "Candidate staged successfully; stable pointers are unchanged." -ForegroundColor Green
+    Write-Host "  Immutable manifest: https://$StorageAccount.blob.core.windows.net/$Container/$versionManifestName"
+    Write-Host "  Immutable zip:      https://$StorageAccount.blob.core.windows.net/$Container/$blobName"
+    Write-Host "  Promotion:          automatic after PR merge + public server health"
 }
 Write-Host ""
