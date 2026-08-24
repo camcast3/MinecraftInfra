@@ -1,0 +1,11 @@
+[Unit]
+Description=Check %i game backup freshness
+
+[Timer]
+OnBootSec=15m
+OnUnitActiveSec=15m
+Persistent=true
+Unit=game-backup-health@%i.service
+
+[Install]
+WantedBy=timers.target

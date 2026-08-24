@@ -1,0 +1,7 @@
+[Unit]
+Description=Report %i game backup freshness
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/game-backup-health %i
+ProtectSystem=full

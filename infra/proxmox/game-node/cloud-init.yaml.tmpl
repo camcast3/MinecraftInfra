@@ -1,0 +1,191 @@
+#cloud-config
+# Rendered from infra/proxmox/game-node/cloud-init.yaml.tmpl.
+# Profile: @@DISPLAY_NAME@@ (@@GAME_SLUG@@)
+#
+# Attach this file as Proxmox vendor data. In the Proxmox Cloud-Init tab, set:
+#   User: @@SERVICE_USER@@
+#   SSH key: an administrator public key
+#
+# Tailscale and Portainer enrollment are intentionally completed after boot.
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - apt-listchanges
+  - ca-certificates
+  - curl
+  - git
+  - gnupg
+  - qemu-guest-agent
+  - rclone
+  - ufw
+  - unattended-upgrades
+
+write_files:
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    permissions: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+
+  - path: /etc/apt/apt.conf.d/51unattended-upgrades-game-node
+    permissions: "0644"
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "@@REBOOT_TIME@@";
+
+  - path: /etc/ssh/sshd_config.d/60-game-node.conf
+    permissions: "0644"
+    content: |
+      Port @@SSH_PORT@@
+      PasswordAuthentication no
+      PermitRootLogin no
+
+  - path: /etc/game-node/profile.env
+    permissions: "0644"
+    content: |
+      GAME_SLUG=@@GAME_SLUG@@
+      SERVICE_USER=@@SERVICE_USER@@
+      TAILSCALE_HOSTNAME=@@TAILSCALE_HOSTNAME@@
+      DATA_ROOT=@@DATA_ROOT@@
+
+  - path: /etc/game-backup/@@GAME_SLUG@@.env
+    permissions: "0640"
+    owner: root:root
+    content: |
+      DATA_ROOT=@@DATA_ROOT@@
+      BACKUP_ROOT=@@DATA_ROOT@@/backups
+      BACKUP_NAS_ROOT=/mnt/nas-backups
+      AZURE_RCLONE_REMOTE=azure
+      AZURE_CONTAINER=@@AZURE_BACKUP_CONTAINER@@
+      AZURE_RCLONE_CONFIG=/etc/game-backup/rclone.conf
+      AZURE_ACCESS_TIER=cold
+      CONTAINER_NAME=@@CONTAINER_NAME@@
+      BACKUP_SOURCE_NAMES="@@BACKUP_SOURCES@@"
+      BACKUP_CONSISTENCY=@@BACKUP_CONSISTENCY@@
+      BACKUP_STOP_MODE=@@BACKUP_STOP_MODE@@
+      BACKUP_QUIESCE_HOOK=/usr/local/libexec/game-backup/@@GAME_SLUG@@
+      LOCAL_RETENTION_DAYS=14
+      NAS_RETENTION_DAYS=7
+      AZURE_RETENTION_DAYS=90
+      BACKUP_STALE_AFTER_SECONDS=129600
+
+  - path: /etc/game-backup/rclone.conf.example
+    permissions: "0600"
+    owner: root:root
+    content: |
+@@RCLONE_EXAMPLE@@
+
+  - path: /usr/local/sbin/game-backup
+    permissions: "0750"
+    owner: root:root
+    content: |
+@@BACKUP_SCRIPT@@
+
+  - path: /usr/local/sbin/game-backup-health
+    permissions: "0750"
+    owner: root:root
+    content: |
+@@BACKUP_HEALTH_SCRIPT@@
+
+  - path: /usr/local/sbin/game-backup-recover
+    permissions: "0750"
+    owner: root:root
+    content: |
+@@BACKUP_RECOVER_SCRIPT@@
+
+  - path: /usr/local/sbin/game-restore
+    permissions: "0750"
+    owner: root:root
+    content: |
+@@RESTORE_SCRIPT@@
+
+  - path: /etc/systemd/system/game-backup@.service
+    permissions: "0644"
+    content: |
+@@BACKUP_SERVICE@@
+
+  - path: /etc/systemd/system/game-backup@.timer
+    permissions: "0644"
+    content: |
+@@BACKUP_TIMER@@
+
+  - path: /etc/systemd/system/game-backup-health@.service
+    permissions: "0644"
+    content: |
+@@BACKUP_HEALTH_SERVICE@@
+
+  - path: /etc/systemd/system/game-backup-health@.timer
+    permissions: "0644"
+    content: |
+@@BACKUP_HEALTH_TIMER@@
+
+  - path: /etc/systemd/system/game-backup-recover@.service
+    permissions: "0644"
+    content: |
+@@BACKUP_RECOVER_SERVICE@@
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - |
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+      > /etc/apt/sources.list.d/docker.list
+  - apt-get update -qq
+  - env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - systemctl enable --now docker
+
+  - curl -fsSL https://tailscale.com/install.sh | sh
+  - systemctl enable --now tailscaled
+
+  - |
+    if ! id @@SERVICE_USER@@ >/dev/null 2>&1; then
+      echo "Expected Proxmox Cloud-Init user @@SERVICE_USER@@ was not created" >&2
+      exit 1
+    fi
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/data
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/config
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/tailscale
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/backups
+  - install -d -m 0750 -o root -g @@SERVICE_USER@@ @@DATA_ROOT@@/backups/local
+  - install -d -m 0750 -o root -g @@SERVICE_USER@@ @@DATA_ROOT@@/backups/health
+  - install -d -m 0750 -o root -g @@SERVICE_USER@@ @@DATA_ROOT@@/backups/work
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/monitoring
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/monitoring/alloy
+  - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/portainer-edge-agent
+  - install -d -m 0750 -o root -g root /etc/game-backup
+  - install -d -m 0750 -o root -g root /usr/local/libexec/game-backup
+  - install -d -m 0750 -o root -g root /mnt/nas-backups
+
+  - |
+    cat > /etc/sudoers.d/@@SERVICE_USER@@-game-node <<'EOF'
+    @@SERVICE_USER@@ ALL=(root) NOPASSWD: /usr/bin/docker, /usr/bin/docker compose, /usr/bin/systemctl status docker, /usr/bin/systemctl restart docker, /usr/bin/systemctl status tailscaled
+    EOF
+    chmod 0440 /etc/sudoers.d/@@SERVICE_USER@@-game-node
+    visudo -cf /etc/sudoers.d/@@SERVICE_USER@@-game-node
+
+  - install -d -m 0700 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ /home/@@SERVICE_USER@@/.ssh
+  - touch /home/@@SERVICE_USER@@/.ssh/authorized_keys
+  - chmod 0600 /home/@@SERVICE_USER@@/.ssh/authorized_keys
+  - chown @@SERVICE_USER@@:@@SERVICE_USER@@ /home/@@SERVICE_USER@@/.ssh/authorized_keys
+  - systemctl restart ssh
+  - systemctl daemon-reload
+  - systemctl enable --now game-backup@@@GAME_SLUG@@.timer
+  - systemctl enable --now game-backup-health@@@GAME_SLUG@@.timer
+  - systemctl enable game-backup-recover@@@GAME_SLUG@@.service
+
+  - ufw default deny incoming
+  - ufw default allow outgoing
+@@MANAGEMENT_UFW_RULES@@
+@@PUBLIC_UFW_RULES@@
+  - ufw allow in on tailscale0 to any port 22 proto tcp comment 'Tailscale SSH'
+  - ufw allow in on tailscale0 to any port @@SSH_PORT@@ proto tcp comment 'OpenSSH over Tailscale'
+  - ufw --force enable
+
+final_message: "@@DISPLAY_NAME@@ game node provisioning completed"
