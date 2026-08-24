@@ -1,4 +1,4 @@
-@description('Storage account to monitor. The alert scope is account-level (no service dimension).')
+@description('Dedicated backup storage account to monitor.')
 param storageAccountName string
 
 @description('Resource ID of the action group to notify. Typically reuse budget.bicep\'s output.')
@@ -7,8 +7,15 @@ param actionGroupId string
 @description('Environment tag (also used in the alert resource name).')
 param environment string = 'prod'
 
-@description('Ingress threshold per evaluation window, in bytes. Default 2 GiB ≈ 2.4× the worst plausible non-anomaly window (backup + modpack publish coincident).')
-param ingressThresholdBytes int = 2147483648
+@description('Ingress threshold per one-hour evaluation window, in bytes.')
+@minValue(1)
+param ingressThresholdBytes int = 16106127360
+
+@description('Storage write APIs included in the alert. PutBlock is used by current rclone uploads; PutBlob covers smaller/future uploads.')
+param ingressApiNames string[] = [
+  'PutBlock'
+  'PutBlob'
+]
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-08-01' existing = {
   name: storageAccountName
@@ -24,14 +31,14 @@ resource storageIngressAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
     environment: environment
   }
   properties: {
-    description: 'Fires when total ingress to the storage account exceeds the threshold over a 6h window. Catches runaway backups, accidentally-included world dirs in modpack publishes, or other anomalous write volume — long before the monthly budget alert would notice.'
+    description: 'Fires when OAuth block/blob writes to primary game-backup storage exceed the configured threshold in one hour. The threshold is parameterized so the combined C2E2, Palworld, and Windrose baseline can be reviewed without changing this module.'
     severity: 3
     enabled: true
     scopes: [
       storageAccount.id
     ]
     evaluationFrequency: 'PT5M'
-    windowSize: 'PT6H'
+    windowSize: 'PT1H'
     targetResourceType: 'Microsoft.Storage/storageAccounts'
     targetResourceRegion: storageAccount.location
     criteria: {
@@ -45,6 +52,27 @@ resource storageIngressAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
           threshold: ingressThresholdBytes
           timeAggregation: 'Total'
           criterionType: 'StaticThresholdCriterion'
+          dimensions: [
+            {
+              name: 'GeoType'
+              operator: 'Include'
+              values: [
+                'Primary'
+              ]
+            }
+            {
+              name: 'Authentication'
+              operator: 'Include'
+              values: [
+                'OAuth'
+              ]
+            }
+            {
+              name: 'ApiName'
+              operator: 'Include'
+              values: ingressApiNames
+            }
+          ]
         }
       ]
     }

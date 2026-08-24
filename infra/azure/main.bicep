@@ -12,6 +12,12 @@ param githubActionsObjectId string
 @description('Object ID of the Proxmox backup service principal (NOT a secret — just an identifier). Run bootstrap.sh step 7 then: az ad sp show --id <proxmoxAppClientId> --query id -o tsv')
 param proxmoxSpObjectId string
 
+@description('Object ID of the distinct Palworld backup writer. Leave empty until that identity exists; never reuse the C2E2 writer.')
+param palworldBackupSpObjectId string = ''
+
+@description('Object ID of the distinct Windrose backup writer. Leave empty until that identity exists; never reuse the C2E2 writer.')
+param windroseBackupSpObjectId string = ''
+
 @description('Admin username on the VM — resolved from Key Vault by ARM')
 @secure()
 param adminUsername string
@@ -36,9 +42,36 @@ param setCustomData bool = false
 @description('Storage account name — must be globally unique, 3-24 lowercase alphanumeric. Set explicitly so it never changes across deploys or RG recreations.')
 param storageAccountName string = 'stmcminecraftprod'
 
+@description('Dedicated private backup storage account name — must be globally unique, 3-24 lowercase alphanumeric.')
+@minLength(3)
+@maxLength(24)
+param backupStorageAccountName string = 'stmcbackupsprod'
+
+@description('Private backup container dedicated to Craft to Exile 2.')
+@minLength(3)
+@maxLength(63)
+param c2e2BackupContainerName string = 'c2e2-backups'
+
+@description('Private backup container dedicated to Palworld.')
+@minLength(3)
+@maxLength(63)
+param palworldBackupContainerName string = 'palworld-backups'
+
+@description('Private backup container dedicated to Windrose.')
+@minLength(3)
+@maxLength(63)
+param windroseBackupContainerName string = 'windrose-backups'
+
+@description('Backup-account ingress threshold over one hour, in bytes.')
+@minValue(1)
+param backupIngressThresholdBytes int = 16106127360
+
+@description('Monthly Azure budget amount in USD.')
+@minValue(1)
+param budgetAmount int = 80
+
 // Azure built-in role definition IDs (stable GUIDs, same across all tenants)
 var keyVaultSecretsUserRoleId      = '4633458b-17de-408a-b874-0445c86b69e6'
-var storageBlobDataContributorRoleId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
 
 // ── Key Vault ──────────────────────────────────────────────────────────────────
 // Deployed independently of VM so ARM can resolve getSecret() on all subsequent runs.
@@ -79,13 +112,50 @@ module vm 'modules/vm.bicep' = {
   }
 }
 
-// ── Storage Account + Backup Container ────────────────────────────────────────
+// ── Public Modpack Storage ────────────────────────────────────────────────────
 module storage 'modules/storage.bicep' = {
-  name: 'deploy-storage'
+  name: 'deploy-modpack-storage'
   params: {
     location: location
     environment: environment
     storageAccountName: storageAccountName
+  }
+}
+
+var backupGames = concat(
+  [
+    {
+      name: 'c2e2'
+      containerName: c2e2BackupContainerName
+      writerPrincipalId: proxmoxSpObjectId
+    }
+  ],
+  empty(palworldBackupSpObjectId) ? [] : [
+    {
+      name: 'palworld'
+      containerName: palworldBackupContainerName
+      writerPrincipalId: palworldBackupSpObjectId
+    }
+  ],
+  empty(windroseBackupSpObjectId) ? [] : [
+    {
+      name: 'windrose'
+      containerName: windroseBackupContainerName
+      writerPrincipalId: windroseBackupSpObjectId
+    }
+  ]
+)
+
+// ── Dedicated Private Backup Storage ─────────────────────────────────────────
+// The games array is the per-game container/RBAC foundation: add a game with
+// its own container and writer identity instead of sharing a broad account role.
+module backupStorage 'modules/backup-storage.bicep' = {
+  name: 'deploy-backup-storage'
+  params: {
+    location: location
+    environment: environment
+    storageAccountName: backupStorageAccountName
+    games: backupGames
   }
 }
 
@@ -94,21 +164,21 @@ module budget 'modules/budget.bicep' = {
   name: 'deploy-budget'
   params: {
     alertEmail: alertEmail
+    budgetAmount: budgetAmount
     environment: environment
   }
 }
 
 // ── Storage Ingress Anomaly Alert ─────────────────────────────────────────────
-// Static-threshold metric alert on the storage account's Ingress metric.
-// Catches anomalous write volume (runaway backups, world dir accidentally
-// included in a modpack publish, etc.) hours-to-days before the monthly budget
-// alert would notice. Reuses the budget email action group.
+// The dimensions match the observed rclone path: OAuth + Primary + PutBlock.
+// Separating backups from public modpack publishing avoids publish-driven noise.
 module metricAlerts 'modules/metric-alerts.bicep' = {
   name: 'deploy-metric-alerts'
   params: {
-    storageAccountName: storageAccountName
+    storageAccountName: backupStorage.outputs.storageAccountName
     actionGroupId: budget.outputs.actionGroupId
     environment: environment
+    ingressThresholdBytes: backupIngressThresholdBytes
   }
 }
 
@@ -124,20 +194,6 @@ resource kvScope 'Microsoft.KeyVault/vaults@2025-05-01' existing = {
   name: keyVaultName
 }
 
-resource storageScope 'Microsoft.Storage/storageAccounts@2025-08-01' existing = {
-  name: storageAccountName
-}
-
-resource blobServiceScope 'Microsoft.Storage/storageAccounts/blobServices@2025-08-01' existing = {
-  name: 'default'
-  parent: storageScope
-}
-
-resource backupsContainerScope 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-08-01' existing = {
-  name: 'minecraft-backups'
-  parent: blobServiceScope
-}
-
 // VM MI → Key Vault Secrets User
 // Allows the VM to read KV secrets at runtime (e.g., emergency key rotation without CI/CD)
 resource vmMiKvSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -151,34 +207,6 @@ resource vmMiKvSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 }
 
-// VM MI → Storage Blob Data Contributor (minecraft-backups container only)
-// Enables rclone on the Azure VM to write backups using the Managed Identity —
-// no credentials needed, rclone uses RCLONE_CONFIG_AZBLOB_ENV_AUTH=true
-resource vmMiStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccountName, resourceGroup().id, 'vm-mi-storage-blob-contributor')
-  scope: backupsContainerScope
-  dependsOn: [storage]
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
-    principalId: vm.outputs.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Proxmox SP → Storage Blob Data Contributor (minecraft-backups container only)
-// Enables rclone on the Proxmox VM to write backups using client_id/client_secret
-// stored as Portainer env vars (AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_ID)
-resource proxmoxSpStorageBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccountName, proxmoxSpObjectId, 'proxmox-sp-storage-blob-contributor')
-  scope: backupsContainerScope
-  dependsOn: [storage]
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
-    principalId: proxmoxSpObjectId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 output publicIpAddress string = network.outputs.publicIpAddress
 output publicIpFqdn string = network.outputs.publicIpFqdn
 output keyVaultUri string = keyVault.outputs.keyVaultUri
@@ -186,4 +214,6 @@ output keyVaultUri string = keyVault.outputs.keyVaultUri
 //   az deployment group show -g rg-minecraft-prod -n <name> \
 //     --query properties.outputs.storageAccountName.value -o tsv
 output storageAccountName string = storage.outputs.storageAccountName
+output backupStorageAccountName string = backupStorage.outputs.storageAccountName
+output backupContainers array = backupStorage.outputs.containers
 output vmPrincipalId string = vm.outputs.principalId

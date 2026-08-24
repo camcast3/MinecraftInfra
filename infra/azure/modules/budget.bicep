@@ -39,27 +39,45 @@ resource budget 'Microsoft.Consumption/budgets@2024-08-01' = {
       startDate: '2026-07-01'
     }
     notifications: {
-      seventyFivePercent: {
+      forecastToExceed: {
         enabled: true
         operator: 'GreaterThanOrEqualTo'
-        threshold: 75
-        thresholdType: 'Actual'
-        contactEmails: [
-          alertEmail
-        ]
+        threshold: 100
+        thresholdType: 'Forecasted'
+        contactEmails: []
         contactGroups: [
           actionGroup.id
         ]
         locale: 'en-us'
       }
-      eightySevenPointFivePercent: {
+      actualSeventyFivePercent: {
         enabled: true
         operator: 'GreaterThanOrEqualTo'
-        threshold: json('87.5')
+        threshold: 75
         thresholdType: 'Actual'
-        contactEmails: [
-          alertEmail
+        contactEmails: []
+        contactGroups: [
+          actionGroup.id
         ]
+        locale: 'en-us'
+      }
+      actualNinetyPercent: {
+        enabled: true
+        operator: 'GreaterThanOrEqualTo'
+        threshold: 90
+        thresholdType: 'Actual'
+        contactEmails: []
+        contactGroups: [
+          actionGroup.id
+        ]
+        locale: 'en-us'
+      }
+      actualOneHundredPercent: {
+        enabled: true
+        operator: 'GreaterThanOrEqualTo'
+        threshold: 100
+        thresholdType: 'Actual'
+        contactEmails: []
         contactGroups: [
           actionGroup.id
         ]
