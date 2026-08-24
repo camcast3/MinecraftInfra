@@ -62,9 +62,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-# client/scripts -> repo root is two levels up.
-$repoRoot  = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$clientDir = Join-Path $repoRoot 'client'
+$repoRoot = (& git -C $PSScriptRoot rev-parse --show-toplevel).Trim()
+if (-not $repoRoot) { throw 'Could not resolve the repository root.' }
+$clientDir = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
 $sandbox = Join-Path $env:TEMP 'nz-manual-e2e'
 $blobDir = Join-Path $sandbox 'blob'
