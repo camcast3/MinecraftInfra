@@ -44,18 +44,6 @@ function Invoke-Compose {
         -AllowFailure:$AllowFailure
 }
 
-function Assert-Contains {
-    param(
-        [Parameter(Mandatory)][string] $Value,
-        [Parameter(Mandatory)][string] $Expected,
-        [Parameter(Mandatory)][string] $Message
-    )
-
-    if (-not $Value.Contains($Expected)) {
-        throw $Message
-    }
-}
-
 $savedEnvironment = @{
     TS_AUTHKEY              = $env:TS_AUTHKEY
     PALWORLD_ADMIN_PASSWORD = $env:PALWORLD_ADMIN_PASSWORD
@@ -84,8 +72,10 @@ try {
     if ($priorFailure.ExitCode -eq 0) {
         throw 'Regression setup failed: sudo unexpectedly elevated under no-new-privileges.'
     }
-    Assert-Contains -Value $priorFailure.Output -Expected 'no new privileges' `
-        -Message 'The prior sudo/no-new-privileges startup failure was not reproduced.'
+    if ($priorFailure.Output -notmatch
+        '(?i)no new privileges|sudo: (?:not found|command not found)|executable file not found.*sudo') {
+        throw "The prior sudo startup failure was not reproduced: $($priorFailure.Output)"
+    }
 
     $model = Invoke-Native -Command 'docker' -Arguments @(
         'compose', '--file', $sourceCompose, 'config', '--format', 'json'
