@@ -46,8 +46,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$repoRoot  = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$clientDir = Join-Path $repoRoot 'client'
+$repoRoot = (& git -C $PSScriptRoot rev-parse --show-toplevel).Trim()
+if (-not $repoRoot) { throw 'Could not resolve the repository root.' }
+$clientDir = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
 if (-not $InstancePath) {
     $InstancePath = Join-Path $env:APPDATA 'PrismLauncher\instances\Craft to Exile 2'

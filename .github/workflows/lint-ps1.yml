@@ -3,11 +3,10 @@ name: Lint PowerShell scripts
 
 # Guards against UTF-8 BOMs being reintroduced on .ps1 files.
 # A leading BOM breaks the `irm <url> | iex` install pattern used by
-# docs/assets/setup.ps1: irm decodes the response to a string with a
+# client/scripts/install.ps1: irm decodes the response to a string with a
 # literal U+FEFF prefix and iex then tries to execute "<U+FEFF>#" as a
-# command. Scripts invoked via `powershell.exe -File` (update.ps1,
-# backup.ps1) don't trip on this today, but all .ps1s are guarded
-# uniformly so a future refactor can't silently reintroduce the bug.
+# command. All .ps1s are guarded uniformly so a future refactor can't silently
+# reintroduce the bug, including archived recovery scripts.
 
 on:
   pull_request:
@@ -48,7 +47,10 @@ jobs:
             printf 'PS1 files with UTF-8 BOM (must be removed):\n'
             printf '  %s\n' "${bad[@]}"
             printf '\nFix on Windows PowerShell:\n'
+            # The following are intentionally literal PowerShell examples.
+            # shellcheck disable=SC2016
             printf '  $b = [IO.File]::ReadAllBytes($path)\n'
+            # shellcheck disable=SC2016
             printf '  [IO.File]::WriteAllBytes($path, $b[3..($b.Length-1)])\n'
             exit 1
           fi

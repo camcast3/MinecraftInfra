@@ -37,15 +37,56 @@ permissions:
   #
   # SIBLING SETTING: "Allow auto-merge" must also be enabled
   # (Settings → General → Pull Requests), otherwise `gh pr merge --auto`
-  # in publish-prism-pack.ps1 throws and halts the publish before
-  # latest.json flips (intentional — see the fail-loud comment in the
-  # script). Toggle via:
+  # in publish-prism-pack.ps1 throws and strands the candidate PR. Stable
+  # pointers remain unchanged, but the publish still fails loudly. Toggle via:
   #   gh api -X PATCH /repos/{owner}/{repo} -F allow_auto_merge=true
   pull-requests: write
   id-token: write
 
 jobs:
+  compatibility:
+    name: Full nz compatibility gate
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: client/go.mod
+          cache-dependency-path: client/go.sum
+
+      - name: Unit tests and vet
+        working-directory: client
+        shell: pwsh
+        run: |
+          go test ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Full nz E2E
+        working-directory: client
+        shell: pwsh
+        run: go test -tags e2e -v -timeout 10m ./tests/e2e/
+
+      - name: Synthetic instance corpus
+        shell: pwsh
+        run: ./client/scripts/Test-InstanceCorpus.ps1
+
+      - name: Disposable package validation
+        shell: pwsh
+        run: ./client/scripts/Test-Packaging.ps1
+
+      - name: Client distribution and docs policy
+        shell: pwsh
+        run: ./scripts/Test-ClientDistribution.ps1
+
   publish:
+    needs: compatibility
     runs-on: ubuntu-latest
     # Same environment as deploy-azure.yml for a single approval surface
     # and to scope the federated credential to publish identity.
@@ -79,6 +120,10 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+
+      - name: Validate operators match whitelist
+        shell: pwsh
+        run: ./scripts/sync-ops.ps1 -Check
 
       - name: No-op short-circuit (version already published)
         id: noop_check
@@ -171,10 +216,8 @@ jobs:
           # `gh pr merge $prUrl --auto --squash --delete-branch`. Safe vs
           # forever-loop because `push: branches: [main]` is excluded from
           # this workflow's triggers — the merge commit can't re-fire publish.
-          # Correctness-critical: latest.json (player auto-update target)
-          # flips at the end of the script, so deferring merge would leave
-          # the server on the old version while clients upgrade, breaking
-          # joins until manual merge.
+          # Stable pointers do not move here. promote-prism-pack.yml handles
+          # that only after this PR merges and the public server is healthy.
           ./infra/azure/scripts/publish-prism-pack.ps1 -Version '${{ steps.version.outputs.version }}'
 
       - name: Publish summary
@@ -191,10 +234,10 @@ jobs:
 
           On success the script will have:
 
-          - Uploaded the zip to the ``minecraft-modpack`` blob container.
+          - Uploaded immutable versioned zip + manifest candidates.
           - Rewritten ``docker/proxmox/docker-compose.yml`` with the new SHA pin + MOTD.
           - Rewritten ``docker/azure/velocity/velocity.toml.tmpl`` with the new fallback MOTD.
-          - Regenerated ``docker/shared/ops.json`` from the whitelist.
+          - Validated ``docker/shared/ops.json`` against the whitelist.
           - Bumped ``modpack.yml``.
           - Opened the publish PR against ``main`` from branch ``modpack/v${{ steps.version.outputs.version }}``.
           - Portainer GitOps will redeploy C2E2 within ~5 min of PR merge.
@@ -202,6 +245,9 @@ jobs:
           **Next step:** none — auto-merge is enabled on the publish PR
           (``gh pr merge --auto --squash --delete-branch``). It squash-merges
           as soon as required status checks pass and Portainer redeploys
-          C2E2 within ~5 min of the merge landing on ``main``.
+          C2E2 within ~5 min of the merge landing on ``main``. The separate
+          ``promote-prism-pack.yml`` workflow then waits for the public server
+          to advertise the new version before moving ``latest.json`` and
+          ``latest-version.txt``.
           "@
           Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $summary

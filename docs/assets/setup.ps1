@@ -1,10 +1,9 @@
-# NegativeZone Minecraft setup script
+# ARCHIVED RECOVERY ONLY - legacy NegativeZone Minecraft setup script
 #
-# Run from PowerShell (no admin needed):
-#   irm https://github.com/camcast3/MinecraftInfra/releases/latest/download/setup.ps1 | iex
-#
-# SHA-256 verification one-liner: see GitHub Release notes at
-#   https://github.com/camcast3/MinecraftInfra/releases?q=setup-v
+# Production installs use client/scripts/install.ps1 from the nz-latest release.
+# This source path remains only because immutable setup-v releases and already
+# installed legacy clients fetch companion files from docs/assets at runtime.
+# Do not publish this script or direct new users here.
 #
 # Admin test-publish override: set $env:NEGATIVEZONE_MANIFEST_URL to point
 # at latest-test.json before running. The script prints a loud warning when
@@ -105,13 +104,13 @@ $SkipBits      = ($env:NEGATIVEZONE_SKIP_BITS -eq '1')
 # make this near-impossible to read or modify.
 # $INST_DIR is preserved verbatim — Prism substitutes it at launch time.
 $updateInvoke = @'
-try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\prelaunch-check.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\prelaunch-check.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PreLaunch hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Run the nz installer in PowerShell to repair:'; Write-Host '[negativezone]   irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex'; Write-Host ''; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 1 }
 '@
 # PostExit fails OPEN (exit 0) — the player already finished playing, so
 # blocking the launcher with a popup adds friction with no recovery benefit.
 # Next PreLaunch will surface the same condition loudly and block until fixed.
 $backupInvoke = @'
-try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Re-run the setup one-liner in PowerShell to repair:'; Write-Host '[negativezone]   irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
+try { & ([scriptblock]::Create([System.IO.File]::ReadAllText('$INST_DIR\.negativezone\backup.ps1', [System.Text.Encoding]::UTF8))) } catch { Write-Host ''; Write-Host '[negativezone] PostExit backup hook failed: your client is out of date or corrupted.'; Write-Host '[negativezone] Run the nz installer in PowerShell to repair:'; Write-Host '[negativezone]   irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex'; Write-Host ('[negativezone] (underlying error: ' + $_.Exception.Message + ')'); exit 0 }
 '@
 $PreLaunchCommand = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $updateInvoke + '"'
 $PostExitCommand  = '"powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "' + $backupInvoke + '"'

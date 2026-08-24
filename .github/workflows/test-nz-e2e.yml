@@ -4,11 +4,37 @@ on:
   pull_request:
     paths:
       - "client/**"
+      - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "infra/azure/scripts/test-c2e2-backend.ps1"
+      - "ops/publish-runbook.md"
+      - "scripts/Test-ClientDistribution.ps1"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - ".github/workflows/promote-prism-pack.yml"
+      - ".github/workflows/publish-prism-pack.yml"
+      - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
   push:
     branches: [main]
     paths:
       - "client/**"
+      - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "infra/azure/scripts/test-c2e2-backend.ps1"
+      - "ops/publish-runbook.md"
+      - "scripts/Test-ClientDistribution.ps1"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - ".github/workflows/promote-prism-pack.yml"
+      - ".github/workflows/publish-prism-pack.yml"
+      - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
 
 permissions:
@@ -20,7 +46,7 @@ concurrency:
 
 jobs:
   e2e:
-    name: Run 16-test e2e harness
+    name: Full nz compatibility gate
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -37,6 +63,27 @@ jobs:
         run: go version
         working-directory: client
 
+      - name: Unit tests and vet
+        shell: pwsh
+        working-directory: client
+        run: |
+          go test ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Run e2e harness
         run: go test -tags e2e -v -timeout 10m ./tests/e2e/
         working-directory: client
+
+      - name: Run immutable corpus compatibility
+        shell: pwsh
+        run: ./client/scripts/Test-InstanceCorpus.ps1
+
+      - name: Validate disposable package
+        shell: pwsh
+        run: ./client/scripts/Test-Packaging.ps1
+
+      - name: Validate client distribution and docs paths
+        shell: pwsh
+        run: ./scripts/Test-ClientDistribution.ps1
