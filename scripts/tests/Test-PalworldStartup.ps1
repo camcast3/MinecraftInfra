@@ -126,6 +126,12 @@ try {
     ).Replace(
         'network_mode: "service:tailscale"',
         'network_mode: none'
+    ).Replace(
+        'cpus: "8"',
+        'cpus: "1"'
+    ).Replace(
+        'memory: 24G',
+        'memory: 1G'
     )
     $fixture += @"
 
