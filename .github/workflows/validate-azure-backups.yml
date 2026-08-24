@@ -1,0 +1,56 @@
+---
+name: Validate Azure backups
+
+on:
+  pull_request:
+    paths:
+      - "infra/azure/main.bicep"
+      - "infra/azure/modules/backup-storage.bicep"
+      - "infra/azure/modules/budget.bicep"
+      - "infra/azure/modules/metric-alerts.bicep"
+      - "infra/azure/modules/storage.bicep"
+      - "infra/azure/parameters/prod.bicepparam"
+      - "infra/azure/scripts/bootstrap.ps1"
+      - "infra/proxmox/cloud-init.yaml"
+      - "docker/proxmox/docker-compose.yml"
+      - "ops/backups.md"
+      - "scripts/tests/Test-AzureBackups.ps1"
+      - "scripts/tests/Test-GameBackup*.sh"
+      - ".github/workflows/validate-azure-backups.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/azure/**"
+      - "infra/proxmox/cloud-init.yaml"
+      - "docker/proxmox/docker-compose.yml"
+      - "ops/backups.md"
+      - "scripts/tests/Test-AzureBackups.ps1"
+      - "scripts/tests/Test-GameBackup*.sh"
+      - ".github/workflows/validate-azure-backups.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Bicep, Compose, and backup policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Validate Azure backup policy
+        shell: pwsh
+        run: ./scripts/tests/Test-AzureBackups.ps1
+
+      - name: Exercise backup scripts
+        run: |
+          bash scripts/tests/Test-GameBackups.sh
+          sudo bash scripts/tests/Test-GameBackupLifecycle.sh
+
+      - name: Lint workflow
+        run: |
+          docker run --rm \
+            --volume "$PWD:/repo" \
+            --workdir /repo \
+            rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
