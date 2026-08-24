@@ -1,0 +1,294 @@
+---
+# Palworld stack for the dedicated Proxmox VM.
+# Portainer CE GitOps deploys this file. Configure stack variables in Portainer;
+# never commit a .env file. Player, REST, metrics, and container administration
+# listeners remain inside this stack's Tailscale network namespace. This stack
+# deliberately publishes no host ports.
+#
+# Host paths and systemd backup units are provisioned by
+# infra/proxmox/game-node.
+
+x-common: &common
+  restart: unless-stopped
+  security_opt:
+    - no-new-privileges:true
+
+x-backup-interface:
+  game: palworld
+  scheduler: game-backup@palworld.timer
+  restore: /usr/local/sbin/game-restore
+  sourceHostPath: /data/palworld/data
+  localHostPath: /data/palworld/backups/local
+  healthHostPath: /data/palworld/backups/health
+  nasHostPath: /mnt/nas-backups/palworld
+  azureContainer: palworld-backups
+  retentionDays:
+    local: 14
+    nas: 7
+    azureCold: 90
+  preBackupMethod: POST
+  preBackupUrl: http://127.0.0.1:8212/v1/api/save
+  announceUrl: http://127.0.0.1:8212/v1/api/announce
+  shutdownUrl: http://127.0.0.1:8212/v1/api/shutdown
+  healthUrl: http://127.0.0.1:8212/v1/api/info
+  basicAuthEnvironment: PALWORLD_ADMIN_PASSWORD
+
+services:
+  tailscale:
+    <<: *common
+    image: tailscale/tailscale:v1.102.2@sha256:4107a12b1a0466bb3f2c968d5fa35acf509cd7865a958ce1af36724e9f016342
+    container_name: palworld-tailscale
+    hostname: palworld-tailscale
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:?set TS_AUTHKEY in Portainer}
+      TS_AUTH_ONCE: "true"
+      TS_EXTRA_ARGS: --accept-dns=false
+      TS_HOSTNAME: ${TS_HOSTNAME:-palworld-stack}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      TZ: America/Los_Angeles
+    volumes:
+      - /data/palworld/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - tailscale status --json | grep -Eq '"BackendState"[[:space:]]*:[[:space:]]*"Running"'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  palworld-init:
+    <<: *common
+    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
+    user: "0:0"
+    restart: "no"
+    read_only: true
+    network_mode: none
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_READ_SEARCH
+    volumes:
+      - /data/palworld/data:/pal/Package/Pal/Saved
+    configs:
+      - source: palworld_init
+        target: /pal/init-saved.sh
+        mode: 0555
+    entrypoint: ["/pal/init-saved.sh"]
+
+  palworld:
+    <<: *common
+    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
+    container_name: palworld-server
+    init: true
+    user: "user:usergroup"
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+      palworld-init:
+        condition: service_completed_successfully
+    entrypoint: ["/bin/sh", "/pal/helper.sh"]
+    command:
+      - -port=8211
+      - -useperfthreads
+      - -NoAsyncLoadingThread
+      - -UseMultithreadForDS
+    environment:
+      PALWORLD_ADMIN_PASSWORD: ${PALWORLD_ADMIN_PASSWORD:?set PALWORLD_ADMIN_PASSWORD in Portainer}
+      TZ: America/Los_Angeles
+    volumes:
+      - /data/palworld/data:/pal/Package/Pal/Saved
+    configs:
+      - source: palworld_helper_file
+        target: /pal/helper.sh
+        mode: 0444
+    labels:
+      cc.negativezone.backup.source: /pal/Package/Pal/Saved
+      cc.negativezone.backup.scheduler: game-backup@palworld.timer
+      cc.negativezone.backup.local-host-path: /data/palworld/backups/local
+      cc.negativezone.backup.pre-hook: POST http://127.0.0.1:8212/v1/api/save
+      cc.negativezone.backup.shutdown-hook: POST http://127.0.0.1:8212/v1/api/shutdown
+      cc.negativezone.backup.health: GET http://127.0.0.1:8212/v1/api/info
+    stop_signal: SIGINT
+    stop_grace_period: 2m
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: 24G
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent --show-error --max-time 5
+          --user "admin:$$PALWORLD_ADMIN_PASSWORD"
+          http://127.0.0.1:8212/v1/api/info >/dev/null
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 5m
+
+  node-exporter:
+    <<: *common
+    image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
+    container_name: palworld-node-exporter
+    network_mode: "service:tailscale"
+    pid: host
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - --path.rootfs=/host
+      - --web.listen-address=:9100
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  cadvisor:
+    <<: *common
+    image: gcr.io/cadvisor/cadvisor:v0.55.1@sha256:3de2bd5203120b866d74a9b283b2ffb8ec382fbf9dc321814700c6ea6f44ec57
+    container_name: palworld-cadvisor
+    network_mode: "service:tailscale"
+    privileged: true
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  alloy:
+    <<: *common
+    image: grafana/alloy:v1.11.3@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669
+    container_name: palworld-alloy
+    user: "0:0"
+    read_only: true
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /data/palworld/monitoring/alloy:/var/lib/alloy
+      - /data/palworld/backups/health:/var/log/game-backup:ro
+    tmpfs:
+      - /tmp
+    configs:
+      - source: alloy_config
+        target: /etc/alloy/config.alloy
+        mode: 0444
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=127.0.0.1:12345
+      - /etc/alloy/config.alloy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+configs:
+  palworld_init:
+    file: ./palworld-init.sh
+
+  palworld_helper_file:
+    file: ./palworld-helper.sh
+
+  alloy_config:
+    content: |
+      logging {
+        level  = "info"
+        format = "logfmt"
+      }
+
+      local.file_match "docker_logs" {
+        path_targets = [{
+          __path__ = "/var/lib/docker/containers/*/*.log",
+          instance = "palworld-proxmox",
+          game     = "palworld",
+          job      = "docker",
+        }]
+        sync_period = "10s"
+      }
+
+      loki.source.file "docker_logs" {
+        targets       = local.file_match.docker_logs.targets
+        forward_to    = [loki.process.docker_logs.receiver]
+        tail_from_end = true
+      }
+
+      local.file_match "backup_logs" {
+        path_targets = [{
+          __path__ = "/var/log/game-backup/events.log",
+          instance = "palworld-proxmox",
+          game     = "palworld",
+          job      = "game-backup",
+        }]
+        sync_period = "10s"
+      }
+
+      loki.source.file "backup_logs" {
+        targets       = local.file_match.backup_logs.targets
+        forward_to    = [loki.process.backup_logs.receiver]
+        tail_from_end = true
+      }
+
+      loki.process "docker_logs" {
+        stage.docker { }
+        forward_to = [loki.write.central.receiver]
+      }
+
+      loki.process "backup_logs" {
+        stage.regex {
+          expression = "^(?P<backup_signal>game_backup_(?:result|health)) game=(?P<backup_game>[a-z0-9-]+) destination=(?P<backup_destination>[a-z0-9-]+) status=(?P<backup_status>[a-z]+).*$"
+        }
+        stage.labels {
+          values = {
+            backup_signal      = "",
+            backup_game        = "",
+            backup_destination = "",
+            backup_status      = "",
+          }
+        }
+        forward_to = [loki.write.central.receiver]
+      }
+
+      loki.write "central" {
+        endpoint {
+          url = "http://loki-k8s.tail042ec7.ts.net:3100/loki/api/v1/push"
+        }
+      }

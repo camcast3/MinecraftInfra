@@ -147,6 +147,7 @@ $backupAssets = [ordered] @{
     '@@BACKUP_HEALTH_TIMER@@' = 'game-backup-health@.timer'
     '@@BACKUP_RECOVER_SERVICE@@' = 'game-backup-recover@.service'
     '@@RCLONE_EXAMPLE@@' = 'rclone.conf.example'
+    '@@PALWORLD_BACKUP_HOOK@@' = 'palworld'
 }
 
 $tokens = [ordered] @{

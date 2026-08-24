@@ -5,8 +5,11 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $renderer = Join-Path $repositoryRoot 'infra\proxmox\game-node\Render-CloudInit.ps1'
 $fixture = Join-Path $PSScriptRoot 'fixtures\game-node\generic.json'
+$palworldProfile = Join-Path $repositoryRoot 'infra\proxmox\game-node\profiles\palworld.json'
+$palworldCheckedIn = Join-Path $repositoryRoot 'infra\proxmox\game-node\generated\palworld-cloud-init.yaml'
 $testRoot = Join-Path $repositoryRoot 'build\game-node-cloud-init-tests'
 $output = Join-Path $testRoot 'fixture-game-cloud-init.yaml'
+$palworldOutput = Join-Path $testRoot 'palworld-cloud-init.yaml'
 
 Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $testRoot | Out-Null
@@ -14,6 +17,7 @@ New-Item -ItemType Directory -Path $testRoot | Out-Null
 $parseTargets = @(
     $renderer
     $PSCommandPath
+    (Join-Path $repositoryRoot 'scripts\tests\Test-PalworldStartup.ps1')
 )
 foreach ($target in $parseTargets) {
     $tokens = $null
@@ -76,4 +80,34 @@ if (-not $validationFailed) {
     throw 'Renderer accepted an invalid management CIDR.'
 }
 
-Write-Output "Cloud-init renderer tests passed: $output"
+$renderedPalworldPath = & $renderer -ProfilePath $palworldProfile `
+    -OutputPath $palworldOutput
+if ((Resolve-Path $renderedPalworldPath).Path -ne
+    (Resolve-Path $palworldOutput).Path) {
+    throw 'Renderer returned an unexpected Palworld output path.'
+}
+
+$palworldRendered = Get-Content -LiteralPath $palworldOutput -Raw
+$palworldCommitted = Get-Content -LiteralPath $palworldCheckedIn -Raw
+if ($palworldRendered -ne $palworldCommitted) {
+    throw 'Checked-in Palworld cloud-init is stale; re-render it from the profile.'
+}
+foreach ($text in @(
+    '# Profile: Palworld (palworld)'
+    'CONTAINER_NAME=palworld-server'
+    'BACKUP_SOURCE_NAMES="data"'
+    'BACKUP_CONSISTENCY=palworld-rest-graceful-stop'
+    'BACKUP_STOP_MODE=hook'
+    'AZURE_CONTAINER=palworld-backups'
+    '/usr/local/libexec/game-backup/palworld'
+    'game-backup@palworld.timer'
+)) {
+    if (-not $palworldRendered.Contains($text)) {
+        throw "Rendered Palworld cloud-init is missing expected text: $text"
+    }
+}
+if ($palworldRendered -match '(?m)^\s*-\s+ufw allow 8211/udp') {
+    throw 'Palworld cloud-init must not open a public player port.'
+}
+
+Write-Output "Cloud-init renderer tests passed: $output and $palworldOutput"
