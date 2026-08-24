@@ -7,10 +7,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/camcast3/MinecraftInfra/client/internal/instance"
 	"github.com/camcast3/MinecraftInfra/client/internal/logging"
+	"github.com/camcast3/MinecraftInfra/client/internal/transaction"
 	"github.com/spf13/cobra"
 )
 
@@ -71,8 +71,7 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	newMC := instance.ResolveMinecraftRoot(newPath)
 
 	if oldMC == newMC {
-		logging.Error("Old and new instance resolve to the same folder!")
-		os.Exit(1)
+		return fmt.Errorf("old and new instance resolve to the same folder")
 	}
 
 	// Build plan
@@ -146,32 +145,54 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 
 	// Apply
 	logging.Step("Applying")
-	timestamp := fmt.Sprintf("_migration-backup-%s", timeStampNow())
-	backupDir := filepath.Join(newMC, timestamp)
-	backupCreated := false
-
-	for _, item := range plan {
-		dst := filepath.Join(newMC, item.Name)
-		if pathExists(dst) {
-			if !backupCreated {
-				_ = os.MkdirAll(backupDir, 0o755)
-				backupCreated = true
+	stageMCRelative, err := filepath.Rel(newPath, newMC)
+	if err != nil {
+		return fmt.Errorf("resolve destination Minecraft root: %w", err)
+	}
+	if stageMCRelative == ".." || strings.HasPrefix(stageMCRelative, ".."+string(os.PathSeparator)) {
+		return fmt.Errorf("destination Minecraft root escapes instance: %s", newMC)
+	}
+	result, err := (transaction.Engine{}).Run(transaction.Plan{
+		Name:         "migrate",
+		LiveDir:      newPath,
+		RequireLive:  true,
+		SeedFromLive: true,
+		Prepare: func(stage string) error {
+			stageMC := filepath.Join(stage, stageMCRelative)
+			for _, item := range plan {
+				dst := filepath.Join(stageMC, item.Name)
+				if err := os.RemoveAll(dst); err != nil {
+					return fmt.Errorf("remove staged %s: %w", item.Name, err)
+				}
+				logging.OKf("copy: %s", item.Name)
+				if item.Type == "File" {
+					if err := copyFile(item.Source, dst); err != nil {
+						return fmt.Errorf("copy %s: %w", item.Name, err)
+					}
+				} else if err := transaction.CopyTree(item.Source, dst); err != nil {
+					return fmt.Errorf("copy %s: %w", item.Name, err)
+				}
 			}
-			logging.Dimf("  backup: %s", item.Name)
-			_ = os.Rename(dst, filepath.Join(backupDir, item.Name))
-		}
-		logging.OKf("copy: %s", item.Name)
-		if item.Type == "File" {
-			_ = copyFile(item.Source, dst)
-		} else {
-			_ = copyDir(item.Source, dst)
-		}
+			return nil
+		},
+		Validate: func(stage string) error {
+			stageMC := filepath.Join(stage, stageMCRelative)
+			for _, item := range plan {
+				if !pathExists(filepath.Join(stageMC, item.Name)) {
+					return fmt.Errorf("staged migration is missing %s", item.Name)
+				}
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("transactional migration failed: %w", err)
 	}
 
 	// Done
 	logging.Step("Done")
-	if backupCreated {
-		logging.Infof("Overwritten items backed up to: %s", backupDir)
+	if result.BackupDir != "" {
+		logging.Infof("Verified pre-migration backup: %s", result.BackupDir)
 	}
 	logging.Blank()
 	logging.Info("Next steps:")
@@ -232,10 +253,6 @@ func promptInstance(prompt string, candidates []instance.Info) string {
 		}
 		logging.Warn("Enter a number, 'm' for manual, or paste a full path.")
 	}
-}
-
-func timeStampNow() string {
-	return time.Now().Format("20060102-150405")
 }
 
 // copyDir recursively copies a directory using robocopy for performance.

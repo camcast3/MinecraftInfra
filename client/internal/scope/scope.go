@@ -7,6 +7,7 @@ package scope
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -91,7 +92,23 @@ func BackupScope(includeSaves bool) (dirs []string, files []string) {
 // PreserveManifest represents the JSON structure of preserve-list.json
 // shipped by the pack author.
 type PreserveManifest struct {
+	Version  int      `json:"version"`
 	Preserve []string `json:"preserve"`
+}
+
+// ParsePreserveManifest parses and validates preserve-list.json content.
+func ParsePreserveManifest(data []byte) (*PreserveManifest, error) {
+	var m PreserveManifest
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	if m.Version == 0 {
+		m.Version = 1
+	}
+	if m.Version != 1 {
+		return nil, fmt.Errorf("unsupported preserve manifest version %d", m.Version)
+	}
+	return &m, nil
 }
 
 // LoadPreserveManifest reads and parses a preserve-list.json file.
@@ -104,52 +121,73 @@ func LoadPreserveManifest(path string) (*PreserveManifest, error) {
 		}
 		return nil, err
 	}
-	var m PreserveManifest
-	if err := json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return &m, nil
+	return ParsePreserveManifest(data)
 }
 
 // MergePreserve returns the union of base paths and manifest entries,
 // preserving order and deduplicating. Tries manifestPaths in order, using
 // the first one that exists and parses successfully.
 func MergePreserve(base []string, manifestPaths ...string) []string {
-	seen := make(map[string]struct{})
-	var result []string
-	for _, p := range base {
-		t := strings.TrimSpace(p)
-		if t == "" {
-			continue
-		}
-		if _, ok := seen[t]; !ok {
-			seen[t] = struct{}{}
-			result = append(result, t)
-		}
-	}
+	result, _ := MergePreserveStrict(base, manifestPaths...)
+	return result
+}
 
+// MergePreserveStrict is MergePreserve with parse/version errors propagated.
+func MergePreserveStrict(base []string, manifestPaths ...string) ([]string, error) {
+	var manifests []*PreserveManifest
 	for _, mp := range manifestPaths {
 		if mp == "" {
 			continue
 		}
 		m, err := LoadPreserveManifest(mp)
-		if err != nil || m == nil {
+		if err != nil {
+			return nil, fmt.Errorf("load preserve manifest %s: %w", mp, err)
+		}
+		if m != nil {
+			manifests = append(manifests, m)
+			break
+		}
+	}
+	return MergePreserveManifests(base, manifests...)
+}
+
+// MergePreserveManifests returns a validated, normalized union of built-in,
+// installed, and target-release preservation rules.
+func MergePreserveManifests(base []string, manifests ...*PreserveManifest) ([]string, error) {
+	seen := make(map[string]struct{})
+	var result []string
+	add := func(p string) error {
+		t := strings.TrimSpace(p)
+		if t == "" {
+			return nil
+		}
+		t = filepath.Clean(filepath.FromSlash(t))
+		if filepath.IsAbs(t) || t == "." || t == ".." ||
+			strings.HasPrefix(t, ".."+string(os.PathSeparator)) {
+			return fmt.Errorf("invalid preserved path %q", p)
+		}
+		key := strings.ToLower(t)
+		if _, ok := seen[key]; !ok {
+			seen[key] = struct{}{}
+			result = append(result, t)
+		}
+		return nil
+	}
+
+	for _, p := range base {
+		if err := add(p); err != nil {
+			return nil, err
+		}
+	}
+	for _, m := range manifests {
+		if m == nil {
 			continue
 		}
 		for _, p := range m.Preserve {
-			t := strings.TrimSpace(p)
-			if t == "" {
-				continue
-			}
-			// Normalize path separators for Windows
-			t = filepath.FromSlash(t)
-			if _, ok := seen[t]; !ok {
-				seen[t] = struct{}{}
-				result = append(result, t)
+			if err := add(p); err != nil {
+				return nil, err
 			}
 		}
-		break // use first successful manifest
 	}
-
-	return result
+	return result, nil
 }
