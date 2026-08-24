@@ -98,7 +98,7 @@ opens the daily PR — only the actual file fetch comes from our re-host.
    explicitly permits modpack-bundled redistribution. Other mods need
    case-by-case review — record the outcome in the PR description.
    *If a mod's license forbids redistribution, drop it from packwiz
-   entirely and fall back to a setup.ps1 manual-download prompt.*
+   entirely and document the required manual download in the nz setup flow.*
 3. Create or reuse a release tag `c2e2-blobs-v<PACK_VERSION>` in
    `camcast3/MinecraftInfra`:
 
@@ -187,7 +187,12 @@ Trigger the [Publish Prism Pack](../.github/workflows/publish-prism-pack.yml) wo
 gh workflow run publish-prism-pack.yml -f version=0.3.1
 ```
 
-The workflow materializes the staging instance from the packwiz manifest, builds and uploads the client zip to Azure, rewrites `docker/proxmox/docker-compose.yml` (SHA pin + MOTD), bumps `modpack.yml`, opens the publish PR against `main`, and **enables auto-merge** (`gh pr merge --auto --squash --delete-branch`). The PR squash-merges as soon as required status checks pass, and Portainer GitOps redeploys C2E2 within ~5 min of the merge. End-to-end, the only manual step is triggering the workflow.
+The workflow first runs the full nz E2E, synthetic corpus, and disposable
+packaging gates. It then materializes the staging instance, uploads immutable
+versioned zip + manifest candidates, rewrites the server SHA pin/MOTD, bumps
+`modpack.yml`, opens the publish PR, and enables auto-merge. After merge and
+Portainer redeploy, `promote-prism-pack.yml` waits for the public server to
+advertise the new version before moving the stable client pointers.
 
 For full details, troubleshooting, and Azure one-time setup see [`ops/publish-runbook.md`](../ops/publish-runbook.md).
 
@@ -196,10 +201,14 @@ For full details, troubleshooting, and Azure one-time setup see [`ops/publish-ru
 For dry-runs or development without an Azure session, invoke the underlying script directly:
 
 ```powershell
-./infra/azure/scripts/publish-prism-pack.ps1 -Version 0.3.1
+./infra/azure/scripts/publish-prism-pack.ps1 `
+  -Version 0.3.1 `
+  -LocalOutDir .artifacts/local-publish `
+  -LocalBaseUrl http://127.0.0.1:8788
 ```
 
-The workflow calls this same script. Running it locally lets you verify the zip builds cleanly before triggering CI. The Azure blob-upload step will fail gracefully if no Azure session is active.
+The workflow calls this same packaging path. `-LocalOutDir` is the safety
+boundary: it disables Azure, git, PR, and production-pointer side effects.
 
 ## Data preservation contract (server side)
 

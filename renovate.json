@@ -8,10 +8,73 @@
         ":rebaseStalePrs",
         "group:recommended"
     ],
+    "customManagers": [
+        {
+            "customType": "regex",
+            "description": "Keep production game contract image references pinned and current",
+            "managerFilePatterns": [
+                "/^(?:platform\\/contracts|contracts)\\/games\\/.*\\.json$/"
+            ],
+            "matchStrings": [
+                "\"reference\"\\s*:\\s*\"(?<depName>[^\\s:\"]+(?:\\/[^\\s:\"]+)*):(?<currentValue>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\""
+            ],
+            "datasourceTemplate": "docker"
+        }
+    ],
     "labels": [
         "renovate"
     ],
     "packageRules": [
+        {
+            "description": "Keep canonical and compatibility C2E2 Compose updates in one PR",
+            "matchFileNames": [
+                "games/minecraft/c2e2/**",
+                "docker/proxmox/**"
+            ],
+            "groupName": "C2E2 stack compatibility paths"
+        },
+        {
+            "description": "Keep canonical and compatibility Palworld Compose updates in one PR",
+            "matchFileNames": [
+                "games/palworld/**",
+                "docker/palworld/**"
+            ],
+            "groupName": "Palworld stack compatibility paths",
+            "automerge": false
+        },
+        {
+            "description": "Keep canonical and compatibility Windrose Compose updates in one PR",
+            "matchFileNames": [
+                "games/windrose/**",
+                "docker/windrose/**"
+            ],
+            "groupName": "Windrose stack compatibility paths",
+            "automerge": false
+        },
+        {
+            "description": "Keep canonical and compatibility Azure edge updates in one PR",
+            "matchFileNames": [
+                "platform/azure/edge/**",
+                "docker/azure/**"
+            ],
+            "groupName": "Azure edge compatibility paths"
+        },
+        {
+            "description": "Keep canonical and compatibility contract image updates in one PR",
+            "matchFileNames": [
+                "platform/contracts/games/**",
+                "contracts/games/**"
+            ],
+            "groupName": "Game contract compatibility paths"
+        },
+        {
+            "description": "Require a reviewed, application-consistent Palworld update",
+            "matchPackageNames": [
+                "ghcr.io/pocketpairjp/palserver"
+            ],
+            "groupName": "Palworld official server",
+            "automerge": false
+        },
         {
             "groupName": "devDependencies (non-major)",
             "matchDepTypes": [

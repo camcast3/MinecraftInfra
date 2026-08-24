@@ -1,0 +1,17 @@
+[Unit]
+Description=Application-aware %i game backup
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+ConditionPathExists=/etc/game-backup/rclone.conf
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/local/sbin/game-backup-recover %i
+ExecStart=/usr/local/sbin/game-backup --game %i
+TimeoutStartSec=30min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+ProtectSystem=full
+PrivateDevices=false

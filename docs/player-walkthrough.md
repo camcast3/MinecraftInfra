@@ -43,15 +43,16 @@ drops in two places:
 - `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\nz.exe` —
   the copy Prism's launch/exit hooks call automatically.
 
-> The legacy PowerShell scripts (`setup.ps1`, `update.ps1`,
-> `migrate-settings.ps1`) are **deprecated** — use the `nz` commands below.
+> The legacy PowerShell client channel is retired. Use the `nz` commands below;
+> archived scripts remain available to maintainers only for recovery of old
+> immutable installs.
 
 ---
 
 ## 1. First install (manual, once per PC)
 
 **Why** — get Java 17, Prism Launcher, and the Craft to Exile 2 modpack onto a
-new PC and wire up the auto-update / auto-backup hooks.
+new PC and wire up the version-check / automatic-backup hooks.
 
 **Prerequisites**
 
@@ -79,13 +80,13 @@ irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/insta
 
 **Notes**
 
-- **Safe to re-run.** On an existing install it upgrades in place, preserves
-  your worlds/waypoints/settings, and keeps the previous version as a
-  `Craft to Exile 2.bak` folder for rollback.
-- **Already on the old PowerShell-script install?** **v0.5.0 is the cutover to
-  the nz client** — its new mods mean you must upgrade to keep playing, and
-  re-running the one-liner above is the whole migration. Details:
-  [Upgrading to v0.5.0]({% link updates.md %}#upgrading-to-v050).
+- **Safe to re-run.** On an existing install it builds and validates a sibling
+  replacement, preserves your worlds/waypoints/settings, swaps atomically, and
+  keeps the previous version as `.bak` plus a launchable
+  `Craft to Exile 2 (old)` rollback instance.
+- **Still on an old PowerShell-script install?** Re-running the one-liner above
+  is the whole migration. Details:
+  [Replacing a legacy install]({% link updates.md %}#upgrading-to-v050).
 - Override the binary/manifest with `NEGATIVEZONE_NZ_EXE_URL` /
   `NEGATIVEZONE_MANIFEST_URL`, or skip the winget step with
   `NEGATIVEZONE_SKIP_WINGET=1` (admins/testing only).
@@ -172,14 +173,16 @@ Prefer a terminal? Open a **new** PowerShell window and run:
 1. Auto-detects the Craft to Exile 2 instance and refuses to run while Prism is
    open.
 2. Forces a pre-update safety snapshot.
-3. Delta-syncs `.minecraft` with `packwiz-installer` against the server's
-   SHA-pinned `pack.toml` — only changed modpack files download (usually
-   10–50 MB), so your personal state stays put.
-4. Bumps `.negativezone-version` to match the server.
+3. Builds the update in a separate sibling folder, delta-syncing it with
+   `packwiz-installer` against the server's SHA-pinned `pack.toml`.
+4. Verifies the staged instance, preserves declared personal state, and swaps
+   it into place atomically. The version marker is written only after success.
 
 **Notes**
 
 - **Safe to re-run / no-op aware** — if you're already current it does nothing.
+- A full checksum-verified backup is kept outside the live instance, and an
+  interrupted update is recovered from its transaction journal on the next run.
 - Refuses downgrades unless the admin sets `allowDowngrade` in the manifest.
 - Deep dive: [Updates]({% link updates.md %}).
 

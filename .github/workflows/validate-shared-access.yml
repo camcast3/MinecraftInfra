@@ -6,14 +6,22 @@ on:
     paths:
       - "docker/shared/whitelist.json"
       - "docker/shared/ops.json"
+      - "docker/shared/**"
+      - "games/minecraft/shared/**"
       - "scripts/sync-ops.ps1"
+      - "tools/access/sync-ops.ps1"
+      - "tools/layout/**"
       - ".github/workflows/validate-shared-access.yml"
   push:
     branches: [main]
     paths:
       - "docker/shared/whitelist.json"
       - "docker/shared/ops.json"
+      - "docker/shared/**"
+      - "games/minecraft/shared/**"
       - "scripts/sync-ops.ps1"
+      - "tools/access/sync-ops.ps1"
+      - "tools/layout/**"
       - ".github/workflows/validate-shared-access.yml"
 
 permissions:
@@ -30,4 +38,6 @@ jobs:
 
       - name: Check generated operators
         shell: pwsh
-        run: ./scripts/sync-ops.ps1 -Check
+        run: |
+          ./tools/access/sync-ops.ps1 -Check
+          ./tools/layout/Test-RepositoryLayout.ps1

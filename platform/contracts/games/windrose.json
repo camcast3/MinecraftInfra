@@ -1,0 +1,121 @@
+{
+  "$schema": "../game-contract.schema.json",
+  "contractVersion": 1,
+  "gameId": "windrose",
+  "instanceId": "primary",
+  "displayName": "Windrose",
+  "lifecycle": "planned",
+  "nodeId": "windrose-proxmox",
+  "deploymentPath": "docker/windrose/docker-compose.yml",
+  "image": {
+    "reference": "windroseserver/windroseserver:0.10.0.8.10-dd411cfd@sha256:90a8bb141043df0d659773f6cc7535400e3866df2ed1f1565be9b6778fd47168",
+    "tagRequired": true,
+    "digestRequired": true,
+    "updates": "renovate"
+  },
+  "ports": [
+    {
+      "name": "direct-game",
+      "publicPort": null,
+      "privatePort": 7777,
+      "protocol": "tcp",
+      "exposure": "tailnet",
+      "audience": "players"
+    },
+    {
+      "name": "direct-game",
+      "publicPort": null,
+      "privatePort": 7777,
+      "protocol": "udp",
+      "exposure": "tailnet",
+      "audience": "players"
+    }
+  ],
+  "edgeRoutes": [
+    {
+      "name": "azure-direct-tcp",
+      "edgeNodeId": "azure-proxy",
+      "publicPort": 7777,
+      "backendPort": 7777,
+      "protocol": "tcp",
+      "backendKeyVaultSecretName": "windrose-tailscale-ip"
+    },
+    {
+      "name": "azure-direct-udp",
+      "edgeNodeId": "azure-proxy",
+      "publicPort": 7777,
+      "backendPort": 7777,
+      "protocol": "udp",
+      "backendKeyVaultSecretName": "windrose-tailscale-ip"
+    }
+  ],
+  "persistentPaths": [
+    {
+      "hostPath": "/data/windrose/data",
+      "containerPath": "/home/ue_user/app/R5/Saved",
+      "purpose": "world, profile, log, and generated save data"
+    },
+    {
+      "hostPath": "/data/windrose/config",
+      "containerPath": "/config",
+      "purpose": "persistent ServerDescription.json"
+    },
+    {
+      "hostPath": "/data/windrose/backups",
+      "containerPath": null,
+      "purpose": "host-systemd local archives, completion metadata, and health signals"
+    },
+    {
+      "hostPath": "/mnt/nas-backups/windrose",
+      "containerPath": null,
+      "purpose": "mounted NAS backup tier"
+    },
+    {
+      "hostPath": "/data/windrose/monitoring/alloy",
+      "containerPath": "/var/lib/alloy",
+      "purpose": "Alloy positions and component state"
+    }
+  ],
+  "limits": {
+    "cpus": 6,
+    "memory": "16G"
+  },
+  "probes": [
+    {
+      "name": "direct-tcp",
+      "type": "tcp-listener",
+      "target": "localhost:7777",
+      "requiredBeforeProduction": true
+    },
+    {
+      "name": "direct-udp",
+      "type": "udp-listener",
+      "target": "localhost:7777",
+      "requiredBeforeProduction": true
+    },
+    {
+      "name": "offsite-backup-freshness",
+      "type": "file-freshness",
+      "target": "/data/windrose/backups/health/windrose-azure.success",
+      "requiredBeforeProduction": true
+    }
+  ],
+  "backupPolicy": {
+    "strategy": "confirmed cold stop before any copy, including RocksDB_v2, followed by health-verified restart from a host systemd service",
+    "targets": [
+      "local-14d",
+      "nas-7d",
+      "azure-blob-cold-90d"
+    ],
+    "retention": "14 days local, 7 days NAS, 90 days Azure Cold; checksum and complete metadata required"
+  },
+  "updatePolicy": {
+    "imageUpdates": "renovate",
+    "deployment": "portainer-gitops",
+    "automatic": true
+  },
+  "requiredSecretNames": [
+    "WINDROSE_SERVER_DESCRIPTION_JSON",
+    "WINDROSE_TS_AUTHKEY"
+  ]
+}

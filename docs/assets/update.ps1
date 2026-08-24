@@ -1,8 +1,8 @@
-# NegativeZone client auto-update — Prism PreLaunchCommand hook
+# ARCHIVED RECOVERY ONLY - legacy PowerShell update hook
 #
-# Bundled into the published Prism instance zip at
-# <InstanceName>/.negativezone/update.ps1, invoked by Prism on every launch
-# via instance.cfg's OverrideCommands=true + PreLaunchCommand line.
+# Retained because immutable setup-v releases and already-installed legacy
+# clients may fetch this exact path. New packages do not bundle it; production
+# installs and updates use nz setup/update.
 #
 # Contract (see docs/updates.md for full detail):
 #   - Fail-open on network errors so offline play still works.
@@ -46,8 +46,8 @@ if ($UserRunMode) {
         Write-Host "  No Craft to Exile 2 instance found at:" -ForegroundColor Red
         Write-Host "    $candidate" -ForegroundColor Red
         Write-Host ''
-        Write-Host "  Run setup first to install the modpack:" -ForegroundColor Yellow
-        Write-Host '    irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/setup.ps1 | iex' -ForegroundColor Yellow
+        Write-Host "  Run the nz installer first:" -ForegroundColor Yellow
+        Write-Host '    irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex' -ForegroundColor Yellow
         exit 1
     }
     $InstanceDir = $candidate
@@ -366,7 +366,7 @@ try {
     if ($actualSha -ne $expectedSha) {
         # Fail-closed: corrupted/tampered blob must not land on disk.
         Write-Log 'ERROR' ("SHA-256 mismatch! expected={0} actual={1}" -f $expectedSha, $actualSha)
-        Write-Log 'ERROR' 'Refusing to install. Re-run setup.ps1 if this persists.'
+        Write-Log 'ERROR' 'Refusing to install. Run the nz installer if this persists.'
         $exitCode = 1
         return
     }
@@ -395,7 +395,7 @@ try {
 
     if (-not (Test-Path -LiteralPath (Join-Path $srcMinecraft 'mods'))) {
         Write-Log 'ERROR' ("Zip is missing '{0}/.minecraft/mods/' -- refusing to install." -f $instanceFolderName)
-        Write-Log 'ERROR' 'This usually means a major modpack restructure. Please re-run setup.ps1 to refresh your install.'
+        Write-Log 'ERROR' 'This usually means a major modpack restructure. Please run the nz installer to refresh your install.'
         $exitCode = 1
         return
     }
@@ -409,7 +409,7 @@ try {
         if ($currentMmcHash -ne $newMmcHash) {
             Write-Log 'ERROR' 'mmc-pack.json differs (loader or Minecraft version bumped).'
             Write-Log 'ERROR' 'Prism already loaded the old loader version this launch — cannot safely swap.'
-            Write-Log 'ERROR' 'Please close Prism and re-run setup.ps1, then relaunch.'
+            Write-Log 'ERROR' 'Please close Prism and run the nz installer, then relaunch.'
             $exitCode = 1
             return
         }

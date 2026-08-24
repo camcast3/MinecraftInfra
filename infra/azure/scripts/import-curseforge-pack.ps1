@@ -10,7 +10,8 @@
     from scratch — it does not merge. So every C2E2 upstream bump would
     wipe the three server-only overlay mods. This script snapshots them,
     runs the import, re-adds them at pinned URLs with side="server",
-    syncs FORGE_VERSION into docker/proxmox/docker-compose.yml, and
+    syncs FORGE_VERSION into the game-owned C2E2 Compose file and its
+    production compatibility copy, and
     `packwiz refresh`es the index. Review the resulting `git status`
     diff before committing.
 
@@ -179,7 +180,7 @@ try {
         }
     }
 
-    # Sync forge= from pack.toml into docker/proxmox/docker-compose.yml's FORGE_VERSION.
+    # Sync forge= from pack.toml into the game-owned Compose FORGE_VERSION.
     $packToml = Join-Path $PackwizDir 'pack.toml'
     $packForgeMatch = (Get-Content -Raw -LiteralPath $packToml) |
         Select-String -Pattern '(?m)^forge\s*=\s*"([^"]+)"'
@@ -187,7 +188,9 @@ try {
         Write-Warning 'Could not detect forge= in packwiz/pack.toml — skipping FORGE_VERSION sync.'
     } else {
         $packForge = $packForgeMatch.Matches[0].Groups[1].Value
-        $composeFile = Resolve-AbsolutePath (Join-Path $PackwizDir '..\docker\proxmox\docker-compose.yml')
+        $composeFile = Resolve-AbsolutePath (
+            Join-Path $PackwizDir '..\games\minecraft\c2e2\docker-compose.yml'
+        )
         $composeContent = Get-Content -Raw -LiteralPath $composeFile
         $composeForgeMatch = $composeContent | Select-String -Pattern '(?m)^\s*FORGE_VERSION:\s*"([^"]+)"'
         if (-not $composeForgeMatch) {
@@ -204,6 +207,7 @@ try {
                     "`${1}$packForge`${2}"
                 )
                 Set-Content -LiteralPath $composeFile -Value $newCompose -NoNewline
+                & (Join-Path $PackwizDir '..\tools\layout\Sync-CompatibilityPaths.ps1') -Write
             }
         }
     }

@@ -6,29 +6,32 @@
 
 Two-node Minecraft network connected by TailScale:
 
-- **Azure VM (Debian 13)** — public entry point. Runs **Velocity proxy only** (port 25565) in Docker. No backend MC server lives here — Velocity forwards every player straight to C2E2 over Tailscale. GitHub Actions deploys here via `az vm run-command invoke` (Azure control plane, no SSH needed).
+- **Azure VM (Debian 13)** — public game edge. Runs Velocity (TCP 25565) plus Palworld (UDP 8211) and Windrose (TCP+UDP 7777) layer-4 forwarders in the existing containerized Tailscale namespace. No backend game server lives here. GitHub Actions deploys via `az vm run-command invoke` (Azure control plane, no SSH needed).
 - **Home Proxmox VM (Debian 13)** — private. Runs Craft to Exile 2 modded server in Docker, managed by Portainer CE. Updates via Portainer CE GitOps polling (auto-redeploy on git changes to `docker/proxmox/`).
 - **TailScale** — mesh VPN for all inter-node traffic (Velocity → C2E2 player traffic + admin SSH). Public SSH (port 22) is blocked on both VMs.
 
 ## Repo Layout
 
 ```
-infra/
-  azure/            # Bicep IaC for Azure VM
-    main.bicep
-    modules/network.bicep
-    modules/vm.bicep
-    parameters/prod.bicepparam
-  proxmox/
-    cloud-init.yaml # Debian 13 cloud-init for Proxmox VM
-docker/
-  shared/           # Whitelist & ops shared by all MC servers
-  azure/            # Velocity proxy compose stack (proxy only — no MC backend)
-  proxmox/          # Craft to Exile 2 compose stack (Portainer-managed)
+games/
+  minecraft/        # nz client, C2E2 Compose, and shared Minecraft data
+  palworld/         # Palworld game stack
+  windrose/         # Windrose game stack
+platform/
+  azure/            # Bicep IaC and public game edge
+  proxmox/          # Reusable game-node provisioning and backups
+  contracts/        # Game and node contracts
+tools/              # Repository automation and validation
+client/, contracts/, docker/, infra/
+                    # Equality-checked production compatibility paths
 .github/workflows/
   deploy-azure.yml  # Bicep deploy + az vm run-command push to Azure VM
 old/                # ARCHIVED — ignore
 ```
+
+Do not repoint a live Portainer stack as part of an unrelated change. Update the
+owner path, run `tools/layout/Sync-CompatibilityPaths.ps1 -Write`, and keep both
+workflow filters until the mapping's deprecation gate is complete.
 
 ## Key Conventions
 

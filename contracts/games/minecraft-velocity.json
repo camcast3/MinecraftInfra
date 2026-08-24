@@ -1,0 +1,75 @@
+{
+  "$schema": "../game-contract.schema.json",
+  "contractVersion": 1,
+  "gameId": "minecraft",
+  "instanceId": "velocity",
+  "displayName": "Minecraft Velocity ingress",
+  "lifecycle": "production",
+  "nodeId": "azure-proxy",
+  "deploymentPath": "docker/azure/docker-compose.yml",
+  "image": {
+    "reference": "itzg/mc-proxy:java17-2025.10.0@sha256:7043620f1ac866e86fee922c1c22a035800db95c2fe511778de4f22ac19e9f19",
+    "tagRequired": true,
+    "digestRequired": true,
+    "updates": "renovate"
+  },
+  "ports": [
+    {
+      "name": "minecraft-java",
+      "publicPort": 25565,
+      "privatePort": 25577,
+      "protocol": "tcp",
+      "exposure": "public",
+      "audience": "players"
+    },
+    {
+      "name": "velocity-metrics",
+      "publicPort": null,
+      "privatePort": 9985,
+      "protocol": "tcp",
+      "exposure": "tailnet",
+      "audience": "monitoring"
+    }
+  ],
+  "persistentPaths": [
+    {
+      "hostPath": "/data/minecraft/velocity",
+      "containerPath": "/server",
+      "purpose": "proxy configuration and plugins"
+    },
+    {
+      "hostPath": "/data/minecraft/tailscale",
+      "containerPath": "/var/lib/tailscale",
+      "purpose": "tailnet node identity"
+    }
+  ],
+  "limits": {
+    "cpus": 1,
+    "memory": "1G"
+  },
+  "probes": [
+    {
+      "name": "velocity-status",
+      "type": "minecraft-status",
+      "target": "localhost:25577",
+      "requiredBeforeProduction": true
+    }
+  ],
+  "backupPolicy": {
+    "strategy": "rebuild-from-git-and-key-vault",
+    "targets": [
+      "git",
+      "azure-key-vault"
+    ],
+    "retention": "source-controlled configuration; rotate and re-enroll node identity"
+  },
+  "updatePolicy": {
+    "imageUpdates": "renovate",
+    "deployment": "github-actions-deploy-azure",
+    "automatic": true
+  },
+  "requiredSecretNames": [
+    "TS_AUTHKEY",
+    "VELOCITY_FORWARDING_SECRET"
+  ]
+}

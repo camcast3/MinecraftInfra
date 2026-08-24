@@ -20,11 +20,9 @@ Two install paths: a **one-line automated setup** (recommended) or
 {:toc}
 </details>
 
-> **Already playing on an older client?** **v0.5.0 is the cutover to the new
-> nz client**, and its new mods mean you must upgrade to keep playing. Re-run
-> the **Path A** one-liner once — it preserves your worlds, waypoints, and tuned
-> settings while moving you onto nz. Full details:
-> [Upgrading to v0.5.0]({% link updates.md %}#upgrading-to-v050).
+> **Already playing on an older client?** Run the **Path A** one-liner once.
+> It preserves your worlds, waypoints, and tuned settings while repairing or
+> replacing any retired PowerShell hooks with nz.
 
 ---
 
@@ -76,12 +74,11 @@ Desktop. ~3 minutes.
 3. Approve any winget prompts (press **Y** + Enter if asked)
 4. Wait ~2–3 minutes while it installs Java, Prism, and the modpack
 
-> **Cautious? Verify before running.** The installer and `nz.exe` are published
-> as assets on the
-> [`nz-latest` release](https://github.com/camcast3/MinecraftInfra/releases/tag/nz-latest),
-> which lists the `nz.exe` SHA-256. `nz setup` also verifies the SHA-256 of the
-> modpack zip pulled from our storage before installing it — if anything tampers
-> with it, the install aborts.
+> **Cautious? Verify before running.** `nz-latest` is the gated production
+> bootstrap. Its `nz-release.json` points to an immutable `nz-v<commit>` release,
+> and `install.ps1` verifies the downloaded `nz.exe` size and SHA-256 before
+> replacing your installed copy. `nz setup` separately verifies the modpack
+> zip SHA-256 before installation.
 
 ### After the script finishes
 

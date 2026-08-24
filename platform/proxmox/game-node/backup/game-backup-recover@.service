@@ -1,0 +1,12 @@
+[Unit]
+Description=Recover %i after an interrupted game backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/game-backup-recover %i
+TimeoutStartSec=10min
+
+[Install]
+WantedBy=multi-user.target

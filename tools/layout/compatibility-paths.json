@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "copies": [
+    {
+      "ownerPath": "games/minecraft/client",
+      "compatibilityPath": "client",
+      "kind": "directory",
+      "exclude": [
+        "*.exe",
+        "nz"
+      ],
+      "gate": "Switch release workflows and documentation to games/minecraft/client, publish one immutable nz release, and pass upgrade/corpus rollback gates."
+    },
+    {
+      "ownerPath": "platform/contracts",
+      "compatibilityPath": "contracts",
+      "kind": "directory",
+      "gate": "All contract callers consume platform/contracts for one release cycle."
+    },
+    {
+      "ownerPath": "games/minecraft/c2e2/docker-compose.yml",
+      "compatibilityPath": "docker/proxmox/docker-compose.yml",
+      "kind": "file",
+      "gate": "Repoint the C2E2 Portainer stack in a maintenance window and verify its existing stack/project identity."
+    },
+    {
+      "ownerPath": "games/minecraft/shared",
+      "compatibilityPath": "docker/shared",
+      "kind": "directory",
+      "gate": "All commit-pinned and main-branch raw GitHub consumers use the game-owned URLs."
+    },
+    {
+      "ownerPath": "games/palworld/docker-compose.yml",
+      "compatibilityPath": "docker/palworld/docker-compose.yml",
+      "kind": "file",
+      "gate": "Complete Palworld live rollout evidence, then repoint its Portainer stack without renaming it."
+    },
+    {
+      "ownerPath": "games/windrose",
+      "compatibilityPath": "docker/windrose",
+      "kind": "directory",
+      "gate": "Complete Windrose live rollout evidence after Palworld, then repoint its Portainer stack without renaming it."
+    },
+    {
+      "ownerPath": "platform/azure/edge",
+      "compatibilityPath": "docker/azure",
+      "kind": "directory",
+      "gate": "Deploy from platform/azure/edge on the existing VM and verify firewall, secrets, health, and Compose identity before retiring the old path."
+    },
+    {
+      "ownerPath": "platform/azure/iac",
+      "compatibilityPath": "infra/azure",
+      "kind": "directory",
+      "exclude": [
+        "main.json",
+        "scripts/**"
+      ],
+      "gate": "Deploy and what-if the owner path with unchanged resource names before switching deploy-azure."
+    },
+    {
+      "ownerPath": "platform/proxmox/game-node",
+      "compatibilityPath": "infra/proxmox/game-node",
+      "kind": "directory",
+      "gate": "Provision disposable Palworld and Windrose nodes from the owner path, then update operator instructions."
+    },
+    {
+      "ownerPath": "platform/proxmox/minecraft/cloud-init.yaml",
+      "compatibilityPath": "infra/proxmox/cloud-init.yaml",
+      "kind": "file",
+      "gate": "Publish a stable owner-path raw URL and update the C2E2 provisioning runbook."
+    }
+  ],
+  "wrappers": [
+    {
+      "compatibilityPath": "scripts/sync-ops.ps1",
+      "ownerPath": "tools/access/sync-ops.ps1"
+    },
+    {
+      "compatibilityPath": "scripts/Test-ClientDistribution.ps1",
+      "ownerPath": "tools/client/Test-ClientDistribution.ps1"
+    },
+    {
+      "compatibilityPath": "scripts/Test-MinecraftStatus.ps1",
+      "ownerPath": "tools/client/Test-MinecraftStatus.ps1"
+    },
+    {
+      "compatibilityPath": "scripts/Validate-GameContracts.ps1",
+      "ownerPath": "tools/validation/Validate-GameContracts.ps1"
+    },
+    {
+      "compatibilityPath": "scripts/Invoke-MultigameRolloutValidation.ps1",
+      "ownerPath": "tools/validation/Invoke-MultigameRolloutValidation.ps1"
+    }
+  ]
+}
+

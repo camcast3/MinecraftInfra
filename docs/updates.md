@@ -75,8 +75,7 @@ It:
 
 1. Reads your installed version from
    `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone-version`.
-2. Fetches `latest-version.txt` from `raw.githubusercontent.com`
-   (CDN-cached, free, ~100 ms).
+2. Fetches the gated `latest-version.txt` pointer from Azure Blob Storage.
 3. Compares the two as strict equality.
 
 **Cost:** one tiny GET per launch. GitHub's CDN serves it, so we don't pay
@@ -91,6 +90,12 @@ being warm.
 | `0.4.1` | `0.4.2` | Hard block, "behind" — update via the launcher |
 | `0.5.0` | `0.4.2` | Hard block, "ahead" — usually means a rollback is needed |
 | anything | unreachable (no internet, 404, 5xx) | Pass with `allowing launch` notice; offline play works |
+
+The pointer changes only after the publish PR is merged, the public server
+answers a Minecraft status request, and its MOTD advertises the new version.
+If an old install still has PowerShell hooks, re-run the
+`nz-latest/install.ps1` one-liner once to replace them with the verified nz
+binary and gated pointer.
 
 ---
 
@@ -155,11 +160,14 @@ When you see the block:
      they already match.
    - Refuses downgrades unless the manifest has `allowDowngrade: true`.
    - Forces a safety snapshot first (waypoints, options, etc. — see [Backups]({% link backups.md %})).
-   - Runs `packwiz-installer` with CWD set to `.minecraft`:
+   - Creates a checksum-verified immutable backup outside the live instance.
+   - Seeds a sibling staging instance, then runs `packwiz-installer` with CWD
+     set to the staged `.minecraft`:
      ```text
      java -jar packwiz-installer-bootstrap.jar --bootstrap-no-update --bootstrap-main-jar packwiz-installer.jar -g -s client <packwizUrl>
      ```
-   - Bumps your `.negativezone-version` marker to match the server.
+   - Reapplies the declared preserve list, validates the stage, atomically swaps
+     it into place, and writes `.negativezone-version` last.
 
    The packwiz jars (`packwiz-installer-bootstrap` v0.0.3 and
    `packwiz-installer` v0.5.14) ship inside the modpack zip under `.minecraft\`
@@ -167,10 +175,11 @@ When you see the block:
    re-download those tools each time. They need Java 17+, which Path A installs
    via Temurin 17 during onboarding.
 
-   `packwiz-installer` only touches tracked modpack files, so personal state
-   like saves, options, Xaero maps, shaderpacks, and preserve-list configs stays
-   in place. The old atomic `.minecraft` swap/restore logic was only for the
-   first-install zip path.
+   `packwiz-installer` only touches tracked modpack files in the stage. Personal
+   state such as saves, options, Xaero maps, shaderpacks, and preserve-list
+   configs is then copied declaratively from the old live instance. If a
+   process or machine stops mid-update, the next run recovers the transaction
+   journal before doing new work.
 
 4. **Reopen Prism, click Play.** The version check now silent-passes, the
    game launches normally.
@@ -209,14 +218,11 @@ disables the periodic backup hook, so prefer the env var.
 
 ---
 
-## Upgrading to v0.5.0 — the nz client cutover
+## Replacing a legacy PowerShell install with nz
 {: #upgrading-to-v050 }
 
-**v0.5.0 adds new mods, so every player has to upgrade to keep playing.** Until
-your client matches the server's mod list, you'll be kicked at the FML
-handshake when you try to join. Upgrading also moves you onto the new **nz**
-client — a single `nz.exe` that replaces the old PowerShell scripts
-(`prelaunch-check.ps1`, `update.ps1`, `backup.ps1`).
+The legacy PowerShell client channel is retired. A single `nz.exe` now owns
+setup, launch checks, backups, updates, migration, and recovery diagnostics.
 
 ### Do this once
 
@@ -227,7 +233,7 @@ client — a single `nz.exe` that replaces the old PowerShell scripts
    irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex
    ```
 
-That single command installs the nz client and the v0.5.0 modpack in one pass.
+That single command installs the current nz client and modpack in one pass.
 It **preserves your worlds, waypoints, options, and tuned settings**, and saves
 your previous install as a `Craft to Exile 2.bak` folder you can roll back to.
 
@@ -237,8 +243,8 @@ your previous install as a `Craft to Exile 2.bak` folder you can roll back to.
   from the old `prelaunch-check.ps1` / `backup.ps1` to `nz check` / `nz backup`
   automatically — nothing for you to wire up.
 - **Updating is a double-click.** A new **Update Craft to Exile 2** launcher
-  lands on your Desktop. From now on you update by double-clicking it (or
-  running `nz update`) — **not** the old `irm …/update.ps1 | iex` command.
+  lands on your Desktop. From now on you update by double-clicking it or
+  running `nz update`.
 - **Your settings carry over.** Same `NEGATIVEZONE_*` environment variables and
   the same `.negativezone-version` marker — no reconfiguration needed.
 
@@ -255,7 +261,7 @@ What you can expect from each version bump:
 
 | Bump | Example | What it means for you |
 |---|---|---|
-| **PATCH** | `0.4.1` → `0.4.2` | Client-only change (config tweak, single-mod swap, performance fix). Server keeps running. Update via the launcher from the block banner, you're good. |
+| **PATCH** | `0.4.1` → `0.4.2` | Usually a small client/config change. The current publish transaction still briefly redeploys the server so its MOTD, packwiz SHA, and client manifest remain one auditable version. |
 | **MINOR** | `0.4.x` → `0.5.0` | Client + server in sync — usually a new mod or a major mod upgrade that needs the server-side too. The server briefly restarts on publish (~30 sec); you might see "Server unavailable" for a moment. |
 | **MAJOR** | `0.x.y` → `1.0.0` | Reserved for "we've gone a full month without management-caused downtime" — a stability milestone, not a content gate. |
 
@@ -263,3 +269,30 @@ The strict-equality check blocks every delta — including PATCH — until the
 update pipeline is rock-solid in production. We may relax this to
 "MINOR-or-greater only" once a few real releases have been exercised
 end-to-end without surprises.
+
+---
+
+## Maintainer: local compatibility corpus
+
+`client\scripts\build-instance-corpus.ps1` discovers local Prism instances,
+refuses active, locked, changing, unreadable, or reparse-point trees, and
+creates sanitized checksum manifests under the Git-ignored
+`.artifacts\instance-corpus\` directory. It excludes logs, worlds, screenshots,
+account/cache databases, server lists, environment files, keys, and tokens.
+
+The script runs the updater only against writable copies of those immutable
+snapshots. Packwiz is replaced by an in-process test double, so it neither
+downloads production data nor launches Minecraft:
+
+```powershell
+pwsh client\scripts\build-instance-corpus.ps1
+```
+
+Review the generated `report.json` for copied, tested, and explicitly skipped
+instances. Corpus artifacts are local evidence only and must never be added to
+Git.
+
+CI also creates a disposable synthetic corpus and package. Changes under
+`packwiz/`, the preserve list, migration/update code, or packaging scripts must
+pass Go unit tests, `go vet`, the full nz E2E suite, corpus compatibility, and
+package structure/checksum validation before release or modpack publication.

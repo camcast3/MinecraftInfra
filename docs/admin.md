@@ -14,6 +14,10 @@ nav (`nav_exclude: true`) — it lives with the docs but isn't player-facing.
 > **Public-repo safe.** No secrets here — Key Vault items and environment
 > variables are referenced **by name only**.
 
+For infrastructure provisioning, ingress incidents, game backups/restores,
+rollback, and disaster recovery, start with the repo-local
+[`ops/runbook.md`](https://github.com/camcast3/MinecraftInfra/blob/main/ops/runbook.md).
+
 <details markdown="1" open>
 <summary>Table of contents</summary>
 
@@ -35,9 +39,10 @@ ever *trigger* a handful by hand. Everything else is CI or polling.
 | Publish a new modpack version | `publish-prism-pack.yml` (dispatch + version, **or** push a `modpack/v*` tag) | per release |
 | Import/refresh CurseForge mods | `infra/azure/scripts/import-curseforge-pack.ps1` | per upstream bump |
 | Build a staging/hotfix instance | `infra/azure/scripts/build-instance-from-packwiz.ps1` | rare (usually CI) |
-| Manage allowlist / ops | edit `docker/shared/whitelist.json`, run `scripts/sync-ops.ps1`, push | per player |
+| Manage allowlist / ops | edit `games/minecraft/shared/whitelist.json`, run `tools/access/sync-ops.ps1`, sync compatibility paths, push | per player |
 | Bootstrap Azure infra | `infra/azure/scripts/bootstrap.ps1` | once |
-| Provision the Proxmox VM | `infra/proxmox/cloud-init.yaml` + Portainer | once |
+| Provision the C2E2 VM | `infra/proxmox/cloud-init.yaml` + Portainer | once |
+| Provision Palworld/Windrose | `infra/proxmox/game-node/README.md` + Portainer Edge Agent | once per game |
 | Build / test the `nz` client | `go build` / `go test` / the manual harnesses | per change |
 
 ### Admin-triggered, then fully automated
@@ -46,14 +51,13 @@ ever *trigger* a handful by hand. Everything else is CI or polling.
 |---|---|---|
 | Push to `infra/azure/**`, `docker/azure/**`, `docker/shared/**` | `deploy-azure.yml` | Bicep + `az vm run-command` redeploy of the Velocity stack |
 | Dispatch `publish-prism-pack` (or push `modpack/v*`) | `publish-prism-pack.yml` + Portainer GitOps | Opens an auto-merging PR; on merge Portainer redeploys C2E2 ~5 min later |
-| Push to `client/**` | `release-nz.yml` | Builds + publishes `nz.exe` + `install.ps1` to the `nz-latest` prerelease |
+| Push to `games/minecraft/client/**` or its `client/**` compatibility path | `release-nz.yml` | Gates and publishes immutable `nz-v<commit>` assets, then refreshes the `nz-latest` production release |
 
 ### Never touch (fully automated)
 
 See [the never-touch list](#never-touch-fully-automated-workflows) at the bottom —
-`deploy-pages`, `lint-ps1`, `protect-latest-release`, `test-nz-e2e`,
-`test-setup-e2e`, Renovate, `unattended-upgrades`, and Portainer polling all run
-themselves.
+`deploy-pages`, `lint-ps1`, `test-nz-e2e`, Renovate,
+`unattended-upgrades`, and enabled Portainer GitOps polls run themselves.
 
 > **Excluded entirely:** `old/` (archived) and `admin_compose.yml`. Don't
 > reference or modify them.
@@ -92,15 +96,18 @@ Every task below uses the same template:
   git push origin modpack/v0.4.3
   ```
 
-- **What it does** — runs `infra/azure/scripts/publish-prism-pack.ps1`, which:
-  materializes a staging instance from `packwiz/`, zips + SHA-256s it, uploads a
-  versioned blob to the `minecraft-modpack` container, rewrites
+- **What it does** — first runs Go tests/vet, full nz E2E, synthetic corpus,
+  and disposable packaging validation. It then runs
+  `infra/azure/scripts/publish-prism-pack.ps1`, which materializes a staging
+  instance from `packwiz/`, zips + SHA-256s it, uploads immutable versioned zip
+  and manifest candidates to the `minecraft-modpack` container, rewrites
   `docker/proxmox/docker-compose.yml` (PACKWIZ_URL SHA pin + MOTD),
-  `docker/azure/velocity/velocity.toml.tmpl` (fallback MOTD), and
-  `docs/assets/latest-version.txt` (the launch-time pointer `nz check` reads),
-  bumps `modpack.yml`, opens an auto-merging PR from `modpack/v<version>`, then
-  uploads `latest.json` **after** the PR succeeds. Portainer GitOps redeploys
-  C2E2 within ~5 min of merge.
+  `docker/azure/velocity/velocity.toml.tmpl` (fallback MOTD), bumps
+  `modpack.yml`, and opens an auto-merging PR from
+  `modpack/v<version>`. Portainer GitOps redeploys C2E2 within ~5 min of merge.
+  `promote-prism-pack.yml` then waits for the public Minecraft status response
+  to advertise that version before updating `latest.json` and
+  `latest-version.txt`.
 - **Notes** — **no-op aware**: if `modpack.yml` already pins the requested
   version the workflow exits before any side effect. Re-publishing the same
   version needs a local `publish-prism-pack.ps1 -Version <v> -Force`. The
@@ -108,8 +115,8 @@ Every task below uses the same template:
   thing locally you need `az login` (Storage Blob Data Contributor on the
   container) and `gh` auth.
 - **Local-publish mode (no Azure, no git).** Pass `-LocalOutDir <dir>` to run the
-  **identical** packaging path (sanitize `instance.cfg`, bundle icon + update.ps1
-  + backup.ps1 + preserve-list.json, apply exclusions, structural mod-JAR sanity
+  **identical** packaging path (sanitize `instance.cfg`, bundle icon +
+  preserve-list.json, apply exclusions, structural mod-JAR sanity
   check, compute SHA-256, build `latest.json`) but write the versioned zip +
   manifest to a local directory instead of uploading to Azure / opening a PR.
   Targets any version tag, needs neither `az` nor `gh`. This is how you stage a
@@ -184,14 +191,16 @@ Every task below uses the same template:
 - **How** — edit the whitelist, regenerate the operator file, and push to `main`:
 
   ```powershell
-  .\scripts\sync-ops.ps1
+  .\tools\access\sync-ops.ps1
+  .\tools\layout\Sync-CompatibilityPaths.ps1
+  .\tools\access\sync-ops.ps1 -Check
   ```
 
-  `docker/shared/ops.json` is generated from each whitelist entry by preserving
+  `games/minecraft/shared/ops.json` is generated from each whitelist entry by preserving
   `uuid` and `name`, then adding `"level": 3` and
   `"bypassesPlayerLimit": false`. Do not edit it by hand. CI runs the script in
-  check mode and fails if the committed output differs; publish and deploy also
-  regenerate it defensively.
+  check mode and fails if the committed output differs; production publish and
+  deploy workflows repeat the check and stop before release or deployment.
 
 - **What it does** — the C2E2 backend reads `WHITELIST_FILE` / `OPS_FILE` from the
   raw GitHub URLs and runs with `EXISTING_WHITELIST_FILE=SYNCHRONIZE` /
@@ -200,6 +209,9 @@ Every task below uses the same template:
 - **Notes** — changes apply on the next backend restart/redeploy. Push triggers
   Portainer GitOps; to apply immediately, restart the C2E2 stack in Portainer.
   Don't bother running `/whitelist add` in-game — it won't stick.
+
+The `docker/shared/` files remain current production compatibility copies; do
+not repoint their raw URLs until the explicit layout gate is complete.
 
 ### Bootstrap Azure infra (once)
 
@@ -238,6 +250,21 @@ Every task below uses the same template:
 - **Notes** — **secrets go in the Portainer environment UI only** — no `.env`
   files in git. SSH/user/port details are defined in `cloud-init.yaml`; the home
   VM is reachable only over Tailscale (public port 22 is blocked).
+
+### Provision a Palworld or Windrose VM (once each)
+
+- **Why** — create a dedicated, independently recoverable game node without
+  changing the production Minecraft VM.
+- **How** — follow
+  [`infra/proxmox/game-node/README.md`](https://github.com/camcast3/MinecraftInfra/blob/main/infra/proxmox/game-node/README.md),
+  then the end-to-end
+  [`ops/runbook.md`](https://github.com/camcast3/MinecraftInfra/blob/main/ops/runbook.md).
+- **What it does** — renders game-specific Debian 13 vendor data, provisions
+  Docker/Tailscale/firewall/backup services, registers a Portainer Edge
+  environment, configures stack and host secrets, and completes private plus
+  public live gates.
+- **Notes** — use the existing `docker/<game>/docker-compose.yml` Portainer path
+  until its compatibility-path gate is explicitly completed.
 
 ---
 
@@ -286,7 +313,9 @@ All commands run from the `client/` directory unless noted.
   | Lever | Read by | Effect |
   |---|---|---|
   | `NEGATIVEZONE_NZ_EXE_PATH` | `install.ps1` | **Copy** a local `nz.exe` instead of downloading from `nz-latest`. Test an unreleased build end-to-end. Takes precedence over the URL. |
-  | `NEGATIVEZONE_NZ_EXE_URL` | `install.ps1` | Override the `nz.exe` download URL (e.g. a fork/test release). |
+  | `NEGATIVEZONE_NZ_RELEASE_URL` | `install.ps1` | Override the release metadata URL or use a local metadata path. |
+  | `NEGATIVEZONE_NZ_EXE_URL` | `install.ps1` | Override the binary URL; requires `NEGATIVEZONE_NZ_EXE_SHA256`. |
+  | `NEGATIVEZONE_NZ_EXE_SHA256` | `install.ps1` | Required SHA-256 for a binary URL override. |
   | `NEGATIVEZONE_MANIFEST_URL` | `install.ps1`, `nz setup` | Point setup at a test modpack manifest instead of the prod `latest.json`. |
   | `NEGATIVEZONE_SKIP_WINGET` | `install.ps1` | `1` skips the Java 17 + Prism winget installs. |
   | `NEGATIVEZONE_NONINTERACTIVE` | `nz setup` | `1` skips the confirm prompt (set automatically by `install.ps1`). |
@@ -322,6 +351,11 @@ All commands run from the `client/` directory unless noted.
   `Craft to Exile 2 (old)` instance (launch hooks disabled), and rewrites
   `instances\instgroups.json` to sort the grid into **Latest** (live) and
   **Backup** (`.bak` + `(old)`) groups. The grouping self-heals on every run.
+- **Transactions.** Setup, update, and migrate create a checksum-verified
+  off-instance backup, prepare and validate a sibling stage, atomically swap it
+  live, and write the version marker last. A per-instance journal recovers an
+  interrupted operation on the next run. Do not manually remove transaction
+  journals, sibling stages, rollback directories, or `.negativezone-backups`.
 - **Backups.** The `PostExitCommand` (`nz backup`) snapshots curated user-state
   (configs, shaderpacks, resourcepacks, waypoints, options, `servers.dat`, etc.
   per `preserve-list.json`) into `.negativezone\backups\<timestamp>\` — **not**
@@ -514,21 +548,6 @@ All commands run from the `client/` directory unless noted.
   When done, run `-Action rollback` so your real instance matches the published
   version again.
 
-### Legacy setup e2e (deprecated path)
-
-- **Why** — exercise the **legacy** PowerShell `setup.ps1` / `update.ps1` /
-  `backup.ps1` flow. Kept only while those scripts still ship.
-- **How**:
-
-  ```powershell
-  pwsh infra/azure/scripts/test-setup-e2e.ps1
-  ```
-
-- **Notes** — superseded by the `nz` e2e suite. See the
-  [deprecation register](#deprecation-register).
-
----
-
 ## Never-touch (fully automated) workflows
 
 These run themselves — no manual trigger, no babysitting:
@@ -537,35 +556,21 @@ These run themselves — no manual trigger, no babysitting:
 |---|---|
 | `deploy-pages.yml` | Builds + publishes this docs site to GitHub Pages |
 | `lint-ps1.yml` | Lints PowerShell scripts |
-| `protect-latest-release.yml` | Re-pins the GitHub "Latest" release to the newest `setup-v*` |
 | `test-nz-e2e.yml` | Runs the `nz` e2e suite on `client/**` PRs + `main` pushes |
-| `test-setup-e2e.yml` | Runs the legacy setup e2e |
 | Renovate | Bumps pinned image digests (`image:tag@sha256:...`) |
 | `unattended-upgrades` | Daily OS security patches + off-peak auto-reboot on both VMs |
 | Portainer GitOps polling | Redeploys `docker/proxmox/` on git changes (~5 min) |
 
 ---
 
-## Deprecation register
+## Retired PowerShell client recovery
 
-We are committing to the `nz` cutover. The legacy PowerShell **customer**
-scripts are **marked deprecated here, not deleted this pass** — a follow-up PR
-can remove them once the `nz` release is live and these docs are merged.
-
-| Deprecated | Lives at | Replaced by |
-|---|---|---|
-| `setup.ps1` | `docs/assets/setup.ps1` | `client/scripts/install.ps1` + `nz setup` |
-| `update.ps1` | `docs/assets/update.ps1` | `nz update` |
-| `prelaunch-check.ps1` | `docs/assets/prelaunch-check.ps1` | `nz check` |
-| `backup.ps1` | `docs/assets/backup.ps1` | `nz backup` |
-| `migrate-settings.ps1` | `docs/assets/migrate-settings.ps1` | `nz migrate` |
-| `release-setup-script.yml` | `.github/workflows/` | `release-nz.yml` |
-| `release-migrate-script.yml` | `.github/workflows/` | `release-nz.yml` |
-
-**Not deprecated:** `docs/assets/latest-version.txt` is still the live
-launch-time version pointer — `nz check` reads it and `publish-prism-pack.ps1`
-keeps writing it. `protect-latest-release.yml` stays relevant while `setup-v*`
-releases still exist.
+The PowerShell setup, update, backup, prelaunch, and migration release channels
+are retired. They are not packaged, published, linked from player docs, or
+tested as a second client. Their source paths and frozen
+`docs/assets/latest-version.txt` remain only because already-published immutable
+releases and pre-nz installs may still fetch them during recovery. See the
+[archived recovery notes]({% link legacy-recovery.md %}).
 
 > **Logs & diagnostics.** Every `nz` command writes a unified, full-detail
 > record to `nz.log` in the instance's `.negativezone\` folder (first-install
@@ -575,19 +580,10 @@ releases still exist.
 > env summary to their Desktop. Global flags `--verbose` / `--quiet` only affect
 > the console; the file always captures DEBUG-level detail.
 
-> **Going live.** `release-nz.yml` hasn't run on `main` yet, so no
-> `nz-latest` prerelease exists and the docs above point at
-> `releases/download/nz-latest/…`. **Merging these changes is what goes live** —
-> the push to `client/**` cuts the `nz-latest` prerelease and the player
-> one-liner starts resolving.
-
-> **Player cutover = v0.5.0.** Publishing **v0.5.0** (with its new mods) is the
-> forcing function for players: older clients can't join until they upgrade, and
-> the upgrade one-liner installs nz. Point players at
-> [Upgrading to v0.5.0]({% link updates.md %}#upgrading-to-v050). Note the
-> currently published zip still wires the legacy PS1 hooks
-> (`publish-prism-pack.ps1`) and bundles `update.ps1` / `backup.ps1` /
-> `prelaunch-check.ps1`; `nz setup` overwrites the live Prism hooks to
-> `nz check` / `nz backup` on upgrade, so players land on nz regardless, leaving
-> only harmless orphaned `.ps1` files in `.negativezone\` until a later publish
-> stops bundling them.
+> **Release model.** `release-nz.yml` publishes a commit-versioned
+> `nz-v<12-char-sha>` prerelease containing `nz.exe`, `SHA256SUMS`,
+> `nz-release.json`, and `install.ps1`. Only after tests, corpus/package
+> compatibility, static launch, installer verification, and public server
+> health pass does it refresh `nz-latest`, the sole production bootstrap.
+> Its metadata points to the immutable binary URL and `install.ps1` verifies
+> the checksum before replacement.

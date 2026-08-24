@@ -1,0 +1,14 @@
+{
+  "displayName": "Palworld",
+  "gameSlug": "palworld",
+  "serviceUser": "palworldsvc",
+  "tailscaleHostname": "palworld-proxmox",
+  "dataRoot": "/data/palworld",
+  "azureBackupContainer": "palworld-backups",
+  "sshPort": 7822,
+  "rebootTime": "03:30",
+  "managementCidrs": [
+    "192.168.86.0/24",
+    "192.168.69.159/32"
+  ]
+}

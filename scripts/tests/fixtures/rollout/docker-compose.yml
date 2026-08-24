@@ -1,0 +1,24 @@
+---
+services:
+  game:
+    image: ${FIXTURE_IMAGE:?FIXTURE_IMAGE is required}
+    restart: unless-stopped
+    environment:
+      FAIL_HEALTH: ${FAIL_HEALTH:-false}
+      RELEASE: ${FIXTURE_RELEASE:?FIXTURE_RELEASE is required}
+    volumes:
+      - rollout-state:/state
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          test "$$FAIL_HEALTH" != true &&
+          test -s /state/durable-save &&
+          grep -Fx "$$RELEASE" /state/current-release
+      interval: 1s
+      timeout: 1s
+      retries: 3
+      start_period: 1s
+
+volumes:
+  rollout-state:

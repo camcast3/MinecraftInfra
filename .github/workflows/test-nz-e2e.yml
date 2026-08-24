@@ -4,12 +4,34 @@ on:
   pull_request:
     paths:
       - "client/**"
-      - ".github/workflows/test-nz-e2e.yml"
+      - "games/minecraft/client/**"
+      - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "scripts/Test-ClientDistribution.ps1"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - "tools/client/**"
+      - "tools/layout/**"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
       - "client/**"
-      - ".github/workflows/test-nz-e2e.yml"
+      - "games/minecraft/client/**"
+      - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "scripts/Test-ClientDistribution.ps1"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - "tools/client/**"
+      - "tools/layout/**"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
@@ -20,7 +42,7 @@ concurrency:
 
 jobs:
   e2e:
-    name: Run 16-test e2e harness
+    name: Full nz compatibility gate
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -30,13 +52,36 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version-file: client/go.mod
-          cache-dependency-path: client/go.sum
+          go-version-file: games/minecraft/client/go.mod
+          cache-dependency-path: games/minecraft/client/go.sum
 
       - name: Show toolchain
         run: go version
-        working-directory: client
+        working-directory: games/minecraft/client
+
+      - name: Unit tests and vet
+        shell: pwsh
+        working-directory: games/minecraft/client
+        run: |
+          go test ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Run e2e harness
         run: go test -tags e2e -v -timeout 10m ./tests/e2e/
-        working-directory: client
+        working-directory: games/minecraft/client
+
+      - name: Run immutable corpus compatibility
+        shell: pwsh
+        run: ./games/minecraft/client/scripts/Test-InstanceCorpus.ps1
+
+      - name: Validate disposable package
+        shell: pwsh
+        run: ./games/minecraft/client/scripts/Test-Packaging.ps1
+
+      - name: Validate client distribution and docs paths
+        shell: pwsh
+        run: |
+          ./tools/layout/Test-RepositoryLayout.ps1
+          ./tools/client/Test-ClientDistribution.ps1

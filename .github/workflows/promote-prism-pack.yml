@@ -1,0 +1,98 @@
+---
+name: Promote Prism Pack
+
+# Candidate zip + manifest assets are staged by publish-prism-pack.yml.
+# Stable pointers move only after that PR has merged and the public server
+# advertises the committed version.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "modpack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: promote-prism-pack
+  cancel-in-progress: false
+
+jobs:
+  health:
+    name: Verify deployed server
+    runs-on: windows-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Read committed version
+        id: version
+        shell: pwsh
+        run: |
+          $match = Select-String -Path modpack.yml -Pattern '^version:\s*"([^"]+)"\s*$'
+          if (-not $match) { throw 'Could not parse modpack.yml version.' }
+          "version=$($match.Matches[0].Groups[1].Value)" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Wait for public Minecraft health and version
+        shell: pwsh
+        run: |
+          ./tools/client/Test-MinecraftStatus.ps1 `
+            -ExpectedVersion '${{ steps.version.outputs.version }}' `
+            -Attempts 45 -DelaySeconds 20
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify C2E2 backend directly
+        shell: pwsh
+        run: |
+          ./infra/azure/scripts/test-c2e2-backend.ps1 `
+            -ExpectedVersion '${{ steps.version.outputs.version }}'
+
+  promote:
+    name: Promote stable pointers
+    needs: health
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Promote immutable manifest
+        shell: pwsh
+        run: ./infra/azure/scripts/promote-prism-pack.ps1
+
+      - name: Promotion summary
+        shell: pwsh
+        run: |
+          @"
+          ## Promoted modpack v${{ needs.health.outputs.version }}
+
+          - Publish PR was merged to ``main``.
+          - ``mc.negativezone.cc:25565`` answered a Minecraft status request
+            and advertised the expected version.
+          - The Azure edge reached the private C2E2 backend directly over
+            Tailscale and the backend advertised the expected version.
+          - The committed immutable manifest and zip metadata matched.
+          - Azure ``latest.json`` and ``latest-version.txt`` now point to the
+            verified immutable v${{ needs.health.outputs.version }} assets.
+          "@ | Add-Content -Path $env:GITHUB_STEP_SUMMARY

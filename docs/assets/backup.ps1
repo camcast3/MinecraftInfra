@@ -1,7 +1,7 @@
-# NegativeZone client backup — Prism PostExitCommand hook
+# ARCHIVED RECOVERY ONLY - legacy PowerShell backup hook
 #
-# Bundled into the published Prism instance zip at:
-#   <InstanceName>/.negativezone/backup.ps1
+# Retained because immutable setup-v releases and already-installed legacy
+# clients may fetch this exact path. New packages use nz backup.
 #
 # Invoked by Prism after the game exits via instance.cfg:
 #   OverrideCommands=true

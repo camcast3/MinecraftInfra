@@ -1,0 +1,19 @@
+{
+  "$schema": "../node-contract.schema.json",
+  "contractVersion": 1,
+  "nodeId": "azure-proxy",
+  "displayName": "Azure Velocity proxy",
+  "lifecycle": "production",
+  "platform": "azure-vm",
+  "provisioningPath": "infra/azure/main.bicep",
+  "dataRoot": "/data/minecraft",
+  "managementEndpoints": [
+    {
+      "name": "azure-run-command",
+      "protocol": "https",
+      "port": null,
+      "exposure": "control-plane",
+      "purpose": "admin"
+    }
+  ]
+}

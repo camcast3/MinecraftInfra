@@ -34,3 +34,9 @@ infra/azure/scripts/cache/
 # Go client CLI build artefacts
 client/*.exe
 client/nz
+games/minecraft/client/*.exe
+games/minecraft/client/nz
+platform/azure/iac/main.json
+
+# Local safety-test corpora and compatibility-test workspaces
+.artifacts/

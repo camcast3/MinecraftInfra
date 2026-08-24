@@ -21,13 +21,13 @@
 #   5.  Print values → fill prod.bicepparam and GitHub Actions secrets
 #   6.  Bootstrap-deploy Key Vault only (standalone, required before main.bicep)
 #   7.  Populate all Key Vault secrets
-#   8.  Create Proxmox backup Service Principal
-#   9.  Print values → fill prod.bicepparam (SP object ID) and Portainer UI (credentials)
+#   8.  Create scoped C2E2, Palworld, and Windrose backup Service Principals
+#   9.  Print values → fill prod.bicepparam and each backup host's private rclone config
 #
 # After this script:
-#   - Fill prod.bicepparam TODOs (githubActionsObjectId, proxmoxSpObjectId)
+#   - Fill prod.bicepparam backup writer object IDs
 #   - Add GitHub Actions secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
-#   - Add Portainer environment variables (STORAGE_ACCOUNT from deploy output,
+#   - Add Portainer environment variables (BACKUP_STORAGE_ACCOUNT from deploy output,
 #     AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET from step 8)
 #   - Push to main — GitHub Actions handles all subsequent deploys
 
@@ -39,6 +39,8 @@ $KV_NAME         = 'kv-minecraft-prod'
 $GITHUB_REPO     = 'camcast3/MinecraftInfra'
 $OIDC_APP_NAME   = 'sp-minecraft-github-actions'
 $PROXMOX_SP_NAME = 'sp-mc-proxmox-backup'
+$PALWORLD_BACKUP_SP_NAME = 'sp-palworld-proxmox-backup'
+$WINDROSE_BACKUP_SP_NAME = 'sp-windrose-proxmox-backup'
 $SSH_KEY_FILE    = "$env:USERPROFILE\.ssh\id_ed25519.pub"
 
 # Generate a random hex string (no openssl needed)
@@ -251,49 +253,84 @@ if ([string]::IsNullOrWhiteSpace($RCON_PASSWORD)) { $RCON_PASSWORD = $rconSugges
 Invoke-Az @('keyvault', 'secret', 'set',
     '--vault-name', $KV_NAME, '--name', 'rcon-password', '--value', $RCON_PASSWORD, '--output', 'none')
 
-$BUDGET_ALERT_EMAIL = Read-Host "  Email address for Azure budget alerts (75%, 87.5% thresholds)"
+$BUDGET_ALERT_EMAIL = Read-Host "  Email address for Azure budget alerts (forecast 100%; actual 75%, 90%, 100%)"
 Invoke-Az @('keyvault', 'secret', 'set',
     '--vault-name', $KV_NAME, '--name', 'budget-alert-email', '--value', $BUDGET_ALERT_EMAIL, '--output', 'none')
 
 Write-Host ""
-Write-Host "  ℹ Skipping c2e2-tailscale-ip — set this after the Proxmox VM is provisioned:"
-Write-Host "    az keyvault secret set --vault-name $KV_NAME ``"
-Write-Host "      --name c2e2-tailscale-ip --value '100.x.x.x'"
+Write-Host "  ℹ Skipping backend tailnet routes — set these after each game stack is enrolled:"
+foreach ($backendSecret in @(
+    'c2e2-tailscale-ip',
+    'palworld-tailscale-ip',
+    'windrose-tailscale-ip'
+)) {
+    Write-Host "    az keyvault secret set --vault-name $KV_NAME ``"
+    Write-Host "      --name $backendSecret --value '100.x.x.x'"
+}
 Write-Host ""
 Write-Host "  ✓ Key Vault secrets set."
 Write-Host ""
 
-# ── Step 8: Proxmox Backup Service Principal ─────────────────────────────────
-Write-Host "▶ Step 8: Creating Proxmox backup Service Principal '$PROXMOX_SP_NAME'..."
-$proxmoxSpJson = Invoke-Az @('ad', 'sp', 'create-for-rbac',
-    '--name', $PROXMOX_SP_NAME, '--output', 'json')
-$proxmoxSp = $proxmoxSpJson | ConvertFrom-Json
+# ── Step 8: Per-game Backup Service Principals ────────────────────────────────
+function New-BackupServicePrincipal {
+    param(
+        [Parameter(Mandatory)][string] $Name,
+        [Parameter(Mandatory)][string] $Game
+    )
 
-$PROXMOX_APP_ID        = $proxmoxSp.appId
-$PROXMOX_CLIENT_SECRET = $proxmoxSp.password
-$PROXMOX_OBJECT_ID     = (Invoke-Az @('ad', 'sp', 'show',
-    '--id', $PROXMOX_APP_ID, '--query', 'id', '-o', 'tsv')).Trim()
+    Write-Host "  Creating $Game backup Service Principal '$Name'..."
+    $sp = (Invoke-Az @(
+        'ad', 'sp', 'create-for-rbac',
+        '--name', $Name,
+        '--output', 'json'
+    )) | ConvertFrom-Json
+    $objectId = (Invoke-Az @(
+        'ad', 'sp', 'show',
+        '--id', $sp.appId,
+        '--query', 'id',
+        '-o', 'tsv'
+    )).Trim()
+    return [pscustomobject]@{
+        Game = $Game
+        AppId = $sp.appId
+        ClientSecret = $sp.password
+        ObjectId = $objectId
+    }
+}
 
-Write-Host "  ✓ Service principal created."
+Write-Host "▶ Step 8: Creating per-game backup Service Principals..."
+$backupServicePrincipals = @(
+    New-BackupServicePrincipal -Name $PROXMOX_SP_NAME -Game 'c2e2'
+    New-BackupServicePrincipal -Name $PALWORLD_BACKUP_SP_NAME -Game 'palworld'
+    New-BackupServicePrincipal -Name $WINDROSE_BACKUP_SP_NAME -Game 'windrose'
+)
+Write-Host "  ✓ Backup Service Principals created."
 Write-Host ""
 
-# ── Step 9: Print Proxmox values ──────────────────────────────────────────────
+# ── Step 9: Print backup writer values ────────────────────────────────────────
 Write-Host "════════════════════════════════════════════════════════════════"
-Write-Host "  STEP 9 — Proxmox SP values"
+Write-Host "  STEP 9 — Backup writer values"
 Write-Host ""
 Write-Host "  ① Fill prod.bicepparam (NOT a secret — just an identifier):"
-Write-Host "      proxmoxSpObjectId = '$PROXMOX_OBJECT_ID'"
+Write-Host "      proxmoxSpObjectId = '$($backupServicePrincipals[0].ObjectId)'"
+Write-Host "      palworldBackupSpObjectId = '$($backupServicePrincipals[1].ObjectId)'"
+Write-Host "      windroseBackupSpObjectId = '$($backupServicePrincipals[2].ObjectId)'"
 Write-Host ""
-Write-Host "  ② Add these to Portainer UI environment variables"
-Write-Host "     (NEVER commit these to the repo — they are credentials):"
-Write-Host "      AZURE_TENANT_ID       = $TENANT_ID"
-Write-Host "      AZURE_CLIENT_ID       = $PROXMOX_APP_ID"
-Write-Host "      AZURE_CLIENT_SECRET   = $PROXMOX_CLIENT_SECRET"
+Write-Host "  ② Put each identity only in its matching workload."
+Write-Host "     For Palworld/Windrose, copy the host's rclone.conf.example to"
+Write-Host "     rclone.conf. C2E2 continues to receive its values through Portainer:"
+foreach ($backupSp in $backupServicePrincipals) {
+    Write-Host ""
+    Write-Host "      [$($backupSp.Game)]"
+    Write-Host "      tenant        = $TENANT_ID"
+    Write-Host "      client_id     = $($backupSp.AppId)"
+    Write-Host "      client_secret = $($backupSp.ClientSecret)"
+}
 Write-Host ""
-Write-Host "  ③ After first Bicep deploy, also add to Portainer:"
-Write-Host "      STORAGE_ACCOUNT = <read from deploy output>"
+Write-Host "  ③ After first Bicep deploy, also add to the C2E2 Portainer stack:"
+Write-Host "      BACKUP_STORAGE_ACCOUNT = <read from deploy output>"
 Write-Host "      (az deployment group show -g rg-minecraft-prod -n <deploy-name>"
-Write-Host "       --query properties.outputs.storageAccountName.value -o tsv)"
+Write-Host "       --query properties.outputs.backupStorageAccountName.value -o tsv)"
 Write-Host ""
 Write-Host "  ④ Other Portainer variables (for the Proxmox stack — these are"
 Write-Host "     SEPARATE from the Azure VM's single-use sidecar key set above):"
@@ -308,10 +345,10 @@ Write-Host "      VELOCITY_FORWARDING_SECRET — same value set in KV above"
 Write-Host "      RCON_PASSWORD              — same value set in KV above"
 Write-Host "════════════════════════════════════════════════════════════════"
 Write-Host ""
-Write-Host "  ⚠  SAVE the AZURE_CLIENT_SECRET above — it cannot be retrieved again."
-Write-Host "     If lost, run: az ad sp credential reset --id $PROXMOX_APP_ID"
+Write-Host "  ⚠  SAVE the client secrets above — they cannot be retrieved again."
+Write-Host "     If one is lost, reset only that game's Service Principal credential."
 Write-Host ""
 Write-Host "Bootstrap complete! Next steps:"
-Write-Host "  1. Fill prod.bicepparam (githubActionsObjectId, proxmoxSpObjectId)"
+Write-Host "  1. Fill prod.bicepparam with the GitHub and backup writer object IDs"
 Write-Host "  2. Add GitHub Actions secrets (step 5 above)"
 Write-Host "  3. Push to main — CI/CD handles the rest"
