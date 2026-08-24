@@ -85,7 +85,7 @@ services:
       - source: palworld_init
         target: /pal/init-saved.sh
         mode: 0555
-    entrypoint: ["/pal/init-saved.sh"]
+    entrypoint: ["/bin/sh", "/pal/init-saved.sh"]
 
   palworld:
     <<: *common
