@@ -50,9 +50,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-# client/scripts -> repo root is two levels up.
-$repoRoot  = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-$clientDir = Join-Path $repoRoot 'client'
+$repoRoot = (& git -C $PSScriptRoot rev-parse --show-toplevel).Trim()
+if (-not $repoRoot) { throw 'Could not resolve the repository root.' }
+$clientDir = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
 $instanceName = 'Craft to Exile 2'
 $prismInstances = Join-Path $env:APPDATA "PrismLauncher\instances"
@@ -166,8 +166,8 @@ Write-Ok $nzExe
 
 # 2. Build the local v$Version zip by REPLICATING THE REAL PUBLISH. We invoke the
 #    production publish-prism-pack.ps1 in its -LocalOutDir mode, which runs the
-#    identical packaging path (sanitize instance.cfg, bundle icon + update.ps1 +
-#    backup.ps1 + preserve-list.json, apply exclusions, structural mod-JAR sanity
+#    identical packaging path (sanitize instance.cfg, bundle icon +
+#    preserve-list.json, apply exclusions, structural mod-JAR sanity
 #    check, compute SHA-256, build latest.json) but writes the zip + manifest to a
 #    local dir instead of uploading to Azure / opening a PR. Source instance is
 #    your current install, so the zip carries the real mods and the upgraded

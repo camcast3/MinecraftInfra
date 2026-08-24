@@ -34,3 +34,6 @@ infra/azure/scripts/cache/
 # Go client CLI build artefacts
 client/*.exe
 client/nz
+
+# Local safety-test corpora and compatibility-test workspaces
+.artifacts/

@@ -1,25 +1,14 @@
 ---
 name: Release nz client
 
-# Builds the `nz` Go client (Windows amd64) and publishes it as a GitHub
-# Release asset whenever client code changes on main.
-#
-# IMPORTANT: this uses a FIXED, PRERELEASE tag `nz-latest`. Prerelease means it
-# never becomes the repo's "latest release", so the existing
-# `releases/latest/download/setup.ps1` URL (player onboarding) keeps resolving
-# to the setup-v* releases. Consumers fetch nz via the explicit, stable URL:
-#   https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/nz.exe
-#   https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1
-
+# Publishes an immutable commit-versioned release first, then refreshes the
+# nz-latest production release. Its metadata always points back to the
+# immutable binary and its SHA-256.
 on:
   push:
     branches: [main]
     paths:
-      - "client/cmd/**"
-      - "client/internal/**"
-      - "client/go.mod"
-      - "client/go.sum"
-      - "client/scripts/install.ps1"
+      - "client/**"
       - ".github/workflows/release-nz.yml"
   workflow_dispatch:
 
@@ -31,8 +20,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  validate-and-release:
+    runs-on: windows-latest
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,66 +33,164 @@ jobs:
           go-version-file: client/go.mod
           cache-dependency-path: client/go.sum
 
-      - name: Build nz.exe (windows/amd64)
+      - name: Unit tests and vet
         working-directory: client
-        env:
-          GOOS: windows
-          GOARCH: amd64
-          CGO_ENABLED: "0"
+        shell: pwsh
         run: |
-          sha=$(git rev-parse --short HEAD)
-          go build -trimpath \
-            -ldflags "-X github.com/camcast3/MinecraftInfra/client/cmd/nz/cmd.version=$sha" \
-            -o ../nz.exe ./cmd/nz/
-          ls -l ../nz.exe
+          go test ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Compute SHA-256
+      - name: Full nz E2E
+        working-directory: client
+        shell: pwsh
+        run: go test -tags e2e -v -timeout 10m ./tests/e2e/
+
+      - name: Synthetic instance corpus compatibility
+        shell: pwsh
+        run: ./client/scripts/Test-InstanceCorpus.ps1
+
+      - name: Build immutable release files
         id: meta
+        shell: pwsh
         run: |
-          sha256=$(sha256sum nz.exe | awk '{print $1}')
-          short_sha=$(git rev-parse --short HEAD)
-          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
-          echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
+          $short = '${{ github.sha }}'.Substring(0, 12)
+          $tag = "nz-v$short"
+          $out = Join-Path $PWD '.artifacts\nz-release'
+          New-Item -ItemType Directory -Path $out -Force | Out-Null
+          Push-Location client
+          try {
+            go build -trimpath `
+              -ldflags "-X github.com/camcast3/MinecraftInfra/client/cmd/nz/cmd.version=$tag" `
+              -o (Join-Path $out 'nz.exe') ./cmd/nz/
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } finally {
+            Pop-Location
+          }
+          $binary = Join-Path $out 'nz.exe'
+          $sha = (Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          $size = (Get-Item -LiteralPath $binary).Length
+          $builtAt = (git show -s --format=%cI '${{ github.sha }}').Trim()
+          $modpackMatch = Select-String -Path modpack.yml -Pattern '^version:\s*"([^"]+)"\s*$'
+          if (-not $modpackMatch) { throw 'Could not parse modpack.yml version.' }
+          $modpackVersion = $modpackMatch.Matches[0].Groups[1].Value
+          $metadata = [ordered]@{
+            schemaVersion = 1
+            tag = $tag
+            version = $tag
+            commit = '${{ github.sha }}'
+            builtAt = $builtAt
+            binary = [ordered]@{
+              name = 'nz.exe'
+              url = "https://github.com/${{ github.repository }}/releases/download/$tag/nz.exe"
+              sha256 = $sha
+              sizeBytes = $size
+            }
+            compatibility = [ordered]@{
+              os = 'windows'
+              arch = 'amd64'
+              modpackVersion = $modpackVersion
+              minecraft = '1.20.1'
+              javaMajor = 17
+              manifestSchema = 1
+              preserveListSchema = 1
+              transactionSchema = 1
+            }
+            gates = [ordered]@{
+              goTest = $true
+              goVet = $true
+              e2e = $true
+              corpus = $true
+              staticLaunch = $true
+            }
+          }
+          $metadata | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath (Join-Path $out 'nz-release.json') -Encoding UTF8 -NoNewline
+          "$sha *nz.exe" |
+            Set-Content -LiteralPath (Join-Path $out 'SHA256SUMS') -Encoding ASCII -NoNewline
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "sha256=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      - name: Replace the rolling nz-latest prerelease
+      - name: Verify metadata, checksum, static launch, and installer
+        shell: pwsh
+        run: |
+          ./client/scripts/Test-NzRelease.ps1 `
+            -NzExe .artifacts/nz-release/nz.exe `
+            -Metadata .artifacts/nz-release/nz-release.json `
+            -Checksums .artifacts/nz-release/SHA256SUMS
+
+      - name: Publish immutable release
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Move the fixed tag to this commit by deleting + recreating the
-          # release (and its tag). Keeps the download URL stable.
-          gh release delete nz-latest --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+          $tag = '${{ steps.meta.outputs.tag }}'
+          $out = Join-Path $PWD '.artifacts\nz-release'
+          if (gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null) {
+            $published = Join-Path $out 'published'
+            New-Item -ItemType Directory -Path $published -Force | Out-Null
+            gh release download $tag --repo $env:GITHUB_REPOSITORY --dir $published
+            foreach ($name in @('nz.exe', 'nz-release.json', 'SHA256SUMS', 'install.ps1')) {
+              $local = if ($name -eq 'install.ps1') {
+                Join-Path $PWD 'client\scripts\install.ps1'
+              } else {
+                Join-Path $out $name
+              }
+              $remote = Join-Path $published $name
+              if (-not (Test-Path -LiteralPath $remote) -or
+                  (Get-FileHash $remote -Algorithm SHA256).Hash -ne
+                  (Get-FileHash $local -Algorithm SHA256).Hash) {
+                throw "Immutable release $tag already exists with different $name bytes."
+              }
+            }
+            Write-Host "Immutable release $tag already exists with matching assets."
+          } else {
+            gh release create $tag `
+              (Join-Path $out 'nz.exe') `
+              (Join-Path $out 'nz-release.json') `
+              (Join-Path $out 'SHA256SUMS') `
+              client/scripts/install.ps1 `
+              --repo $env:GITHUB_REPOSITORY `
+              --target '${{ github.sha }}' `
+              --title "nz client $tag" `
+              --notes "Immutable gated Windows/amd64 nz release. See nz-release.json and SHA256SUMS." `
+              --prerelease
+          }
 
-      - name: Publish nz-latest (prerelease)
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: nz-latest
-          name: "nz client (rolling)"
-          prerelease: true
-          files: |
-            nz.exe
-            client/scripts/install.ps1
-          body: |
-            Rolling build of the `nz` Minecraft client (Windows amd64).
-
-            Built from `${{ steps.meta.outputs.short_sha }}` on `main`.
-
-            > Prerelease on purpose — does NOT shadow the player onboarding
-            > `releases/latest/download/setup.ps1` URL.
-
-            ## First install (one line)
-
-            ```powershell
-            irm https://github.com/${{ github.repository }}/releases/download/nz-latest/install.ps1 | iex
-            ```
-
-            ## Direct binary
-
-            ```
-            https://github.com/${{ github.repository }}/releases/download/nz-latest/nz.exe
-            ```
-
-            ## nz.exe SHA-256
-
-            ```
-            ${{ steps.meta.outputs.sha256 }}
-            ```
+      - name: Promote nz-latest production release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if (gh release view nz-latest --repo $env:GITHUB_REPOSITORY 2>$null) {
+            # Keep the alias continuously available. The manifest is uploaded
+            # last and acts as the commit point because installers resolve the
+            # immutable versioned release through it.
+            gh release upload nz-latest `
+              client/scripts/install.ps1 `
+              --repo $env:GITHUB_REPOSITORY --clobber
+            gh release upload nz-latest `
+              .artifacts/nz-release/nz.exe `
+              .artifacts/nz-release/SHA256SUMS `
+              --repo $env:GITHUB_REPOSITORY --clobber
+            gh release upload nz-latest `
+              .artifacts/nz-release/nz-release.json `
+              --repo $env:GITHUB_REPOSITORY --clobber
+            gh release edit nz-latest `
+              --repo $env:GITHUB_REPOSITORY `
+              --title 'nz client (gated production)' `
+              --notes "Production bootstrap for ${{ steps.meta.outputs.tag }}. install.ps1 resolves nz-release.json, downloads the immutable asset, and verifies SHA-256." `
+              --latest
+          } else {
+            gh release create nz-latest `
+              .artifacts/nz-release/nz.exe `
+              .artifacts/nz-release/nz-release.json `
+              .artifacts/nz-release/SHA256SUMS `
+              client/scripts/install.ps1 `
+              --repo $env:GITHUB_REPOSITORY `
+              --target '${{ github.sha }}' `
+              --title 'nz client (gated production)' `
+              --notes "Production bootstrap for ${{ steps.meta.outputs.tag }}. install.ps1 resolves nz-release.json, downloads the immutable asset, and verifies SHA-256." `
+              --latest
+          }

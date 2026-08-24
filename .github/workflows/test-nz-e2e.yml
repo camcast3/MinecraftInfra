@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "client/**"
+      - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
   push:
     branches: [main]
     paths:
       - "client/**"
+      - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
 
 permissions:
@@ -20,7 +22,7 @@ concurrency:
 
 jobs:
   e2e:
-    name: Run 16-test e2e harness
+    name: Full nz compatibility gate
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -37,6 +39,19 @@ jobs:
         run: go version
         working-directory: client
 
+      - name: Unit tests and vet
+        shell: pwsh
+        working-directory: client
+        run: |
+          go test ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go vet ./...
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Run e2e harness
         run: go test -tags e2e -v -timeout 10m ./tests/e2e/
         working-directory: client
+
+      - name: Run immutable corpus compatibility
+        shell: pwsh
+        run: ./client/scripts/Test-InstanceCorpus.ps1
