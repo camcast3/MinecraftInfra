@@ -1,0 +1,57 @@
+---
+name: Validate game-node framework
+
+on:
+  pull_request:
+    paths:
+      - "infra/proxmox/README.md"
+      - "infra/proxmox/game-node/**"
+      - "scripts/tests/Test-GameBackup*.sh"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/fixtures/game-node/**"
+      - ".github/workflows/validate-game-node-framework.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/proxmox/README.md"
+      - "infra/proxmox/game-node/**"
+      - "scripts/tests/Test-GameBackup*.sh"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/fixtures/game-node/**"
+      - ".github/workflows/validate-game-node-framework.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Render and exercise inert framework
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install validators
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloud-init shellcheck
+
+      - name: Check shell syntax and static analysis
+        run: |
+          bash -n infra/proxmox/game-node/backup/*.sh scripts/tests/Test-GameBackup*.sh
+          shellcheck infra/proxmox/game-node/backup/*.sh scripts/tests/Test-GameBackup*.sh
+
+      - name: Test cloud-init rendering
+        shell: pwsh
+        run: ./scripts/tests/Test-GameNodeCloudInit.ps1
+
+      - name: Validate rendered cloud-init schema
+        run: |
+          cloud-init schema \
+            --config-file build/game-node-cloud-init-tests/fixture-game-cloud-init.yaml
+
+      - name: Test backup dry-run and restore
+        run: bash scripts/tests/Test-GameBackups.sh
+
+      - name: Test backup lifecycle
+        run: sudo bash scripts/tests/Test-GameBackupLifecycle.sh

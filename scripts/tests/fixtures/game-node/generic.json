@@ -1,0 +1,28 @@
+{
+  "displayName": "Generic fixture game",
+  "gameSlug": "fixture-game",
+  "serviceUser": "fixturesvc",
+  "tailscaleHostname": "fixture-game-node",
+  "dataRoot": "/data/fixture-game",
+  "azureBackupContainer": "fixture-game-backups",
+  "containerName": "fixture-game-server",
+  "backupSources": [
+    "data",
+    "config"
+  ],
+  "backupConsistency": "fixture-cold-stop",
+  "backupStopMode": "container-stop",
+  "sshPort": 7822,
+  "rebootTime": "03:30",
+  "managementCidrs": [
+    "192.0.2.0/24",
+    "2001:db8::/64"
+  ],
+  "publicPorts": [
+    {
+      "port": 27015,
+      "protocol": "udp",
+      "comment": "Fixture game traffic"
+    }
+  ]
+}
