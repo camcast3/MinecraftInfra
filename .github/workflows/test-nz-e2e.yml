@@ -4,12 +4,30 @@ on:
   pull_request:
     paths:
       - "client/**"
+      - "packwiz/**"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "infra/azure/scripts/test-c2e2-backend.ps1"
+      - "ops/publish-runbook.md"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - ".github/workflows/promote-prism-pack.yml"
+      - ".github/workflows/publish-prism-pack.yml"
       - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
   push:
     branches: [main]
     paths:
       - "client/**"
+      - "packwiz/**"
+      - "infra/azure/scripts/build-instance-from-packwiz.ps1"
+      - "infra/azure/scripts/publish-prism-pack.ps1"
+      - "infra/azure/scripts/promote-prism-pack.ps1"
+      - "infra/azure/scripts/test-c2e2-backend.ps1"
+      - "ops/publish-runbook.md"
+      - "scripts/Test-MinecraftStatus.ps1"
+      - ".github/workflows/promote-prism-pack.yml"
+      - ".github/workflows/publish-prism-pack.yml"
       - ".github/workflows/release-nz.yml"
       - ".github/workflows/test-nz-e2e.yml"
 
@@ -55,3 +73,7 @@ jobs:
       - name: Run immutable corpus compatibility
         shell: pwsh
         run: ./client/scripts/Test-InstanceCorpus.ps1
+
+      - name: Validate disposable package
+        shell: pwsh
+        run: ./client/scripts/Test-Packaging.ps1

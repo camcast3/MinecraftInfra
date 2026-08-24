@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	defaultLatestVersionURL = "https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/latest-version.txt"
+	defaultLatestVersionURL = "https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest-version.txt"
 	updateOneLiner          = "nz update"
 	wikiURL                 = "https://wiki.negativezone.cc/updating"
 )
