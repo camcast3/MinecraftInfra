@@ -148,6 +148,10 @@ runcmd:
       echo "Expected Proxmox Cloud-Init user @@SERVICE_USER@@ was not created" >&2
       exit 1
     fi
+    if ! id birdo >/dev/null 2>&1; then
+      useradd --create-home --shell /bin/bash birdo
+    fi
+    usermod -aG sudo birdo
   - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@
   - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/data
   - install -d -m 0750 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ @@DATA_ROOT@@/config
@@ -169,12 +173,29 @@ runcmd:
     EOF
     chmod 0440 /etc/sudoers.d/@@SERVICE_USER@@-game-node
     visudo -cf /etc/sudoers.d/@@SERVICE_USER@@-game-node
+    cat > /etc/sudoers.d/90-birdo-game-node <<'EOF'
+    birdo ALL=(ALL:ALL) NOPASSWD: ALL
+    EOF
+    chmod 0440 /etc/sudoers.d/90-birdo-game-node
+    visudo -cf /etc/sudoers.d/90-birdo-game-node
 
   - install -d -m 0700 -o @@SERVICE_USER@@ -g @@SERVICE_USER@@ /home/@@SERVICE_USER@@/.ssh
   - touch /home/@@SERVICE_USER@@/.ssh/authorized_keys
   - chmod 0600 /home/@@SERVICE_USER@@/.ssh/authorized_keys
   - chown @@SERVICE_USER@@:@@SERVICE_USER@@ /home/@@SERVICE_USER@@/.ssh/authorized_keys
-  - systemctl restart ssh
+  - install -d -m 0700 -o birdo -g birdo /home/birdo/.ssh
+  - touch /home/birdo/.ssh/authorized_keys
+  - chmod 0600 /home/birdo/.ssh/authorized_keys
+  - chown birdo:birdo /home/birdo/.ssh/authorized_keys
+  - |
+    cat > /etc/ssh/sshd_config.d/60-birdo.conf <<'EOF'
+    Match User birdo
+        PasswordAuthentication yes
+        PubkeyAuthentication yes
+    EOF
+    chmod 0644 /etc/ssh/sshd_config.d/60-birdo.conf
+    sshd -t
+    systemctl reload ssh
   - systemctl daemon-reload
   - systemctl enable --now game-backup@@@GAME_SLUG@@.timer
   - systemctl enable --now game-backup-health@@@GAME_SLUG@@.timer

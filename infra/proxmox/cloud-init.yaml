@@ -123,11 +123,37 @@ runcmd:
   - chmod 600 /home/mcsvc/.ssh/authorized_keys
   - chown -R mcsvc:mcsvc /home/mcsvc/.ssh
 
+  # Shared game-node operator. Password remains locked in committed cloud-init;
+  # transfer the existing Palworld hash after provisioning with
+  # infra/proxmox/game-node/Set-GameNodeOperatorPassword.ps1.
+  - |
+    if ! id birdo >/dev/null 2>&1; then
+      useradd --create-home --shell /bin/bash birdo
+    fi
+    usermod -aG sudo birdo
+    cat > /etc/sudoers.d/90-birdo-game-node << 'EOF'
+    birdo ALL=(ALL:ALL) NOPASSWD: ALL
+    EOF
+    chmod 440 /etc/sudoers.d/90-birdo-game-node
+    visudo -cf /etc/sudoers.d/90-birdo-game-node
+  - install -d -m 0700 -o birdo -g birdo /home/birdo/.ssh
+  - touch /home/birdo/.ssh/authorized_keys
+  - chmod 600 /home/birdo/.ssh/authorized_keys
+  - chown -R birdo:birdo /home/birdo/.ssh
+  - |
+    cat > /etc/ssh/sshd_config.d/60-birdo.conf << 'EOF'
+    Match User birdo
+        PasswordAuthentication yes
+        PubkeyAuthentication yes
+    EOF
+    chmod 644 /etc/ssh/sshd_config.d/60-birdo.conf
+
   # Move SSH to port 7822 — avoids automated port scanners and limits exposure
   # if the Azure VM (on the same TailScale network) were ever compromised.
   - sed -i 's/^#\?Port .*/Port 7822/' /etc/ssh/sshd_config
   - grep -q '^Port 7822' /etc/ssh/sshd_config || echo 'Port 7822' >> /etc/ssh/sshd_config
-  - systemctl restart ssh
+  - sshd -t
+  - systemctl reload ssh
 
   # UFW: deny all inbound, allow all outbound.
   #

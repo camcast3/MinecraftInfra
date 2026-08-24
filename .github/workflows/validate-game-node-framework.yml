@@ -5,18 +5,22 @@ on:
   pull_request:
     paths:
       - "infra/proxmox/README.md"
+      - "infra/proxmox/cloud-init.yaml"
       - "infra/proxmox/game-node/**"
       - "scripts/tests/Test-GameBackup*.sh"
       - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-GameNodeOperator.ps1"
       - "scripts/tests/fixtures/game-node/**"
       - ".github/workflows/validate-game-node-framework.yml"
   push:
     branches: [main]
     paths:
       - "infra/proxmox/README.md"
+      - "infra/proxmox/cloud-init.yaml"
       - "infra/proxmox/game-node/**"
       - "scripts/tests/Test-GameBackup*.sh"
       - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-GameNodeOperator.ps1"
       - "scripts/tests/fixtures/game-node/**"
       - ".github/workflows/validate-game-node-framework.yml"
 
@@ -43,7 +47,9 @@ jobs:
 
       - name: Test cloud-init rendering
         shell: pwsh
-        run: ./scripts/tests/Test-GameNodeCloudInit.ps1
+        run: |
+          ./scripts/tests/Test-GameNodeCloudInit.ps1
+          ./scripts/tests/Test-GameNodeOperator.ps1
 
       - name: Validate rendered cloud-init schema
         run: |
