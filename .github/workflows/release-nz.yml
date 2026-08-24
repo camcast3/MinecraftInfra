@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - "client/**"
+      - "scripts/Test-ClientDistribution.ps1"
       - "scripts/Test-MinecraftStatus.ps1"
       - ".github/workflows/release-nz.yml"
   workflow_dispatch:
@@ -55,6 +56,10 @@ jobs:
       - name: Disposable package validation
         shell: pwsh
         run: ./client/scripts/Test-Packaging.ps1
+
+      - name: Client distribution and docs policy
+        shell: pwsh
+        run: ./scripts/Test-ClientDistribution.ps1
 
       - name: Build immutable release files
         id: meta
@@ -108,6 +113,7 @@ jobs:
               e2e = $true
               corpus = $true
               packaging = $true
+              distributionPolicy = $true
               staticLaunch = $true
               serverHealth = $true
             }

@@ -73,7 +73,7 @@ step you got stuck on.
 | Prism takes a long time to show "Stopped" after quitting the game | A backup snapshot is in progress (runs at most every 3 days; takes ~10–60 s depending on explored-map size). Check `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\nz.log` to confirm. To disable, see [Backups → Tuning or disabling]({% link backups.md %}#tuning-or-disabling). |
 | Lost a waypoint / world / setting after a recent update | Restore from a snapshot under `%APPDATA%\PrismLauncher\instances\Craft to Exile 2\.negativezone\backups\` — see [Backups → Restoring user state from a snapshot]({% link backups.md %}#restoring-user-state-from-a-snapshot). The update step forces a snapshot just before every upgrade, so there's always a fresh restore point. |
 | Empty / 0-byte snapshots in `.negativezone\backups\<ts>\` | Should be fixed in v0.4.2+; if you see one in a freshly created snapshot, run `nz support` and DM the admin the resulting zip (it includes `nz.log`). |
-| Old `Craft to Exile 2.bak` instance I want to delete | Right-click → **Delete instance** in Prism (or delete the `.bak` folder). The next upgrade creates a fresh one. |
+| Old rollback copies are using space | `Craft to Exile 2.bak` and `Craft to Exile 2 (old)` are recreated by the next setup upgrade. Transaction backups under `instances\.negativezone-backups\` are separate; send `nz support` output to the admin before deleting those. |
 
 ---
 
