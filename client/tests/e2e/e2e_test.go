@@ -199,23 +199,39 @@ func (e *testEnv) publishManifest(version string, allowDowngrade bool) {
 	sha256hex := hex.EncodeToString(h[:])
 
 	type manifest struct {
-		Version        string `json:"version"`
-		Instance       string `json:"instance"`
-		URL            string `json:"url"`
-		SHA256         string `json:"sha256"`
-		SizeBytes      int64  `json:"sizeBytes"`
-		AllowDowngrade bool   `json:"allowDowngrade,omitempty"`
-		PackwizURL     string `json:"packwizUrl"`
+		Version         string         `json:"version"`
+		Instance        string         `json:"instance"`
+		URL             string         `json:"url"`
+		SHA256          string         `json:"sha256"`
+		SizeBytes       int64          `json:"sizeBytes"`
+		AllowDowngrade  bool           `json:"allowDowngrade,omitempty"`
+		PackwizURL      string         `json:"packwizUrl"`
+		PreserveListURL string         `json:"preserveListUrl"`
+		Compatibility   map[string]any `json:"compatibility"`
+	}
+
+	preserveName := "c2e2-v" + version + "-preserve-list.json"
+	preserveData := []byte(`{"preserve":["config/test-mod-prefs.json"],"version":1}`)
+	if err := os.WriteFile(filepath.Join(e.blobDir, preserveName), preserveData, 0o644); err != nil {
+		e.t.Fatalf("publishManifest: write preserve list: %v", err)
 	}
 
 	m := manifest{
-		Version:        version,
-		Instance:       "Craft to Exile 2",
-		URL:            e.srv.URL + "/c2e2-v" + version + ".zip",
-		SHA256:         sha256hex,
-		SizeBytes:      int64(len(data)),
-		AllowDowngrade: allowDowngrade,
-		PackwizURL:     "http://127.0.0.1/pack.toml",
+		Version:         version,
+		Instance:        "Craft to Exile 2",
+		URL:             e.srv.URL + "/c2e2-v" + version + ".zip",
+		SHA256:          sha256hex,
+		SizeBytes:       int64(len(data)),
+		AllowDowngrade:  allowDowngrade,
+		PackwizURL:      "http://127.0.0.1/pack.toml",
+		PreserveListURL: e.srv.URL + "/" + preserveName,
+		Compatibility: map[string]any{
+			"minecraft":          "1.20.1",
+			"javaMajor":          17,
+			"manifestSchema":     1,
+			"preserveListSchema": 1,
+			"transactionSchema":  1,
+		},
 	}
 
 	jsonData, err := json.Marshal(m)

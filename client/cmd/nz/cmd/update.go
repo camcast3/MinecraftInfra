@@ -14,10 +14,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/camcast3/MinecraftInfra/client/internal/compatibility"
 	"github.com/camcast3/MinecraftInfra/client/internal/instance"
 	"github.com/camcast3/MinecraftInfra/client/internal/lock"
 	"github.com/camcast3/MinecraftInfra/client/internal/logging"
 	"github.com/camcast3/MinecraftInfra/client/internal/packwiz"
+	"github.com/camcast3/MinecraftInfra/client/internal/scope"
+	"github.com/camcast3/MinecraftInfra/client/internal/transaction"
 	"github.com/camcast3/MinecraftInfra/client/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -44,14 +47,18 @@ Environment variables:
 
 // updateManifest matches the JSON manifest served by the blob endpoint.
 type updateManifest struct {
-	Version        string `json:"version"`
-	URL            string `json:"url"`
-	SHA256         string `json:"sha256"`
-	SizeBytes      int64  `json:"sizeBytes"`
-	Instance       string `json:"instance"`
-	AllowDowngrade bool   `json:"allowDowngrade"`
-	PackwizURL     string `json:"packwizUrl"`
+	Version        string                  `json:"version"`
+	URL            string                  `json:"url"`
+	SHA256         string                  `json:"sha256"`
+	SizeBytes      int64                   `json:"sizeBytes"`
+	Instance       string                  `json:"instance"`
+	AllowDowngrade bool                    `json:"allowDowngrade"`
+	PackwizURL     string                  `json:"packwizUrl"`
+	PreserveListURL string                 `json:"preserveListUrl"`
+	Compatibility  *compatibility.Metadata `json:"compatibility,omitempty"`
 }
+
+var packwizSync = packwiz.Sync
 
 func runUpdate(cmd *cobra.Command, args []string) error {
 	instanceDir := os.Getenv("INST_DIR")
@@ -63,33 +70,33 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 
 		instanceDir = instance.DefaultC2E2Path()
 		if instanceDir == "" || !dirExists(instanceDir) {
-			logging.Error("No Craft to Exile 2 instance found.")
-			logging.Info("Run 'nz setup' first to install the modpack.")
-			os.Exit(1)
+			return fmt.Errorf("no Craft to Exile 2 instance found; run 'nz setup' first")
 		}
 		logging.Dimf("Instance: %s", instanceDir)
 
 		// Check Prism not running
 		if os.Getenv("NEGATIVEZONE_SKIP_PRISM_CHECK") != "1" && isPrismRunning() {
-			logging.Blank()
-			logging.Error("Prism Launcher is currently running.")
-			logging.Info("Close Prism completely and re-run this update.")
-			os.Exit(1)
+			return fmt.Errorf("Prism Launcher is running; close it before updating")
 		}
 	}
 
 	if instanceDir == "" || !dirExists(instanceDir) {
-		logging.Dim("INST_DIR not set or missing; skipping auto-update.")
+		logging.Dim("INST_DIR not set or missing; skipping update.")
 		return nil
 	}
 
 	paths := instance.ResolvePaths(instanceDir)
-	_ = os.MkdirAll(paths.NZDir, 0o755)
+	if err := os.MkdirAll(paths.NZDir, 0o755); err != nil {
+		return fmt.Errorf("create instance metadata directory: %w", err)
+	}
 
 	logging.UseInstance(paths.NZDir)
 
 	// Acquire lock
-	lockPath := filepath.Join(paths.NZDir, "update.lock")
+	lockPath := filepath.Join(
+		filepath.Dir(instanceDir),
+		"."+filepath.Base(instanceDir)+".nz-update.lock",
+	)
 	lk, err := lock.Acquire(lockPath, 5*time.Minute)
 	if err != nil {
 		return fmt.Errorf("lock error: %w", err)
@@ -127,9 +134,14 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 	if manifest.Version == "" {
-		logging.Error("Manifest missing 'version' field.")
-		logging.Error("Manifest is malformed (missing version). Contact admin.")
-		os.Exit(1)
+		return fmt.Errorf("manifest is malformed: missing version")
+	}
+	if err := compatibility.Validate(manifest.Version, manifest.Compatibility); err != nil {
+		return fmt.Errorf("incompatible modpack release: %w", err)
+	}
+	if manifest.Version != compatibility.LegacyVersion &&
+		strings.TrimSpace(manifest.PreserveListURL) == "" {
+		return fmt.Errorf("manifest is malformed: missing preserveListUrl")
 	}
 	if manifest.Version == installedVersion {
 		logging.Infof("Already on v%s; nothing to do.", manifest.Version)
@@ -157,36 +169,85 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		logging.Stepf("Updating v%s → v%s", installedVersion, manifest.Version)
 	}
 
-	// Pre-update backup
-	logging.Info("Creating pre-update safety snapshot...")
-	oldInstDir, hadInstDir := os.LookupEnv("INST_DIR")
-	_ = os.Setenv("INST_DIR", instanceDir)
-	backupForceOld := backupForce
-	backupForce = true
-	_ = runBackup(cmd, nil)
-	backupForce = backupForceOld
-	if hadInstDir {
-		_ = os.Setenv("INST_DIR", oldInstDir)
-	} else {
-		_ = os.Unsetenv("INST_DIR")
-	}
-
 	packTomlURL := strings.TrimSpace(manifest.PackwizURL)
 	if packTomlURL == "" {
 		packTomlURL = defaultPackwizURL
 	}
 	logging.Infof("Packwiz URL: %s", packTomlURL)
-	logging.Step("Syncing modpack with packwiz")
 
-	if err := packwiz.Sync(paths.DotMC, paths.NZDir, packTomlURL); err != nil {
-		logging.Errorf("Packwiz sync failed: %v", err)
-		logging.Errorf("Update failed: %v", err)
+	installedPreserve, err := scope.LoadPreserveManifest(
+		filepath.Join(paths.NZDir, "preserve-list.json"),
+	)
+	if err != nil {
+		return fmt.Errorf("load installed preservation manifest: %w", err)
+	}
+	var targetPreserve *scope.PreserveManifest
+	if strings.TrimSpace(manifest.PreserveListURL) != "" {
+		targetPreserve, err = fetchPreserveManifest(manifest.PreserveListURL)
+		if err != nil {
+			return fmt.Errorf("fetch target preservation manifest: %w", err)
+		}
+	}
+	preserveSet, err := scope.MergePreserveManifests(
+		scope.FullPreserveSet(),
+		installedPreserve,
+		targetPreserve,
+	)
+	if err != nil {
+		return fmt.Errorf("preflight preservation rules: %w", err)
+	}
+	logging.Step("Building and verifying transactional update")
+	result, err := (transaction.Engine{}).Run(transaction.Plan{
+		Name:           "update",
+		LiveDir:        instanceDir,
+		RequireLive:    true,
+		SeedFromLive:   true,
+		TargetVersion:  manifest.Version,
+		MarkerRelative: ".negativezone-version",
+		SkipIfCurrent:  true,
+		Preserve: []transaction.PreserveRule{{
+			Version:           1,
+			SourceSubdir:      ".minecraft",
+			DestinationSubdir: ".minecraft",
+			Paths:             preserveSet,
+		}},
+		Prepare: func(stage string) error {
+			stagePaths := instance.ResolvePaths(stage)
+			logging.Step("Syncing staged modpack with packwiz")
+			if err := packwizSync(stagePaths.DotMC, stagePaths.NZDir, packTomlURL); err != nil {
+				return err
+			}
+			if targetPreserve != nil {
+				data, err := json.Marshal(targetPreserve)
+				if err != nil {
+					return fmt.Errorf("encode target preservation manifest: %w", err)
+				}
+				if err := os.MkdirAll(stagePaths.NZDir, 0o755); err != nil {
+					return fmt.Errorf("create staged metadata directory: %w", err)
+				}
+				if err := os.WriteFile(
+					filepath.Join(stagePaths.NZDir, "preserve-list.json"),
+					data,
+					0o644,
+				); err != nil {
+					return fmt.Errorf("write target preservation manifest: %w", err)
+				}
+			}
+			return nil
+		},
+		Validate: func(stage string) error {
+			if !dirExists(filepath.Join(stage, ".minecraft")) {
+				return fmt.Errorf("staged instance is missing .minecraft")
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		logging.Errorf("Transactional update failed: %v", err)
 		return err
 	}
-
-	if err := os.WriteFile(paths.VersionFile, []byte(manifest.Version), 0o644); err != nil {
-		logging.Errorf("Could not write version marker: %v", err)
-		return err
+	if result.BackupDir != "" {
+		logging.Infof("Verified immutable backup: %s", result.BackupDir)
 	}
 	logging.Infof("Update complete: now on v%s", manifest.Version)
 	logging.OKf("Updated to v%s", manifest.Version)
@@ -209,6 +270,23 @@ func fetchUpdateManifest(url string) (*updateManifest, error) {
 		return nil, err
 	}
 	return &m, nil
+}
+
+func fetchPreserveManifest(url string) (*scope.PreserveManifest, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	if err != nil {
+		return nil, err
+	}
+	return scope.ParsePreserveManifest(data)
 }
 
 func downloadWithProgress(url, dest string, expectedSize int64) (string, error) {
