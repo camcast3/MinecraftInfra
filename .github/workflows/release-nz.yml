@@ -2,7 +2,11 @@
 name: Release nz client
 
 # Builds the `nz` Go client (Windows amd64) and publishes it as a GitHub
-# Release asset whenever client code changes on main.
+# Release asset when manually dispatched.
+#
+# Automatic publication is intentionally paused while transactional upgrades
+# land. The follow-up verified-release PR restores the push trigger only after
+# immutable metadata, checksum, corpus, and installer gates are in place.
 #
 # IMPORTANT: this uses a FIXED, PRERELEASE tag `nz-latest`. Prerelease means it
 # never becomes the repo's "latest release", so the existing
@@ -12,15 +16,6 @@ name: Release nz client
 #   https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "client/cmd/**"
-      - "client/internal/**"
-      - "client/go.mod"
-      - "client/go.sum"
-      - "client/scripts/install.ps1"
-      - ".github/workflows/release-nz.yml"
   workflow_dispatch:
 
 permissions:
