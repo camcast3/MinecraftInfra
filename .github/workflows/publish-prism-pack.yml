@@ -81,6 +81,10 @@ jobs:
         shell: pwsh
         run: ./client/scripts/Test-Packaging.ps1
 
+      - name: Client distribution and docs policy
+        shell: pwsh
+        run: ./scripts/Test-ClientDistribution.ps1
+
   publish:
     needs: compatibility
     runs-on: ubuntu-latest

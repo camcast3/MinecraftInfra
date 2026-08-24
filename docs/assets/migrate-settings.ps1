@@ -1,4 +1,7 @@
-# NegativeZone client settings migrator
+# ARCHIVED RECOVERY ONLY - legacy PowerShell settings migrator
+#
+# Retained as an offline recovery tool for old instances. Production migration
+# uses `nz migrate`; no workflow publishes new migrate-settings releases.
 #
 # Copies client-side settings (keybinds, video options, OptiFine/shader
 # settings, JourneyMap + Xaero waypoints, creative hotbars) from an old
