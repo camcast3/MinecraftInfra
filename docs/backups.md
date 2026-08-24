@@ -7,9 +7,9 @@ nav_order: 5
 # Backups & restore
 {: .no_toc }
 
-Two completely separate backup mechanisms protect your client, with
-different purposes. Worth knowing the distinction before you actually need
-to restore something.
+Two player-facing restore mechanisms protect your state, while a third
+internal transaction backup protects each setup, update, or migration from a
+partial filesystem change.
 
 <details markdown="1" open>
 <summary>Table of contents</summary>
@@ -20,7 +20,7 @@ to restore something.
 
 ---
 
-## The two mechanisms at a glance
+## The player-facing mechanisms at a glance
 
 |  | **Snapshot files** | **Previous-version backup (`.bak`)** |
 |---|---|---|
@@ -32,8 +32,15 @@ to restore something.
 | **Cadence** | At most once per `NEGATIVEZONE_BACKUP_DAYS` (default 3 days) of play; one is also forced just before `nz update` touches tracked pack files | One per modpack upgrade you go through |
 | **Retention** | `NEGATIVEZONE_BACKUP_RETAIN` newest (default 3) | Latest only — each new upgrade overwrites the previous `.bak` |
 | **Size** | 100 MB – 2 GB each, depending on how much you've explored | 3 – 6 GB |
-| **Restore = ?** | Manual file copy back into `.minecraft\` | Launch the `.bak` instance in Prism (or copy the folder back) |
-| **Has launch hooks?** | (file collection, no scripts) | It's a raw copy — for a clean multiplayer rollback the admin must also roll the server back |
+| **Restore = ?** | Manual file copy back into `.minecraft\` | Launch the generated `Craft to Exile 2 (old)` instance |
+| **Has launch hooks?** | (file collection, no scripts) | The `(old)` copy has hooks disabled; multiplayer still requires the admin to roll back the server |
+
+Every `nz setup`, `nz update`, or `nz migrate` that replaces an existing
+instance also creates a checksum-verified full backup under
+`%APPDATA%\PrismLauncher\instances\.negativezone-backups\`. It is used by the
+transaction journal and is not the normal player restore interface. If an
+operation is interrupted, close Prism and rerun the same command; do not delete
+the journal, stage, rollback, or transaction-backup folders.
 
 ---
 
@@ -121,10 +128,10 @@ Example — keep 5 weekly snapshots that include single-player worlds:
 ## Previous-version backup (`.bak` rollback)
 
 When `nz setup` runs an upgrade (finds an existing instance with a
-different version), it renames the old instance to `Craft to Exile 2.bak`
-before installing the new version, then copies your user state forward into
-the new install. The `.bak` folder is a complete copy of your previous-version
-install, sitting alongside the current one in Prism's instance grid.
+different version), it transactionally installs and validates the new version,
+then copies the verified previous payload to `Craft to Exile 2.bak` and creates
+a launchable `Craft to Exile 2 (old)` copy. Both sit alongside the current
+instance in Prism's **Backup** group.
 
 ### What it's for
 
@@ -149,22 +156,21 @@ A safety raft for two narrow cases:
   `%APPDATA%\PrismLauncher\instances\` somewhere off-instance before your next
   upgrade.
 
-### Heads-up: it's a raw copy, not a frozen instance
+### Raw `.bak` versus launchable `(old)`
 
 The `.bak` is a byte-for-byte copy of your old instance, including its launch
 hooks. Those hooks reference an absolute path that now points at your *current*
-instance's `nz.exe`, so launching `.bak` doesn't give a cleanly "frozen"
-experience (the version check reads your current marker). Treat `.bak` as a cold
-rollback copy:
+instance's `nz.exe`. The generated `Craft to Exile 2 (old)` copy disables those
+hooks, so use `(old)` for a clean offline launch. Treat `.bak` as the cold
+filesystem rollback source:
 
 - For a **real multiplayer rollback**, the admin rolls the server back and you
   re-run `nz update` (the admin sets `allowDowngrade` in the manifest).
-- For **offline single-player** on the old mod set, just launch it.
+- For **offline single-player** on the old mod set, launch `(old)`.
 
 ### Using it
 
-1. In Prism's instance grid, find the separate **Craft to Exile 2.bak** entry
-   (it carries the previous version's label).
+1. In Prism's instance grid, find **Craft to Exile 2 (old)** under **Backup**.
 2. Click it, then **Play** as normal. If the server is still on a different
    version, expect an FML-handshake kick on join — that's fine, you're not
    breaking anything.
@@ -179,8 +185,8 @@ rollback copy:
 | All my Xaero waypoints + explored map are gone | Snapshot files | Copy back `XaeroWaypoints\` and `XaeroWorldMap\` from the newest snapshot |
 | Keybinds reset | Snapshot files | Copy `options.txt` back |
 | Server list cleared / lost the entry | Snapshot files | Copy `servers.dat` back |
-| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | `.bak` copy | Launch the `Craft to Exile 2.bak` instance. Only works for the multiplayer server if admin also rolled back. |
-| I want yesterday's modpack *and* my latest waypoints | Both | Launch the `.bak` instance once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into the `.bak` instance's `.minecraft\` |
+| The new modpack version has a client-side bug; I need to play yesterday's version while the admin fixes it | Previous-version copy | Launch `Craft to Exile 2 (old)`. It only works for multiplayer if the admin also rolled back. |
+| I want yesterday's modpack *and* my latest waypoints | Both | Launch `(old)` once to verify it boots, then copy `XaeroWaypoints\` from the newest snapshot into that instance's `.minecraft\` |
 | Something deleted my whole `.minecraft\config\` directory | Snapshot files (partial) + re-run install (full) | Restore the pack-author preserve-list files from snapshot for your tunings, then re-run the Path A one-liner to repopulate the rest of the configs from the pack defaults |
 
 ---
@@ -190,8 +196,12 @@ rollback copy:
 Worst-case footprint of the safety net (without `NEGATIVEZONE_BACKUP_INCLUDE_SAVES`):
 
 - 3 snapshot folders × up to ~2 GB each = ~6 GB
-- 1 `.bak` copy ≈ 3–6 GB
-- **Total ≈ 9–12 GB** under `%APPDATA%\PrismLauncher\instances\`
+- `.bak` plus `(old)` ≈ 6–12 GB after a setup upgrade
+- one 3–6 GB immutable full backup for each changing setup, update, or migration
+
+Transaction backups are intentionally not automatically pruned. If disk usage
+becomes a problem, send `nz support` output to the admin before removing old,
+completed transaction directories.
 
 If you turn on single-player saves in snapshots, multiply the snapshot
 portion by however large your `saves/` directory is.
