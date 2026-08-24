@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param()
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $renderer = Join-Path $repositoryRoot 'infra\proxmox\game-node\Render-CloudInit.ps1'
@@ -13,6 +14,46 @@ $testRoot = Join-Path $repositoryRoot 'build\game-node-cloud-init-tests'
 $output = Join-Path $testRoot 'fixture-game-cloud-init.yaml'
 $palworldOutput = Join-Path $testRoot 'palworld-cloud-init.yaml'
 $windroseOutput = Join-Path $testRoot 'windrose-cloud-init.yaml'
+
+function Invoke-Native {
+    param(
+        [Parameter(Mandatory)][string] $Command,
+        [Parameter(Mandatory)][string[]] $Arguments
+    )
+
+    $output = @(& $Command @Arguments 2>&1)
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+        throw "$Command failed with exit code ${exitCode}: $($output -join [Environment]::NewLine)"
+    }
+}
+
+function Assert-ContractLink {
+    param(
+        [Parameter(Mandatory)][ValidateSet('palworld', 'windrose')][string] $Game,
+        [Parameter(Mandatory)][string] $ProfilePath
+    )
+
+    $profile = Get-Content -LiteralPath $ProfilePath -Raw -Encoding UTF8 |
+        ConvertFrom-Json
+    $nodeContract = Get-Content -LiteralPath (
+        Join-Path $repositoryRoot "contracts\nodes\$Game-proxmox.json"
+    ) -Raw -Encoding UTF8 | ConvertFrom-Json
+    $gameContract = Get-Content -LiteralPath (
+        Join-Path $repositoryRoot "contracts\games\$Game.json"
+    ) -Raw -Encoding UTF8 | ConvertFrom-Json
+
+    if ($profile.dataRoot -ne $nodeContract.dataRoot) {
+        throw "$Game profile and node contract disagree on dataRoot."
+    }
+    if ($gameContract.nodeId -ne $nodeContract.nodeId) {
+        throw "$Game game and node contracts are not linked."
+    }
+    if ($profile.azureBackupContainer -ne "$Game-backups" -or
+        $gameContract.backupPolicy.targets -notcontains 'azure-blob-cold-90d') {
+        throw "$Game profile does not match its contracted Azure backup target."
+    }
+}
 
 Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $testRoot | Out-Null
@@ -113,6 +154,7 @@ foreach ($text in @(
 if ($palworldRendered -match '(?m)^\s*-\s+ufw allow 8211/udp') {
     throw 'Palworld cloud-init must not open a public player port.'
 }
+Assert-ContractLink -Game palworld -ProfilePath $palworldProfile
 
 $renderedWindrosePath = & $renderer -ProfilePath $windroseProfile `
     -OutputPath $windroseOutput
@@ -145,8 +187,32 @@ if ($windroseRendered -match
     '(?m)^\s*-\s+ufw allow 7777/(?:tcp|udp)') {
     throw 'Windrose cloud-init must not open a public player port.'
 }
+Assert-ContractLink -Game windrose -ProfilePath $windroseProfile
+
+$nativeCloudInit = Get-Command 'cloud-init' -ErrorAction SilentlyContinue
+if ($null -ne $nativeCloudInit) {
+    foreach ($cloudInitPath in @($palworldOutput, $windroseOutput)) {
+        Invoke-Native -Command $nativeCloudInit.Source -Arguments @(
+            'schema', '--config-file', $cloudInitPath
+        )
+    }
+} else {
+    $mount = "$($repositoryRoot.Replace('\', '/')):/repo:ro"
+    Invoke-Native -Command 'docker' -Arguments @(
+        'run', '--rm', '--volume', $mount,
+        'ubuntu:24.04',
+        'bash', '-ceu',
+        'export DEBIAN_FRONTEND=noninteractive; ' +
+        'apt-get update -qq; ' +
+        'apt-get install -y -qq cloud-init >/dev/null; ' +
+        'cloud-init schema --config-file ' +
+        '/repo/build/game-node-cloud-init-tests/palworld-cloud-init.yaml; ' +
+        'cloud-init schema --config-file ' +
+        '/repo/build/game-node-cloud-init-tests/windrose-cloud-init.yaml'
+    )
+}
 
 Write-Output (
-    "Cloud-init renderer tests passed: $output, $palworldOutput, and " +
-    $windroseOutput
+    "Cloud-init renderer, contract-link, and schema tests passed: $output, " +
+    "$palworldOutput, and $windroseOutput"
 )

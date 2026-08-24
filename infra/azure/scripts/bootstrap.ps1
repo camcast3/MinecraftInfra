@@ -22,10 +22,10 @@
 #   6.  Bootstrap-deploy Key Vault only (standalone, required before main.bicep)
 #   7.  Populate all Key Vault secrets
 #   8.  Create scoped C2E2, Palworld, and Windrose backup Service Principals
-#   9.  Print values for the C2E2 stack and future isolated backup writers
+#   9.  Print values → fill prod.bicepparam and each backup host's private rclone config
 #
 # After this script:
-#   - Fill prod.bicepparam TODOs (leave future game writer IDs empty until rollout)
+#   - Fill prod.bicepparam backup writer object IDs
 #   - Add GitHub Actions secrets (AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID)
 #   - Add Portainer environment variables (BACKUP_STORAGE_ACCOUNT from deploy output,
 #     AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET from step 8)
@@ -258,9 +258,15 @@ Invoke-Az @('keyvault', 'secret', 'set',
     '--vault-name', $KV_NAME, '--name', 'budget-alert-email', '--value', $BUDGET_ALERT_EMAIL, '--output', 'none')
 
 Write-Host ""
-Write-Host "  ℹ Skipping c2e2-tailscale-ip — set this after the Proxmox VM is provisioned:"
-Write-Host "    az keyvault secret set --vault-name $KV_NAME ``"
-Write-Host "      --name c2e2-tailscale-ip --value '100.x.x.x'"
+Write-Host "  ℹ Skipping backend tailnet routes — set these after each game stack is enrolled:"
+foreach ($backendSecret in @(
+    'c2e2-tailscale-ip',
+    'palworld-tailscale-ip',
+    'windrose-tailscale-ip'
+)) {
+    Write-Host "    az keyvault secret set --vault-name $KV_NAME ``"
+    Write-Host "      --name $backendSecret --value '100.x.x.x'"
+}
 Write-Host ""
 Write-Host "  ✓ Key Vault secrets set."
 Write-Host ""
@@ -305,12 +311,14 @@ Write-Host ""
 Write-Host "════════════════════════════════════════════════════════════════"
 Write-Host "  STEP 9 — Backup writer values"
 Write-Host ""
-Write-Host "  ① Fill only the active C2E2 writer in prod.bicepparam:"
+Write-Host "  ① Fill prod.bicepparam (NOT a secret — just an identifier):"
 Write-Host "      proxmoxSpObjectId = '$($backupServicePrincipals[0].ObjectId)'"
-Write-Host "     Keep palworldBackupSpObjectId and windroseBackupSpObjectId empty"
-Write-Host "     until those workloads are ready to deploy."
+Write-Host "      palworldBackupSpObjectId = '$($backupServicePrincipals[1].ObjectId)'"
+Write-Host "      windroseBackupSpObjectId = '$($backupServicePrincipals[2].ObjectId)'"
 Write-Host ""
-Write-Host "  ② Keep each identity only in its matching workload:"
+Write-Host "  ② Put each identity only in its matching workload."
+Write-Host "     For Palworld/Windrose, copy the host's rclone.conf.example to"
+Write-Host "     rclone.conf. C2E2 continues to receive its values through Portainer:"
 foreach ($backupSp in $backupServicePrincipals) {
     Write-Host ""
     Write-Host "      [$($backupSp.Game)]"
@@ -341,6 +349,6 @@ Write-Host "  ⚠  SAVE the client secrets above — they cannot be retrieved ag
 Write-Host "     If one is lost, reset only that game's Service Principal credential."
 Write-Host ""
 Write-Host "Bootstrap complete! Next steps:"
-Write-Host "  1. Fill prod.bicepparam with GitHub and active C2E2 writer object IDs"
+Write-Host "  1. Fill prod.bicepparam with the GitHub and backup writer object IDs"
 Write-Host "  2. Add GitHub Actions secrets (step 5 above)"
 Write-Host "  3. Push to main — CI/CD handles the rest"

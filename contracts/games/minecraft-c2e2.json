@@ -1,0 +1,99 @@
+{
+  "$schema": "../game-contract.schema.json",
+  "contractVersion": 1,
+  "gameId": "minecraft",
+  "instanceId": "c2e2",
+  "displayName": "Craft to Exile 2",
+  "lifecycle": "production",
+  "nodeId": "minecraft-proxmox",
+  "deploymentPath": "docker/proxmox/docker-compose.yml",
+  "image": {
+    "reference": "itzg/minecraft-server:2026.8.0-java17@sha256:d080ed3ce21e8d5b96dca46c4bbb245783285cc24e1c8e503f56219f872a75b6",
+    "tagRequired": true,
+    "digestRequired": true,
+    "updates": "renovate"
+  },
+  "ports": [
+    {
+      "name": "minecraft-backend",
+      "publicPort": null,
+      "privatePort": 25565,
+      "protocol": "tcp",
+      "exposure": "tailnet",
+      "audience": "players"
+    },
+    {
+      "name": "rcon",
+      "publicPort": null,
+      "privatePort": 25575,
+      "protocol": "tcp",
+      "exposure": "container-only",
+      "audience": "admin"
+    },
+    {
+      "name": "prometheus-exporter",
+      "publicPort": null,
+      "privatePort": 19565,
+      "protocol": "tcp",
+      "exposure": "tailnet",
+      "audience": "monitoring"
+    }
+  ],
+  "persistentPaths": [
+    {
+      "hostPath": "/data/minecraft/c2e2",
+      "containerPath": "/data",
+      "purpose": "world and server data"
+    },
+    {
+      "hostPath": "/data/minecraft/local-backups",
+      "containerPath": "/backups",
+      "purpose": "local backup tier"
+    },
+    {
+      "hostPath": "/mnt/nas-backups",
+      "containerPath": "/backups",
+      "purpose": "NAS backup tier"
+    }
+  ],
+  "limits": {
+    "cpus": 10,
+    "memory": "40G"
+  },
+  "probes": [
+    {
+      "name": "minecraft-health",
+      "type": "minecraft-status",
+      "target": "localhost:25565",
+      "requiredBeforeProduction": true
+    },
+    {
+      "name": "offsite-backup-freshness",
+      "type": "file-age",
+      "target": "/data/minecraft/backup-health/c2e2-azure.success",
+      "requiredBeforeProduction": true
+    }
+  ],
+  "backupPolicy": {
+    "strategy": "3-2-1",
+    "targets": [
+      "local",
+      "nas",
+      "azure-blob-cold-grs"
+    ],
+    "retention": "local 14 days; NAS 7 days; Azure 90 days"
+  },
+  "updatePolicy": {
+    "imageUpdates": "renovate",
+    "deployment": "portainer-gitops",
+    "automatic": true
+  },
+  "requiredSecretNames": [
+    "TS_AUTHKEY",
+    "VELOCITY_FORWARDING_SECRET",
+    "RCON_PASSWORD",
+    "AZURE_TENANT_ID",
+    "AZURE_CLIENT_ID",
+    "AZURE_CLIENT_SECRET"
+  ]
+}

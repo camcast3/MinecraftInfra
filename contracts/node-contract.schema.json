@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://negativezone.cc/schemas/node-contract.schema.json",
+  "title": "Game node contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "nodeId",
+    "displayName",
+    "lifecycle",
+    "platform",
+    "provisioningPath",
+    "dataRoot",
+    "managementEndpoints"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contractVersion": {
+      "const": 1
+    },
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lifecycle": {
+      "enum": [
+        "production",
+        "planned"
+      ]
+    },
+    "platform": {
+      "enum": [
+        "azure-vm",
+        "proxmox-vm"
+      ]
+    },
+    "provisioningPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataRoot": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "managementEndpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "protocol",
+          "exposure",
+          "purpose"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "port": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "exposure": {
+            "enum": [
+              "control-plane",
+              "lan",
+              "tailnet",
+              "outbound-only"
+            ]
+          },
+          "purpose": {
+            "enum": [
+              "admin",
+              "agent"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

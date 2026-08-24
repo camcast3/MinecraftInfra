@@ -1,0 +1,33 @@
+{
+  "$schema": "../node-contract.schema.json",
+  "contractVersion": 1,
+  "nodeId": "windrose-proxmox",
+  "displayName": "Windrose Proxmox node",
+  "lifecycle": "planned",
+  "platform": "proxmox-vm",
+  "provisioningPath": "infra/proxmox/game-node/profiles/windrose.json",
+  "dataRoot": "/data/windrose",
+  "managementEndpoints": [
+    {
+      "name": "lan-ssh",
+      "protocol": "ssh",
+      "port": 7822,
+      "exposure": "lan",
+      "purpose": "admin"
+    },
+    {
+      "name": "tailscale-ssh",
+      "protocol": "ssh",
+      "port": 22,
+      "exposure": "tailnet",
+      "purpose": "admin"
+    },
+    {
+      "name": "portainer-edge-agent",
+      "protocol": "https",
+      "port": null,
+      "exposure": "outbound-only",
+      "purpose": "agent"
+    }
+  ]
+}

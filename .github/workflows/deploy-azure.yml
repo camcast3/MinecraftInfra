@@ -7,7 +7,6 @@ on:
       - 'infra/azure/**'
       - 'docker/azure/**'
       - 'docker/shared/**'
-      - 'scripts/sync-ops.ps1'
       - '.github/workflows/deploy-azure.yml'
   workflow_dispatch:
     inputs:
@@ -29,13 +28,21 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
         with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.sha }}
           fetch-depth: 2   # needed for git diff HEAD~1
 
-      - name: Regenerate operators from whitelist
+      - name: Resolve deploy commit
+        id: deploy_commit
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate operators match whitelist
         shell: pwsh
-        run: |
-          ./scripts/sync-ops.ps1
-          git diff --exit-code -- docker/shared/ops.json
+        run: ./scripts/sync-ops.ps1 -Check
+
+      - name: Validate Azure edge contract
+        shell: pwsh
+        run: ./scripts/tests/Test-AzureEdge.ps1
 
       # Log in to Azure via OIDC — no stored credentials, token is short-lived
       # Docs: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure-openid-connect
@@ -45,6 +52,9 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep
+        run: az bicep build --file infra/azure/main.bicep --stdout > /dev/null
 
       - name: Create resource group (idempotent)
         run: |
@@ -66,7 +76,7 @@ jobs:
           fi
 
       - name: Deploy Bicep (infra + VM)
-        if: steps.infra_check.outputs.changed == 'true' || (github.event_name == 'workflow_dispatch' && (inputs.ref == 'main' || inputs.ref == ''))
+        if: steps.infra_check.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           az deployment group create \
             --resource-group rg-minecraft-prod \
@@ -80,42 +90,42 @@ jobs:
       # and rewrites /opt/minecraft/secrets/* + velocity.toml before the
       # compose restart.
       #
-      # Security: the deploy ref MUST NOT be interpolated into the inline
-      # script via `${{ ... }}`. workflow_dispatch.inputs.ref is attacker-
-      # controlled by anyone with write access (and that's a defense-in-depth
-      # boundary worth holding). Strategy:
-      #   1) Pull inputs.ref into an env var so it's a shell string, not a
-      #      template substitution.
-      #   2) Validate it against a strict allowlist on the runner BEFORE
-      #      sending it to the VM. Reject anything outside [a-zA-Z0-9._/-].
-      #   3) Pass it via `--parameters` (Azure surfaces this as a positional
-      #      arg `$1` to the script). Inside the script body, single-quote
-      #      the heredoc so the runner shell can't expand anything, and
-      #      reference `$1` with proper double-quoting.
+      # Security: resolve the requested ref at checkout, then pass only the
+      # resulting full commit SHA to Azure Run Command. The VM validates the
+      # SHA again before fetching and checking out the immutable revision.
       - name: Deploy Docker stack
         env:
-          DEPLOY_REF: ${{ inputs.ref || 'main' }}
+          DEPLOY_SHA: ${{ steps.deploy_commit.outputs.sha }}
         run: |
-          case "$DEPLOY_REF" in
-            "" | *[!a-zA-Z0-9._/-]*)
-              echo "Refusing to deploy ref with unsafe characters or empty value: '$DEPLOY_REF'" >&2
+          case "$DEPLOY_SHA" in
+            "" | *[!0-9a-f]*)
+              echo "Refusing to deploy invalid commit SHA: '$DEPLOY_SHA'" >&2
               exit 1
               ;;
           esac
-          az vm run-command invoke \
+          if [ "${#DEPLOY_SHA}" -ne 40 ]; then
+            echo "Expected a full 40-character commit SHA, got '$DEPLOY_SHA'" >&2
+            exit 1
+          fi
+          # shellcheck disable=SC2016
+          result="$(az vm run-command invoke \
             --resource-group rg-minecraft-prod \
             --name vm-minecraft-prod \
             --command-id RunShellScript \
-            --parameters "deployRef=$DEPLOY_REF" \
+            --parameters "deploySha=$DEPLOY_SHA" \
             --scripts '
               export HOME=/root
               set -euo pipefail
               # az vm run-command passes --parameters as positional args to
-              # the script ($1, $2, ...). Strip the "deployRef=" prefix with
+              # the script ($1, $2, ...). Strip the "deploySha=" prefix with
               # bash parameter expansion (no eval, no command substitution).
-              REF="${1#deployRef=}"
-              if [ -z "$REF" ]; then
-                echo "Empty deploy ref received on VM — aborting" >&2
+              SHA="${1#deploySha=}"
+              case "$SHA" in
+                ????????-*) echo "Invalid deploy SHA received on VM" >&2; exit 1 ;;
+                *[!0-9a-f]* | "") echo "Invalid deploy SHA received on VM" >&2; exit 1 ;;
+              esac
+              if [ "${#SHA}" -ne 40 ]; then
+                echo "Invalid deploy SHA length received on VM" >&2
                 exit 1
               fi
               # /opt/minecraft is owned by the admin user; this script runs
@@ -123,11 +133,19 @@ jobs:
               # and doesnt depend on $HOME.
               git config --system --add safe.directory /opt/minecraft
               cd /opt/minecraft
-              git fetch origin "$REF"
-              git checkout "$REF"
-              git reset --hard "origin/$REF"
+              git fetch origin "$SHA"
+              git checkout --detach --force "$SHA"
+              bash docker/azure/reconcile-firewall.sh
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
-              docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
+              docker compose -f docker/azure/docker-compose.yml up \
+                -d --remove-orphans --wait --wait-timeout 180
+              echo "DEPLOY_AZURE_OK:$SHA"
             ' \
-            --output json | jq -r '.value[0].message'
+            --output json)"
+          message="$(jq -r '[.value[].message] | join("\n")' <<<"$result")"
+          printf '%s\n' "$message"
+          grep -Fq "DEPLOY_AZURE_OK:$DEPLOY_SHA" <<<"$message" || {
+            echo "Azure VM deployment did not return its success marker." >&2
+            exit 1
+          }

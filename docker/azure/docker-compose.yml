@@ -1,24 +1,25 @@
 ---
-# Azure stack: Tailscale sidecar + Velocity proxy + monitoring sidecars
+# Azure stack: Tailscale sidecar + player ingress + monitoring sidecars
 # Managed by GitHub Actions (deploy-azure.yml).
 #
-# The Azure VM is purely the public entry point and Mojang-auth gateway.
-# Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
-# on the Proxmox VM over Tailscale. No backend MC server runs here.
+# The Azure VM is purely the public edge. Minecraft players connect to
+# mc.negativezone.cc:25565 → Velocity → Craft to Exile 2. Palworld and
+# Windrose player traffic is forwarded at layer 4 to their dedicated game
+# stacks over Tailscale. No backend game server runs here.
 #
 # Tailscale runs as a Docker sidecar (NOT on the host). The tailscale container
 # owns the network namespace; Velocity, mc-monitor-exporter, and every monitoring
 # sidecar share it via `network_mode: service:tailscale`. This mirrors the Proxmox
 # stack pattern and keeps tailnet identity portable across host rebuilds.
 #
-# Why the tailscale service publishes `25565:25577` on the host:
+# Why the tailscale service publishes all player ports on the host:
 #   The Azure VM IS the public ingress. Player traffic arrives at the host's
-#   public IP on 25565 and must reach Velocity inside the sidecar's netns.
-#   Publishing 25565 on the tailscale container DNATs host:25565 → netns:25577
-#   where Velocity listens. Velocity's outbound to the C2E2 backend uses the
-#   tailnet interface in the same netns. Single hop, no userland proxy.
+#   public IP and must enter the sidecar's network namespace. Minecraft is
+#   DNATed to Velocity on 25577. Palworld 8211/udp and Windrose 7777/tcp+udp
+#   terminate at digest-pinned socat forwarders in the same namespace, which
+#   route to Key Vault-provided backend tailnet IPv4 addresses.
 #
-# Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
+# Metrics endpoints (8080/8081/9080/9100/9985) are NOT published on the host.
 # They're reachable only at the proxy VM's tailnet IP (100.x.x.x), which is
 # the same trade-off the Proxmox stack accepts (cleaner exposure surface).
 #
@@ -56,12 +57,45 @@ x-common-keys-apps: &common-keys-apps
     - no-new-privileges:true
   restart: unless-stopped
 
+x-forwarder: &forwarder
+  <<: *common-keys-apps
+  image: alpine/socat:1.8.1.3@sha256:3d9e7966201dd3a065df591020a09fd3c70845de7e7086e3531ea69db774406b
+  network_mode: "service:tailscale"
+  # Plain Docker Compose implements configs as read-only bind mounts and can
+  # ignore requested executable mode bits. Invoke through the interpreter so
+  # local Compose, Portainer GitOps, and Swarm all behave consistently.
+  entrypoint: ["/bin/sh", "/opt/edge/forward.sh"]
+  cap_drop:
+    - ALL
+  read_only: true
+  depends_on:
+    tailscale:
+      condition: service_healthy
+  deploy:
+    resources:
+      limits:
+        cpus: '0.25'
+        memory: 64M
+  configs:
+    - source: edge_forward
+      target: /opt/edge/forward.sh
+      mode: 0555
+    - source: edge_forward_healthcheck
+      target: /opt/edge/healthcheck.sh
+      mode: 0555
+  healthcheck:
+    test: ["CMD", "/bin/sh", "/opt/edge/healthcheck.sh"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 10s
+
 services:
 
   ############################# NETWORK SIDECAR
   # Owns the network namespace shared by velocity + monitoring containers.
-  # Publishes only the Minecraft player port on the host — everything else
-  # (metrics endpoints) is reachable solely via the tailnet.
+  # Publishes only player ports on the host — everything else (REST, RCON,
+  # metrics, and container administration) remains private.
   #
   # Hardening (vs the Docker default of root + ~14 caps):
   #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit one-cap allowlist; the
@@ -104,9 +138,11 @@ services:
       - /run:size=8m,mode=1777
     # Host-published ports for the entire shared netns must be declared here
     # (services using network_mode: service:tailscale cannot declare their own).
-    # TCP only — Java Edition is TCP, Velocity query is disabled in velocity.toml.
     ports:
       - "25565:25577/tcp"
+      - "8211:8211/udp"
+      - "7777:7777/tcp"
+      - "7777:7777/udp"
     deploy:
       resources:
         limits:
@@ -153,6 +189,44 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  ############################# L4 GAME FORWARDERS
+  # Backend addresses are fetched from Key Vault by refresh-env.sh and mounted
+  # as read-only Compose secrets. The generic launcher validates the address,
+  # then execs socat as PID 1. Only the three player listeners above are
+  # published; backend REST/RCON/metrics ports are never bound on the host.
+  palworld-forwarder:
+    <<: *forwarder
+    container_name: palworld-edge-forwarder
+    environment:
+      FORWARD_PROTOCOL: udp
+      FORWARD_LISTEN_PORT: "8211"
+      FORWARD_BACKEND_PORT: "8211"
+      FORWARD_BACKEND_FILE: /run/secrets/palworld_tailnet_ip
+    secrets:
+      - palworld_tailnet_ip
+
+  windrose-tcp-forwarder:
+    <<: *forwarder
+    container_name: windrose-tcp-edge-forwarder
+    environment:
+      FORWARD_PROTOCOL: tcp
+      FORWARD_LISTEN_PORT: "7777"
+      FORWARD_BACKEND_PORT: "7777"
+      FORWARD_BACKEND_FILE: /run/secrets/windrose_tailnet_ip
+    secrets:
+      - windrose_tailnet_ip
+
+  windrose-udp-forwarder:
+    <<: *forwarder
+    container_name: windrose-udp-edge-forwarder
+    environment:
+      FORWARD_PROTOCOL: udp
+      FORWARD_LISTEN_PORT: "7777"
+      FORWARD_BACKEND_PORT: "7777"
+      FORWARD_BACKEND_FILE: /run/secrets/windrose_tailnet_ip
+    secrets:
+      - windrose_tailnet_ip
 
   ############################# PROXY
   velocity:
@@ -332,6 +406,66 @@ services:
 # all configuration version-controlled in this compose file.
 # ─────────────────────────────────────────────────────────────────────────────
 configs:
+  edge_forward:
+    content: |
+      #!/bin/sh
+      set -eu
+
+      case "$${FORWARD_PROTOCOL:-}" in
+        tcp|udp) ;;
+        *)
+          echo "FORWARD_PROTOCOL must be tcp or udp" >&2
+          exit 1
+          ;;
+      esac
+
+      case "$${FORWARD_LISTEN_PORT:-}:$${FORWARD_BACKEND_PORT:-}" in
+        *[!0-9:]*|:*|*:)
+          echo "Forwarding ports must be numeric" >&2
+          exit 1
+          ;;
+      esac
+
+      backend_file=$${FORWARD_BACKEND_FILE:-}
+      if [ ! -r "$${backend_file}" ]; then
+        echo "Backend route file is missing or unreadable" >&2
+        exit 1
+      fi
+      backend=$$(cat "$${backend_file}")
+      case "$${backend}" in
+        100.*.*.*) ;;
+        *)
+          echo "Backend route must be a Tailscale IPv4 address" >&2
+          exit 1
+          ;;
+      esac
+
+      if [ "$${FORWARD_PROTOCOL}" = tcp ]; then
+        exec socat -d -d \
+          "TCP4-LISTEN:$${FORWARD_LISTEN_PORT},fork,reuseaddr" \
+          "TCP4:$${backend}:$${FORWARD_BACKEND_PORT},connect-timeout=10"
+      fi
+
+      exec socat -d -d \
+        "UDP4-LISTEN:$${FORWARD_LISTEN_PORT},fork,reuseaddr" \
+        "UDP4:$${backend}:$${FORWARD_BACKEND_PORT}"
+
+  edge_forward_healthcheck:
+    content: |
+      #!/bin/sh
+      set -eu
+
+      port_hex=$$(printf '%04X' "$${FORWARD_LISTEN_PORT}")
+      if [ "$${FORWARD_PROTOCOL}" = tcp ]; then
+        awk -v suffix=":$${port_hex}" \
+          '$$2 ~ suffix "$$" && $$4 == "0A" { found=1 } END { exit !found }' \
+          /proc/net/tcp /proc/net/tcp6
+      else
+        awk -v suffix=":$${port_hex}" \
+          '$$2 ~ suffix "$$" { found=1 } END { exit !found }' \
+          /proc/net/udp /proc/net/udp6
+      fi
+
   # Promtail config → /etc/promtail/config.yaml inside the promtail container.
   # Positions persist via the /data/minecraft/promtail bind mount so log
   # read-offsets survive container recreation.
@@ -386,3 +520,7 @@ configs:
 secrets:
   ts_authkey:
     file: /opt/minecraft/secrets/ts_authkey
+  palworld_tailnet_ip:
+    file: /opt/minecraft/secrets/palworld_tailnet_ip
+  windrose_tailnet_ip:
+    file: /opt/minecraft/secrets/windrose_tailnet_ip

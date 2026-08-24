@@ -12,6 +12,8 @@ player guides under operator noise. Read these files directly in the repo.
 
 | File | Topic |
 |---|---|
+| [`azure-edge.md`](azure-edge.md) | Public game forwarding, Key Vault routes, Tailscale ACLs/DNS, firewall reconciliation, and health |
+| [`multigame-rollout-checklist.md`](multigame-rollout-checklist.md) | Safe pre-production validation and explicit Palworld-then-Windrose live gates |
 | [`publish-runbook.md`](publish-runbook.md) | Cutting a new modpack version: publish workflow, release cadence, rollback, Azure one-time setup |
 
 ## Layout convention

@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://negativezone.cc/schemas/game-contract.schema.json",
+  "title": "Game instance contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "gameId",
+    "instanceId",
+    "displayName",
+    "lifecycle",
+    "nodeId",
+    "deploymentPath",
+    "image",
+    "ports",
+    "persistentPaths",
+    "limits",
+    "probes",
+    "backupPolicy",
+    "updatePolicy",
+    "requiredSecretNames"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "contractVersion": {
+      "const": 1
+    },
+    "gameId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "instanceId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lifecycle": {
+      "enum": [
+        "production",
+        "planned"
+      ]
+    },
+    "nodeId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deploymentPath": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reference",
+        "tagRequired",
+        "digestRequired",
+        "updates"
+      ],
+      "properties": {
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tagRequired": {
+          "const": true
+        },
+        "digestRequired": {
+          "const": true
+        },
+        "updates": {
+          "enum": [
+            "renovate"
+          ]
+        }
+      }
+    },
+    "ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "publicPort",
+          "privatePort",
+          "protocol",
+          "exposure",
+          "audience"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publicPort": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "privatePort": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "protocol": {
+            "enum": [
+              "tcp",
+              "udp"
+            ]
+          },
+          "exposure": {
+            "enum": [
+              "public",
+              "lan",
+              "tailnet",
+              "container-only"
+            ]
+          },
+          "audience": {
+            "enum": [
+              "players",
+              "admin",
+              "monitoring"
+            ]
+          }
+        }
+      }
+    },
+    "edgeRoutes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "edgeNodeId",
+          "publicPort",
+          "backendPort",
+          "protocol",
+          "backendKeyVaultSecretName"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "edgeNodeId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "publicPort": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "backendPort": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "protocol": {
+            "enum": [
+              "tcp",
+              "udp"
+            ]
+          },
+          "backendKeyVaultSecretName": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        }
+      }
+    },
+    "persistentPaths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "hostPath",
+          "purpose"
+        ],
+        "properties": {
+          "hostPath": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "containerPath": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpus",
+        "memory"
+      ],
+      "properties": {
+        "cpus": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "memory": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*(?:M|G)$"
+        }
+      }
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "type",
+          "target",
+          "requiredBeforeProduction"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "requiredBeforeProduction": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "backupPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "targets",
+        "retention"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "retention": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "updatePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "imageUpdates",
+        "deployment",
+        "automatic"
+      ],
+      "properties": {
+        "imageUpdates": {
+          "const": "renovate"
+        },
+        "deployment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "automatic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "requiredSecretNames": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      }
+    }
+  }
+}

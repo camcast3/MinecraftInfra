@@ -66,4 +66,6 @@ output keyVaultUri string = keyVault.properties.vaultUri
 //   velocity-forwarding-secret — Random string shared between Velocity and the C2E2 backend
 //   rcon-password            — RCON password for the C2E2 backend (consumed by the Proxmox stack)
 //   c2e2-tailscale-ip        — TailScale IP of the Proxmox VM (100.x.x.x)
+//   palworld-tailscale-ip     — TailScale IP of the Palworld stack sidecar (100.x.x.x)
+//   windrose-tailscale-ip     — TailScale IP of the Windrose stack sidecar (100.x.x.x)
 // ---------------------------------------------------------------------------

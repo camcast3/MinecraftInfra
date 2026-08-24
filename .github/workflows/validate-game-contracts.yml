@@ -1,0 +1,46 @@
+---
+name: Validate game contracts
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "docker/azure/docker-compose.yml"
+      - "docker/proxmox/docker-compose.yml"
+      - "docker/palworld/docker-compose.yml"
+      - "docker/windrose/docker-compose.yml"
+      - "scripts/Validate-GameContracts.ps1"
+      - "scripts/tests/Test-GameContracts.ps1"
+      - ".github/workflows/validate-game-contracts.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/**"
+      - "docker/azure/docker-compose.yml"
+      - "docker/proxmox/docker-compose.yml"
+      - "docker/palworld/docker-compose.yml"
+      - "docker/windrose/docker-compose.yml"
+      - "scripts/Validate-GameContracts.ps1"
+      - "scripts/tests/Test-GameContracts.ps1"
+      - ".github/workflows/validate-game-contracts.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Contracts and repository policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Validate contracts
+        shell: pwsh
+        run: ./scripts/Validate-GameContracts.ps1
+
+      - name: Test rejection policies
+        shell: pwsh
+        run: ./scripts/tests/Test-GameContracts.ps1

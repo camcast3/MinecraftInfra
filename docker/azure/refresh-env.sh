@@ -4,6 +4,8 @@
 # Runs ON the Azure VM. Authenticates via the system-assigned Managed Identity,
 # fetches secrets from Key Vault, and writes:
 #   - /opt/minecraft/secrets/ts_authkey              (tailscale auth key OR placeholder)
+#   - /opt/minecraft/secrets/palworld_tailnet_ip     (Palworld backend route)
+#   - /opt/minecraft/secrets/windrose_tailnet_ip     (Windrose backend route)
 #   - /data/minecraft/velocity/forwarding.secret     (Velocity modern forwarding secret)
 #   - /data/minecraft/velocity/velocity.toml         (Velocity proxy config — non-secret)
 #
@@ -100,8 +102,69 @@ kv_secret() {
   az keyvault secret show --vault-name "$KV_NAME" --name "$1" --query value -o tsv
 }
 
+kv_secret_optional() {
+  az keyvault secret show \
+    --vault-name "$KV_NAME" --name "$1" --query value -o tsv 2>/dev/null || true
+}
+
 VELOCITY_FORWARDING_SECRET=$(kv_secret "velocity-forwarding-secret")
 C2E2_TAILSCALE_IP=$(kv_secret "c2e2-tailscale-ip")
+PALWORLD_TAILSCALE_IP=$(kv_secret_optional "palworld-tailscale-ip")
+WINDROSE_TAILSCALE_IP=$(kv_secret_optional "windrose-tailscale-ip")
+
+validate_tailnet_ipv4() {
+  local name="$1" value="$2"
+  local octet1 octet2 octet3 octet4
+
+  if [[ ! "$value" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]]; then
+    echo "ERROR: ${name} must be an IPv4 address." >&2
+    exit 1
+  fi
+
+  IFS=. read -r octet1 octet2 octet3 octet4 <<< "$value"
+  if (( 10#$octet1 != 100 || 10#$octet2 < 64 || 10#$octet2 > 127 ||
+        10#$octet3 > 255 || 10#$octet4 > 255 )); then
+    echo "ERROR: ${name} must be in Tailscale's 100.64.0.0/10 range." >&2
+    exit 1
+  fi
+}
+
+validate_tailnet_ipv4 "c2e2-tailscale-ip" "$C2E2_TAILSCALE_IP"
+
+# Palworld and Windrose are pre-promotion stacks. Until their Key Vault routes
+# exist, keep Velocity deploys healthy and point their player listeners at the
+# unassigned CGNAT network address. If Key Vault is temporarily unavailable,
+# retain an already written valid route instead of replacing it.
+resolve_optional_route() {
+  local name="$1" value="$2" existing_file="$3"
+
+  if [ -n "$value" ]; then
+    validate_tailnet_ipv4 "$name" "$value"
+    printf '%s' "$value"
+    return
+  fi
+
+  if [ -s "$existing_file" ]; then
+    value=$(cat "$existing_file")
+    validate_tailnet_ipv4 "$name (cached route)" "$value"
+    echo "WARNING: ${name} unavailable in Key Vault; retaining cached route." >&2
+    printf '%s' "$value"
+    return
+  fi
+
+  echo "WARNING: ${name} is not configured; its public listener will remain unrouted." >&2
+  printf '%s' '100.64.0.0'
+}
+
+PALWORLD_TAILSCALE_IP=$(resolve_optional_route \
+  "palworld-tailscale-ip" "$PALWORLD_TAILSCALE_IP" \
+  "$SECRETS_DIR/palworld_tailnet_ip")
+WINDROSE_TAILSCALE_IP=$(resolve_optional_route \
+  "windrose-tailscale-ip" "$WINDROSE_TAILSCALE_IP" \
+  "$SECRETS_DIR/windrose_tailnet_ip")
+
+validate_tailnet_ipv4 "palworld-tailscale-ip" "$PALWORLD_TAILSCALE_IP"
+validate_tailnet_ipv4 "windrose-tailscale-ip" "$WINDROSE_TAILSCALE_IP"
 
 # ── State directories ─────────────────────────────────────────────────────────
 mkdir -p "$VELOCITY_DIR"
@@ -133,6 +196,32 @@ write_secret() {
   chown "${owner_uid}:${owner_gid}" "$tmp"
   mv -f "$tmp" "$dest"
 }
+
+# ── Layer-4 backend routes ────────────────────────────────────────────────────
+# The routes are stored in Key Vault so rebuilding a backend node does not
+# require a repository change. Forwarders read these files only at process
+# start, so queue a restart when an existing route changes.
+ROUTE_RESTART_SERVICES=()
+
+write_route() {
+  local dest="$1" value="$2" label="$3"
+  shift 3
+  local services=("$@")
+
+  if [ -f "$dest" ] && [ "$(cat "$dest")" = "$value" ]; then
+    echo "✓ ${label} route unchanged"
+    return
+  fi
+
+  write_secret "$dest" 0 0 "$value"
+  echo "✓ ${label} route written"
+  ROUTE_RESTART_SERVICES+=("${services[@]}")
+}
+
+write_route "$SECRETS_DIR/palworld_tailnet_ip" "$PALWORLD_TAILSCALE_IP" \
+  "Palworld" "palworld-forwarder"
+write_route "$SECRETS_DIR/windrose_tailnet_ip" "$WINDROSE_TAILSCALE_IP" \
+  "Windrose" "windrose-tcp-forwarder" "windrose-udp-forwarder"
 
 # ── Tailscale auth key (state-aware) ─────────────────────────────────────────
 # tailscaled writes its long-lived node identity to <statedir>/tailscaled.state
@@ -216,6 +305,25 @@ if [ "${#VELOCITY_RESTART_REASONS[@]}" -gt 0 ]; then
     echo "✓ velocity restarted (${VELOCITY_RESTART_REASONS[*]})"
   else
     echo "✓ velocity not running — next docker compose up will use new config (${VELOCITY_RESTART_REASONS[*]})"
+  fi
+fi
+
+# ── Layer-4 forwarder restart (only when a route changed) ────────────────────
+if [ "${#ROUTE_RESTART_SERVICES[@]}" -gt 0 ]; then
+  COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
+  RUNNING_FORWARDERS=()
+  for service in "${ROUTE_RESTART_SERVICES[@]}"; do
+    if docker compose -f "$COMPOSE_FILE" ps --status=running --services 2>/dev/null |
+      grep -qx "$service"; then
+      RUNNING_FORWARDERS+=("$service")
+    fi
+  done
+
+  if [ "${#RUNNING_FORWARDERS[@]}" -gt 0 ]; then
+    docker compose -f "$COMPOSE_FILE" restart "${RUNNING_FORWARDERS[@]}"
+    echo "✓ edge forwarders restarted after backend route change"
+  else
+    echo "✓ edge forwarders not running — next docker compose up will use new routes"
   fi
 fi
 

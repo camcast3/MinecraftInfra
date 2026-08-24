@@ -75,12 +75,6 @@ runcmd:
   # /dev/net/tun: default perms (0600 root:root) are fine — the tailscale
   # sidecar runs as root in its userns (see docker/azure/docker-compose.yml
   # for the capability-set rationale).
-  - ufw default deny incoming
-  - ufw default allow outgoing
-  # Java Edition Minecraft is TCP-only. Velocity query (UDP) is disabled in
-  # velocity.toml, and we don't run Bedrock, so no UDP rule needed.
-  - ufw allow 25565/tcp comment 'Minecraft TCP'
-  - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__
   # Format and mount the data disk (LUN 0 → stable Azure symlink)
@@ -110,6 +104,10 @@ runcmd:
   # via `az vm run-command invoke` but the working tree is owned by the admin
   # user — without this, git refuses with "dubious ownership in repository").
   - git config --system --add safe.directory /opt/minecraft
+  # Apply the same exact player-port policy used on every live deployment.
+  # Keeping this in a repository script gives future VM bootstraps parity with
+  # existing VMs even though Azure customData is immutable after creation.
+  - bash /opt/minecraft/docker/azure/reconcile-firewall.sh
   # Fetch secrets from Key Vault and write /opt/minecraft/secrets/* +
   # velocity.toml. Retry loop handles the brief delay before the Managed
   # Identity is available. Track success explicitly — without this, an

@@ -1,0 +1,26 @@
+{
+  "$schema": "../node-contract.schema.json",
+  "contractVersion": 1,
+  "nodeId": "minecraft-proxmox",
+  "displayName": "Minecraft Proxmox node",
+  "lifecycle": "production",
+  "platform": "proxmox-vm",
+  "provisioningPath": "infra/proxmox/cloud-init.yaml",
+  "dataRoot": "/data/minecraft",
+  "managementEndpoints": [
+    {
+      "name": "tailscale-ssh",
+      "protocol": "ssh",
+      "port": 22,
+      "exposure": "tailnet",
+      "purpose": "admin"
+    },
+    {
+      "name": "portainer-gitops",
+      "protocol": "https",
+      "port": null,
+      "exposure": "outbound-only",
+      "purpose": "agent"
+    }
+  ]
+}

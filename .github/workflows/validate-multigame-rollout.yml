@@ -1,0 +1,76 @@
+---
+name: Validate multi-game rollout
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "contracts/**"
+      - "docker/azure/**"
+      - "docker/palworld/**"
+      - "docker/windrose/**"
+      - "docker/proxmox/docker-compose.yml"
+      - "infra/azure/main.bicep"
+      - "infra/azure/modules/*.bicep"
+      - "infra/proxmox/game-node/**"
+      - "scripts/Invoke-MultigameRolloutValidation.ps1"
+      - "scripts/Validate-GameContracts.ps1"
+      - "scripts/tests/Test-AzureEdge.ps1"
+      - "scripts/tests/Test-ComposeLifecycle.ps1"
+      - "scripts/tests/Test-EdgeForwarding.ps1"
+      - "scripts/tests/Test-GameBackupLifecycle.sh"
+      - "scripts/tests/Test-GameBackups.sh"
+      - "scripts/tests/Test-GameContracts.ps1"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-PalworldStartup.ps1"
+      - "scripts/tests/Test-WindroseStartup.ps1"
+      - "scripts/tests/fixtures/game-node/generic.json"
+      - "scripts/tests/fixtures/rollout/**"
+      - ".github/workflows/deploy-azure.yml"
+      - ".github/workflows/validate-multigame-rollout.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/**"
+      - "docker/azure/**"
+      - "docker/palworld/**"
+      - "docker/windrose/**"
+      - "docker/proxmox/docker-compose.yml"
+      - "infra/azure/main.bicep"
+      - "infra/azure/modules/*.bicep"
+      - "infra/proxmox/game-node/**"
+      - "scripts/Invoke-MultigameRolloutValidation.ps1"
+      - "scripts/Validate-GameContracts.ps1"
+      - "scripts/tests/Test-AzureEdge.ps1"
+      - "scripts/tests/Test-ComposeLifecycle.ps1"
+      - "scripts/tests/Test-EdgeForwarding.ps1"
+      - "scripts/tests/Test-GameBackupLifecycle.sh"
+      - "scripts/tests/Test-GameBackups.sh"
+      - "scripts/tests/Test-GameContracts.ps1"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-PalworldStartup.ps1"
+      - "scripts/tests/Test-WindroseStartup.ps1"
+      - "scripts/tests/fixtures/game-node/generic.json"
+      - "scripts/tests/fixtures/rollout/**"
+      - ".github/workflows/deploy-azure.yml"
+      - ".github/workflows/validate-multigame-rollout.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  preproduction:
+    name: Isolated rollout validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install cloud-init schema validator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloud-init
+
+      - name: Validate Palworld then Windrose rollout
+        shell: pwsh
+        run: ./scripts/Invoke-MultigameRolloutValidation.ps1

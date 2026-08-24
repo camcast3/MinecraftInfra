@@ -1,0 +1,82 @@
+---
+name: Validate Azure edge
+
+on:
+  pull_request:
+    paths:
+      - "contracts/games/palworld.json"
+      - "contracts/games/windrose.json"
+      - "docker/azure/**"
+      - "docker/palworld/docker-compose.yml"
+      - "docker/windrose/docker-compose.yml"
+      - "infra/azure/main.bicep"
+      - "infra/azure/modules/*.bicep"
+      - "infra/azure/scripts/bootstrap.ps1"
+      - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
+      - "infra/proxmox/game-node/generated/windrose-cloud-init.yaml"
+      - "scripts/tests/Test-AzureEdge.ps1"
+      - ".github/workflows/deploy-azure.yml"
+      - ".github/workflows/validate-azure-edge.yml"
+  push:
+    branches: [main]
+    paths:
+      - "contracts/games/palworld.json"
+      - "contracts/games/windrose.json"
+      - "docker/azure/**"
+      - "docker/palworld/docker-compose.yml"
+      - "docker/windrose/docker-compose.yml"
+      - "infra/azure/main.bicep"
+      - "infra/azure/modules/*.bicep"
+      - "infra/azure/scripts/bootstrap.ps1"
+      - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
+      - "infra/proxmox/game-node/generated/windrose-cloud-init.yaml"
+      - "scripts/tests/Test-AzureEdge.ps1"
+      - ".github/workflows/deploy-azure.yml"
+      - ".github/workflows/validate-azure-edge.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Compose, Bicep, and workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Test Azure edge rendering and policy
+        shell: pwsh
+        run: ./scripts/tests/Test-AzureEdge.ps1
+
+      - name: Parse edge and bootstrap scripts
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          $files = @(
+            'infra/azure/scripts/bootstrap.ps1'
+            'scripts/tests/Test-AzureEdge.ps1'
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [void] [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $file),
+              [ref] $tokens,
+              [ref] $errors
+            )
+            if ($errors.Count -gt 0) {
+              throw "PowerShell parse failure in ${file}: $($errors -join '; ')"
+            }
+          }
+          bash -n docker/azure/refresh-env.sh docker/azure/reconcile-firewall.sh
+
+      - name: Lint GitHub Actions workflows
+        run: |
+          docker run --rm \
+            --volume "$PWD:/repo" \
+            --workdir /repo \
+            rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
+            .github/workflows/deploy-azure.yml \
+            .github/workflows/validate-azure-edge.yml \
+            .github/workflows/validate-game-contracts.yml \
+            .github/workflows/validate-multigame-rollout.yml
