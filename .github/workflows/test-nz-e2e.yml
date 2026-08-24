@@ -5,11 +5,14 @@ on:
     paths:
       - "client/**"
       - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
       - "infra/azure/scripts/build-instance-from-packwiz.ps1"
       - "infra/azure/scripts/publish-prism-pack.ps1"
       - "infra/azure/scripts/promote-prism-pack.ps1"
       - "infra/azure/scripts/test-c2e2-backend.ps1"
       - "ops/publish-runbook.md"
+      - "scripts/Test-ClientDistribution.ps1"
       - "scripts/Test-MinecraftStatus.ps1"
       - ".github/workflows/promote-prism-pack.yml"
       - ".github/workflows/publish-prism-pack.yml"
@@ -20,11 +23,14 @@ on:
     paths:
       - "client/**"
       - "packwiz/**"
+      - "docs/**/*.md"
+      - "docs/assets/*.ps1"
       - "infra/azure/scripts/build-instance-from-packwiz.ps1"
       - "infra/azure/scripts/publish-prism-pack.ps1"
       - "infra/azure/scripts/promote-prism-pack.ps1"
       - "infra/azure/scripts/test-c2e2-backend.ps1"
       - "ops/publish-runbook.md"
+      - "scripts/Test-ClientDistribution.ps1"
       - "scripts/Test-MinecraftStatus.ps1"
       - ".github/workflows/promote-prism-pack.yml"
       - ".github/workflows/publish-prism-pack.yml"
@@ -77,3 +83,7 @@ jobs:
       - name: Validate disposable package
         shell: pwsh
         run: ./client/scripts/Test-Packaging.ps1
+
+      - name: Validate client distribution and docs paths
+        shell: pwsh
+        run: ./scripts/Test-ClientDistribution.ps1
