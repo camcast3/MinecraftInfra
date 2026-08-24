@@ -1,4 +1,7 @@
-# NegativeZone client version check - Prism PreLaunchCommand hook
+# ARCHIVED RECOVERY ONLY - legacy PowerShell version-check hook
+#
+# Retained because immutable setup-v releases and already-installed legacy
+# clients may fetch this exact path. New packages use nz check.
 #
 # Lightweight (~1 second) check that runs on every launch. Compares the
 # installed modpack version against a tiny GitHub-hosted pointer file and
@@ -39,7 +42,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$DefaultLatestVersionUrl = 'https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/latest-version.txt'
+$DefaultLatestVersionUrl = 'https://stmcminecraftprod.blob.core.windows.net/minecraft-modpack/latest-version.txt'
 # Test harness override - same pattern as $env:NEGATIVEZONE_MANIFEST_URL in
 # setup.ps1 / update.ps1. Loud WARN logged below when active so half-set
 # test sessions are visible.
@@ -49,9 +52,8 @@ $LatestVersionUrl = if ($env:NEGATIVEZONE_LATEST_VERSION_URL) {
     $DefaultLatestVersionUrl
 }
 
-# User-facing one-liner. Hosted same way as setup.ps1 - the player runs it
-# from a separate PowerShell window when they see the block message.
-$UpdateOneLiner = 'irm https://raw.githubusercontent.com/camcast3/MinecraftInfra/main/docs/assets/update.ps1 | iex'
+# Move legacy clients onto the sole production channel.
+$UpdateOneLiner = 'irm https://github.com/camcast3/MinecraftInfra/releases/download/nz-latest/install.ps1 | iex'
 $WikiUrl        = 'https://wiki.negativezone.cc/updating'
 
 function Write-Note($msg) { Write-Host "[negativezone] $msg" }
@@ -138,7 +140,7 @@ Write-Note ''
 Write-Note "  $UpdateOneLiner"
 Write-Note ''
 if ($mismatchDirection -eq 'ahead') {
-    Write-Note '(Your client is AHEAD of the server. update.ps1 will refuse a'
+    Write-Note '(Your client is AHEAD of the server. nz update will refuse a'
     Write-Note ' rollback unless the admin opted in via allowDowngrade:true.'
     Write-Note ' If you need to force a rollback, contact the admin.)'
     Write-Note ''

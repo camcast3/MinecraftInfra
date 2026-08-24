@@ -26,7 +26,7 @@ services:
 
   c2e2:
     container_name: c2e2
-    image: itzg/minecraft-server:2026.8.0-java17@sha256:c49cbcd86627da16ee3f9bf8d7d545b2622df3321edc20ed3d6060811185fac5
+    image: itzg/minecraft-server:2026.8.2-java17@sha256:1a6efb48c6f40abaef8b4ee8eb6b5e786dcdb0c5a9bd1199262bee6734f13127
     tty: true
     stdin_open: true
     # No 25565 on host — that's velocity's. :19565 is exposed for local

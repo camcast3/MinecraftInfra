@@ -37,7 +37,7 @@ services:
 
   tailscale:
     <<: *common-keys-apps
-    image: tailscale/tailscale:v1.102.2@sha256:4107a12b1a0466bb3f2c968d5fa35acf509cd7865a958ce1af36724e9f016342
+    image: tailscale/tailscale:v1.102.3@sha256:51fec4863144d6ba0a22504cfb455d020ee0307d0c04eb48f5afee63390bdba0
     container_name: tailscale-minecraft
     deploy:
       resources:
@@ -65,7 +65,7 @@ services:
 
   craft-to-exile-2:
     <<: *common-keys-apps
-    image: itzg/minecraft-server:2026.8.0-java17@sha256:d080ed3ce21e8d5b96dca46c4bbb245783285cc24e1c8e503f56219f872a75b6
+    image: itzg/minecraft-server:2026.8.2-java17@sha256:7c64be8adaf0ee50afd2caabf8825d213077c6e4be3e9c39adff64da79da9c37
     container_name: mc-c2e2
     network_mode: "service:tailscale"
     tty: true
@@ -250,7 +250,7 @@ services:
     <<: *common-keys-apps
     # Reuses the MC image — rcon-cli already installed. Every 6h: warn at
     # 1h/30m/5m/1m/10s, then `stop`; restart: unless-stopped brings it back.
-    image: itzg/minecraft-server:2026.8.0-java17@sha256:d080ed3ce21e8d5b96dca46c4bbb245783285cc24e1c8e503f56219f872a75b6
+    image: itzg/minecraft-server:2026.8.2-java17@sha256:7c64be8adaf0ee50afd2caabf8825d213077c6e4be3e9c39adff64da79da9c37
     container_name: mc-restarter
     network_mode: "service:tailscale"
     depends_on:
