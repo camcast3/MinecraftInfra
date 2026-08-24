@@ -80,12 +80,36 @@ CPU type `host`, QEMU agent enabled, and ballooning disabled are sensible
 starting points for latency-sensitive game nodes. Size CPU, memory, and
 storage from observed application load.
 
+## Shared `birdo` operator account
+
+Every rendered game node creates `birdo` with passwordless sudo. The committed
+vendor data intentionally leaves the password locked. After the node is
+reachable through an SSH host alias, copy the existing Palworld password hash
+over encrypted SSH:
+
+```powershell
+.\infra\proxmox\game-node\Set-GameNodeOperatorPassword.ps1 `
+  -SourceHost palworld `
+  -TargetHost <new-node-ssh-alias>
+```
+
+The helper never prints or writes the hash locally. Password authentication is
+enabled only for `birdo`; UFW still limits SSH to configured management CIDRs
+and Tailscale.
+
 ## Backup lifecycle
 
 `game-backup@<slug>.timer` is installed by rendered vendor data, but its
 service has a `ConditionPathExists` gate on
 `/etc/game-backup/rclone.conf`. Until a root-owned rclone configuration is
 installed, scheduled backups do not run.
+
+This mirrors Minecraft's 3-2-1 destinations and retention—14 days local,
+7 days on NAS, and 90 days in Azure Cold—but runs as a host systemd service,
+not a backup container. One application-consistent archive is created and
+replicated to all three destinations, avoiding three separate game shutdowns.
+The script uses the host Docker CLI only to quiesce and restart the named game
+container; it never mounts the Docker socket into another container.
 
 Each run:
 
