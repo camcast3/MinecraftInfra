@@ -25,6 +25,16 @@ param keyVaultName = 'kv-minecraft-prod'
 // Must be globally unique, 3-24 lowercase alphanumeric chars (no hyphens).
 // Change this only if the name is already taken — after first deploy, never change it.
 param storageAccountName = 'stmcminecraftprod'
+param backupStorageAccountName = 'stmcbackupsprod'
+param c2e2BackupContainerName = 'c2e2-backups'
+param palworldBackupContainerName = 'palworld-backups'
+param windroseBackupContainerName = 'windrose-backups'
+// After running bootstrap.ps1, add palworldBackupSpObjectId and
+// windroseBackupSpObjectId here. Until then their containers and role
+// assignments are deliberately not deployed.
+// ~3× the current ~5 GiB daily archive, evaluated over one hour.
+param backupIngressThresholdBytes = 16106127360
+param budgetAmount = 80
 
 // Object ID of the GitHub Actions OIDC service principal.
 // Run bootstrap.sh step 2, then:

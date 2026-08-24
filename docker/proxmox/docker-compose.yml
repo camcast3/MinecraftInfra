@@ -4,7 +4,7 @@
 # hardcoded here. Build metadata (PACKWIZ_URL SHA, MOTD version) is inlined and
 # rewritten in place by infra/azure/scripts/publish-prism-pack.ps1 on each publish.
 # MC 1.20.1 ⇒ all server images MUST stay on java17 variants.
-# Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups}
+# Pre-create on host: /data/minecraft/{tailscale,c2e2,promtail,local-backups,backup-health}
 
 x-common-keys-apps: &common-keys-apps
   security_opt:
@@ -175,23 +175,76 @@ services:
   backup-azure:
     <<: *backup-common
     container_name: mc-c2e2-backup-azure
+    volumes:
+      - /data/minecraft/c2e2:/data:ro
+      - /data/minecraft/backup-health:/health
     environment:
       <<: *backup-env-common
       BACKUP_METHOD: rclone
       RCLONE_REMOTE: AZBLOB
-      RCLONE_DEST_DIR: minecraft-backups/c2e2
+      RCLONE_DEST_DIR: c2e2-backups
       PRUNE_BACKUPS_DAYS: "90"
       # 1/day × 90d × ~10 GB ≈ 900 GB @ Cold GRS ≈ ~$18/mo.
       CRON_SCHEDULE: "30 4 * * *"
       RCLONE_CONFIG_AZBLOB_TYPE: azureblob
-      RCLONE_CONFIG_AZBLOB_ACCOUNT: ${STORAGE_ACCOUNT}
+      RCLONE_CONFIG_AZBLOB_ACCOUNT: ${BACKUP_STORAGE_ACCOUNT:-stmcbackupsprod}
       RCLONE_CONFIG_AZBLOB_TENANT: ${AZURE_TENANT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_ID: ${AZURE_CLIENT_ID}
       RCLONE_CONFIG_AZBLOB_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
       RCLONE_CONFIG_AZBLOB_ACCESS_TIER: Cold
-      # SP scope is the minecraft-backups container only, not the account —
+      # SP scope is the c2e2-backups container only, not the account —
       # skip rclone's preflight HEAD which would otherwise 403.
       RCLONE_CONFIG_AZBLOB_NO_CHECK_CONTAINER: "true"
+      # Emits a low-cardinality result line directly into the existing
+      # Promtail/Loki path. The first argument is mc-backup's backup exit code.
+      POST_BACKUP_SCRIPT: |-
+        code="$$1"
+        if [ "$$code" = "0" ]; then
+          date +%s > /health/c2e2-azure.success
+          echo "minecraft_backup_result game=c2e2 destination=azure status=success"
+        else
+          echo "minecraft_backup_result game=c2e2 destination=azure status=failure exit_code=$$code"
+        fi
+
+  backup-health:
+    <<: *common-keys-apps
+    image: itzg/mc-backup:2026.8.2@sha256:c5bccdd1714c2527c4299bab6a41ef2cfd5858d0ec3e905325025b12e3cb5021
+    container_name: mc-c2e2-backup-health
+    network_mode: none
+    read_only: true
+    deploy:
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 64M
+    volumes:
+      - /data/minecraft/backup-health:/health:ro
+    environment:
+      TZ: America/Los_Angeles
+      BACKUP_STALE_AFTER_SECONDS: "129600"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        previous=""
+        while true; do
+          now=$$(date +%s)
+          if [ -s /health/c2e2-azure.success ]; then
+            last=$$(cat /health/c2e2-azure.success)
+            age=$$((now - last))
+          else
+            age=-1
+          fi
+          if [ "$$age" -lt 0 ] || [ "$$age" -gt "$$BACKUP_STALE_AFTER_SECONDS" ]; then
+            status=stale
+          else
+            status=healthy
+          fi
+          if [ "$$status" != "$$previous" ]; then
+            echo "minecraft_backup_health game=c2e2 destination=azure status=$$status age_seconds=$$age"
+            previous="$$status"
+          fi
+          sleep 900
+        done
 
   restarter:
     <<: *common-keys-apps
@@ -372,6 +425,15 @@ configs:
                 __path__: /var/lib/docker/containers/*/*.log
           pipeline_stages:
             - docker: {}
+            - regex:
+                expression: '^(?P<backup_signal>minecraft_backup_result) game=(?P<backup_game>[a-z0-9-]+) destination=(?P<backup_destination>[a-z0-9-]+) status=(?P<backup_status>success|failure)(?: exit_code=(?P<backup_exit_code>[0-9]+))?$'
+            - regex:
+                expression: '^(?P<backup_signal>minecraft_backup_health) game=(?P<backup_game>[a-z0-9-]+) destination=(?P<backup_destination>[a-z0-9-]+) status=(?P<backup_status>healthy|stale) age_seconds=(?P<backup_age_seconds>-1|[0-9]+)$'
+            - labels:
+                backup_signal:
+                backup_game:
+                backup_destination:
+                backup_status:
         - job_name: syslog
           static_configs:
             - targets: [localhost]
