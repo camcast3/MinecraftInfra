@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "docker/palworld/**"
+      - "infra/azure/parameters/prod.bicepparam"
       - "infra/proxmox/game-node/README.md"
       - "infra/proxmox/game-node/Render-CloudInit.ps1"
       - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
@@ -23,6 +24,7 @@ on:
     branches: [main]
     paths:
       - "docker/palworld/**"
+      - "infra/azure/parameters/prod.bicepparam"
       - "infra/proxmox/game-node/README.md"
       - "infra/proxmox/game-node/Render-CloudInit.ps1"
       - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
@@ -58,6 +60,9 @@ jobs:
           TS_AUTHKEY: tskey-auth-validation-placeholder
           PALWORLD_ADMIN_PASSWORD: PalworldValidationPassword-1234
         run: docker compose --file docker/palworld/docker-compose.yml config --quiet
+
+      - name: Compile Azure Bicep
+        run: az bicep build --file infra/azure/main.bicep --stdout > /dev/null
 
       - name: Check Palworld shell scripts
         run: |

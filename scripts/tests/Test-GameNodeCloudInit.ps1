@@ -101,6 +101,9 @@ foreach ($text in @(
     'AZURE_CONTAINER=palworld-backups'
     '/usr/local/libexec/game-backup/palworld'
     'game-backup@palworld.timer'
+    'useradd --create-home --shell /bin/bash birdo'
+    'birdo ALL=(ALL:ALL) NOPASSWD: ALL'
+    'Match User birdo'
 )) {
     if (-not $palworldRendered.Contains($text)) {
         throw "Rendered Palworld cloud-init is missing expected text: $text"
