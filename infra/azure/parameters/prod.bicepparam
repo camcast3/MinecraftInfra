@@ -28,10 +28,10 @@ param storageAccountName = 'stmcminecraftprod'
 param backupStorageAccountName = 'stmcbackupsprod'
 param c2e2BackupContainerName = 'c2e2-backups'
 param palworldBackupContainerName = 'palworld-backups'
+param palworldBackupSpObjectId = '2ec636df-6f53-4435-b7ca-eae7c0763a3c'
 param windroseBackupContainerName = 'windrose-backups'
-// After running bootstrap.ps1, add palworldBackupSpObjectId and
-// windroseBackupSpObjectId here. Until then their containers and role
-// assignments are deliberately not deployed.
+// After running bootstrap.ps1, add windroseBackupSpObjectId here. Until then
+// its container and role assignment are deliberately not deployed.
 // ~3× the current ~5 GiB daily archive, evaluated over one hour.
 param backupIngressThresholdBytes = 16106127360
 param budgetAmount = 80

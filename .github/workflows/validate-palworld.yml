@@ -1,0 +1,108 @@
+---
+name: Validate Palworld stack
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "docker/palworld/**"
+      - "infra/azure/parameters/prod.bicepparam"
+      - "infra/proxmox/game-node/README.md"
+      - "infra/proxmox/game-node/Render-CloudInit.ps1"
+      - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
+      - "infra/proxmox/game-node/backup/game-backup.sh"
+      - "infra/proxmox/game-node/backup/palworld"
+      - "infra/proxmox/game-node/profiles/palworld.json"
+      - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
+      - "ops/palworld.md"
+      - "ops/readiness-palworld.md"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-PalworldStartup.ps1"
+      - "renovate.json"
+      - ".github/workflows/validate-palworld.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker/palworld/**"
+      - "infra/azure/parameters/prod.bicepparam"
+      - "infra/proxmox/game-node/README.md"
+      - "infra/proxmox/game-node/Render-CloudInit.ps1"
+      - "infra/proxmox/game-node/cloud-init.yaml.tmpl"
+      - "infra/proxmox/game-node/backup/game-backup.sh"
+      - "infra/proxmox/game-node/backup/palworld"
+      - "infra/proxmox/game-node/profiles/palworld.json"
+      - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
+      - "ops/palworld.md"
+      - "ops/readiness-palworld.md"
+      - "scripts/tests/Test-GameNodeCloudInit.ps1"
+      - "scripts/tests/Test-PalworldStartup.ps1"
+      - "renovate.json"
+      - ".github/workflows/validate-palworld.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Compose, startup, cloud-init, and backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install validators
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cloud-init shellcheck
+
+      - name: Validate production Compose
+        env:
+          TS_AUTHKEY: tskey-auth-validation-placeholder
+          PALWORLD_ADMIN_PASSWORD: PalworldValidationPassword-1234
+        run: docker compose --file docker/palworld/docker-compose.yml config --quiet
+
+      - name: Compile Azure Bicep
+        run: az bicep build --file infra/azure/main.bicep --stdout > /dev/null
+
+      - name: Check Palworld shell scripts
+        run: |
+          bash -n docker/palworld/*.sh infra/proxmox/game-node/backup/palworld
+          shellcheck docker/palworld/*.sh infra/proxmox/game-node/backup/palworld
+
+      - name: Test secure startup regression
+        shell: pwsh
+        run: ./scripts/tests/Test-PalworldStartup.ps1
+
+      - name: Test and validate Palworld cloud-init
+        shell: pwsh
+        run: ./scripts/tests/Test-GameNodeCloudInit.ps1
+
+      - name: Validate generated cloud-init schema
+        run: >-
+          cloud-init schema
+          --config-file infra/proxmox/game-node/generated/palworld-cloud-init.yaml
+
+      - name: Exercise Palworld backup integration dry run
+        env:
+          DATA_ROOT: /data/palworld
+          CONTAINER_NAME: palworld-server
+          BACKUP_SOURCE_NAMES: data
+          BACKUP_CONSISTENCY: palworld-rest-graceful-stop
+          BACKUP_STOP_MODE: hook
+          AZURE_CONTAINER: palworld-backups
+        run: |
+          plan=$(bash infra/proxmox/game-node/backup/game-backup.sh \
+            --game palworld --config build/palworld-no-config.env --dry-run)
+          grep -Fq 'container=palworld-server' <<<"$plan"
+          grep -Fq 'sources=data' <<<"$plan"
+          grep -Fq 'consistency=palworld-rest-graceful-stop' <<<"$plan"
+          grep -Fq 'lifecycle=hook, confirmed stop, restart health' <<<"$plan"
+          grep -Fq 'azure=azure:palworld-backups tier=cold retention=90d' <<<"$plan"
+
+      - name: Lint focused workflow
+        run: |
+          docker run --rm \
+            --volume "$PWD:/repo" \
+            --workdir /repo \
+            rhysd/actionlint:1.7.7@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9 \
+            .github/workflows/validate-palworld.yml

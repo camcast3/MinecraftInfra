@@ -13,6 +13,17 @@
     ],
     "packageRules": [
         {
+            "description": "Require a reviewed, application-consistent Palworld update",
+            "matchFileNames": [
+                "docker/palworld/**"
+            ],
+            "matchPackageNames": [
+                "ghcr.io/pocketpairjp/palserver"
+            ],
+            "groupName": "Palworld official server",
+            "automerge": false
+        },
+        {
             "groupName": "devDependencies (non-major)",
             "matchDepTypes": [
                 "devDependencies",

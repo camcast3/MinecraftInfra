@@ -78,6 +78,12 @@ write_files:
     content: |
 @@RCLONE_EXAMPLE@@
 
+  - path: /usr/local/libexec/game-backup/palworld
+    permissions: "0750"
+    owner: root:root
+    content: |
+@@PALWORLD_BACKUP_HOOK@@
+
   - path: /usr/local/sbin/game-backup
     permissions: "0750"
     owner: root:root

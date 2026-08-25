@@ -69,8 +69,11 @@ Assert-True ($mainText.Contains("param palworldBackupSpObjectId string = ''")) `
     'Palworld backup writer must default to empty.'
 Assert-True ($mainText.Contains("param windroseBackupSpObjectId string = ''")) `
     'Windrose backup writer must default to empty.'
-Assert-True (-not $prodText.Contains('param palworldBackupSpObjectId')) `
-    'Production must not enable the Palworld backup container yet.'
+Assert-True (
+    $prodText.Contains(
+        "param palworldBackupSpObjectId = '2ec636df-6f53-4435-b7ca-eae7c0763a3c'"
+    )
+) 'Production must enable the dedicated Palworld backup writer.'
 Assert-True (-not $prodText.Contains('param windroseBackupSpObjectId')) `
     'Production must not enable the Windrose backup container yet.'
 Assert-True ($backupText.Contains('allowBlobPublicAccess: false')) `
