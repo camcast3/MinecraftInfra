@@ -69,7 +69,7 @@ services:
 
   palworld-init:
     <<: *common
-    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
+    image: ghcr.io/pocketpairjp/palserver:v1.0.4.102642@sha256:71d51bc7eb671efbc3028fc77a91fa70bc64dd795b341be4ce00ad7261d860c7
     user: "0:0"
     restart: "no"
     read_only: true
@@ -89,7 +89,7 @@ services:
 
   palworld:
     <<: *common
-    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
+    image: ghcr.io/pocketpairjp/palserver:v1.0.4.102642@sha256:71d51bc7eb671efbc3028fc77a91fa70bc64dd795b341be4ce00ad7261d860c7
     container_name: palworld-server
     init: true
     user: "user:usergroup"
