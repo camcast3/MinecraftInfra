@@ -192,7 +192,7 @@ services:
 
   alloy:
     <<: *common
-    image: grafana/alloy:v1.11.3@sha256:8c7256f412feb9f5f48f9f6f9394dc97ca887f63dea9304f347970ecc1787669
+    image: grafana/alloy:v1.20.0@sha256:f111cce835516c5f99166342be7038496b52ced16667be5a11e19258a3e4cd30
     container_name: palworld-alloy
     user: "0:0"
     read_only: true
