@@ -89,7 +89,7 @@ services:
   #     mounted secret value.
   tailscale:
     <<: *common-keys-apps
-    image: tailscale/tailscale:v1.102.3@sha256:51fec4863144d6ba0a22504cfb455d020ee0307d0c04eb48f5afee63390bdba0
+    image: tailscale/tailscale:v1.102.5@sha256:08a1bc6c82fee62d1a135788fb67fefa9d22deea3830e8a45ebe1a3cb116e325
     container_name: tailscale-proxy
     cap_drop:
       - ALL
