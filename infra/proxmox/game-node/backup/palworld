@@ -22,23 +22,8 @@ health=$(docker inspect -f \
   exit 69
 }
 
-palworld_post() {
-  local endpoint=$1
-  local payload=${2:-}
-  docker exec "$container" /bin/sh -ceu '
-    endpoint=$1
-    payload=$2
-    if [ -n "$payload" ]; then
-      curl --fail --silent --show-error --max-time 15 --request POST \
-        --user "admin:${PALWORLD_ADMIN_PASSWORD:?}" \
-        --header "Content-Type: application/json" --data "$payload" \
-        "http://127.0.0.1:8212/v1/api/${endpoint}" >/dev/null
-    else
-      curl --fail --silent --show-error --max-time 15 --request POST \
-        --user "admin:${PALWORLD_ADMIN_PASSWORD:?}" \
-        "http://127.0.0.1:8212/v1/api/${endpoint}" >/dev/null
-    fi
-  ' backup-api "$endpoint" "$payload"
+palworld_rest() {
+  docker exec "$container" rest-cli "$@" --no-flush-log >/dev/null
 }
 
 shutdown_wait=60
@@ -46,8 +31,8 @@ if ((stop_timeout <= shutdown_wait + 15)); then
   shutdown_wait=$((stop_timeout > 15 ? stop_timeout - 15 : 1))
 fi
 
-palworld_post announce \
+palworld_rest announce \
   "{\"message\":\"Scheduled backup begins in ${shutdown_wait} seconds\"}"
-palworld_post save
-palworld_post shutdown \
+palworld_rest save
+palworld_rest shutdown \
   "{\"waittime\":${shutdown_wait},\"message\":\"Scheduled backup in progress\"}"

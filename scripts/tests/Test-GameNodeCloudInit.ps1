@@ -95,10 +95,17 @@ if ($palworldRendered -ne $palworldCommitted) {
 foreach ($text in @(
     '# Profile: Palworld (palworld)'
     'CONTAINER_NAME=palworld-server'
-    'BACKUP_SOURCE_NAMES="data"'
+    'BACKUP_SOURCE_NAMES="server/Pal/Saved"'
     'BACKUP_CONSISTENCY=palworld-rest-graceful-stop'
     'BACKUP_STOP_MODE=hook'
     'AZURE_CONTAINER=palworld-backups'
+    'docker exec "$container" rest-cli "$@" --no-flush-log'
+    "ufw allow from 192.168.69.0/24 to any port 8211 proto udp comment 'Palworld LAN players'"
+    "ufw allow from 192.168.2.0/24 to any port 8211 proto udp comment 'Palworld LAN players'"
+    'iptables -w -A "$chain" -p udp --dport 8211 -s 192.168.69.0/24 -j RETURN'
+    'iptables -w -A "$chain" -p udp --dport 8211 -s 192.168.2.0/24 -j RETURN'
+    'iptables -w -A "$chain" -p udp --dport 8211 -j DROP'
+    'game-node-docker-firewall.service'
     '/usr/local/libexec/game-backup/palworld'
     'game-backup@palworld.timer'
     'useradd --create-home --shell /bin/bash birdo'

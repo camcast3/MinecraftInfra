@@ -13,14 +13,15 @@
     ],
     "packageRules": [
         {
-            "description": "Require a reviewed, application-consistent Palworld update",
+            "description": "Require reviewed Palworld container updates",
             "matchFileNames": [
                 "docker/palworld/**"
             ],
             "matchPackageNames": [
-                "ghcr.io/pocketpairjp/palserver"
+                "thijsvanloef/palworld-server-docker",
+                "ghcr.io/rnz01/palworld-server-dashboard"
             ],
-            "groupName": "Palworld official server",
+            "groupName": "Palworld containers",
             "automerge": false
         },
         {

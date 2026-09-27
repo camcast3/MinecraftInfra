@@ -59,6 +59,10 @@ jobs:
         env:
           TS_AUTHKEY: tskey-auth-validation-placeholder
           PALWORLD_ADMIN_PASSWORD: PalworldValidationPassword-1234
+          PALWORLD_LAN_IP: 192.0.2.10
+          PALWORLD_PUID: "1000"
+          PALWORLD_PGID: "1000"
+          PALWORLD_DASHBOARD_PASSWORD: DashboardValidationPassword-1234
         run: docker compose --file docker/palworld/docker-compose.yml config --quiet
 
       - name: Compile Azure Bicep
@@ -66,8 +70,8 @@ jobs:
 
       - name: Check Palworld shell scripts
         run: |
-          bash -n docker/palworld/*.sh infra/proxmox/game-node/backup/palworld
-          shellcheck docker/palworld/*.sh infra/proxmox/game-node/backup/palworld
+          bash -n infra/proxmox/game-node/backup/palworld
+          shellcheck infra/proxmox/game-node/backup/palworld
 
       - name: Test secure startup regression
         shell: pwsh

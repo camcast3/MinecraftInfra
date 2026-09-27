@@ -108,6 +108,39 @@ write_files:
     content: |
 @@RESTORE_SCRIPT@@
 
+  - path: /usr/local/sbin/game-node-docker-firewall
+    permissions: "0750"
+    owner: root:root
+    content: |
+      #!/bin/sh
+      set -eu
+
+      chain=GAME_NODE_INGRESS
+      iptables -w -nL DOCKER-USER >/dev/null
+      iptables -w -N "$chain" 2>/dev/null || true
+      iptables -w -C DOCKER-USER -j "$chain" 2>/dev/null ||
+        iptables -w -I DOCKER-USER 1 -j "$chain"
+      iptables -w -F "$chain"
+@@DOCKER_INGRESS_RULES@@
+
+  - path: /etc/systemd/system/game-node-docker-firewall.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=Restrict Docker-published game ports
+      Requires=docker.service
+      After=docker.service
+      PartOf=docker.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/game-node-docker-firewall
+      ExecReload=/usr/local/sbin/game-node-docker-firewall
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
   - path: /etc/systemd/system/game-backup@.service
     permissions: "0644"
     content: |
@@ -203,6 +236,7 @@ runcmd:
     sshd -t
     systemctl reload ssh
   - systemctl daemon-reload
+  - systemctl enable --now game-node-docker-firewall.service
   - systemctl enable --now game-backup@@@GAME_SLUG@@.timer
   - systemctl enable --now game-backup-health@@@GAME_SLUG@@.timer
   - systemctl enable game-backup-recover@@@GAME_SLUG@@.service
@@ -210,6 +244,7 @@ runcmd:
   - ufw default deny incoming
   - ufw default allow outgoing
 @@MANAGEMENT_UFW_RULES@@
+@@LAN_UFW_RULES@@
 @@PUBLIC_UFW_RULES@@
   - ufw allow in on tailscale0 to any port 22 proto tcp comment 'Tailscale SSH'
   - ufw allow in on tailscale0 to any port @@SSH_PORT@@ proto tcp comment 'OpenSSH over Tailscale'

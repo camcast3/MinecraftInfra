@@ -7,7 +7,7 @@
   "azureBackupContainer": "palworld-backups",
   "containerName": "palworld-server",
   "backupSources": [
-    "data"
+    "server/Pal/Saved"
   ],
   "backupConsistency": "palworld-rest-graceful-stop",
   "backupStopMode": "hook",
@@ -16,6 +16,17 @@
   "managementCidrs": [
     "192.168.86.0/24",
     "192.168.69.159/32"
+  ],
+  "lanPorts": [
+    {
+      "port": 8211,
+      "protocol": "udp",
+      "comment": "Palworld LAN players",
+      "sourceCidrs": [
+        "192.168.69.0/24",
+        "192.168.2.0/24"
+      ]
+    }
   ],
   "publicPorts": []
 }
