@@ -34,6 +34,8 @@ function Assert-Cidr {
     if ($prefix -lt 0 -or $prefix -gt $maximumPrefix) {
         throw "Management source '$Value' has an invalid prefix."
     }
+
+    return $address
 }
 
 $templatePath = Join-Path $PSScriptRoot 'cloud-init.yaml.tmpl'
@@ -92,7 +94,7 @@ if (-not $configuration.managementCidrs -or $configuration.managementCidrs.Count
 }
 
 $managementRules = foreach ($source in $configuration.managementCidrs) {
-    Assert-Cidr -Value $source
+    [void] (Assert-Cidr -Value $source)
     "  - ufw allow from $source to any port $($configuration.sshPort) proto tcp comment 'OpenSSH management'"
 }
 
@@ -125,6 +127,55 @@ $publicRules = foreach ($publicPort in $publicPorts) {
 
     "  - ufw allow $port/$protocol comment '$comment'"
 }
+
+$lanPortsProperty = $configuration.PSObject.Properties['lanPorts']
+$lanPorts = if ($null -eq $lanPortsProperty) {
+    @()
+} else {
+    @($lanPortsProperty.Value)
+}
+$lanRules = [System.Collections.Generic.List[string]]::new()
+$dockerIngressRules = [System.Collections.Generic.List[string]]::new()
+foreach ($lanPort in $lanPorts) {
+    $port = [int] $lanPort.port
+    $protocol = [string] $lanPort.protocol
+    $comment = [string] $lanPort.comment
+    $sourceCidrs = @($lanPort.sourceCidrs)
+
+    if ($port -lt 1 -or $port -gt 65535) {
+        throw "LAN port must be between 1 and 65535."
+    }
+    if ($protocol -notin @('tcp', 'udp')) {
+        throw "LAN port protocol must be tcp or udp."
+    }
+    if ($comment -notmatch '^[A-Za-z0-9 ._-]+$') {
+        throw "LAN port comment contains unsupported characters."
+    }
+    if ($sourceCidrs.Count -eq 0) {
+        throw "LAN port '${port}/${protocol}' requires at least one source CIDR."
+    }
+    if (-not $publicPortKeys.Add("${port}/${protocol}")) {
+        throw "Duplicate published port '${port}/${protocol}'."
+    }
+
+    foreach ($source in $sourceCidrs) {
+        $address = Assert-Cidr -Value $source
+        if ($address.AddressFamily -ne
+            [System.Net.Sockets.AddressFamily]::InterNetwork) {
+            throw "LAN source '$source' must be an IPv4 CIDR."
+        }
+        $lanRules.Add(
+            "  - ufw allow from $source to any port $port proto $protocol comment '$comment'"
+        )
+        $dockerIngressRules.Add(
+            "iptables -w -A `"`$chain`" -p $protocol --dport $port -s $source -j RETURN"
+        )
+    }
+    $dockerIngressRules.Add(
+        "iptables -w -A `"`$chain`" -p $protocol --dport $port -j DROP"
+    )
+}
+$dockerIngressRules.Add('iptables -w -A "$chain" -j RETURN')
 
 function ConvertTo-CloudInitBlock {
     param([Parameter(Mandatory)][string] $Content)
@@ -164,7 +215,11 @@ $tokens = [ordered] @{
     '@@BACKUP_CONSISTENCY@@' = [string] $configuration.backupConsistency
     '@@BACKUP_STOP_MODE@@' = $backupStopMode
     '@@MANAGEMENT_UFW_RULES@@' = $managementRules -join "`n"
+    '@@LAN_UFW_RULES@@' = $lanRules -join "`n"
     '@@PUBLIC_UFW_RULES@@' = $publicRules -join "`n"
+    '@@DOCKER_INGRESS_RULES@@' = ConvertTo-CloudInitBlock (
+        $dockerIngressRules -join "`n"
+    )
 }
 foreach ($asset in $backupAssets.GetEnumerator()) {
     $assetPath = Join-Path $backupAssetRoot $asset.Value

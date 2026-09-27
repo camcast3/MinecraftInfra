@@ -9,196 +9,100 @@ $repositoryRoot = [System.IO.Path]::GetFullPath(
     [System.IO.Path]::Combine($PSScriptRoot, '..', '..')
 )
 $sourceCompose = Join-Path $repositoryRoot 'docker/palworld/docker-compose.yml'
-$testRoot = Join-Path $repositoryRoot "build/palworld-startup-tests-$PID"
-$testCompose = Join-Path $testRoot 'docker-compose.yml'
-$project = "minecraftinfra-palworld-startup-$PID"
 
 function Invoke-Native {
     param(
         [Parameter(Mandatory)][string] $Command,
-        [Parameter(Mandatory)][string[]] $Arguments,
-        [switch] $AllowFailure
+        [Parameter(Mandatory)][string[]] $Arguments
     )
 
     $output = @(& $Command @Arguments 2>&1)
-    $exitCode = $LASTEXITCODE
-    if (-not $AllowFailure -and $exitCode -ne 0) {
-        throw "$Command failed with exit code ${exitCode}: $($output -join [Environment]::NewLine)"
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Command failed with exit code ${LASTEXITCODE}: $($output -join [Environment]::NewLine)"
     }
-    return [pscustomobject]@{
-        ExitCode = $exitCode
-        Output   = $output -join [Environment]::NewLine
-    }
-}
-
-function Invoke-Compose {
-    param(
-        [Parameter(Mandatory)][string[]] $Arguments,
-        [switch] $AllowFailure
-    )
-
-    $allArguments = @(
-        'compose', '--project-name', $project, '--file', $testCompose
-    ) + $Arguments
-    return Invoke-Native -Command 'docker' -Arguments $allArguments `
-        -AllowFailure:$AllowFailure
+    return $output -join [Environment]::NewLine
 }
 
 $savedEnvironment = @{
     TS_AUTHKEY              = $env:TS_AUTHKEY
     PALWORLD_ADMIN_PASSWORD = $env:PALWORLD_ADMIN_PASSWORD
+    PALWORLD_LAN_IP         = $env:PALWORLD_LAN_IP
+    PALWORLD_PUID           = $env:PALWORLD_PUID
+    PALWORLD_PGID           = $env:PALWORLD_PGID
+    PALWORLD_DASHBOARD_PASSWORD = $env:PALWORLD_DASHBOARD_PASSWORD
 }
 
 try {
     $env:TS_AUTHKEY = 'tskey-auth-test-placeholder'
     $env:PALWORLD_ADMIN_PASSWORD = 'PalworldStartupTest-1234'
-
-    $composeText = Get-Content -LiteralPath $sourceCompose -Raw -Encoding UTF8
-    $image = [regex]::Match(
-        $composeText,
-        '(?m)^\s*image:\s*(ghcr\.io/pocketpairjp/palserver:[^\s#]+)\s*$'
-    ).Groups[1].Value
-    if ([string]::IsNullOrWhiteSpace($image)) {
-        throw 'The pinned Palworld image could not be read from Compose.'
-    }
-
-    $priorFailure = Invoke-Native -Command 'docker' -Arguments @(
-        'run', '--rm',
-        '--security-opt', 'no-new-privileges:true',
-        '--entrypoint', '/bin/sh',
-        $image,
-        '-c', 'sudo chown user:usergroup /pal/Package/Pal/Saved'
-    ) -AllowFailure
-    if ($priorFailure.ExitCode -eq 0) {
-        throw 'Regression setup failed: sudo unexpectedly elevated under no-new-privileges.'
-    }
-    if ($priorFailure.Output -notmatch
-        '(?i)no new privileges|sudo: (?:not found|command not found)|executable file not found.*sudo') {
-        throw "The prior sudo startup failure was not reproduced: $($priorFailure.Output)"
-    }
+    $env:PALWORLD_LAN_IP = '192.0.2.10'
+    $env:PALWORLD_PUID = '1000'
+    $env:PALWORLD_PGID = '1000'
+    $env:PALWORLD_DASHBOARD_PASSWORD = 'DashboardStartupTest-1234'
 
     $model = Invoke-Native -Command 'docker' -Arguments @(
         'compose', '--file', $sourceCompose, 'config', '--format', 'json'
     )
-    $config = $model.Output | ConvertFrom-Json
-    $init = $config.services.'palworld-init'
+    $config = $model | ConvertFrom-Json
     $game = $config.services.palworld
+    $dashboard = $config.services.dashboard
+    $tailscale = $config.services.tailscale
 
-    if ($init.user -ne '0:0' -or $init.restart -ne 'no' -or
-        -not $init.read_only -or $init.network_mode -ne 'none') {
-        throw 'Palworld init must be a read-only, root, one-shot service with no network.'
+    if ($config.services.PSObject.Properties.Name -contains 'palworld-init') {
+        throw 'The upstream image must not retain the retired init service.'
     }
-    foreach ($capability in @('CHOWN', 'DAC_READ_SEARCH')) {
-        if ($init.cap_add -notcontains $capability) {
-            throw "Palworld init is missing capability '$capability'."
-        }
+    if ($game.image -ne
+        'thijsvanloef/palworld-server-docker:v2.7.3@sha256:be3ad49e373045a7b60478fd8b7f7411c1e293713dfa4733e563e798f276d688') {
+        throw 'Palworld must use the reviewed, digest-pinned upstream image.'
     }
-    if ($init.cap_drop -notcontains 'ALL' -or
-        $init.security_opt -notcontains 'no-new-privileges:true') {
-        throw 'Palworld init capabilities or no-new-privileges policy regressed.'
+    if ($game.network_mode -ne 'service:tailscale') {
+        throw 'Palworld must remain in the Tailscale network namespace.'
     }
-    if ($game.user -ne 'user:usergroup' -or
-        $game.security_opt -notcontains 'no-new-privileges:true') {
-        throw 'The Palworld game service must remain explicitly non-root with no-new-privileges.'
+    if ($game.environment.ADMIN_PASSWORD -ne $env:PALWORLD_ADMIN_PASSWORD -or
+        $game.environment.REST_API_ENABLED -ne 'true' -or
+        $game.environment.RCON_ENABLED -ne 'false' -or
+        $game.environment.BACKUP_ENABLED -ne 'false') {
+        throw 'Palworld administration or backup environment settings regressed.'
     }
-    if ($game.depends_on.'palworld-init'.condition -ne
-        'service_completed_successfully') {
-        throw 'The game must wait for successful ownership initialization.'
+    if ($game.environment.PUID -ne '1000' -or $game.environment.PGID -ne '1000') {
+        throw 'Palworld must use the configured persistent-data owner.'
     }
-    $helperSource = Join-Path (Split-Path $sourceCompose) 'palworld-helper.sh'
-    $helperText = Get-Content -LiteralPath $helperSource -Raw -Encoding UTF8
-    if ($helperText -match '\bsudo\b') {
-        throw 'The non-root Palworld startup helper must not invoke sudo.'
+    if ($game.volumes[0].source -ne '/data/palworld/server' -or
+        $game.volumes[0].target -ne '/palworld') {
+        throw 'Palworld must use the persistent upstream image layout.'
+    }
+    $playerPort = @($tailscale.ports) |
+        Where-Object { $_.target -eq 8211 -and $_.protocol -eq 'udp' }
+    if ($playerPort.Count -ne 1 -or
+        $playerPort[0].published -ne '8211' -or
+        $playerPort[0].host_ip -ne '192.0.2.10') {
+        throw 'Palworld UDP 8211 must bind only to PALWORLD_LAN_IP.'
+    }
+    $dashboardPort = @($tailscale.ports) |
+        Where-Object { $_.target -eq 3000 -and $_.protocol -eq 'tcp' }
+    if ($dashboardPort.Count -ne 1 -or
+        $dashboardPort[0].published -ne '3000' -or
+        $dashboardPort[0].host_ip -ne '127.0.0.1') {
+        throw 'The dashboard must publish only on VM loopback.'
+    }
+    if ($dashboard.network_mode -ne 'service:tailscale' -or
+        $dashboard.environment.PALWORLD_REST_URL -ne
+        'http://127.0.0.1:8212' -or
+        $dashboard.environment.PUBLIC_VIEW_ENABLED -ne 'false') {
+        throw 'The dashboard network or privacy boundary regressed.'
+    }
+    if ($dashboard.image -ne
+        'ghcr.io/rnz01/palworld-server-dashboard:0.1.3@sha256:826d5aeaf5e2f13ae35e4353deb88d4319e69d7bdec7d5688bd27d76474d20d5') {
+        throw 'The dashboard must use the reviewed, digest-pinned release.'
     }
 
-    if (Test-Path -LiteralPath $testRoot) {
-        Remove-Item -LiteralPath $testRoot -Recurse -Force
-    }
-    New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
-
-    $mount = '/data/palworld/data:/pal/Package/Pal/Saved'
-    if ([regex]::Matches($composeText, [regex]::Escape($mount)).Count -ne 2) {
-        throw 'Expected the init and game services to share the Palworld save mount.'
-    }
-    $fixture = $composeText.Replace(
-        $mount,
-        'palworld-startup-data:/pal/Package/Pal/Saved'
-    ).Replace(
-        'network_mode: "service:tailscale"',
-        'network_mode: none'
-    ).Replace(
-        'cpus: "8"',
-        'cpus: "1"'
-    ).Replace(
-        'memory: 24G',
-        'memory: 1G'
+    $imageCheck = Invoke-Native -Command 'docker' -Arguments @(
+        'run', '--rm', '--security-opt', 'no-new-privileges:true',
+        '--entrypoint', '/bin/bash', $game.image,
+        '-ceu',
+        'test -x /home/steam/server/init.sh; test -x /usr/local/bin/rest-cli; test "$(gosu steam id -u)" != 0'
     )
-    $fixture += @"
-
-volumes:
-  palworld-startup-data:
-"@
-    $fixture = $fixture.Replace("`r`n", "`n")
-    [System.IO.File]::WriteAllText(
-        $testCompose,
-        $fixture,
-        [System.Text.UTF8Encoding]::new($false)
-    )
-    Copy-Item -LiteralPath (Join-Path (Split-Path $sourceCompose) 'palworld-init.sh') `
-        -Destination (Join-Path $testRoot 'palworld-init.sh')
-    $testHelper = $helperText.Replace(
-        'exec /bin/sh /pal/Package/PalServer.sh "$@"',
-        'exec "$@"'
-    ).Replace("`r`n", "`n")
-    if (-not $testHelper.Contains('exec "$@"') -or
-        $testHelper.Contains('exec /bin/sh /pal/Package/PalServer.sh "$@"')) {
-        throw 'The safe test-only Palworld command substitution was not applied.'
-    }
-    [System.IO.File]::WriteAllText(
-        (Join-Path $testRoot 'palworld-helper.sh'),
-        $testHelper,
-        [System.Text.UTF8Encoding]::new($false)
-    )
-
-    Invoke-Compose -Arguments @('down', '--volumes', '--remove-orphans') `
-        -AllowFailure | Out-Null
-    Invoke-Compose -Arguments @(
-        'up', '--abort-on-container-exit', '--exit-code-from', 'palworld-init',
-        'palworld-init'
-    ) |
-        Out-Null
-    $check = @'
-set -eu
-saved=/pal/Package/Pal/Saved
-settings="$saved/Config/LinuxServer/PalWorldSettings.ini"
-test "$(id -u)" != 0
-test "$(stat -c %u "$saved")" = "$(id -u)"
-test "$(awk '/^NoNewPrivs:/ { print $2 }' /proc/self/status)" = 1
-test -w "$saved"
-touch "$saved/startup-regression-check"
-grep -Fq "AdminPassword=\"$PALWORLD_ADMIN_PASSWORD\"" "$settings"
-grep -Fq 'RCONEnabled=False' "$settings"
-grep -Fq 'RESTAPIEnabled=True' "$settings"
-grep -Fq 'RESTAPIPort=8212' "$settings"
-if sudo true 2>"$saved/sudo-error"; then
-  echo "sudo unexpectedly elevated in the game container" >&2
-  exit 1
-fi
-grep -qi 'no new privileges' "$saved/sudo-error"
-'@
-    $check = $check.Replace("`r`n", "`n")
-    Invoke-Compose -Arguments @(
-        'run', '--rm', '--no-deps', 'palworld',
-        '/bin/sh', '-c', $check
-    ) | Out-Null
 } finally {
-    if (Test-Path -LiteralPath $testCompose) {
-        Invoke-Compose -Arguments @('down', '--volumes', '--remove-orphans') `
-            -AllowFailure | Out-Null
-    }
-    if (Test-Path -LiteralPath $testRoot) {
-        Remove-Item -LiteralPath $testRoot -Recurse -Force
-    }
     foreach ($name in $savedEnvironment.Keys) {
         if ($null -eq $savedEnvironment[$name]) {
             Remove-Item -Path "Env:$name" -ErrorAction SilentlyContinue
@@ -208,4 +112,4 @@ grep -qi 'no new privileges' "$saved/sudo-error"
     }
 }
 
-Write-Host 'Palworld prior startup failure and secure one-shot initialization passed.'
+Write-Host 'Palworld upstream image and production Compose contract passed.'

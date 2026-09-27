@@ -39,6 +39,7 @@ Other profiles may be supplied locally with the following fields:
   "sshPort": 7822,
   "rebootTime": "03:30",
   "managementCidrs": ["192.0.2.0/24"],
+  "lanPorts": [],
   "publicPorts": []
 }
 ```
@@ -50,9 +51,11 @@ timeout. The hook must quiesce the application and leave the container
 stopped; the common framework verifies that state before archiving.
 
 Profiles may declare public ports as objects containing `port`, `protocol`,
-and `comment`. Keep the list empty when traffic arrives over a private
-overlay network. Docker-published ports can bypass some UFW paths, so Compose
-stacks must independently limit their published surface.
+and `comment`. LAN-only ports additionally use `sourceCidrs`; the renderer
+creates both source-scoped UFW rules and a persistent `DOCKER-USER` policy,
+because Docker-published ports can bypass the host's normal UFW input path.
+Compose stacks must also bind LAN ports to the intended host address instead
+of every interface.
 
 ## Render vendor data
 

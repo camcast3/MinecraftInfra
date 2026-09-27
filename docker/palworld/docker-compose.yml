@@ -1,9 +1,10 @@
 ---
 # Palworld stack for the dedicated Proxmox VM.
-# Portainer CE GitOps deploys this file. Configure stack variables in Portainer;
-# never commit a .env file. Player, REST, metrics, and container administration
-# listeners remain inside this stack's Tailscale network namespace. This stack
-# deliberately publishes no host ports.
+# Deploy this file with Docker Compose directly or through Portainer. Supply
+# runtime variables outside Git; never commit a .env file. REST, metrics, and
+# container administration remain inside this stack's Tailscale namespace.
+# UDP 8211 is bound only to the Palworld VM's LAN address; the host DOCKER-USER
+# policy restricts its source networks to the approved player VLANs.
 #
 # Host paths and systemd backup units are provisioned by
 # infra/proxmox/game-node.
@@ -17,7 +18,7 @@ x-backup-interface:
   game: palworld
   scheduler: game-backup@palworld.timer
   restore: /usr/local/sbin/game-restore
-  sourceHostPath: /data/palworld/data
+  sourceHostPath: /data/palworld/server/Pal/Saved
   localHostPath: /data/palworld/backups/local
   healthHostPath: /data/palworld/backups/health
   nasHostPath: /mnt/nas-backups/palworld
@@ -31,7 +32,7 @@ x-backup-interface:
   announceUrl: http://127.0.0.1:8212/v1/api/announce
   shutdownUrl: http://127.0.0.1:8212/v1/api/shutdown
   healthUrl: http://127.0.0.1:8212/v1/api/info
-  basicAuthEnvironment: PALWORLD_ADMIN_PASSWORD
+  basicAuthEnvironment: ADMIN_PASSWORD
 
 services:
   tailscale:
@@ -40,7 +41,7 @@ services:
     container_name: palworld-tailscale
     hostname: palworld-tailscale
     environment:
-      TS_AUTHKEY: ${TS_AUTHKEY:?set TS_AUTHKEY in Portainer}
+      TS_AUTHKEY: ${TS_AUTHKEY:?set TS_AUTHKEY}
       TS_AUTH_ONCE: "true"
       TS_EXTRA_ARGS: --accept-dns=false
       TS_HOSTNAME: ${TS_HOSTNAME:-palworld-stack}
@@ -53,6 +54,17 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
+    ports:
+      - name: palworld-lan
+        target: 8211
+        published: "8211"
+        host_ip: ${PALWORLD_LAN_IP:?set PALWORLD_LAN_IP}
+        protocol: udp
+      - name: palworld-dashboard-loopback
+        target: 3000
+        published: "3000"
+        host_ip: 127.0.0.1
+        protocol: tcp
     deploy:
       resources:
         limits:
@@ -67,61 +79,44 @@ services:
       retries: 5
       start_period: 45s
 
-  palworld-init:
-    <<: *common
-    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
-    user: "0:0"
-    restart: "no"
-    read_only: true
-    network_mode: none
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - DAC_READ_SEARCH
-    volumes:
-      - /data/palworld/data:/pal/Package/Pal/Saved
-    configs:
-      - source: palworld_init
-        target: /pal/init-saved.sh
-        mode: 0555
-    entrypoint: ["/bin/sh", "/pal/init-saved.sh"]
-
   palworld:
     <<: *common
-    image: ghcr.io/pocketpairjp/palserver:v1.0.3.101283@sha256:ffb778dd63a04cf0d901b95e934e547e1fee67234e33102d5b5bf7da36e2b264
+    image: thijsvanloef/palworld-server-docker:v2.7.3@sha256:be3ad49e373045a7b60478fd8b7f7411c1e293713dfa4733e563e798f276d688
     container_name: palworld-server
     init: true
-    user: "user:usergroup"
     network_mode: "service:tailscale"
     depends_on:
       tailscale:
         condition: service_healthy
-      palworld-init:
-        condition: service_completed_successfully
-    entrypoint: ["/bin/sh", "/pal/helper.sh"]
-    command:
-      - -port=8211
-      - -useperfthreads
-      - -NoAsyncLoadingThread
-      - -UseMultithreadForDS
     environment:
-      PALWORLD_ADMIN_PASSWORD: ${PALWORLD_ADMIN_PASSWORD:?set PALWORLD_ADMIN_PASSWORD in Portainer}
+      PUID: ${PALWORLD_PUID:?set PALWORLD_PUID to the data-owner UID}
+      PGID: ${PALWORLD_PGID:?set PALWORLD_PGID to the data-owner GID}
+      PORT: "8211"
+      PLAYERS: ${PALWORLD_PLAYERS:-16}
+      SERVER_NAME: ${PALWORLD_SERVER_NAME:-Negative Zone Palworld}
+      SERVER_DESCRIPTION: ${PALWORLD_SERVER_DESCRIPTION:-Private Negative Zone Palworld server}
+      SERVER_PASSWORD: ${PALWORLD_SERVER_PASSWORD:-}
+      ADMIN_PASSWORD: ${PALWORLD_ADMIN_PASSWORD:?set PALWORLD_ADMIN_PASSWORD}
+      REST_API_ENABLED: "true"
+      REST_API_PORT: "8212"
+      RCON_ENABLED: "false"
+      COMMUNITY: "false"
+      CROSSPLAY_PLATFORMS: "(Steam,Xbox,PS5,Mac)"
+      ENABLE_PERF_THREADING_ARGS: "true"
+      UPDATE_ON_BOOT: "true"
+      AUTO_UPDATE_ENABLED: "false"
+      BACKUP_ENABLED: "false"
+      LOG_LEVEL: INFO
       TZ: America/Los_Angeles
     volumes:
-      - /data/palworld/data:/pal/Package/Pal/Saved
-    configs:
-      - source: palworld_helper_file
-        target: /pal/helper.sh
-        mode: 0444
+      - /data/palworld/server:/palworld
     labels:
-      cc.negativezone.backup.source: /pal/Package/Pal/Saved
+      cc.negativezone.backup.source: /palworld/Pal/Saved
       cc.negativezone.backup.scheduler: game-backup@palworld.timer
       cc.negativezone.backup.local-host-path: /data/palworld/backups/local
       cc.negativezone.backup.pre-hook: POST http://127.0.0.1:8212/v1/api/save
       cc.negativezone.backup.shutdown-hook: POST http://127.0.0.1:8212/v1/api/shutdown
       cc.negativezone.backup.health: GET http://127.0.0.1:8212/v1/api/info
-    stop_signal: SIGINT
     stop_grace_period: 2m
     ulimits:
       nofile:
@@ -131,18 +126,61 @@ services:
       resources:
         limits:
           cpus: "8"
-          memory: 24G
+          memory: 20G
     healthcheck:
       test:
         - CMD-SHELL
-        - >-
-          curl --fail --silent --show-error --max-time 5
-          --user "admin:$$PALWORLD_ADMIN_PASSWORD"
-          http://127.0.0.1:8212/v1/api/info >/dev/null
+        - rest-cli info --no-flush-log >/dev/null
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 5m
+
+  dashboard:
+    <<: *common
+    image: ghcr.io/rnz01/palworld-server-dashboard:0.1.3@sha256:826d5aeaf5e2f13ae35e4353deb88d4319e69d7bdec7d5688bd27d76474d20d5
+    container_name: palworld-dashboard
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+      palworld:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      PANEL_INITIAL_ADMIN_PASSWORD: ${PALWORLD_DASHBOARD_PASSWORD:?set PALWORLD_DASHBOARD_PASSWORD}
+      PALWORLD_ADMIN_PASSWORD: ${PALWORLD_ADMIN_PASSWORD:?set PALWORLD_ADMIN_PASSWORD}
+      PALWORLD_REST_URL: http://127.0.0.1:8212
+      PANEL_AUTH_FILE: /app/data/panel-auth.json
+      PALWORLD_FPS_SAMPLER: "true"
+      PALWORLD_FPS_HISTORY_FILE: /app/data/fps-history.json
+      FPS_SAMPLE_SECONDS: "5"
+      FPS_WINDOW_MINUTES: "60"
+      PALWORLD_PLAYER_ACTIVITY: "true"
+      PALWORLD_PLAYER_ACTIVITY_FILE: /app/data/player-activity.json
+      PUBLIC_VIEW_ENABLED: "false"
+    volumes:
+      - palworld-dashboard-data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3000')
+          .then(response => process.exit(response.status < 500 ? 0 : 1))
+          .catch(() => process.exit(1))
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
 
   node-exporter:
     <<: *common
@@ -222,73 +260,8 @@ services:
           memory: 256M
 
 configs:
-  palworld_init:
-    file: ./palworld-init.sh
-
-  palworld_helper_file:
-    file: ./palworld-helper.sh
-
   alloy_config:
-    content: |
-      logging {
-        level  = "info"
-        format = "logfmt"
-      }
+    file: ./alloy.config.alloy
 
-      local.file_match "docker_logs" {
-        path_targets = [{
-          __path__ = "/var/lib/docker/containers/*/*.log",
-          instance = "palworld-proxmox",
-          game     = "palworld",
-          job      = "docker",
-        }]
-        sync_period = "10s"
-      }
-
-      loki.source.file "docker_logs" {
-        targets       = local.file_match.docker_logs.targets
-        forward_to    = [loki.process.docker_logs.receiver]
-        tail_from_end = true
-      }
-
-      local.file_match "backup_logs" {
-        path_targets = [{
-          __path__ = "/var/log/game-backup/events.log",
-          instance = "palworld-proxmox",
-          game     = "palworld",
-          job      = "game-backup",
-        }]
-        sync_period = "10s"
-      }
-
-      loki.source.file "backup_logs" {
-        targets       = local.file_match.backup_logs.targets
-        forward_to    = [loki.process.backup_logs.receiver]
-        tail_from_end = true
-      }
-
-      loki.process "docker_logs" {
-        stage.docker { }
-        forward_to = [loki.write.central.receiver]
-      }
-
-      loki.process "backup_logs" {
-        stage.regex {
-          expression = "^(?P<backup_signal>game_backup_(?:result|health)) game=(?P<backup_game>[a-z0-9-]+) destination=(?P<backup_destination>[a-z0-9-]+) status=(?P<backup_status>[a-z]+).*$"
-        }
-        stage.labels {
-          values = {
-            backup_signal      = "",
-            backup_game        = "",
-            backup_destination = "",
-            backup_status      = "",
-          }
-        }
-        forward_to = [loki.write.central.receiver]
-      }
-
-      loki.write "central" {
-        endpoint {
-          url = "http://loki-k8s.tail042ec7.ts.net:3100/loki/api/v1/push"
-        }
-      }
+volumes:
+  palworld-dashboard-data:
