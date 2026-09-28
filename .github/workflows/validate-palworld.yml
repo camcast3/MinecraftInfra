@@ -74,6 +74,7 @@ jobs:
           PALWORLD_LAN_IP: 192.0.2.10
           PALWORLD_PUID: "1000"
           PALWORLD_PGID: "1000"
+          PALWORLD_SERVER_PASSWORD: PalworldPlayerValidation-1234
           PALWORLD_DASHBOARD_PASSWORD: DashboardValidationPassword-1234
         run: docker compose --file docker/palworld/docker-compose.yml config --quiet
 

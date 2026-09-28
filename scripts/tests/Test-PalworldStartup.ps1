@@ -29,6 +29,7 @@ $savedEnvironment = @{
     PALWORLD_LAN_IP         = $env:PALWORLD_LAN_IP
     PALWORLD_PUID           = $env:PALWORLD_PUID
     PALWORLD_PGID           = $env:PALWORLD_PGID
+    PALWORLD_SERVER_PASSWORD = $env:PALWORLD_SERVER_PASSWORD
     PALWORLD_DASHBOARD_PASSWORD = $env:PALWORLD_DASHBOARD_PASSWORD
 }
 
@@ -38,6 +39,7 @@ try {
     $env:PALWORLD_LAN_IP = '192.0.2.10'
     $env:PALWORLD_PUID = '1000'
     $env:PALWORLD_PGID = '1000'
+    $env:PALWORLD_SERVER_PASSWORD = 'PlayerPassword-1234'
     $env:PALWORLD_DASHBOARD_PASSWORD = 'DashboardStartupTest-1234'
 
     $model = Invoke-Native -Command 'docker' -Arguments @(
@@ -66,6 +68,10 @@ try {
     }
     if ($game.environment.PUID -ne '1000' -or $game.environment.PGID -ne '1000') {
         throw 'Palworld must use the configured persistent-data owner.'
+    }
+    if ($game.environment.SERVER_PASSWORD -ne $env:PALWORLD_SERVER_PASSWORD -or
+        $game.environment.CROSSPLAY_PLATFORMS -ne '(Steam,Xbox)') {
+        throw 'Palworld player password or platform allowlist regressed.'
     }
     if ($game.volumes[0].source -ne '/data/palworld/server' -or
         $game.volumes[0].target -ne '/palworld') {

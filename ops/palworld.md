@@ -51,11 +51,14 @@ Compose model:
 | `PALWORLD_LAN_IP` | Required LAN bind address; use `192.168.3.120` |
 | `PALWORLD_PUID` | Host data-owner UID; currently `1002` |
 | `PALWORLD_PGID` | Host data-owner GID; currently `1002` |
-| `PALWORLD_SERVER_PASSWORD` | Optional player password |
+| `PALWORLD_SERVER_PASSWORD` | Required player-only password; never reuse an admin credential |
 | `PALWORLD_DASHBOARD_PASSWORD` | Initial self-hosted dashboard administrator password |
 
 The password may contain `A-Za-z0-9._~!@#%^+=:-`. It is rendered into the
 persistent Palworld INI at startup and must never be committed.
+
+Only Steam and Xbox clients are allowed. PlayStation and Mac clients are
+rejected by the server's `CrossplayPlatforms` setting.
 
 The Docker forwarding policy is installed by
 `game-node-docker-firewall.service` from the rendered cloud-init. For an
