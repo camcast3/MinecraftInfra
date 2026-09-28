@@ -19,6 +19,7 @@ Required runtime environment values:
 - `PALWORLD_LAN_IP`: `192.168.3.120`
 - `PALWORLD_PUID`: host UID that owns `/data/palworld/server`
 - `PALWORLD_PGID`: host GID that owns `/data/palworld/server`
+- `PALWORLD_SERVER_PASSWORD`: player-only password; do not reuse an admin password
 - `PALWORLD_DASHBOARD_PASSWORD`: initial self-hosted dashboard administrator password
 - `TS_HOSTNAME`: optional; defaults to `palworld-stack`
 
@@ -27,7 +28,8 @@ The image installs and updates the Palworld server under
 `gosu`. Built-in backups and RCON are disabled because the host backup framework
 uses the authenticated REST API on private port 8212. Item corruption is set to
 zero so food and other perishable items do not expire. Gatherable resources use
-a 2x global drop multiplier.
+a 2x global drop multiplier. Only Steam and Xbox clients are accepted, and all
+players must supply the separate server password.
 
 From the `192.168.69.0/24` VLAN, open `http://192.168.3.120:3000`. The initial
 password is stored only on the VM and should be changed from the dashboard
