@@ -3,8 +3,10 @@
 # Deploy this file with Docker Compose directly or through Portainer. Supply
 # runtime variables outside Git; never commit a .env file. REST, metrics, and
 # container administration remain inside this stack's Tailscale namespace.
-# UDP 8211 is bound only to the Palworld VM's LAN address; the host DOCKER-USER
-# policy restricts its source networks to the approved player VLANs.
+# The direct host publication for UDP 8211 is bound only to the Palworld VM's
+# LAN address; the host DOCKER-USER policy restricts its source networks to the
+# approved player VLANs. The listener is also reachable over the stack's
+# tailnet identity for the Azure Nginx ingress.
 #
 # Host paths and systemd backup units are provisioned by
 # infra/proxmox/game-node.
@@ -102,6 +104,8 @@ services:
       RCON_ENABLED: "false"
       COMMUNITY: "false"
       CROSSPLAY_PLATFORMS: "(Steam,Xbox,PS5,Mac)"
+      COLLECTION_DROP_RATE: "2.000000"
+      ITEM_CORRUPTION_MULTIPLIER: "0.000000"
       ENABLE_PERF_THREADING_ARGS: "true"
       UPDATE_ON_BOOT: "true"
       AUTO_UPDATE_ENABLED: "false"

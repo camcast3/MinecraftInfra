@@ -1,15 +1,17 @@
 ---
-# Azure stack: Tailscale sidecar + Velocity proxy + monitoring sidecars
+# Azure stack: Tailscale sidecar + public game proxies + monitoring sidecars
 # Managed by GitHub Actions (deploy-azure.yml).
 #
-# The Azure VM is purely the public entry point and Mojang-auth gateway.
+# The Azure VM is purely the public entry point and game-proxy gateway.
 # Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
-# on the Proxmox VM over Tailscale. No backend MC server runs here.
+# on the Proxmox VM over Tailscale. Palworld clients connect to the same public
+# IP on UDP 8211 → Nginx stream proxy → the Palworld VM over Tailscale.
+# No backend game server runs here.
 #
 # Tailscale runs as a Docker sidecar (NOT on the host). The tailscale container
-# owns the network namespace; Velocity, mc-monitor-exporter, and every monitoring
-# sidecar share it via `network_mode: service:tailscale`. This mirrors the Proxmox
-# stack pattern and keeps tailnet identity portable across host rebuilds.
+# owns the network namespace; Velocity, Nginx, mc-monitor-exporter, and every
+# monitoring sidecar share it via `network_mode: service:tailscale`. This mirrors
+# the Proxmox stack pattern and keeps tailnet identity portable across host rebuilds.
 #
 # Why the tailscale service publishes `25565:25577` on the host:
 #   The Azure VM IS the public ingress. Player traffic arrives at the host's
@@ -17,6 +19,9 @@
 #   Publishing 25565 on the tailscale container DNATs host:25565 → netns:25577
 #   where Velocity listens. Velocity's outbound to the C2E2 backend uses the
 #   tailnet interface in the same netns. Single hop, no userland proxy.
+#
+# UDP 8211 is published directly to the same netns, where Nginx listens and
+# forwards each client session to the Palworld stack's tailnet IP on UDP 8211.
 #
 # Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
 # They're reachable only at the proxy VM's tailnet IP (100.x.x.x), which is
@@ -60,8 +65,8 @@ services:
 
   ############################# NETWORK SIDECAR
   # Owns the network namespace shared by velocity + monitoring containers.
-  # Publishes only the Minecraft player port on the host — everything else
-  # (metrics endpoints) is reachable solely via the tailnet.
+  # Publishes only player ports on the host — everything else (metrics
+  # endpoints) is reachable solely via the tailnet.
   #
   # Hardening (vs the Docker default of root + ~14 caps):
   #   - cap_drop: ALL + cap_add: NET_ADMIN — explicit one-cap allowlist; the
@@ -104,9 +109,9 @@ services:
       - /run:size=8m,mode=1777
     # Host-published ports for the entire shared netns must be declared here
     # (services using network_mode: service:tailscale cannot declare their own).
-    # TCP only — Java Edition is TCP, Velocity query is disabled in velocity.toml.
     ports:
       - "25565:25577/tcp"
+      - "8211:8211/udp"
     deploy:
       resources:
         limits:
@@ -186,13 +191,9 @@ services:
       # Plugins (comma-separated list of jar URLs downloaded by itzg/mc-proxy at startup):
       #   Ambassador — required for Forge 1.13-1.20.1 behind Velocity. Handles Forge
       #     channel negotiation that vanilla Velocity can't.
-      #   spark — JVM profiler / perf diagnostics (https://spark.lucko.me/). Lets ops
-      #     run /spark profiler, /spark health, /spark tps inside Velocity to debug
-      #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
-      #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
       #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
-      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
+      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
       # forwarding.secret lives at /server/forwarding.secret via the data-dir
       # bind mount above (refresh-env.sh writes it). itzg's startup detects
       # it and leaves it alone — no env-based fallback, no plaintext env var.
@@ -203,6 +204,37 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  ############################# PALWORLD UDP PROXY
+  palworld-proxy:
+    <<: *common-keys-apps
+    image: nginx:1.30.2-alpine@sha256:5f979dcfed4ce6461873f087e8c980d6e29b084b9e8776d9704a7e989b5f4898
+    container_name: palworld-proxy
+    user: "101:101"
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    network_mode: "service:tailscale"
+    depends_on:
+      tailscale:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+    volumes:
+      - /data/minecraft/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    entrypoint: ["nginx"]
+    command: ["-g", "daemon off;"]
+    healthcheck:
+      test: ["CMD", "nginx", "-t", "-q"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   ############################# MONITORING SIDECARS
   # All share the tailscale netns. Metrics ports (8081/9080/9100/9985) are

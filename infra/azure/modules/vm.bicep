@@ -77,9 +77,8 @@ runcmd:
   # for the capability-set rationale).
   - ufw default deny incoming
   - ufw default allow outgoing
-  # Java Edition Minecraft is TCP-only. Velocity query (UDP) is disabled in
-  # velocity.toml, and we don't run Bedrock, so no UDP rule needed.
   - ufw allow 25565/tcp comment 'Minecraft TCP'
+  - ufw allow 8211/udp comment 'Palworld UDP via Nginx'
   - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__
@@ -89,7 +88,7 @@ runcmd:
   - DATA_UUID=$(blkid -s UUID -o value /dev/disk/azure/scsi1/lun0)
   - echo "UUID=${DATA_UUID}  /data  ext4  defaults,nofail  0  2" >> /etc/fstab
   - mount /data
-  - mkdir -p /data/minecraft/velocity /data/minecraft/promtail /data/minecraft/tailscale
+  - mkdir -p /data/minecraft/velocity /data/minecraft/nginx /data/minecraft/promtail /data/minecraft/tailscale
   - chown -R __ADMIN_USERNAME__:__ADMIN_USERNAME__ /data
   # Tailscale state dir: chown explicitly to root:root 0700. Order matters —
   # this MUST come AFTER the `chown -R __ADMIN_USERNAME__ /data` above, which

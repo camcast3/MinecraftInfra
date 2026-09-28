@@ -11,11 +11,12 @@ Docker Compose deploys it to the dedicated Proxmox VM using the digest-pinned
 - Player UDP 8211 binds only to the Palworld VM's `192.168.3.120` LAN address.
 - The host permits that Docker-published port only from `192.168.69.0/24` and
   `192.168.2.0/24`; all other source networks are dropped in `DOCKER-USER`.
+- Public player traffic enters the existing Azure VM on UDP 8211, reaches an
+  Nginx stream proxy in the Azure Tailscale namespace, and is forwarded to the
+  Palworld stack's tailnet IP on UDP 8211.
 - Authenticated REST TCP 8212, metrics, and container administration remain
   inside the stack's Tailscale network namespace.
 - RCON is forced off on every start.
-- This change does not create a public edge route. Player access remains
-  LAN-or-tailnet-only until a separate reviewed ingress change is deployed.
 
 Pocketpair warns that the REST API must not be exposed directly to the
 internet. Restrict tailnet grants to the operators and automation that require
@@ -65,6 +66,48 @@ The image starts as root only to install/update the server and assign
 `/palworld` to `PALWORLD_PUID:PALWORLD_PGID`; it then launches Palworld through
 `gosu` while Compose enforces `no-new-privileges`. Its internal backup scheduler
 is disabled in favor of the repository's host-managed backup framework.
+`ITEM_CORRUPTION_MULTIPLIER=0.000000` disables food and other perishable-item
+expiration. `COLLECTION_DROP_RATE=2.000000` doubles drops from all gatherable
+resources, including stone, wood, and ore.
+
+## Public player endpoint
+
+After the Palworld Tailscale sidecar is online, record its IPv4 address in the
+Azure Key Vault:
+
+```bash
+az keyvault secret set \
+  --vault-name kv-minecraft-prod \
+  --name palworld-tailscale-ip \
+  --value '100.x.x.x'
+```
+
+Deploy `infra/azure/**` and `docker/azure/**` through
+`.github/workflows/deploy-azure.yml`. The deployment opens UDP 8211 in the Azure
+NSG and host UFW, renders `/data/minecraft/nginx/nginx.conf`, and starts the
+digest-pinned `palworld-proxy` container. Tailscale grants must allow
+`proxy-azure` to reach the Palworld stack on UDP 8211.
+
+The existing DNS-only Cloudflare A record for `mc.negativezone.cc` already
+points to the Azure VM. Players can therefore use:
+
+```text
+mc.negativezone.cc:8211
+```
+
+No Cloudflare proxying is required or supported for this game UDP traffic; keep
+the record set to **DNS only**. A separate `palworld.negativezone.cc` DNS-only A
+record pointing to the same Azure public IP is optional if a game-specific
+hostname is preferred:
+
+```text
+palworld.negativezone.cc:8211
+```
+
+Nginx terminates the public UDP session and originates the tailnet session, so
+the Palworld server sees the Azure proxy's tailnet address rather than each
+player's public IP. Client addresses remain available in the Nginx access log.
+Do not expose REST 8212 or the dashboard through this route.
 
 ## Private health and administration
 

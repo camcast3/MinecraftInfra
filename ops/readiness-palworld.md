@@ -12,7 +12,8 @@
 - non-root game execution through the image's `gosu` entrypoint under
   `no-new-privileges`;
 - deterministic Palworld cloud-init rendering and schema validation;
-- no unrestricted public player-port rule;
+- public UDP 8211 ingress limited to an Nginx stream proxy on the Azure edge;
+- no public REST, dashboard, metrics, RCON, or container-administration route;
 - Palworld backup profile and REST quiesce-hook integration;
 - the common backup framework dry-run contract; and
 - focused workflow linting.
@@ -31,5 +32,7 @@ The following require the real environment and are not claimed by CI:
    restart, NAS copy, and Azure Cold copy.
 6. Verify an isolated checksum-enforced restore.
 7. Perform one controlled image update and Git-revision rollback.
-8. If public player access is required, deliver and validate it in a separate
-   narrowly scoped ingress change.
+8. Store the Palworld stack's tailnet IPv4 in Azure Key Vault, deploy the Azure
+   ingress, and confirm an external client can join through UDP 8211.
+9. Confirm the Azure NSG and UFW expose only the intended player ports and that
+   REST 8212 plus the dashboard remain unreachable from the internet.

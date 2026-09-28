@@ -6,7 +6,9 @@ VM. The stack uses the digest-pinned
 image and a dedicated Tailscale sidecar. Player UDP 8211 is bound to the VM's
 LAN address and limited by the host firewall to `192.168.69.0/24` and
 `192.168.2.0/24`. REST, metrics, and administration remain private to the
-tailnet.
+tailnet. Public player traffic is forwarded separately by the Nginx stream
+proxy in `docker/azure/`; the Palworld host itself does not expose an internet
+port.
 
 Required runtime environment values:
 
@@ -22,7 +24,9 @@ Required runtime environment values:
 The image installs and updates the Palworld server under
 `/data/palworld/server`, then drops from root to the configured UID/GID with
 `gosu`. Built-in backups and RCON are disabled because the host backup framework
-uses the authenticated REST API on private port 8212.
+uses the authenticated REST API on private port 8212. Item corruption is set to
+zero so food and other perishable items do not expire. Gatherable resources use
+a 2x global drop multiplier.
 
 The self-hosted dashboard is available only through the tailnet or an SSH
 tunnel. From an authorized workstation:

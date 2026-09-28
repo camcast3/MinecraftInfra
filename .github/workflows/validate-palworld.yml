@@ -6,6 +6,11 @@ on:
   pull_request:
     paths:
       - "docker/palworld/**"
+      - "docker/azure/docker-compose.yml"
+      - "docker/azure/nginx/**"
+      - "docker/azure/refresh-env.sh"
+      - "infra/azure/modules/network.bicep"
+      - "infra/azure/modules/vm.bicep"
       - "infra/azure/parameters/prod.bicepparam"
       - "infra/proxmox/game-node/README.md"
       - "infra/proxmox/game-node/Render-CloudInit.ps1"
@@ -16,6 +21,7 @@ on:
       - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
       - "ops/palworld.md"
       - "ops/readiness-palworld.md"
+      - ".github/workflows/deploy-azure.yml"
       - "scripts/tests/Test-GameNodeCloudInit.ps1"
       - "scripts/tests/Test-PalworldStartup.ps1"
       - "renovate.json"
@@ -24,6 +30,11 @@ on:
     branches: [main]
     paths:
       - "docker/palworld/**"
+      - "docker/azure/docker-compose.yml"
+      - "docker/azure/nginx/**"
+      - "docker/azure/refresh-env.sh"
+      - "infra/azure/modules/network.bicep"
+      - "infra/azure/modules/vm.bicep"
       - "infra/azure/parameters/prod.bicepparam"
       - "infra/proxmox/game-node/README.md"
       - "infra/proxmox/game-node/Render-CloudInit.ps1"
@@ -34,6 +45,7 @@ on:
       - "infra/proxmox/game-node/generated/palworld-cloud-init.yaml"
       - "ops/palworld.md"
       - "ops/readiness-palworld.md"
+      - ".github/workflows/deploy-azure.yml"
       - "scripts/tests/Test-GameNodeCloudInit.ps1"
       - "scripts/tests/Test-PalworldStartup.ps1"
       - "renovate.json"
@@ -65,11 +77,31 @@ jobs:
           PALWORLD_DASHBOARD_PASSWORD: DashboardValidationPassword-1234
         run: docker compose --file docker/palworld/docker-compose.yml config --quiet
 
+      - name: Validate Azure Palworld ingress
+        run: |
+          docker compose --file docker/azure/docker-compose.yml config --quiet
+          mkdir -p build
+          # shellcheck disable=SC2016
+          PALWORLD_TAILSCALE_IP=100.64.0.10 \
+            envsubst '${PALWORLD_TAILSCALE_IP}' \
+            < docker/azure/nginx/nginx.conf.tmpl \
+            > build/palworld-nginx.conf
+          docker run --rm \
+            --user 101:101 \
+            --read-only \
+            --tmpfs /tmp:size=16m,mode=1777 \
+            --volume "$PWD/build/palworld-nginx.conf:/etc/nginx/nginx.conf:ro" \
+            --entrypoint nginx \
+            nginx:1.30.2-alpine@sha256:5f979dcfed4ce6461873f087e8c980d6e29b084b9e8776d9704a7e989b5f4898 \
+            -t
+
       - name: Compile Azure Bicep
         run: az bicep build --file infra/azure/main.bicep --stdout > /dev/null
 
       - name: Check Palworld shell scripts
         run: |
+          bash -n docker/azure/refresh-env.sh
+          shellcheck docker/azure/refresh-env.sh
           bash -n infra/proxmox/game-node/backup/palworld
           shellcheck infra/proxmox/game-node/backup/palworld
 
