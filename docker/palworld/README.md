@@ -24,7 +24,8 @@ Required runtime environment values:
 The image installs and updates the Palworld server under
 `/data/palworld/server`, then drops from root to the configured UID/GID with
 `gosu`. Built-in backups and RCON are disabled because the host backup framework
-uses the authenticated REST API on private port 8212.
+uses the authenticated REST API on private port 8212. Item corruption is set to
+zero so food and other perishable items do not expire.
 
 The self-hosted dashboard is available only through the tailnet or an SSH
 tunnel. From an authorized workstation:

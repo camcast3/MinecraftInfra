@@ -104,6 +104,7 @@ services:
       RCON_ENABLED: "false"
       COMMUNITY: "false"
       CROSSPLAY_PLATFORMS: "(Steam,Xbox,PS5,Mac)"
+      ITEM_CORRUPTION_MULTIPLIER: "0.000000"
       ENABLE_PERF_THREADING_ARGS: "true"
       UPDATE_ON_BOOT: "true"
       AUTO_UPDATE_ENABLED: "false"

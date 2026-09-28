@@ -66,6 +66,8 @@ The image starts as root only to install/update the server and assign
 `/palworld` to `PALWORLD_PUID:PALWORLD_PGID`; it then launches Palworld through
 `gosu` while Compose enforces `no-new-privileges`. Its internal backup scheduler
 is disabled in favor of the repository's host-managed backup framework.
+`ITEM_CORRUPTION_MULTIPLIER=0.000000` disables food and other perishable-item
+expiration.
 
 ## Public player endpoint
 
