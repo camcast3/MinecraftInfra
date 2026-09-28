@@ -67,7 +67,8 @@ The image starts as root only to install/update the server and assign
 `gosu` while Compose enforces `no-new-privileges`. Its internal backup scheduler
 is disabled in favor of the repository's host-managed backup framework.
 `ITEM_CORRUPTION_MULTIPLIER=0.000000` disables food and other perishable-item
-expiration.
+expiration. `COLLECTION_DROP_RATE=2.000000` doubles drops from all gatherable
+resources, including stone, wood, and ore.
 
 ## Public player endpoint
 
