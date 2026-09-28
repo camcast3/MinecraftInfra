@@ -129,6 +129,7 @@ jobs:
               git reset --hard "origin/$REF"
               # vm.bicep customData is immutable on the existing VM, so keep
               # host firewall changes in the idempotent deploy path too.
+              ufw --force delete allow 25565/udp || true
               ufw allow 8211/udp comment "Palworld UDP via Nginx"
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
