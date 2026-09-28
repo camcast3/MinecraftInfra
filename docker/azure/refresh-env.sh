@@ -135,6 +135,12 @@ validate_tailnet_ipv4 "palworld-tailscale-ip" "$PALWORLD_TAILSCALE_IP"
 mkdir -p "$VELOCITY_DIR"
 mkdir -p "$NGINX_DIR"
 mkdir -p /data/minecraft/promtail
+
+# The former Spark Velocity download was a mutable CI artifact that was removed
+# upstream and now prevents mc-proxy from starting. Remove the stale optional
+# plugin so existing hosts converge with the current deterministic plugin set.
+rm -f "${VELOCITY_DIR}/plugins/spark-1.10.172-velocity.jar"
+
 # Tailscale state dir is created + chowned by cloud-init (vm.bicep) to
 # root:root, mode 0700. Don't recreate it here — that would clobber the perms
 # on subsequent runs. We DO want to fail loud if it's gone.

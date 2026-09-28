@@ -191,13 +191,9 @@ services:
       # Plugins (comma-separated list of jar URLs downloaded by itzg/mc-proxy at startup):
       #   Ambassador — required for Forge 1.13-1.20.1 behind Velocity. Handles Forge
       #     channel negotiation that vanilla Velocity can't.
-      #   spark — JVM profiler / perf diagnostics (https://spark.lucko.me/). Lets ops
-      #     run /spark profiler, /spark health, /spark tps inside Velocity to debug
-      #     proxy-side latency, GC pauses, or thread contention. Modrinth has no
-      #     Velocity build; pinned to lucko CI build #524 (spark 1.10.172).
       #   bungeecord-prometheus-exporter — white-box Velocity metrics (player counts,
       #     latency histograms, JVM stats) on :9985 for Prometheus scraping over tailnet.
-      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://ci.lucko.me/job/spark/524/artifact/spark-velocity/build/libs/spark-1.10.172-velocity.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
+      PLUGINS: "https://github.com/adde0109/Ambassador/releases/download/v1.4.5/Ambassador-Velocity-1.4.5-all.jar,https://github.com/weihao/bungeecord-prometheus-exporter/releases/download/3.2.7/bungeecord-prometheus-exporter-3.2.7.jar"
       # forwarding.secret lives at /server/forwarding.secret via the data-dir
       # bind mount above (refresh-env.sh writes it). itzg's startup detects
       # it and leaves it alone — no env-based fallback, no plaintext env var.
