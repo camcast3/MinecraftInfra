@@ -102,9 +102,12 @@ foreach ($text in @(
     'docker exec "$container" rest-cli "$@" --no-flush-log'
     "ufw allow from 192.168.69.0/24 to any port 8211 proto udp comment 'Palworld LAN players'"
     "ufw allow from 192.168.2.0/24 to any port 8211 proto udp comment 'Palworld LAN players'"
+    "ufw allow from 192.168.69.0/24 to any port 3000 proto tcp comment 'Palworld dashboard'"
     'iptables -w -A "$chain" -p udp --dport 8211 -s 192.168.69.0/24 -j RETURN'
     'iptables -w -A "$chain" -p udp --dport 8211 -s 192.168.2.0/24 -j RETURN'
     'iptables -w -A "$chain" -p udp --dport 8211 -j DROP'
+    'iptables -w -A "$chain" -p tcp --dport 3000 -s 192.168.69.0/24 -j RETURN'
+    'iptables -w -A "$chain" -p tcp --dport 3000 -j DROP'
     'game-node-docker-firewall.service'
     '/usr/local/libexec/game-backup/palworld'
     'game-backup@palworld.timer'
