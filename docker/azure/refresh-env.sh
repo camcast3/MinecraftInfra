@@ -6,6 +6,7 @@
 #   - /opt/minecraft/secrets/ts_authkey              (tailscale auth key OR placeholder)
 #   - /data/minecraft/velocity/forwarding.secret     (Velocity modern forwarding secret)
 #   - /data/minecraft/velocity/velocity.toml         (Velocity proxy config — non-secret)
+#   - /data/minecraft/nginx/nginx.conf               (Palworld UDP proxy config)
 #
 # ts_authkey is consumed via docker compose `secrets:`. forwarding.secret is
 # written into the velocity data dir directly (NOT to /opt/minecraft/secrets/)
@@ -71,6 +72,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 KV_NAME="kv-minecraft-prod"
 SECRETS_DIR="/opt/minecraft/secrets"
 VELOCITY_DIR="/data/minecraft/velocity"
+NGINX_DIR="/data/minecraft/nginx"
 TAILSCALE_DIR="/data/minecraft/tailscale"
 
 # The Tailscale sidecar runs as root in its user namespace (see compose file
@@ -102,9 +104,36 @@ kv_secret() {
 
 VELOCITY_FORWARDING_SECRET=$(kv_secret "velocity-forwarding-secret")
 C2E2_TAILSCALE_IP=$(kv_secret "c2e2-tailscale-ip")
+PALWORLD_TAILSCALE_IP=$(kv_secret "palworld-tailscale-ip")
+
+validate_tailnet_ipv4() {
+  local name="$1" value="$2"
+  local first second third fourth octet
+
+  if [[ ! "$value" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]]; then
+    echo "ERROR: ${name} must be a Tailscale IPv4 address, got '${value}'." >&2
+    exit 1
+  fi
+
+  IFS='.' read -r first second third fourth <<< "$value"
+  for octet in "$first" "$second" "$third" "$fourth"; do
+    if ((10#$octet > 255)); then
+      echo "ERROR: ${name} contains an invalid IPv4 octet, got '${value}'." >&2
+      exit 1
+    fi
+  done
+
+  if ((10#$first != 100 || 10#$second < 64 || 10#$second > 127)); then
+    echo "ERROR: ${name} must be inside Tailscale's 100.64.0.0/10 range, got '${value}'." >&2
+    exit 1
+  fi
+}
+
+validate_tailnet_ipv4 "palworld-tailscale-ip" "$PALWORLD_TAILSCALE_IP"
 
 # ── State directories ─────────────────────────────────────────────────────────
 mkdir -p "$VELOCITY_DIR"
+mkdir -p "$NGINX_DIR"
 mkdir -p /data/minecraft/promtail
 # Tailscale state dir is created + chowned by cloud-init (vm.bicep) to
 # root:root, mode 0700. Don't recreate it here — that would clobber the perms
@@ -192,6 +221,7 @@ fi
 # publish-prism-pack.ps1) in sync with what players see during a backend outage.
 export C2E2_TAILSCALE_IP
 NEW_VELOCITY_TOML=$(mktemp -p "$VELOCITY_DIR" .velocity.toml.new.XXXXXX)
+# shellcheck disable=SC2016
 envsubst '${C2E2_TAILSCALE_IP}' \
   < "${SCRIPT_DIR}/velocity/velocity.toml.tmpl" \
   > "$NEW_VELOCITY_TOML"
@@ -216,6 +246,36 @@ if [ "${#VELOCITY_RESTART_REASONS[@]}" -gt 0 ]; then
     echo "✓ velocity restarted (${VELOCITY_RESTART_REASONS[*]})"
   else
     echo "✓ velocity not running — next docker compose up will use new config (${VELOCITY_RESTART_REASONS[*]})"
+  fi
+fi
+
+# ── Palworld Nginx config (non-secret) ────────────────────────────────────────
+export PALWORLD_TAILSCALE_IP
+NEW_NGINX_CONF=$(mktemp -p "$NGINX_DIR" .nginx.conf.new.XXXXXX)
+# shellcheck disable=SC2016
+envsubst '${PALWORLD_TAILSCALE_IP}' \
+  < "${SCRIPT_DIR}/nginx/nginx.conf.tmpl" \
+  > "$NEW_NGINX_CONF"
+chmod 0444 "$NEW_NGINX_CONF"
+chown root:root "$NEW_NGINX_CONF"
+
+NGINX_RESTART_REQUIRED=false
+if [ -f "${NGINX_DIR}/nginx.conf" ] && cmp -s "$NEW_NGINX_CONF" "${NGINX_DIR}/nginx.conf"; then
+  rm -f "$NEW_NGINX_CONF"
+  echo "✓ nginx.conf unchanged"
+else
+  mv -f "$NEW_NGINX_CONF" "${NGINX_DIR}/nginx.conf"
+  echo "✓ nginx.conf written to ${NGINX_DIR}/nginx.conf"
+  NGINX_RESTART_REQUIRED=true
+fi
+
+if [ "$NGINX_RESTART_REQUIRED" = true ]; then
+  COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
+  if docker compose -f "$COMPOSE_FILE" ps --status=running --services 2>/dev/null | grep -qx 'palworld-proxy'; then
+    docker compose -f "$COMPOSE_FILE" restart palworld-proxy
+    echo "✓ palworld-proxy restarted (nginx.conf changed)"
+  else
+    echo "✓ palworld-proxy not running — next docker compose up will use new nginx.conf"
   fi
 fi
 

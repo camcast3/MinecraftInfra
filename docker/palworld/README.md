@@ -6,7 +6,9 @@ VM. The stack uses the digest-pinned
 image and a dedicated Tailscale sidecar. Player UDP 8211 is bound to the VM's
 LAN address and limited by the host firewall to `192.168.69.0/24` and
 `192.168.2.0/24`. REST, metrics, and administration remain private to the
-tailnet.
+tailnet. Public player traffic is forwarded separately by the Nginx stream
+proxy in `docker/azure/`; the Palworld host itself does not expose an internet
+port.
 
 Required runtime environment values:
 

@@ -30,12 +30,12 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2025-09-01' = {
         }
       }
       {
-        name: 'Allow-Minecraft-UDP'
+        name: 'Allow-Palworld-UDP'
         properties: {
           priority: 110
           protocol: 'Udp'
           sourcePortRange: '*'
-          destinationPortRange: '25565'
+          destinationPortRange: '8211'
           sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
           access: 'Allow'

@@ -102,6 +102,7 @@ jobs:
               exit 1
               ;;
           esac
+          # shellcheck disable=SC2016
           az vm run-command invoke \
             --resource-group rg-minecraft-prod \
             --name vm-minecraft-prod \
@@ -126,6 +127,9 @@ jobs:
               git fetch origin "$REF"
               git checkout "$REF"
               git reset --hard "origin/$REF"
+              # vm.bicep customData is immutable on the existing VM, so keep
+              # host firewall changes in the idempotent deploy path too.
+              ufw allow 8211/udp comment "Palworld UDP via Nginx"
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans
