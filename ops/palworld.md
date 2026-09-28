@@ -11,6 +11,8 @@ Docker Compose deploys it to the dedicated Proxmox VM using the digest-pinned
 - Player UDP 8211 binds only to the Palworld VM's `192.168.3.120` LAN address.
 - The host permits that Docker-published port only from `192.168.69.0/24` and
   `192.168.2.0/24`; all other source networks are dropped in `DOCKER-USER`.
+- Dashboard TCP 3000 binds only to `192.168.3.120` and permits
+  `192.168.69.0/24`; all other source networks are dropped in `DOCKER-USER`.
 - Public player traffic enters the existing Azure VM on UDP 8211, reaches an
   Nginx stream proxy in the Azure Tailscale namespace, and is forwarded to the
   Palworld stack's tailnet IP on UDP 8211.
@@ -59,8 +61,9 @@ The Docker forwarding policy is installed by
 `game-node-docker-firewall.service` from the rendered cloud-init. For an
 existing VM, install or update that policy before setting `PALWORLD_LAN_IP`
 and redeploying the Compose stack. UniFi must separately allow UDP 8211 from
-`192.168.69.0/24` and `192.168.2.0/24` to `192.168.3.120`, while retaining
-the default DMZ isolation for every other source and destination port.
+`192.168.69.0/24` and `192.168.2.0/24`, plus TCP 3000 from
+`192.168.69.0/24`, to `192.168.3.120`, while retaining the default DMZ
+isolation for every other source and destination port.
 
 The image starts as root only to install/update the server and assign
 `/palworld` to `PALWORLD_PUID:PALWORLD_PGID`; it then launches Palworld through
@@ -127,16 +130,16 @@ Alloy ships Docker and backup event logs to the existing tailnet Loki endpoint.
 ## Self-hosted dashboard
 
 The RNZ01 dashboard shares the Palworld Tailscale namespace and calls the REST
-API only at `127.0.0.1:8212`. Its host publication is limited to VM loopback.
-Open an SSH tunnel:
+API only at `127.0.0.1:8212`. Its host publication binds to
+`192.168.3.120:3000` and the host firewall admits only `192.168.69.0/24`.
+From that VLAN, browse to:
 
-```powershell
-ssh -N -L 3000:127.0.0.1:3000 -p 7822 palworld@192.168.3.120
+```text
+http://192.168.3.120:3000
 ```
 
-Browse to `http://127.0.0.1:3000`. Retrieve the initial password locally on the
-VM, log in, and replace it from the dashboard settings. Do not publish port
-3000 through UniFi or the internet.
+Retrieve the initial password locally on the VM, log in, and replace it from
+the dashboard settings. Do not expose TCP 3000 to other VLANs or the internet.
 
 ## Backups
 

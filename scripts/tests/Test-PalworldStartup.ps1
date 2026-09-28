@@ -82,8 +82,8 @@ try {
         Where-Object { $_.target -eq 3000 -and $_.protocol -eq 'tcp' }
     if ($dashboardPort.Count -ne 1 -or
         $dashboardPort[0].published -ne '3000' -or
-        $dashboardPort[0].host_ip -ne '127.0.0.1') {
-        throw 'The dashboard must publish only on VM loopback.'
+        $dashboardPort[0].host_ip -ne '192.0.2.10') {
+        throw 'The dashboard must bind only to PALWORLD_LAN_IP.'
     }
     if ($dashboard.network_mode -ne 'service:tailscale' -or
         $dashboard.environment.PALWORLD_REST_URL -ne

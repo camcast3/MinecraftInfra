@@ -62,10 +62,10 @@ services:
         published: "8211"
         host_ip: ${PALWORLD_LAN_IP:?set PALWORLD_LAN_IP}
         protocol: udp
-      - name: palworld-dashboard-loopback
+      - name: palworld-dashboard-lan
         target: 3000
         published: "3000"
-        host_ip: 127.0.0.1
+        host_ip: ${PALWORLD_LAN_IP:?set PALWORLD_LAN_IP}
         protocol: tcp
     deploy:
       resources:
