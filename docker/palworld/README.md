@@ -29,7 +29,9 @@ The image installs and updates the Palworld server under
 uses the authenticated REST API on private port 8212. Item corruption is set to
 zero so food and other perishable items do not expire. Gatherable resources use
 a 2x global drop multiplier. Only Steam and Xbox clients are accepted, and all
-players must supply the separate server password.
+players must supply the separate server password. Sized for a two-guild
+server: 8 bases per guild and 25 working Pals per base (engine maximums are
+10 and 50 respectively).
 
 From the `192.168.69.0/24` VLAN, open `http://192.168.3.120:3000`. The initial
 password is stored only on the VM and should be changed from the dashboard

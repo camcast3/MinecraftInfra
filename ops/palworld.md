@@ -74,7 +74,11 @@ The image starts as root only to install/update the server and assign
 is disabled in favor of the repository's host-managed backup framework.
 `ITEM_CORRUPTION_MULTIPLIER=0.000000` disables food and other perishable-item
 expiration. `COLLECTION_DROP_RATE=2.000000` doubles drops from all gatherable
-resources, including stone, wood, and ore.
+resources, including stone, wood, and ore. `BASE_CAMP_MAX_NUM_IN_GUILD=8` and
+`BASE_CAMP_WORKER_MAX_NUM=25` are sized for a two-guild server, well under the
+engine maximums of 10 bases per guild and 50 workers per base. Monitor
+`serverfpsaverage` via the REST `/metrics` endpoint or dashboard once bases
+fill up, and reduce these values if it drops well below 50.
 
 ## Public player endpoint
 

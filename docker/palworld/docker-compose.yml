@@ -106,6 +106,11 @@ services:
       CROSSPLAY_PLATFORMS: "(Steam,Xbox)"
       COLLECTION_DROP_RATE: "2.000000"
       ITEM_CORRUPTION_MULTIPLIER: "0.000000"
+      # Two-guild server: more bases per guild and more working Pals per base
+      # than default, still well under the engine maximums (10 bases/guild,
+      # 50 workers/base) to bound worst-case AI/pathfinding load.
+      BASE_CAMP_MAX_NUM_IN_GUILD: "8"
+      BASE_CAMP_WORKER_MAX_NUM: "25"
       ENABLE_PERF_THREADING_ARGS: "true"
       UPDATE_ON_BOOT: "true"
       AUTO_UPDATE_ENABLED: "false"
