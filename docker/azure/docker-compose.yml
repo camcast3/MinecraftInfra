@@ -208,7 +208,7 @@ services:
   ############################# PALWORLD UDP PROXY
   palworld-proxy:
     <<: *common-keys-apps
-    image: nginx:1.30.2-alpine@sha256:5f979dcfed4ce6461873f087e8c980d6e29b084b9e8776d9704a7e989b5f4898
+    image: nginx:1.30.5-alpine@sha256:0985e772fb9f729e6fa0980da05fca5d9c468e870eed43071545afa9d2e27d94
     container_name: palworld-proxy
     user: "101:101"
     cap_drop:
