@@ -131,6 +131,7 @@ jobs:
               # host firewall changes in the idempotent deploy path too.
               ufw --force delete allow 25565/udp || true
               ufw allow 8211/udp comment "Palworld UDP via Nginx"
+              ufw allow 27015/udp comment "Palworld query UDP via Nginx"
               bash docker/azure/refresh-env.sh
               docker compose -f docker/azure/docker-compose.yml pull
               docker compose -f docker/azure/docker-compose.yml up -d --remove-orphans

@@ -71,6 +71,7 @@ jobs:
         env:
           TS_AUTHKEY: tskey-auth-validation-placeholder
           PALWORLD_ADMIN_PASSWORD: PalworldValidationPassword-1234
+          PALWORLD_PUBLIC_IP: 203.0.113.10
           PALWORLD_LAN_IP: 192.0.2.10
           PALWORLD_PUID: "1000"
           PALWORLD_PGID: "1000"
