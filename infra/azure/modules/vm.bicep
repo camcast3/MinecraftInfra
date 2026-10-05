@@ -79,7 +79,6 @@ runcmd:
   - ufw default allow outgoing
   - ufw allow 25565/tcp comment 'Minecraft TCP'
   - ufw allow 8211/udp comment 'Palworld UDP via Nginx'
-  - ufw allow 27015/udp comment 'Palworld query UDP via Nginx'
   - ufw --force enable
   # Add the admin user to the docker group so SSH deploy commands work without sudo
   - usermod -aG docker __ADMIN_USERNAME__

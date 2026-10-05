@@ -31,8 +31,8 @@ uses the authenticated REST API on private port 8212. Item corruption is set to
 zero so food and other perishable items do not expire. Gatherable resources use
 a 2x global drop multiplier. Only Steam and Xbox clients are accepted, and all
 players must supply the separate server password. The server registers in the
-Community Servers browser using the Azure edge's public IPv4; Nginx relays game
-UDP 8211 and query UDP 27015 over Tailscale. Sized for a two-guild
+Community Servers browser using the Azure edge's public IPv4; Nginx relays
+game UDP 8211 over Tailscale. Sized for a two-guild
 server: 8 bases per guild and 25 working Pals per base (engine maximums are
 10 and 50 respectively).
 
