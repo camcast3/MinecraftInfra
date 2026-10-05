@@ -13,9 +13,9 @@ Docker Compose deploys it to the dedicated Proxmox VM using the digest-pinned
   `192.168.2.0/24`; all other source networks are dropped in `DOCKER-USER`.
 - Dashboard TCP 3000 binds only to `192.168.3.120` and permits
   `192.168.69.0/24`; all other source networks are dropped in `DOCKER-USER`.
-- Public player traffic enters the existing Azure VM on game UDP 8211 and
-  community-query UDP 27015, reaches an Nginx stream proxy in the Azure
-  Tailscale namespace, and is forwarded to the matching Palworld tailnet ports.
+- Public player traffic enters the existing Azure VM on UDP 8211, reaches an
+  Nginx stream proxy in the Azure Tailscale namespace, and is forwarded to the
+  Palworld stack's tailnet IP on UDP 8211.
 - Authenticated REST TCP 8212, metrics, and container administration remain
   inside the stack's Tailscale network namespace.
 - RCON is forced off on every start.
@@ -95,11 +95,10 @@ az keyvault secret set \
 ```
 
 Deploy `infra/azure/**` and `docker/azure/**` through
-`.github/workflows/deploy-azure.yml`. The deployment opens UDP 8211 and 27015
-in the Azure NSG and host UFW, renders
-`/data/minecraft/nginx/nginx.conf`, and starts the digest-pinned
-`palworld-proxy` container. Tailscale grants must allow `proxy-azure` to reach
-the matching ports on the Palworld stack.
+`.github/workflows/deploy-azure.yml`. The deployment opens UDP 8211 in the
+Azure NSG and host UFW, renders `/data/minecraft/nginx/nginx.conf`, and starts
+the digest-pinned `palworld-proxy` container. Tailscale grants must allow
+`proxy-azure` to reach the Palworld stack on UDP 8211.
 
 The existing DNS-only Cloudflare A record for `mc.negativezone.cc` already
 points to the Azure VM. Players can therefore use:

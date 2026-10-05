@@ -5,7 +5,7 @@
 # The Azure VM is purely the public entry point and game-proxy gateway.
 # Players connect to mc.negativezone.cc:25565 → Velocity → Craft to Exile 2
 # on the Proxmox VM over Tailscale. Palworld clients connect to the same public
-# IP on UDP 8211/27015 → Nginx stream proxy → the Palworld VM over Tailscale.
+# IP on UDP 8211 → Nginx stream proxy → the Palworld VM over Tailscale.
 # No backend game server runs here.
 #
 # Tailscale runs as a Docker sidecar (NOT on the host). The tailscale container
@@ -20,9 +20,8 @@
 #   where Velocity listens. Velocity's outbound to the C2E2 backend uses the
 #   tailnet interface in the same netns. Single hop, no userland proxy.
 #
-# UDP 8211 and the community-server query port UDP 27015 are published directly
-# to the same netns, where Nginx forwards them to the Palworld stack's tailnet
-# IP.
+# UDP 8211 is published directly to the same netns, where Nginx listens and
+# forwards each client session to the Palworld stack's tailnet IP on UDP 8211.
 #
 # Metrics endpoints (8081/9080/9100/9985) are NOT published on the host.
 # They're reachable only at the proxy VM's tailnet IP (100.x.x.x), which is
@@ -113,7 +112,6 @@ services:
     ports:
       - "25565:25577/tcp"
       - "8211:8211/udp"
-      - "27015:27015/udp"
     deploy:
       resources:
         limits:

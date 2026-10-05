@@ -12,8 +12,7 @@
 - non-root game execution through the image's `gosu` entrypoint under
   `no-new-privileges`;
 - deterministic Palworld cloud-init rendering and schema validation;
-- public UDP 8211 and 27015 ingress limited to an Nginx stream proxy on the
-  Azure edge;
+- public UDP 8211 ingress limited to an Nginx stream proxy on the Azure edge;
 - no public REST, dashboard, metrics, RCON, or container-administration route;
 - Palworld backup profile and REST quiesce-hook integration;
 - the common backup framework dry-run contract; and
