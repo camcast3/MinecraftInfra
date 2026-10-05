@@ -43,6 +43,19 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2025-09-01' = {
         }
       }
       {
+        name: 'Allow-Palworld-Query-UDP'
+        properties: {
+          priority: 111
+          protocol: 'Udp'
+          sourcePortRange: '*'
+          destinationPortRange: '27015'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: '*'
+          access: 'Allow'
+          direction: 'Inbound'
+        }
+      }
+      {
         name: 'Deny-SSH-Internet'
         properties: {
           priority: 200

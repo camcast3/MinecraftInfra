@@ -102,7 +102,9 @@ services:
       REST_API_ENABLED: "true"
       REST_API_PORT: "8212"
       RCON_ENABLED: "false"
-      COMMUNITY: "false"
+      COMMUNITY: "true"
+      PUBLIC_IP: ${PALWORLD_PUBLIC_IP:?set PALWORLD_PUBLIC_IP to the Azure edge IPv4}
+      PUBLIC_PORT: "8211"
       CROSSPLAY_PLATFORMS: "(Steam,Xbox)"
       COLLECTION_DROP_RATE: "2.000000"
       ITEM_CORRUPTION_MULTIPLIER: "0.000000"

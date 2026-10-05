@@ -26,6 +26,7 @@ function Invoke-Native {
 $savedEnvironment = @{
     TS_AUTHKEY              = $env:TS_AUTHKEY
     PALWORLD_ADMIN_PASSWORD = $env:PALWORLD_ADMIN_PASSWORD
+    PALWORLD_PUBLIC_IP      = $env:PALWORLD_PUBLIC_IP
     PALWORLD_LAN_IP         = $env:PALWORLD_LAN_IP
     PALWORLD_PUID           = $env:PALWORLD_PUID
     PALWORLD_PGID           = $env:PALWORLD_PGID
@@ -36,6 +37,7 @@ $savedEnvironment = @{
 try {
     $env:TS_AUTHKEY = 'tskey-auth-test-placeholder'
     $env:PALWORLD_ADMIN_PASSWORD = 'PalworldStartupTest-1234'
+    $env:PALWORLD_PUBLIC_IP = '203.0.113.10'
     $env:PALWORLD_LAN_IP = '192.0.2.10'
     $env:PALWORLD_PUID = '1000'
     $env:PALWORLD_PGID = '1000'
@@ -72,6 +74,11 @@ try {
     if ($game.environment.SERVER_PASSWORD -ne $env:PALWORLD_SERVER_PASSWORD -or
         $game.environment.CROSSPLAY_PLATFORMS -ne '(Steam,Xbox)') {
         throw 'Palworld player password or platform allowlist regressed.'
+    }
+    if ($game.environment.COMMUNITY -ne 'true' -or
+        $game.environment.PUBLIC_IP -ne $env:PALWORLD_PUBLIC_IP -or
+        $game.environment.PUBLIC_PORT -ne '8211') {
+        throw 'Palworld Community Server registration settings regressed.'
     }
     if ($game.volumes[0].source -ne '/data/palworld/server' -or
         $game.volumes[0].target -ne '/palworld') {

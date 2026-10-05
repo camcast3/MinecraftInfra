@@ -13,9 +13,9 @@ Docker Compose deploys it to the dedicated Proxmox VM using the digest-pinned
   `192.168.2.0/24`; all other source networks are dropped in `DOCKER-USER`.
 - Dashboard TCP 3000 binds only to `192.168.3.120` and permits
   `192.168.69.0/24`; all other source networks are dropped in `DOCKER-USER`.
-- Public player traffic enters the existing Azure VM on UDP 8211, reaches an
-  Nginx stream proxy in the Azure Tailscale namespace, and is forwarded to the
-  Palworld stack's tailnet IP on UDP 8211.
+- Public player traffic enters the existing Azure VM on game UDP 8211 and
+  community-query UDP 27015, reaches an Nginx stream proxy in the Azure
+  Tailscale namespace, and is forwarded to the matching Palworld tailnet ports.
 - Authenticated REST TCP 8212, metrics, and container administration remain
   inside the stack's Tailscale network namespace.
 - RCON is forced off on every start.
@@ -48,6 +48,7 @@ Compose model:
 | `TS_AUTHKEY` | Short-lived, pre-authorized key for the stack sidecar |
 | `TS_HOSTNAME` | Optional; defaults to `palworld-stack` |
 | `PALWORLD_ADMIN_PASSWORD` | REST password; 24+ safe-set characters |
+| `PALWORLD_PUBLIC_IP` | Azure Nginx edge public IPv4; currently `20.245.120.57` |
 | `PALWORLD_LAN_IP` | Required LAN bind address; use `192.168.3.120` |
 | `PALWORLD_PUID` | Host data-owner UID; currently `1002` |
 | `PALWORLD_PGID` | Host data-owner GID; currently `1002` |
@@ -58,7 +59,8 @@ The password may contain `A-Za-z0-9._~!@#%^+=:-`. It is rendered into the
 persistent Palworld INI at startup and must never be committed.
 
 Only Steam and Xbox clients are allowed. PlayStation and Mac clients are
-rejected by the server's `CrossplayPlatforms` setting.
+rejected by the server's `CrossplayPlatforms` setting. The server starts with
+community registration enabled and advertises `PALWORLD_PUBLIC_IP:8211`.
 
 The Docker forwarding policy is installed by
 `game-node-docker-firewall.service` from the rendered cloud-init. For an
@@ -93,10 +95,11 @@ az keyvault secret set \
 ```
 
 Deploy `infra/azure/**` and `docker/azure/**` through
-`.github/workflows/deploy-azure.yml`. The deployment opens UDP 8211 in the Azure
-NSG and host UFW, renders `/data/minecraft/nginx/nginx.conf`, and starts the
-digest-pinned `palworld-proxy` container. Tailscale grants must allow
-`proxy-azure` to reach the Palworld stack on UDP 8211.
+`.github/workflows/deploy-azure.yml`. The deployment opens UDP 8211 and 27015
+in the Azure NSG and host UFW, renders
+`/data/minecraft/nginx/nginx.conf`, and starts the digest-pinned
+`palworld-proxy` container. Tailscale grants must allow `proxy-azure` to reach
+the matching ports on the Palworld stack.
 
 The existing DNS-only Cloudflare A record for `mc.negativezone.cc` already
 points to the Azure VM. Players can therefore use:
