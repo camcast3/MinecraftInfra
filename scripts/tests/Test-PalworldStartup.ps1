@@ -56,7 +56,7 @@ try {
         throw 'The upstream image must not retain the retired init service.'
     }
     if ($game.image -ne
-        'thijsvanloef/palworld-server-docker:v2.7.3@sha256:be3ad49e373045a7b60478fd8b7f7411c1e293713dfa4733e563e798f276d688') {
+        'thijsvanloef/palworld-server-docker:v2.8.0@sha256:a308e2eaa494f2df0448a59cb22f820ba679bd57729880528c48981a49c08870') {
         throw 'Palworld must use the reviewed, digest-pinned upstream image.'
     }
     if ($game.network_mode -ne 'service:tailscale') {
