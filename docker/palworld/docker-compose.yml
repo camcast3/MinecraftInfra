@@ -39,7 +39,7 @@ x-backup-interface:
 services:
   tailscale:
     <<: *common
-    image: tailscale/tailscale:v1.102.3@sha256:51fec4863144d6ba0a22504cfb455d020ee0307d0c04eb48f5afee63390bdba0
+    image: tailscale/tailscale:v1.104.2@sha256:5244f014aa3ad6b80db621ce161989d3cfc2a03c16024525e72d1b40a7a5dd2e
     container_name: palworld-tailscale
     hostname: palworld-tailscale
     environment:
